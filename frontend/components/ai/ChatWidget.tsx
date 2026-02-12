@@ -100,6 +100,55 @@ export default function ChatWidget() {
         if (e.key === 'Enter') handleSendMessage()
     }
 
+    // Ticket State
+    const [mode, setMode] = React.useState<'chat' | 'ticket'>('chat')
+    const [ticketForm, setTicketForm] = React.useState({
+        subject: '',
+        category: 'GENERAL',
+        priority: 'MEDIUM',
+        description: ''
+    })
+    const [ticketFile, setTicketFile] = React.useState<File | null>(null)
+    const [isSubmittingTicket, setIsSubmittingTicket] = React.useState(false)
+    const [ticketSuccess, setTicketSuccess] = React.useState(false)
+
+    // ... existing refs and effects ...
+
+    const handleTicketSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!ticketForm.subject || !ticketForm.description) return
+
+        setIsSubmittingTicket(true)
+        try {
+            const formData = new FormData()
+            formData.append('subject', ticketForm.subject)
+            formData.append('description', ticketForm.description)
+            formData.append('category', ticketForm.category)
+            formData.append('priority', ticketForm.priority)
+            if (ticketFile) {
+                formData.append('attachment', ticketFile)
+            }
+
+            // Dynamically import ticketApi to avoid circular deps if any, or just use api instance
+            // Using direct api call since ticketApi might not be exported individually or just for safety
+            await api.post('/tickets', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
+
+            setTicketSuccess(true)
+            setTimeout(() => {
+                setTicketSuccess(false)
+                setMode('chat')
+                setTicketForm({ subject: '', category: 'GENERAL', priority: 'MEDIUM', description: '' })
+                setTicketFile(null)
+            }, 2000)
+        } catch (error) {
+            console.error('Failed to create ticket:', error)
+        } finally {
+            setIsSubmittingTicket(false)
+        }
+    }
+
     if (!isOpen) {
         return (
             <Button
@@ -112,28 +161,140 @@ export default function ChatWidget() {
     }
 
     return (
-        <Card className="fixed bottom-6 right-6 w-[350px] h-[550px] shadow-2xl z-[9999] flex flex-col overflow-hidden border-purple-200 animate-in slide-in-from-bottom-10 fade-in duration-300">
+        <Card className="fixed bottom-6 right-6 w-[360px] h-[600px] shadow-2xl z-[9999] flex flex-col overflow-hidden border-purple-200 animate-in slide-in-from-bottom-10 fade-in duration-300">
             {/* Header */}
-            <div className="bg-purple-600 p-4 flex justify-between items-center text-white shrink-0">
+            <div className="bg-purple-600 p-4 flex justify-between items-center text-white shrink-0 shadow-sm">
                 <div className="flex items-center gap-2">
-                    <div className="bg-white/20 p-1 rounded-full">
-                        <Bot className="h-5 w-5" />
-                    </div>
+                    {mode === 'ticket' ? (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 -ml-2 text-white hover:bg-purple-500"
+                            onClick={() => setMode('chat')}
+                        >
+                            <Minimize2 className="h-5 w-5 rotate-90" /> {/* Back Icon Proxy */}
+                        </Button>
+                    ) : (
+                        <div className="bg-white/20 p-1.5 rounded-full">
+                            <Bot className="h-5 w-5" />
+                        </div>
+                    )}
                     <div>
-                        <h3 className="font-bold text-sm">TechWell Assistant</h3>
+                        <h3 className="font-bold text-sm">
+                            {mode === 'ticket' ? 'Create Support Ticket' : 'TechWell Assistant'}
+                        </h3>
                         <p className="text-[10px] text-purple-100 flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                            Online • {isGuest ? 'Guest Support' : 'Student Support'}
+                            {!isGuest ? (
+                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                            ) : null}
+                            {mode === 'ticket' ? 'We typically reply in 24h' : (isGuest ? 'Guest Support' : 'Online • Student Support')}
                         </p>
                     </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-100 hover:text-white hover:bg-purple-500" onClick={() => setIsOpen(false)}>
-                    <Minimize2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center">
+                    {!isGuest && mode === 'chat' && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-[10px] h-7 px-2 text-purple-100 hover:text-white hover:bg-purple-500 mr-1"
+                            onClick={() => setMode('ticket')}
+                        >
+                            <Mail className="h-3 w-3 mr-1" /> Ticket
+                        </Button>
+                    )}
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-purple-100 hover:text-white hover:bg-purple-500" onClick={() => setIsOpen(false)}>
+                        <Minimize2 className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
 
             {/* Content Area */}
-            {hasProvidedDetails ? (
+            {mode === 'ticket' ? (
+                <div className="flex-1 overflow-y-auto bg-slate-50 p-4 relative">
+                    {ticketSuccess ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10 p-6 text-center animate-in fade-in">
+                            <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
+                                <Send className="h-8 w-8" />
+                            </div>
+                            <h3 className="font-bold text-xl text-green-800">Ticket Created!</h3>
+                            <p className="text-muted-foreground mt-2 text-sm">Our support team has been notified. We will get back to you shortly.</p>
+                        </div>
+                    ) : null}
+
+                    <form onSubmit={handleTicketSubmit} className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold">Subject</Label>
+                            <Input
+                                placeholder="Brief summary of issue"
+                                value={ticketForm.subject}
+                                onChange={e => setTicketForm({ ...ticketForm, subject: e.target.value })}
+                                required
+                                className="bg-white"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold">Category</Label>
+                                <select
+                                    className="w-full h-9 rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    value={ticketForm.category}
+                                    onChange={e => setTicketForm({ ...ticketForm, category: e.target.value })}
+                                    aria-label="Select Ticket Category"
+                                >
+                                    <option value="GENERAL">General</option>
+                                    <option value="TECHNICAL">Technical</option>
+                                    <option value="BILLING">Billing</option>
+                                    <option value="CONTENT">Course Content</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold">Priority</Label>
+                                <select
+                                    className="w-full h-9 rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    value={ticketForm.priority}
+                                    onChange={e => setTicketForm({ ...ticketForm, priority: e.target.value })}
+                                    aria-label="Select Priority"
+                                >
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="HIGH">High</option>
+                                    <option value="URGENT">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold">Description</Label>
+                            <textarea
+                                className="flex min-h-[120px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="Please describe your issue in detail..."
+                                value={ticketForm.description}
+                                onChange={e => setTicketForm({ ...ticketForm, description: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold">Attachment (Optional)</Label>
+                            <Input
+                                type="file"
+                                className="bg-white cursor-pointer"
+                                onChange={e => setTicketFile(e.target.files?.[0] || null)}
+                            />
+                        </div>
+
+                        <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={isSubmittingTicket}>
+                            {isSubmittingTicket ? (
+                                <>
+                                    <span className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin mr-2"></span>
+                                    Creating Ticket...
+                                </>
+                            ) : 'Submit Ticket'}
+                        </Button>
+                    </form>
+                </div>
+            ) : hasProvidedDetails ? (
                 <>
                     {/* Chat Area */}
                     <div className="flex-1 overflow-y-auto bg-slate-50 p-4 space-y-4" ref={scrollRef}>

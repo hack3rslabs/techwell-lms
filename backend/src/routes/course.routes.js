@@ -37,7 +37,22 @@ router.get('/', optionalAuth, async (req, res, next) => {
     try {
         const { category, difficulty, search, page = 1, limit = 12 } = req.query;
 
-        const where = { isPublished: true };
+        const where = {};
+
+        // If NOT admin, only show published
+        // But if admin, they might want to see all?
+        // Actually, the public (students) use this endpoint. 
+        // Admin usually wants a separate endpoint or a flag.
+        // Let's keep this as public catalog mostly, but allows admins to see all if they pass ?all=true?
+        // Or better: Admins use a different way? 
+        // "AdminCoursesPage" uses this endpoint.
+
+        const isAdmin = req.user && ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
+
+        if (!isAdmin) {
+            where.isPublished = true;
+        }
+
         if (category) where.category = category;
         if (difficulty) where.difficulty = difficulty;
         if (search) {
@@ -58,6 +73,7 @@ router.get('/', optionalAuth, async (req, res, next) => {
                     category: true,
                     difficulty: true,
                     price: true,
+                    isPublished: true, // Add this
                     _count: {
                         select: {
                             modules: true,
@@ -81,6 +97,26 @@ router.get('/', optionalAuth, async (req, res, next) => {
                 pages: Math.ceil(total / Number(limit))
             }
         });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/courses/my/created
+ * @desc    Get courses created by the instructor
+ * @access  Private/Instructor
+ */
+router.get('/my/created', authenticate, authorize('INSTRUCTOR', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+    try {
+        const courses = await prisma.course.findMany({
+            where: { instructorId: req.user.id },
+            orderBy: { createdAt: 'desc' },
+            include: {
+                _count: { select: { modules: true, enrollments: true } }
+            }
+        });
+        res.json({ courses });
     } catch (error) {
         next(error);
     }
@@ -201,6 +237,37 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), 
         });
 
         res.status(201).json({ message: 'Course created', course });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PUT /api/courses/:id
+ * @desc    Update course basic details
+ * @access  Private/Admin/Instructor
+ */
+router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+    try {
+        const body = { ...req.body };
+        ['courseCode', 'bannerUrl', 'thumbnail'].forEach(field => {
+            if (body[field] === '') body[field] = undefined;
+        });
+
+        // Use partial schema for updates
+        const updateSchema = createCourseSchema.partial();
+        const validatedData = updateSchema.parse(body);
+
+        const course = await prisma.course.update({
+            where: { id: req.params.id },
+            data: {
+                ...validatedData,
+                price: validatedData.price,
+                discountPrice: validatedData.discountPrice
+            }
+        });
+
+        res.json({ message: 'Course updated', course });
     } catch (error) {
         next(error);
     }

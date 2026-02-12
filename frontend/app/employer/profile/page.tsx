@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { userApi, employerApi } from "@/lib/api"
+import { useState, useEffect, useRef } from "react"
+import { userApi, employerApi, uploadApi } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Loader2, Save, Upload, Building2, Globe, MapPin, Briefcase } from "lucide-react"
+import { Loader2, Save, Upload, Building2, Globe, MapPin, Briefcase, Camera } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -15,10 +15,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { toast } from "sonner"
 
 export default function EmployerProfilePage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Employer Profile Data
     const [profile, setProfile] = useState({
@@ -39,8 +42,6 @@ export default function EmployerProfilePage() {
                     employerApi.getProfile().catch(() => ({ data: null }))
                 ])
 
-                // userRes.data is used only for loading check in original, 
-                // but we can just use the resolution of the promise.
                 if (userRes.data && profileRes.data) {
                     setProfile({
                         companyName: profileRes.data.companyName || '',
@@ -53,7 +54,7 @@ export default function EmployerProfilePage() {
                     })
                 }
             } catch {
-                // Error handling
+                toast.error("Failed to load profile")
             } finally {
                 setIsLoading(false)
             }
@@ -65,82 +66,122 @@ export default function EmployerProfilePage() {
         setProfile(prev => ({ ...prev, [field]: value }))
     }
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File size must be less than 5MB')
+            return
+        }
+
+        setIsUploading(true)
+        const uploadFormData = new FormData()
+        uploadFormData.append('file', file)
+
+        try {
+            const res = await uploadApi.upload(uploadFormData)
+            const fileUrl = res.data.url
+            setProfile(prev => ({ ...prev, logo: fileUrl }))
+            toast.success('Logo uploaded successfully')
+        } catch (error) {
+            console.error(error)
+            toast.error('Failed to upload logo')
+        } finally {
+            setIsUploading(false)
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSaving(true)
         try {
             await employerApi.updateProfile({
                 ...profile,
-                companySize: profile.size // Ensure field name matches backend expectation
+                companySize: profile.size
             })
-            alert('Profile updated successfully!')
+            toast.success('Company profile updated successfully!')
         } catch {
-            alert('Failed to update profile')
+            toast.error('Failed to update profile')
         } finally {
             setIsSaving(false)
         }
     }
 
-    if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary" /></div>
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-[60vh]">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+        )
+    }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
                         Company Profile
                     </h1>
-                    <p className="text-muted-foreground mt-1">Manage your company branding and public-facing details.</p>
+                    <p className="text-gray-500 mt-1 text-sm font-medium">Manage your company branding and public-facing details.</p>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="grid gap-8">
-                <Card className="glass-card border-none shadow-2xl overflow-hidden">
-                    <CardHeader className="bg-muted/30 border-b border-muted/20">
-                        <CardTitle className="flex items-center gap-2">
-                            <Building2 className="h-5 w-5 text-primary" />
+                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+                    <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4">
+                        <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
+                            <Building2 className="h-5 w-5 text-blue-600" />
                             Basic Information
                         </CardTitle>
-                        <CardDescription>This information will be displayed on your job listings to candidates.</CardDescription>
+                        <CardDescription className="text-xs text-gray-500">This information will be displayed on your job listings.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-8 space-y-8">
                         <div className="flex flex-col md:flex-row gap-8 items-start">
                             <div className="space-y-4">
-                                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Company Logo</Label>
+                                <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Company Logo</Label>
                                 <div className="relative group">
-                                    <div className="h-32 w-32 rounded-3xl border-2 border-dashed border-primary/20 bg-primary/5 flex items-center justify-center overflow-hidden transition-all group-hover:border-primary/40 group-hover:bg-primary/10">
+                                    <div className="h-32 w-32 rounded-2xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden transition-all group-hover:border-blue-200 group-hover:shadow-md">
                                         {profile.logo ? (
                                             <img src={profile.logo} alt="Logo" className="w-full h-full object-cover" />
                                         ) : (
-                                            <Building2 className="h-10 w-10 text-primary/40" />
+                                            <Building2 className="h-10 w-10 text-gray-300" />
                                         )}
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <Upload className="h-6 w-6 text-white" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                            {isUploading ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Camera className="h-6 w-6 text-white" />}
                                         </div>
                                     </div>
-                                    <Button type="button" variant="link" size="sm" className="w-full text-xs mt-2">
+                                    <Button type="button" variant="outline" size="sm" className="w-full text-xs mt-2 border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50" onClick={() => fileInputRef.current?.click()}>
                                         Change Logo
                                     </Button>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        aria-label="Upload company logo"
+                                    />
                                 </div>
                             </div>
 
                             <div className="flex-1 space-y-6 w-full">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-semibold">Company Name</Label>
+                                        <Label className="text-sm font-semibold text-gray-700">Company Name</Label>
                                         <Input
-                                            className="bg-muted/20 border-none rounded-xl h-11 focus:ring-primary/20"
+                                            className="bg-white border-gray-200 rounded-lg h-10 focus:ring-blue-100 focus:border-blue-400 transition-all"
                                             value={profile.companyName}
                                             onChange={e => handleChange('companyName', e.target.value)}
                                             placeholder="Acme Tech Solutions"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-semibold">Website URL</Label>
+                                        <Label className="text-sm font-semibold text-gray-700">Website URL</Label>
                                         <div className="relative">
-                                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                             <Input
-                                                className="pl-10 bg-muted/20 border-none rounded-xl h-11 focus:ring-primary/20"
+                                                className="pl-9 bg-white border-gray-200 rounded-lg h-10 focus:ring-blue-100 focus:border-blue-400 transition-all"
                                                 value={profile.website}
                                                 onChange={e => handleChange('website', e.target.value)}
                                                 placeholder="https://acme.com"
@@ -150,11 +191,11 @@ export default function EmployerProfilePage() {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-semibold">Industry</Label>
+                                        <Label className="text-sm font-semibold text-gray-700">Industry</Label>
                                         <div className="relative">
-                                            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                             <Input
-                                                className="pl-10 bg-muted/20 border-none rounded-xl h-11 focus:ring-primary/20"
+                                                className="pl-9 bg-white border-gray-200 rounded-lg h-10 focus:ring-blue-100 focus:border-blue-400 transition-all"
                                                 value={profile.industry}
                                                 onChange={e => handleChange('industry', e.target.value)}
                                                 placeholder="e.g. Software Development"
@@ -162,12 +203,12 @@ export default function EmployerProfilePage() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-semibold">Company Size</Label>
+                                        <Label className="text-sm font-semibold text-gray-700">Company Size</Label>
                                         <Select value={profile.size} onValueChange={v => handleChange('size', v)}>
-                                            <SelectTrigger className="bg-muted/20 border-none rounded-xl h-11 focus:ring-primary/20">
+                                            <SelectTrigger className="bg-white border-gray-200 rounded-lg h-10 text-gray-700">
                                                 <SelectValue placeholder="Select size" />
                                             </SelectTrigger>
-                                            <SelectContent className="glass-card border-none shadow-xl">
+                                            <SelectContent className="bg-white border-gray-200 shadow-xl rounded-lg">
                                                 <SelectItem value="1-10">1-10 Employees</SelectItem>
                                                 <SelectItem value="11-50">11-50 Employees</SelectItem>
                                                 <SelectItem value="51-200">51-200 Employees</SelectItem>
@@ -180,13 +221,13 @@ export default function EmployerProfilePage() {
                             </div>
                         </div>
 
-                        <div className="space-y-4 pt-4 border-t border-muted/10">
+                        <div className="space-y-4 pt-4 border-t border-gray-100">
                             <div className="space-y-2">
-                                <Label className="text-sm font-semibold">Office Location (HQ)</Label>
+                                <Label className="text-sm font-semibold text-gray-700">Office Location (HQ)</Label>
                                 <div className="relative">
-                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                     <Input
-                                        className="pl-10 bg-muted/20 border-none rounded-xl h-11 focus:ring-primary/20"
+                                        className="pl-9 bg-white border-gray-200 rounded-lg h-10 focus:ring-blue-100 focus:border-blue-400 transition-all"
                                         value={profile.location}
                                         onChange={e => handleChange('location', e.target.value)}
                                         placeholder="e.g. Banglore, India"
@@ -194,9 +235,9 @@ export default function EmployerProfilePage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-semibold">Company Overview</Label>
+                                <Label className="text-sm font-semibold text-gray-700">Company Overview</Label>
                                 <Textarea
-                                    className="min-h-[160px] bg-muted/20 border-none rounded-2xl p-4 focus:ring-primary/20 resize-none font-medium text-sm"
+                                    className="min-h-[140px] bg-white border-gray-200 rounded-xl p-4 focus:ring-blue-100 focus:border-blue-400 transition-all resize-none text-sm"
                                     value={profile.description}
                                     onChange={e => handleChange('description', e.target.value)}
                                     placeholder="Tell us about your company culture, mission, and long-term vision..."
@@ -206,11 +247,11 @@ export default function EmployerProfilePage() {
                     </CardContent>
                 </Card>
 
-                <div className="flex justify-end pt-4 pb-12">
+                <div className="flex justify-end pb-12">
                     <Button
                         type="submit"
                         disabled={isSaving}
-                        className="h-12 px-10 rounded-2xl font-bold bg-primary shadow-xl shadow-primary/20 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                        className="h-11 px-8 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 hover:shadow-lg transition-all"
                     >
                         {isSaving ? (
                             <>

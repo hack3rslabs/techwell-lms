@@ -18,6 +18,7 @@ model User {
   password      String
   name          String
   role          Role    @default(STUDENT)
+  plan          Plan    @default(FREE)
   avatar        String?
   phone         String?
   isActive      Boolean @default(true)
@@ -28,6 +29,9 @@ model User {
   enrollments    Enrollment[]
   interviews     Interview[]
   lessonProgress LessonProgress[]
+
+  instituteId    String?
+  institute      Institute? @relation(fields: [instituteId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,6 +68,33 @@ model User {
   
   // ATS Relations
   conductedJobInterviews JobInterview[]
+
+  // RBAC System
+  systemRoleId String?
+  systemRole   SystemRole? @relation(fields: [systemRoleId], references: [id])
+}
+
+model SystemRole {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "Junior Admin", or maps to Role Enum
+  description String?
+  isSystem    Boolean  @default(false) // If true, cannot be deleted (matches Enum roles)
+  permissions Json     // Array of permission codes ["MANAGE_USERS", "VIEW_FINANCE"]
+
+  users       User[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SystemPermission {
+  id          String   @id @default(cuid())
+  code        String   @unique // MANAGE_USERS
+  name        String   // Manage Users
+  description String?
+  module      String   // USERS, COURSES, FINANCE
+
+  createdAt   DateTime @default(now())
 }
 
 enum Role {
@@ -74,6 +105,33 @@ enum Role {
   STAFF
   INSTITUTE_ADMIN
   EMPLOYER
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+// ============= INSTITUTES =============
+
+model Institute {
+  id          String   @id @default(cuid())
+  name        String
+  code        String?  @unique
+  logoUrl     String?
+  address     String?
+  website     String?
+  phone       String?
+  email       String?
+  
+  // Relations
+  users       User[]
+  courses     Course[]
+  batches     Batch[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ============= LMS - COURSES =============
@@ -122,6 +180,9 @@ model Course {
   batches       Batch[]
   announcements Announcement[]
 
+  instituteId   String?
+  institute     Institute? @relation(fields: [instituteId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -135,6 +196,7 @@ model Batch {
   name         String
   courseId     String
   instructorId String
+  instituteId  String?
 
   startDate    DateTime?
   endDate      DateTime?
@@ -144,6 +206,7 @@ model Batch {
   // Relations
   course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   instructor   User     @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  institute    Institute? @relation(fields: [instituteId], references: [id])
   announcements Announcement[]
   enrollments   Enrollment[] // Students in this batch
   
@@ -454,7 +517,11 @@ model InterviewEvaluation {
   createdAt DateTime @default(now())
 }
 
-// ============= AVATARS =============
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
 
 model Avatar {
   id          String  @id @default(cuid())
@@ -462,7 +529,9 @@ model Avatar {
   role        String // Interviewer type
   personality String // Friendly, Strict, etc.
   avatarUrl   String
+  gender      Gender? @default(MALE)
   voiceId     String?
+  provider    String? @default("ELEVEN_LABS")
 
   isActive Boolean @default(true)
 

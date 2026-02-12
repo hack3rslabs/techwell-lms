@@ -1,24 +1,24 @@
 "use client"
 
 import * as React from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Search, Filter, MessageSquare, Paperclip, Send, CheckCircle2, Lock } from 'lucide-react'
+import { Loader2, MessageSquare, Paperclip, Send, Lock } from 'lucide-react'
 import { format } from 'date-fns'
-import api from '@/lib/api'
+import api, { ticketApi } from '@/lib/api'
+import { useAuth } from '@/lib/auth-context'
 
 // Types
 interface Ticket {
     id: string
     subject: string
     description: string
-    status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
+    status: 'OPEN' | 'IN_PROGRESS' | 'WAITING_FOR_USER' | 'RESOLVED' | 'CLOSED'
     priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
     category: string
     createdAt: string
@@ -50,13 +50,16 @@ export default function AdminSupportPage() {
     const [internalNotes, setInternalNotes] = React.useState('')
     const [activeTab, setActiveTab] = React.useState('conversation')
 
-    // State from previous code (implied missing)
+    const { user } = useAuth()
+    const [file, setFile] = React.useState<File | null>(null)
+
     const [tickets, setTickets] = React.useState<Ticket[]>([])
     const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(null)
     const [messages, setMessages] = React.useState<Message[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [isLoadingMessages, setIsLoadingMessages] = React.useState(false)
     const [filterStatus, setFilterStatus] = React.useState('ALL')
+    const [filterPriority, setFilterPriority] = React.useState('ALL')
     const [replyText, setReplyText] = React.useState('')
     const [isSending, setIsSending] = React.useState(false)
 
@@ -64,7 +67,7 @@ export default function AdminSupportPage() {
     React.useEffect(() => {
         fetchTickets()
         fetchStaff()
-    }, [filterStatus])
+    }, [filterStatus, filterPriority])
 
     // Fetch Messages when ticket selected
     React.useEffect(() => {
@@ -76,10 +79,11 @@ export default function AdminSupportPage() {
     const fetchTickets = async () => {
         setIsLoading(true)
         try {
-            const params = new URLSearchParams()
-            if (filterStatus !== 'ALL') params.append('status', filterStatus)
+            const params: any = {}
+            if (filterStatus !== 'ALL') params.status = filterStatus
+            if (filterPriority !== 'ALL') params.priority = filterPriority
 
-            const res = await api.get(`/tickets?${params.toString()}`)
+            const res = await ticketApi.getAll(params)
             setTickets(res.data)
         } catch (error) {
             console.error(error)
@@ -102,9 +106,7 @@ export default function AdminSupportPage() {
 
     const fetchStaff = async () => {
         try {
-            const res = await api.get('/users?role=STAFF,ADMIN,INSTRUCTOR') // Assuming backend supports filtering or simple fetch
-            // Fallback if backend doesn't support complex filter, we might just get all users and filter client side
-            // For now, let's assume we get a list or filter the main fetch if needed.
+            const res = await api.get('/users?role=STAFF,ADMIN,INSTRUCTOR')
             if (res.data.users) {
                 setStaffList(res.data.users.filter((u: { role: string }) => ['ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTRUCTOR'].includes(u.role)))
             }
@@ -128,7 +130,6 @@ export default function AdminSupportPage() {
         if (!selectedTicket) return
         try {
             await api.patch(`/tickets/${selectedTicket.id}/assign`, { internalNotes })
-            // Feedback?
             alert("Notes saved")
         } catch (error) {
             console.error(error)
@@ -140,14 +141,19 @@ export default function AdminSupportPage() {
 
         setIsSending(true)
         try {
-            await api.post(`/tickets/${selectedTicket.id}/reply`, {
-                message: replyText
-            })
+            const formData = new FormData()
+            formData.append('message', replyText)
+            if (file) {
+                formData.append('attachment', file)
+            }
 
-            // Refresh messages and ticket list (to update status/timestamp)
+            await ticketApi.reply(selectedTicket.id, formData)
+
+            // Refresh messages and ticket list
             await fetchMessages(selectedTicket.id)
             setReplyText('')
-            fetchTickets() // Background refresh
+            setFile(null)
+            fetchTickets()
         } catch (error) {
             console.error(error)
             alert('Failed to send reply')
@@ -159,7 +165,7 @@ export default function AdminSupportPage() {
     const handleStatusUpdate = async (newStatus: string) => {
         if (!selectedTicket) return
         try {
-            await api.put(`/tickets/${selectedTicket.id}/status`, { status: newStatus })
+            await ticketApi.updateStatus(selectedTicket.id, { status: newStatus })
             setSelectedTicket({ ...selectedTicket, status: newStatus as Ticket['status'] })
             fetchTickets()
         } catch (error) {
@@ -172,6 +178,7 @@ export default function AdminSupportPage() {
         switch (status) {
             case 'OPEN': return 'bg-yellow-100 text-yellow-800'
             case 'IN_PROGRESS': return 'bg-blue-100 text-blue-800'
+            case 'WAITING_FOR_USER': return 'bg-purple-100 text-purple-800'
             case 'RESOLVED': return 'bg-green-100 text-green-800'
             case 'CLOSED': return 'bg-gray-100 text-gray-800'
             default: return 'bg-gray-100'
@@ -192,16 +199,30 @@ export default function AdminSupportPage() {
             <div className="w-1/3 flex flex-col gap-4 border-r pr-6">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight mb-2">Support Tickets</h2>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-col lg:flex-row">
                         <Select value={filterStatus} onValueChange={setFilterStatus}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Filter Status" />
+                                <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="ALL">All Status</SelectItem>
                                 <SelectItem value="OPEN">Open</SelectItem>
                                 <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                                <SelectItem value="WAITING_FOR_USER">Waiting for User</SelectItem>
                                 <SelectItem value="RESOLVED">Resolved</SelectItem>
+                                <SelectItem value="CLOSED">Closed</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={filterPriority} onValueChange={setFilterPriority}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Priority" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">All Priority</SelectItem>
+                                <SelectItem value="URGENT">Urgent</SelectItem>
+                                <SelectItem value="HIGH">High</SelectItem>
+                                <SelectItem value="MEDIUM">Medium</SelectItem>
+                                <SelectItem value="LOW">Low</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -279,12 +300,13 @@ export default function AdminSupportPage() {
                                     value={selectedTicket.status}
                                     onValueChange={handleStatusUpdate}
                                 >
-                                    <SelectTrigger className="w-[140px]">
+                                    <SelectTrigger className="w-[160px]">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="OPEN">Open</SelectItem>
                                         <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                                        <SelectItem value="WAITING_FOR_USER">Waiting for User</SelectItem>
                                         <SelectItem value="RESOLVED">Resolved</SelectItem>
                                         <SelectItem value="CLOSED">Closed</SelectItem>
                                     </SelectContent>
@@ -354,15 +376,24 @@ export default function AdminSupportPage() {
                                     </div>
                                 </ScrollArea>
                                 <div className="p-4 border-t bg-background">
-                                    <div className="flex gap-2">
-                                        <Textarea
-                                            placeholder="Type your reply..."
-                                            className="min-h-[60px]"
-                                            value={replyText}
-                                            onChange={(e) => setReplyText(e.target.value)}
-                                        />
+                                    <div className="flex gap-2 items-end">
+                                        <div className="flex-1 space-y-2">
+                                            <Textarea
+                                                placeholder="Type your reply..."
+                                                className="min-h-[60px]"
+                                                value={replyText}
+                                                onChange={(e) => setReplyText(e.target.value)}
+                                            />
+                                            <div className="flex items-center gap-2">
+                                                <Input
+                                                    type="file"
+                                                    className="w-full text-xs"
+                                                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                                />
+                                            </div>
+                                        </div>
                                         <Button
-                                            className="h-auto px-4"
+                                            className="h-[60px] px-4"
                                             onClick={handleSendReply}
                                             disabled={isSending || !replyText.trim()}
                                         >
@@ -399,4 +430,3 @@ export default function AdminSupportPage() {
         </div>
     )
 }
-

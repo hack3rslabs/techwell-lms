@@ -42,7 +42,8 @@ import {
     Check,
     ArrowRight
 } from 'lucide-react'
-import { InterviewAnalytics } from '@/components/admin/InterviewAnalytics'
+import { NewInterviewDialog } from '@/components/interviews/NewInterviewDialog'
+
 
 interface Interview {
     id: string
@@ -217,149 +218,34 @@ export default function InterviewsPage() {
                     </p>
                 </div>
 
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                    <DialogTrigger asChild>
+                <NewInterviewDialog
+                    open={isOpen}
+                    onOpenChange={setIsOpen}
+                    trigger={
                         <Button className="rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all">
                             <Plus className="mr-2 h-4 w-4" /> New Interview
                         </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>Start New Interview</DialogTitle>
-                            <DialogDescription>
-                                Setup your mock interview session in seconds.
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="grid gap-6 py-4">
-                            {/* Simplified 2-Step Process */}
-                            {step === 1 && (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Domain</Label>
-                                            <Select value={formData.domain} onValueChange={(v) => updateFormData('domain', v)}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    {DOMAINS.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Difficulty</Label>
-                                            <Select value={formData.difficulty} onValueChange={(v) => updateFormData('difficulty', v)}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    {DIFFICULTIES.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Role *</Label>
-                                            <Input
-                                                placeholder="e.g. Frontend Dev"
-                                                value={formData.role}
-                                                onChange={(e) => updateFormData('role', e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Tech Stack *</Label>
-                                            <Input
-                                                placeholder="e.g. React, Node.js"
-                                                value={formData.technology}
-                                                onChange={(e) => updateFormData('technology', e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label>Target Company (Optional)</Label>
-                                        <Input
-                                            placeholder="e.g. Google, Amazon"
-                                            value={formData.company}
-                                            onChange={(e) => updateFormData('company', e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {step === 2 && (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-                                    <div className="space-y-2">
-                                        <Label>Job Description (Optional)</Label>
-                                        <Textarea
-                                            placeholder="Paste the JD here for tailored questions..."
-                                            value={formData.jobDescription}
-                                            onChange={(e) => updateFormData('jobDescription', e.target.value)}
-                                            rows={4}
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label>Resume (Optional)</Label>
-                                        <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer relative">
-                                            <input
-                                                type="file"
-                                                accept=".pdf,.doc,.docx"
-                                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                                onChange={handleResumeUpload}
-                                            />
-                                            {formData.resumeFile ? (
-                                                <div className="flex items-center justify-center gap-2 text-primary">
-                                                    <FileText className="h-5 w-5" />
-                                                    <span className="font-medium text-sm">{formData.resumeFile.name}</span>
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                                                    <Upload className="h-6 w-6 mb-1" />
-                                                    <span className="text-sm font-medium">Upload Resume</span>
-                                                    <span className="text-xs">PDF, DOCX (Max 5MB)</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex justify-end gap-3">
-                            {step === 2 && (
-                                <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-                            )}
-
-                            {step === 1 ? (
-                                <Button
-                                    onClick={() => setStep(2)}
-                                    disabled={!formData.role || !formData.technology}
-                                >
-                                    Next <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
-                            ) : (
-                                <Button onClick={handleCreateInterview} disabled={isSubmitting}>
-                                    {isSubmitting ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Starting...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Sparkles className="mr-2 h-4 w-4" /> Start Interview
-                                        </>
-                                    )}
-                                </Button>
-                            )}
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                    }
+                />
             </div>
 
-            {/* Stats */}
-            {/* Analytics Section */}
-            <div className="mb-8">
-                <InterviewAnalytics />
-            </div>
+            {/* Stats Overview */}
+            {stats && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div className="bg-card border border-border rounded-xl p-5">
+                        <p className="text-sm font-medium text-muted-foreground">Total Interviews</p>
+                        <p className="text-3xl font-bold text-foreground mt-1">{stats.total}</p>
+                    </div>
+                    <div className="bg-card border border-border rounded-xl p-5">
+                        <p className="text-sm font-medium text-muted-foreground">Completed</p>
+                        <p className="text-3xl font-bold text-foreground mt-1">{stats.completed}</p>
+                    </div>
+                    <div className="bg-card border border-border rounded-xl p-5">
+                        <p className="text-sm font-medium text-muted-foreground">Average Score</p>
+                        <p className="text-3xl font-bold text-foreground mt-1">{Math.round(stats.averageScore || 0)}%</p>
+                    </div>
+                </div>
+            )}
 
             {/* Interview History */}
             <div className="flex items-center justify-between mb-4">

@@ -1,27 +1,18 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import * as React from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import api from "@/lib/api"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
-    Users, Search, Filter, Download, Loader2, Star, ArrowRight,
-    ChevronDown, MoreHorizontal, UserCheck, UserX, CheckCircle2,
-    Calendar, Zap, XCircle
+    Search, Users, CheckCircle2,
+    Loader2, MoreHorizontal, Star, Eye, Calendar, Mail, Briefcase, FileText
 } from "lucide-react"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
     Select,
     SelectContent,
@@ -29,32 +20,34 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
-interface Applicant {
+interface Candidate {
     id: string
-    status: string
-    source: string
-    atsScore: number
-    createdAt: string
-    externalName?: string
-    externalEmail?: string
-    applicant?: {
-        name: string
-        email: string
-        avatar?: string
-    }
+    applicationId: string
+    name: string
+    email: string
     jobTitle: string
     jobId: string
+    status: string
+    appliedAt: string
+    atsScore: number | null
+    source: string
 }
 
-export default function CandidatesPage() {
-    const [candidates, setCandidates] = useState<Applicant[]>([])
+export default function EmployerCandidatesPage() {
+    const [candidates, setCandidates] = useState<Candidate[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [search, setSearch] = useState("")
+    const [searchQuery, setSearchQuery] = useState("")
     const [statusFilter, setStatusFilter] = useState("ALL")
-    const [sourceFilter, setSourceFilter] = useState("ALL")
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-    const [bulkProcessing, setBulkProcessing] = useState(false)
+    const [selected, setSelected] = useState<Set<string>>(new Set())
     const router = useRouter()
 
     useEffect(() => {
@@ -65,8 +58,7 @@ export default function CandidatesPage() {
         try {
             const jobsRes = await api.get('/jobs/my/listings')
             const jobs = jobsRes.data || []
-
-            const allCandidates: Applicant[] = []
+            const allCandidates: Candidate[] = []
 
             for (const job of jobs) {
                 try {
@@ -75,23 +67,23 @@ export default function CandidatesPage() {
                     for (const app of apps) {
                         allCandidates.push({
                             id: app.id,
-                            status: app.status,
-                            source: app.source,
-                            atsScore: app.atsScore || 0,
-                            createdAt: app.createdAt,
-                            externalName: app.externalName,
-                            externalEmail: app.externalEmail,
-                            applicant: app.applicant,
+                            applicationId: app.id,
+                            name: app.applicant?.name || app.externalName || 'Unknown Candidate',
+                            email: app.applicant?.email || app.externalEmail || '',
                             jobTitle: job.title,
-                            jobId: job.id
+                            jobId: job.id,
+                            status: app.status || 'APPLIED',
+                            appliedAt: app.createdAt || app.appliedAt || new Date().toISOString(),
+                            atsScore: app.atsScore || null,
+                            source: app.applicant ? 'Internal' : 'External',
                         })
                     }
                 } catch {
-                    // Skip errors
+                    // Skip jobs with errors
                 }
             }
 
-            setCandidates(allCandidates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+            setCandidates(allCandidates.sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()))
         } catch {
             // Error handling
         } finally {
@@ -99,22 +91,17 @@ export default function CandidatesPage() {
         }
     }
 
-    const filtered = useMemo(() => {
-        return candidates.filter(c => {
-            const name = c.applicant?.name || c.externalName || ''
-            const email = c.applicant?.email || c.externalEmail || ''
-            const matchesSearch = !search || name.toLowerCase().includes(search.toLowerCase()) || email.toLowerCase().includes(search.toLowerCase()) || c.jobTitle.toLowerCase().includes(search.toLowerCase())
-            const matchesStatus = statusFilter === 'ALL' || c.status === statusFilter
-            const matchesSource = sourceFilter === 'ALL' || c.source === sourceFilter
-            return matchesSearch && matchesStatus && matchesSource
-        })
-    }, [candidates, search, statusFilter, sourceFilter])
-
-    const getName = (c: Applicant) => c.applicant?.name || c.externalName || 'Unknown'
-    const getEmail = (c: Applicant) => c.applicant?.email || c.externalEmail || ''
+    const filteredCandidates = candidates.filter(c => {
+        const matchesSearch =
+            c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesStatus = statusFilter === 'ALL' || c.status === statusFilter
+        return matchesSearch && matchesStatus
+    })
 
     const toggleSelect = (id: string) => {
-        setSelectedIds(prev => {
+        setSelected(prev => {
             const next = new Set(prev)
             if (next.has(id)) next.delete(id)
             else next.add(id)
@@ -122,264 +109,252 @@ export default function CandidatesPage() {
         })
     }
 
-    const toggleSelectAll = () => {
-        if (selectedIds.size === filtered.length) {
-            setSelectedIds(new Set())
+    const toggleAll = () => {
+        if (selected.size === filteredCandidates.length) {
+            setSelected(new Set())
         } else {
-            setSelectedIds(new Set(filtered.map(c => c.id)))
-        }
-    }
-
-    const handleBulkAction = async (status: string) => {
-        if (selectedIds.size === 0) return
-        setBulkProcessing(true)
-        try {
-            await api.post('/ats/bulk-status', {
-                applicationIds: Array.from(selectedIds),
-                status,
-                notes: `Bulk ${status.toLowerCase()} action`
-            })
-            setSelectedIds(new Set())
-            fetchCandidates()
-        } catch (error) {
-            console.error('Bulk action failed:', error)
-            alert('Bulk action failed')
-        } finally {
-            setBulkProcessing(false)
+            setSelected(new Set(filteredCandidates.map(c => c.id)))
         }
     }
 
     const getStatusBadge = (status: string) => {
-        const colors: Record<string, string> = {
-            APPLIED: 'bg-gray-100 text-gray-700',
-            VIEWED: 'bg-blue-50 text-blue-700',
-            SCREENED: 'bg-indigo-50 text-indigo-700',
-            SHORTLISTED: 'bg-purple-50 text-purple-700',
-            INTERVIEW_SCHEDULED: 'bg-violet-50 text-violet-700',
-            INTERVIEW_PENDING: 'bg-violet-50 text-violet-700',
-            INTERVIEWED: 'bg-amber-50 text-amber-700',
-            SELECTED: 'bg-green-50 text-green-700',
-            APPOINTED: 'bg-emerald-50 text-emerald-700',
-            HIRED: 'bg-emerald-100 text-emerald-800',
-            REJECTED: 'bg-red-50 text-red-700',
+        const map: Record<string, { bg: string; text: string; label: string }> = {
+            'APPLIED': { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Applied' },
+            'SCREENED': { bg: 'bg-indigo-50', text: 'text-indigo-700', label: 'Screened' },
+            'SHORTLISTED': { bg: 'bg-purple-50', text: 'text-purple-700', label: 'Shortlisted' },
+            'INTERVIEW_SCHEDULED': { bg: 'bg-violet-50', text: 'text-violet-700', label: 'Interview' },
+            'INTERVIEWED': { bg: 'bg-amber-50', text: 'text-amber-700', label: 'Interviewed' },
+            'HIRED': { bg: 'bg-green-50', text: 'text-green-700', label: 'Hired' },
+            'SELECTED': { bg: 'bg-green-50', text: 'text-green-700', label: 'Selected' },
+            'REJECTED': { bg: 'bg-red-50', text: 'text-red-700', label: 'Rejected' },
         }
-        return <Badge className={`${colors[status] || ''} border-none text-[10px]`}>{status.replace(/_/g, ' ')}</Badge>
+        const s = map[status] || { bg: 'bg-gray-100', text: 'text-gray-600', label: status }
+        return (
+            <Badge className={cn("border hover:opacity-90 font-medium text-[11px] shadow-none", s.bg, s.text, s.bg.replace('bg-', 'border-').replace('50', '200'))}>
+                {s.label}
+            </Badge>
+        )
     }
 
-    const statuses = ['ALL', 'APPLIED', 'VIEWED', 'SCREENED', 'SHORTLISTED', 'INTERVIEW_SCHEDULED', 'INTERVIEWED', 'SELECTED', 'APPOINTED', 'REJECTED']
+    // Stats
+    const totalCount = candidates.length
+    const shortlistedCount = candidates.filter(c => c.status === 'SHORTLISTED').length
+    const interviewCount = candidates.filter(c => ['INTERVIEW_SCHEDULED', 'INTERVIEWED'].includes(c.status)).length
+    const hiredCount = candidates.filter(c => ['HIRED', 'SELECTED'].includes(c.status)).length
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-[60vh]">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+        )
+    }
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
-                        All Candidates
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                        Candidates
                     </h1>
-                    <p className="text-muted-foreground mt-1">Unified view of all applicants across your open positions.</p>
-                </div>
-                <div className="flex gap-2">
-                    {selectedIds.size > 0 && (
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-sm">{selectedIds.size} selected</Badge>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" disabled={bulkProcessing}>
-                                        {bulkProcessing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <ChevronDown className="h-4 w-4 mr-1" />}
-                                        Bulk Action
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuLabel>Move To</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => handleBulkAction('SHORTLISTED')}>
-                                        <UserCheck className="mr-2 h-4 w-4 text-purple-600" /> Shortlist
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleBulkAction('SCREENED')}>
-                                        <CheckCircle2 className="mr-2 h-4 w-4 text-blue-600" /> Screen
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => handleBulkAction('REJECTED')} className="text-red-600">
-                                        <XCircle className="mr-2 h-4 w-4" /> Reject
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    )}
+                    <p className="text-gray-500 mt-1 text-sm font-medium">View and manage candidates across all job listings.</p>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                    <CardContent className="p-5 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                            <Users className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <div className="text-2xl font-bold text-gray-900">{totalCount}</div>
+                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Total</p>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                    <CardContent className="p-5 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+                            <Star className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <div className="text-2xl font-bold text-gray-900">{shortlistedCount}</div>
+                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Shortlisted</p>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                    <CardContent className="p-5 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                            <Briefcase className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <div className="text-2xl font-bold text-gray-900">{interviewCount}</div>
+                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Interview</p>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                    <CardContent className="p-5 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-green-50 flex items-center justify-center text-green-600">
+                            <CheckCircle2 className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <div className="text-2xl font-bold text-gray-900">{hiredCount}</div>
+                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Hired</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Search & Filter */}
+            <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                         placeholder="Search by name, email, or job title..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 bg-white border-gray-200 rounded-xl h-11 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all shadow-sm"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[200px]">
-                        <Filter className="h-4 w-4 mr-2" />
-                        <SelectValue placeholder="Filter by status" />
+                    <SelectTrigger className="w-full md:w-56 bg-white border-gray-200 rounded-xl h-11 text-sm text-gray-700 shadow-sm">
+                        <SelectValue placeholder="All statuses" />
                     </SelectTrigger>
-                    <SelectContent>
-                        {statuses.map(s => (
-                            <SelectItem key={s} value={s}>{s === 'ALL' ? 'All Statuses' : s.replace(/_/g, ' ')}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                    <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Source" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="ALL">All Sources</SelectItem>
-                        <SelectItem value="INTERNAL">Internal</SelectItem>
-                        <SelectItem value="EXTERNAL">External</SelectItem>
+                    <SelectContent className="bg-white border-gray-200 shadow-xl rounded-xl">
+                        <SelectItem value="ALL">All Statuses</SelectItem>
+                        <SelectItem value="APPLIED">Applied</SelectItem>
+                        <SelectItem value="SCREENED">Screened</SelectItem>
+                        <SelectItem value="SHORTLISTED">Shortlisted</SelectItem>
+                        <SelectItem value="INTERVIEW_SCHEDULED">Interview</SelectItem>
+                        <SelectItem value="HIRED">Hired</SelectItem>
+                        <SelectItem value="REJECTED">Rejected</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <Card className="glass-card">
-                    <CardContent className="p-3 text-center">
-                        <div className="text-xl font-bold">{candidates.length}</div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total</p>
-                    </CardContent>
-                </Card>
-                <Card className="glass-card">
-                    <CardContent className="p-3 text-center">
-                        <div className="text-xl font-bold text-blue-600">{candidates.filter(c => c.status === 'APPLIED').length}</div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">New</p>
-                    </CardContent>
-                </Card>
-                <Card className="glass-card">
-                    <CardContent className="p-3 text-center">
-                        <div className="text-xl font-bold text-purple-600">{candidates.filter(c => c.status === 'SHORTLISTED').length}</div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Shortlisted</p>
-                    </CardContent>
-                </Card>
-                <Card className="glass-card">
-                    <CardContent className="p-3 text-center">
-                        <div className="text-xl font-bold text-green-600">{candidates.filter(c => ['SELECTED', 'APPOINTED', 'HIRED'].includes(c.status)).length}</div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Hired</p>
-                    </CardContent>
-                </Card>
-                <Card className="glass-card">
-                    <CardContent className="p-3 text-center">
-                        <div className="text-xl font-bold text-red-600">{candidates.filter(c => c.status === 'REJECTED').length}</div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rejected</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Table */}
-            <Card className="glass-card border-none shadow-xl overflow-hidden">
+            {/* Candidates Table */}
+            <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-muted/30">
-                            <TableRow className="hover:bg-transparent border-muted/20">
-                                <TableHead className="w-[40px]">
-                                    <Checkbox
-                                        checked={selectedIds.size === filtered.length && filtered.length > 0}
-                                        onCheckedChange={toggleSelectAll}
+                        <TableHeader>
+                            <TableRow className="bg-gray-50/50 hover:bg-gray-50/50 border-b border-gray-100">
+                                <TableHead className="w-12 py-4 pl-6">
+                                    <input
+                                        type="checkbox"
+                                        className="rounded border-gray-300 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                        checked={selected.size === filteredCandidates.length && filteredCandidates.length > 0}
+                                        onChange={toggleAll}
+                                        title="Select All"
                                     />
                                 </TableHead>
-                                <TableHead className="font-bold">Candidate</TableHead>
-                                <TableHead className="font-bold">Job</TableHead>
-                                <TableHead className="font-bold">Source</TableHead>
-                                <TableHead className="font-bold">ATS Score</TableHead>
-                                <TableHead className="font-bold">Status</TableHead>
-                                <TableHead className="font-bold">Applied</TableHead>
-                                <TableHead className="text-right font-bold">Actions</TableHead>
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4">Candidate</TableHead>
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4">Applied For</TableHead>
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4">Status</TableHead>
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4">ATS Score</TableHead>
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4">Applied</TableHead>
+                                <TableHead className="text-right font-semibold text-gray-600 text-xs uppercase tracking-wider py-4 pr-6">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {isLoading ? (
-                                [1, 2, 3, 4, 5].map(i => (
-                                    <TableRow key={i}>
-                                        <TableCell><div className="h-4 w-4 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-32 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-24 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-16 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-12 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-20 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-16 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-8 bg-muted animate-pulse rounded ml-auto" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : filtered.length === 0 ? (
+                            {filteredCandidates.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center py-16 text-muted-foreground">
-                                        <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                                        <p className="font-medium">No candidates found</p>
-                                        <p className="text-sm mt-1">{search ? 'Try adjusting your search or filters' : 'Start receiving applications by posting a job'}</p>
+                                    <TableCell colSpan={7} className="text-center py-24 text-gray-400">
+                                        <div className="flex flex-col items-center justify-center gap-3">
+                                            <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center">
+                                                <Users className="h-8 w-8 text-gray-300" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-gray-900">No candidates found</h3>
+                                            <p className="text-sm text-gray-500">Try adjusting your search or filters.</p>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
-                            ) : filtered.map((candidate) => (
-                                <TableRow key={candidate.id} className="hover:bg-muted/20 transition-colors border-muted/10 cursor-pointer"
-                                    onClick={() => router.push(`/employer/dashboard/ats/candidate/${candidate.id}`)}>
-                                    <TableCell onClick={(e) => e.stopPropagation()}>
-                                        <Checkbox
-                                            checked={selectedIds.has(candidate.id)}
-                                            onCheckedChange={() => toggleSelect(candidate.id)}
+                            ) : filteredCandidates.map((candidate) => (
+                                <TableRow key={candidate.id} className="hover:bg-blue-50/30 transition-colors border-b border-gray-100 last:border-0 group cursor-pointer" onClick={() => router.push(`/employer/dashboard/ats/candidate/${candidate.applicationId}`)}>
+                                    <TableCell className="py-4 pl-6" onClick={(e) => e.stopPropagation()}>
+                                        <input
+                                            type="checkbox"
+                                            className="rounded border-gray-300 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                            checked={selected.has(candidate.id)}
+                                            onChange={() => toggleSelect(candidate.id)}
+                                            title="Select Candidate"
                                         />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                                                {getName(candidate).charAt(0)}
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0 border border-blue-200">
+                                                {candidate.name.charAt(0).toUpperCase()}
                                             </div>
-                                            <div className="min-w-0">
-                                                <div className="font-semibold truncate">{getName(candidate)}</div>
-                                                <div className="text-[10px] text-muted-foreground truncate">{getEmail(candidate)}</div>
+                                            <div>
+                                                <div className="font-semibold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">{candidate.name}</div>
+                                                <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                                                    <Mail className="h-3 w-3" /> {candidate.email}
+                                                </div>
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <span className="text-sm font-medium">{candidate.jobTitle}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="text-[10px]">
-                                            {candidate.source === 'INTERNAL' ? 'Platform' : 'External'}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        {candidate.atsScore > 0 ? (
-                                            <div className="flex items-center gap-1.5">
-                                                <Zap className={`h-3 w-3 ${candidate.atsScore >= 80 ? 'text-green-500' : candidate.atsScore >= 60 ? 'text-amber-500' : 'text-red-500'}`} />
-                                                <span className="text-sm font-bold">{candidate.atsScore}</span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-xs text-muted-foreground">—</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>{getStatusBadge(candidate.status)}</TableCell>
-                                    <TableCell>
-                                        <span className="text-xs text-muted-foreground">
-                                            {new Date(candidate.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                    <TableCell className="py-4">
+                                        <span className="text-sm text-gray-700 font-medium flex items-center gap-1.5">
+                                            <Briefcase className="h-3.5 w-3.5 text-gray-400" />
+                                            {candidate.jobTitle}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                    <TableCell className="py-4">
+                                        {getStatusBadge(candidate.status)}
+                                    </TableCell>
+                                    <TableCell className="py-4">
+                                        {candidate.atsScore !== null ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={cn("h-full rounded-full",
+                                                            candidate.atsScore >= 80 ? "bg-green-500" :
+                                                                candidate.atsScore >= 60 ? "bg-blue-500" :
+                                                                    candidate.atsScore >= 40 ? "bg-amber-500" : "bg-red-500"
+                                                        )}
+                                                        style={{ width: `${candidate.atsScore}%` }}
+                                                    />
+                                                </div>
+                                                <span className={cn("text-xs font-bold",
+                                                    candidate.atsScore >= 80 ? "text-green-700" :
+                                                        candidate.atsScore >= 60 ? "text-blue-700" :
+                                                            candidate.atsScore >= 40 ? "text-amber-700" : "text-red-700"
+                                                )}>{candidate.atsScore}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-gray-400">—</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="py-4">
+                                        <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                                            <Calendar className="h-3 w-3" />
+                                            {new Date(candidate.appliedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right py-4 pr-6" onClick={(e) => e.stopPropagation()}>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-all">
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => router.push(`/employer/dashboard/ats/candidate/${candidate.id}`)}>
-                                                    View Profile
+                                            <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-xl rounded-xl p-1">
+                                                <DropdownMenuItem
+                                                    onClick={() => router.push(`/employer/dashboard/ats/candidate/${candidate.applicationId}`)}
+                                                    className="cursor-pointer text-gray-700 font-medium rounded-lg"
+                                                >
+                                                    <Eye className="mr-2 h-4 w-4 text-gray-400" /> View Profile
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => router.push(`/employer/schedule-interview?appId=${candidate.id}`)}>
-                                                    <Calendar className="mr-2 h-4 w-4" /> Schedule Interview
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem onClick={() => router.push(`/employer/jobs/${candidate.jobId}`)}>
-                                                    View Job Pipeline
+                                                <DropdownMenuSeparator className="bg-gray-100" />
+                                                <DropdownMenuItem
+                                                    onClick={() => router.push(`/employer/jobs/${candidate.jobId}`)}
+                                                    className="cursor-pointer text-gray-700 font-medium rounded-lg"
+                                                >
+                                                    <FileText className="mr-2 h-4 w-4 text-gray-400" /> View Application
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -390,6 +365,25 @@ export default function CandidatesPage() {
                     </Table>
                 </CardContent>
             </Card>
+
+            {/* Bulk Actions Bar */}
+            {selected.size > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white rounded-2xl px-6 py-3 shadow-2xl flex items-center gap-4 z-50 animate-in slide-in-from-bottom-6 duration-300">
+                    <span className="text-sm font-semibold pl-1">{selected.size} candidates selected</span>
+                    <div className="h-5 w-px bg-gray-700" />
+                    <Button size="sm" variant="ghost" className="text-white hover:bg-white/10 hover:text-white text-xs h-8 font-medium rounded-lg">
+                        Shortlist
+                    </Button>
+                    <Button size="sm" variant="ghost" className="text-white hover:bg-white/10 hover:text-white text-xs h-8 font-medium rounded-lg">
+                        Reject
+                    </Button>
+                    <div className="h-5 w-px bg-gray-700" />
+                    <Button size="sm" variant="ghost" className="text-gray-300 hover:text-white hover:bg-transparent text-xs h-8 px-2"
+                        onClick={() => setSelected(new Set())}>
+                        Clear
+                    </Button>
+                </div>
+            )}
         </div>
     )
 }

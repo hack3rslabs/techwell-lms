@@ -4,10 +4,10 @@ import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import api from "@/lib/api"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Briefcase, Search, Filter, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react"
+import { Plus, Briefcase, Search, Filter, MoreHorizontal, Eye, Edit, Trash2, MapPin, Users, Calendar } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
@@ -18,6 +18,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
 interface Job {
     id: string
@@ -57,140 +58,178 @@ export default function EmployerJobsPage() {
         job.location.toLowerCase().includes(searchQuery.toLowerCase())
     )
 
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'PUBLISHED':
+            case 'OPEN':
+                return <Badge className="bg-green-50 text-green-700 border-green-200 hover:bg-green-50 shadow-none font-semibold text-[11px]">Active</Badge>
+            case 'DRAFT':
+                return <Badge className="bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100 shadow-none font-medium text-[11px]">Draft</Badge>
+            case 'CLOSED':
+                return <Badge className="bg-red-50 text-red-700 border-red-200 hover:bg-red-50 shadow-none font-medium text-[11px]">Closed</Badge>
+            case 'PAUSED':
+                return <Badge className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50 shadow-none font-medium text-[11px]">Paused</Badge>
+            default:
+                return <Badge className="bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-50 shadow-none font-medium text-[11px]">{status}</Badge>
+        }
+    }
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
                         Job Management
                     </h1>
-                    <p className="text-muted-foreground mt-1">Manage your active listings and find the best talent.</p>
+                    <p className="text-gray-500 mt-1 text-sm font-medium">Create and manage your open positions.</p>
                 </div>
-                <Button onClick={() => router.push('/employer/jobs/new')} className="shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+                <Button
+                    onClick={() => router.push('/employer/jobs/new')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm shadow-blue-200"
+                >
                     <Plus className="mr-2 h-4 w-4" /> Post New Job
                 </Button>
             </div>
 
-            {/* Filters & Search */}
-            <Card className="glass-card border-none shadow-xl">
-                <CardContent className="p-4 flex flex-col md:flex-row gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search by title or location..."
-                            className="pl-10 bg-muted/20 border-none rounded-xl"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <Button variant="outline" className="rounded-xl border-dashed">
-                        <Filter className="mr-2 h-4 w-4" /> Filters
-                    </Button>
-                </CardContent>
-            </Card>
+            {/* Search & Filter */}
+            <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                        placeholder="Search jobs by title, location, or keyword..."
+                        className="pl-10 bg-white border-gray-200 rounded-xl h-11 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all shadow-sm"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <Button variant="outline" className="rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 h-11 px-5 shadow-sm font-medium">
+                    <Filter className="mr-2 h-4 w-4 text-gray-500" /> Filter
+                </Button>
+            </div>
 
             {/* Jobs Table */}
-            <Card className="glass-card border-none shadow-2xl overflow-hidden">
+            <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-muted/30">
-                            <TableRow className="hover:bg-transparent border-muted/20">
-                                <TableHead className="font-bold">Job Details</TableHead>
-                                <TableHead className="font-bold">Applicants</TableHead>
-                                <TableHead className="font-bold">Status</TableHead>
-                                <TableHead className="font-bold">Posted Date</TableHead>
-                                <TableHead className="text-right font-bold">Actions</TableHead>
+                        <TableHeader>
+                            <TableRow className="bg-gray-50/50 hover:bg-gray-50/50 border-b border-gray-100">
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4 pl-6">Job Details</TableHead>
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4">Applicants</TableHead>
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4">Status</TableHead>
+                                <TableHead className="font-semibold text-gray-600 text-xs uppercase tracking-wider py-4">Posted Date</TableHead>
+                                <TableHead className="text-right font-semibold text-gray-600 text-xs uppercase tracking-wider py-4 pr-6">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
                                 [1, 2, 3, 4, 5].map(i => (
-                                    <TableRow key={i} className="border-muted/10">
-                                        <TableCell><div className="h-4 w-48 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-12 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-20 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell><div className="h-4 w-24 bg-muted animate-pulse rounded" /></TableCell>
-                                        <TableCell className="text-right"><div className="h-8 w-8 bg-muted animate-pulse rounded-full ml-auto" /></TableCell>
+                                    <TableRow key={i} className="border-b border-gray-100">
+                                        <TableCell className="pl-6 py-4"><div className="h-5 w-48 bg-gray-100 animate-pulse rounded lg:w-64" /></TableCell>
+                                        <TableCell className="py-4"><div className="h-4 w-16 bg-gray-100 animate-pulse rounded" /></TableCell>
+                                        <TableCell className="py-4"><div className="h-5 w-20 bg-gray-100 animate-pulse rounded" /></TableCell>
+                                        <TableCell className="py-4"><div className="h-4 w-24 bg-gray-100 animate-pulse rounded" /></TableCell>
+                                        <TableCell className="text-right pr-6 py-4"><div className="h-8 w-8 bg-gray-100 animate-pulse rounded-full ml-auto" /></TableCell>
                                     </TableRow>
                                 ))
                             ) : filteredJobs.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-20 text-muted-foreground">
-                                        <div className="flex flex-col items-center gap-2 opacity-50">
-                                            <Briefcase className="h-12 w-12 mb-2" />
-                                            <p className="text-lg font-medium">No jobs found</p>
-                                            <Button variant="link" onClick={() => router.push('/employer/jobs/new')}>Post your first job listing</Button>
+                                    <TableCell colSpan={5} className="text-center py-24 text-gray-400">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center">
+                                                <Briefcase className="h-8 w-8 text-gray-300" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-gray-900">No jobs found</h3>
+                                            <p className="text-sm text-gray-500 max-w-sm">
+                                                {searchQuery ? "We couldn't find any jobs matching your search." : "You haven't posted any jobs yet. Start hiring by creating your first listing."}
+                                            </p>
+                                            <Button
+                                                onClick={() => router.push('/employer/jobs/new')}
+                                                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                                            >
+                                                Post New Job
+                                            </Button>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : filteredJobs.map((job) => (
-                                <TableRow key={job.id} className="hover:bg-muted/20 transition-colors border-muted/10 group">
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span className="font-bold text-foreground group-hover:text-primary transition-colors">{job.title}</span>
-                                            <span className="text-xs text-muted-foreground">{job.location} • {job.type}</span>
+                                <TableRow
+                                    key={job.id}
+                                    className="hover:bg-blue-50/30 transition-colors border-b border-gray-100 cursor-pointer group last:border-0"
+                                    onClick={() => router.push(`/employer/jobs/${job.id}`)}
+                                >
+                                    <TableCell className="py-4 pl-6">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-bold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">{job.title}</span>
+                                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {job.location}</span>
+                                                <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                                                <span>{job.type?.replace(/_/g, ' ')}</span>
+                                            </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="rounded-full bg-primary/5 text-primary border-primary/20">
-                                            {job._count?.applications || 0} Applicants
-                                        </Badge>
+                                    <TableCell className="py-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex -space-x-2">
+                                                {[1, 2, 3].map(i => (
+                                                    <div key={i} className="h-6 w-6 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-gray-500">
+                                                        <Users className="h-3 w-3" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100 h-6">
+                                                {job._count?.applications || 0}
+                                            </Badge>
+                                        </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            variant={job.status === 'PUBLISHED' ? 'default' : 'secondary'}
-                                            className={job.status === 'PUBLISHED' ? 'bg-green-500/15 text-green-700 hover:bg-green-500/25 border-none shadow-none' : 'shadow-none border-none'}
-                                        >
-                                            {job.status}
-                                        </Badge>
+                                    <TableCell className="py-4">
+                                        {getStatusBadge(job.status)}
                                     </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground">
-                                        {new Date(job.createdAt).toLocaleDateString()}
+                                    <TableCell className="py-4">
+                                        <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                                            <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                                            {new Date(job.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </div>
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right py-4 pr-6" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex items-center justify-end gap-2">
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="hidden md:flex h-8 border-primary/20 hover:bg-primary/5 hover:text-primary rounded-lg text-xs"
+                                                className="hidden md:flex h-8 border-gray-200 text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 rounded-lg text-xs font-semibold shadow-sm"
                                                 onClick={() => router.push(`/employer/jobs/${job.id}`)}
                                             >
-                                                <Eye className="mr-2 h-3 w-3" /> View applicants
+                                                <Eye className="mr-1.5 h-3.5 w-3.5" /> View Applicants
                                             </Button>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0 rounded-full hover:bg-muted/50 data-[state=open]:bg-muted/50">
-                                                        <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors">
+                                                        <MoreHorizontal className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56 p-2 glass-card border-muted/20 shadow-xl rounded-xl">
-                                                    <DropdownMenuLabel className="text-xs font-normal text-muted-foreground px-2 py-1.5">Manage "{job.title}"</DropdownMenuLabel>
+                                                <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-xl rounded-xl p-1">
+                                                    <DropdownMenuLabel className="text-xs text-gray-500 font-medium px-2 py-1.5 uppercase tracking-wider">{job.title}</DropdownMenuLabel>
+                                                    <DropdownMenuSeparator className="bg-gray-100" />
                                                     <DropdownMenuItem
                                                         onClick={() => router.push(`/employer/jobs/${job.id}`)}
-                                                        className="rounded-lg focus:bg-primary/10 focus:text-primary cursor-pointer px-2 py-2 mb-1 md:hidden"
+                                                        className="cursor-pointer text-gray-700 rounded-lg focus:bg-blue-50 focus:text-blue-700 md:hidden font-medium"
                                                     >
-                                                        <Eye className="mr-2 h-4 w-4" /> View Applicants
+                                                        <Eye className="mr-2 h-4 w-4 text-gray-400" /> View Applicants
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => router.push(`/employer/jobs/${job.id}/edit`)}
-                                                        className="rounded-lg focus:bg-primary/10 focus:text-primary cursor-pointer px-2 py-2 mb-1"
+                                                        className="cursor-pointer text-gray-700 rounded-lg focus:bg-blue-50 focus:text-blue-700 font-medium"
                                                     >
-                                                        <Edit className="mr-2 h-4 w-4" /> Edit Details
+                                                        <Edit className="mr-2 h-4 w-4 text-gray-400" /> Edit Details
                                                     </DropdownMenuItem>
-
-                                                    {/* Placeholder for future Close/Archive action */}
                                                     <DropdownMenuItem
                                                         disabled
-                                                        className="rounded-lg opacity-50 cursor-not-allowed px-2 py-2 mb-1"
+                                                        className="text-gray-400 rounded-lg font-medium opacity-50 cursor-not-allowed"
                                                     >
-                                                        <Briefcase className="mr-2 h-4 w-4" /> Close Job (Coming Soon)
+                                                        <Briefcase className="mr-2 h-4 w-4" /> Close Job
                                                     </DropdownMenuItem>
-
-                                                    <DropdownMenuSeparator className="bg-muted/20 my-1" />
-                                                    <DropdownMenuItem
-                                                        className="rounded-lg text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer px-2 py-2"
-                                                    >
+                                                    <DropdownMenuSeparator className="bg-gray-100" />
+                                                    <DropdownMenuItem className="cursor-pointer text-red-600 rounded-lg focus:bg-red-50 focus:text-red-700 font-medium">
                                                         <Trash2 className="mr-2 h-4 w-4" /> Delete Listing
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>

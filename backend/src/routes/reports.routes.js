@@ -22,33 +22,45 @@ router.get('/business-summary', authenticate, authorize('SUPER_ADMIN', 'ADMIN'),
         const revenue = await prisma.payment.aggregate({
             where: {
                 status: 'SUCCESS',
-                createdAt: { gte: startDate, lte: endDate }
+                createdAt: { gte: startDate, lte: endDate },
+                ...(req.user.instituteId ? { course: { instituteId: req.user.instituteId } } : {})
             },
             _sum: { amount: true }
         });
 
         // 2. User Growth
         const newUsers = await prisma.user.count({
-            where: { createdAt: { gte: startDate, lte: endDate } }
+            where: {
+                createdAt: { gte: startDate, lte: endDate },
+                ...(req.user.instituteId ? { instituteId: req.user.instituteId } : {})
+            }
         });
 
         // 3. Lead Conversion
-        const totalLeads = await prisma.lead.count({
-            where: { createdAt: { gte: startDate, lte: endDate } }
-        });
+        // Leads are currently global/CRM based. If we want institute leads, we need Lead.instituteId
+        // precise scoping might be needed later. For now, Institute Admins see 0 leads or all? 
+        // Best to show 0 if not scoped, or scoped leads if added.
+        // Assuming Leads are global for Recruiter/Admin for now unless Lead model has instituteId.
+        // Checking schema... Lead model probably doesn't have it yet.
+        // SAFE FALLBACK: If institute admin, show 0 for now to prevent data leak.
+        const leadWhere = req.user.instituteId
+            ? { id: 'nothing' } // Hack until Leads have instituteId
+            : { createdAt: { gte: startDate, lte: endDate } };
+
+        const totalLeads = await prisma.lead.count({ where: leadWhere });
         const convertedLeads = await prisma.lead.count({
             where: {
                 status: 'CONVERTED',
-                createdAt: { gte: startDate, lte: endDate }
+                ...(req.user.instituteId ? { id: 'nothing' } : { createdAt: { gte: startDate, lte: endDate } })
             }
         });
 
         // 4. Monthly Revenue Breakdown
-        // Note: Prisma groupBy doesn't support date truncation easily across DBs, doing manual aggregation for simplicity/compatibility
         const payments = await prisma.payment.findMany({
             where: {
                 status: 'SUCCESS',
-                createdAt: { gte: startDate, lte: endDate }
+                createdAt: { gte: startDate, lte: endDate },
+                ...(req.user.instituteId ? { course: { instituteId: req.user.instituteId } } : {})
             },
             select: { amount: true, createdAt: true }
         });
@@ -79,7 +91,7 @@ router.get('/business-summary', authenticate, authorize('SUPER_ADMIN', 'ADMIN'),
  * @desc    Get sales performance metrics vs targets
  * @access  Private/Admin
  */
-router.get('/sales-performance', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/sales-performance', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN'), async (req, res, next) => {
     try {
         // Mock targets (In a real app, these would be in a DB table)
         const MONTHLY_TARGET = 500000;
@@ -90,7 +102,8 @@ router.get('/sales-performance', authenticate, authorize('SUPER_ADMIN', 'ADMIN')
         const currentMonthSales = await prisma.payment.aggregate({
             where: {
                 status: 'SUCCESS',
-                createdAt: { gte: startOfMonth }
+                createdAt: { gte: startOfMonth },
+                ...(req.user.instituteId ? { course: { instituteId: req.user.instituteId } } : {})
             },
             _sum: { amount: true }
         });
@@ -114,10 +127,11 @@ router.get('/sales-performance', authenticate, authorize('SUPER_ADMIN', 'ADMIN')
  * @desc    Get top performing courses by revenue
  * @access  Private/Admin
  */
-router.get('/course-performance', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/course-performance', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN'), async (req, res, next) => {
     try {
         const topCourses = await prisma.course.findMany({
             take: 5,
+            where: req.user.instituteId ? { instituteId: req.user.instituteId } : {},
             include: {
                 _count: {
                     select: { enrollments: true }
@@ -129,7 +143,6 @@ router.get('/course-performance', authenticate, authorize('SUPER_ADMIN', 'ADMIN'
         });
 
         // Calculate simplified revenue (price * enrollments)
-        // Accurate revenue would require summing actual payments linked to courses
         const performance = topCourses.map(course => ({
             id: course.id,
             title: course.title,

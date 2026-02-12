@@ -73,6 +73,7 @@ app.use('/api/blogs', require('./routes/blog.routes'));
 app.use('/api/ats', require('./routes/ats.routes'));
 app.use('/api/ai-settings', require('./routes/ai-settings.routes'));
 app.use('/api/trainer', require('./routes/trainer.routes'));
+app.use('/api/rbac', require('./routes/rbac.routes'));
 
 
 // Serve Static Uploads

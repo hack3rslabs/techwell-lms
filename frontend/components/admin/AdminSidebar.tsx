@@ -287,7 +287,7 @@ export function AdminSidebar({ className }: SidebarProps) {
             </div>
 
             <div className={cn(
-                "min-h-screen border-r bg-background fixed left-0 top-0 bottom-0 z-40 w-64 transition-transform duration-300 md:translate-x-0 flex flex-col",
+                "h-screen border-r bg-background fixed left-0 top-0 bottom-0 z-40 w-64 transition-transform duration-300 md:translate-x-0 flex flex-col overflow-hidden",
                 isMobileOpen ? "translate-x-0" : "-translate-x-full",
                 className
             )}>
@@ -298,7 +298,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                 </div>
 
                 {/* Scrollable Menu Area */}
-                <ScrollArea className="flex-1 py-4 px-3">
+                <ScrollArea className="flex-1 min-h-0 py-4 px-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 transition-colors">
                     <nav className="space-y-1">
                         {routes.map((route) => (
                             <div key={route.href}>

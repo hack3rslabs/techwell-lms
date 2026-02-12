@@ -19,15 +19,15 @@ export default function EmployerLayout({
             if (!isAuthenticated) {
                 router.push("/login")
             } else if (user?.role !== "EMPLOYER") {
-                router.push("/dashboard") // Redirect non-employers
+                router.push("/dashboard")
             }
         }
     }, [isLoading, isAuthenticated, user, router])
 
     if (isLoading) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="flex h-screen items-center justify-center bg-white">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             </div>
         )
     }
@@ -37,11 +37,10 @@ export default function EmployerLayout({
     }
 
     return (
-        <div className="min-h-screen bg-muted/40">
+        <div className="min-h-screen bg-gray-50">
             <EmployerSidebar />
             <div className="pl-64">
-                {/* Header could go here if separate from Sidebar */}
-                <main className="min-h-[calc(100vh)] py-6 px-8">
+                <main className="min-h-screen py-8 px-8">
                     {children}
                 </main>
             </div>

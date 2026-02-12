@@ -87,7 +87,7 @@ export default function AdminCoursesPage() {
                                     <span className="font-bold text-lg">
                                         {course.price === 0 ? 'Free' : `₹${course.price}`}
                                     </span>
-                                    <Button variant="secondary" size="sm" onClick={() => router.push(`/courses/${course.id}`)}>
+                                    <Button variant="secondary" size="sm" onClick={() => router.push(`/admin/courses/${course.id}/edit`)}>
                                         Manage
                                     </Button>
                                 </div>

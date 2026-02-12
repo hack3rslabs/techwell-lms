@@ -86,7 +86,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
                             </div>
                         </div>
 
-                        <nav className="flex-1 space-y-2">
+                        <nav className="flex-1 min-h-0 space-y-2 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 transition-colors">
                             {sidebarItems.map((item) => (
                                 <SidebarItem
                                     key={item.href}

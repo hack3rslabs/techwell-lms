@@ -27,6 +27,9 @@ const QUESTION_BANK = {
     ]
 };
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 class AIService {
     constructor() {
         this.TOPIC_KEYWORDS = {
@@ -60,10 +63,8 @@ class AIService {
 
         const questionCount = interview.questions.length;
 
-        // Challenge: Stop generating if max questions reached?
-        // usually controller checks this, but we can return null to signal end
         if (questionCount >= settings.maxQuestions) {
-            return null;
+            return null; // End Interview
         }
 
         // Logic: Determine Avatar & Question Type
@@ -72,82 +73,80 @@ class AIService {
 
         // Adaptive Difficulty Logic
         if (settings.adaptiveDifficulty && previousResponse && previousResponse.score) {
-            // Simple escalation logic
             if (previousResponse.score >= settings.escalationThreshold) {
                 if (difficulty === 'BEGINNER') difficulty = 'INTERMEDIATE';
                 else if (difficulty === 'INTERMEDIATE') difficulty = 'ADVANCED';
             } else if (previousResponse.score < 50) {
-                // De-escalate if struggling?
                 if (difficulty === 'ADVANCED') difficulty = 'INTERMEDIATE';
                 else if (difficulty === 'INTERMEDIATE') difficulty = 'BEGINNER';
             }
         }
 
-        // Multi-avatar: Every Nth question is HR (from settings)
+        // HR Question Check
         if ((questionCount + 1) % settings.hrQuestionRatio === 0) {
             avatarRole = 'HR';
         }
 
-        // Fetch or Generate Question
         let questionText = "";
+        let type = avatarRole === 'HR' ? 'BEHAVIORAL' : 'TECHNICAL';
 
-        if (avatarRole === 'HR') {
-            // Try fetching HR questions from KB first
-            const kbQuestion = await prisma.knowledgeBase.findFirst({
-                where: {
-                    domain: 'HR', // Force HR domain
-                    difficulty: difficulty // Use current difficulty
-                },
-                take: 1,
-                skip: Math.floor(Math.random() * 3)
-            });
-
-            if (kbQuestion) {
-                questionText = kbQuestion.content;
-            } else {
-                const index = Math.floor(Math.random() * QUESTION_BANK.HR.length);
-                questionText = QUESTION_BANK.HR[index];
+        // 1. Try Knowledge Base (Retrieval)
+        // We prioritize curated questions for consistency
+        const kbCount = await prisma.knowledgeBase.count({
+            where: {
+                domain: avatarRole === 'HR' ? 'HR' : interview.domain,
+                difficulty: difficulty
             }
+        });
+
+        const kbQuestion = kbCount > 0 ? await prisma.knowledgeBase.findFirst({
+            where: {
+                domain: avatarRole === 'HR' ? 'HR' : interview.domain,
+                difficulty: difficulty
+            },
+            take: 1,
+            skip: kbCount > 5 ? Math.floor(Math.random() * 5) : 0
+        }) : null;
+
+        if (kbQuestion && Math.random() > 0.3) { // 70% chance to use KB if available
+            questionText = kbQuestion.content;
         } else {
-            // Technical Video
-            // Try to find from KnowledgeBase (Admin Trained Data)
-            const count = await prisma.knowledgeBase.count({
-                where: {
-                    domain: interview.domain,
-                    difficulty: difficulty
-                }
-            });
+            // 2. Generate with Gemini (Dynamic)
+            try {
+                const prompt = `
+                    Generate a single, unique interview question for a ${difficulty} level ${interview.role} in ${interview.domain}.
+                    Type: ${type} (${avatarRole}).
+                    Topic focus: ${interview.technology || interview.domain}.
+                    Previous Question: "${previousResponse?.question?.question || 'None'}"
+                    Previous Answer: "${previousResponse?.transcript || 'None'}"
+                    
+                    Instructions:
+                    - If previous answer was weak, ask a simpler follow-up.
+                    - If strong, ask a deeper concept.
+                    - Keep it concise (under 30 words).
+                    - Return ONLY the question text.
+                `;
 
-            const skip = count > 0 ? Math.floor(Math.random() * count) : 0;
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const result = await model.generateContent(prompt);
+                questionText = result.response.text().trim();
+            } catch (error) {
+                console.error("Gemini Generation Error:", error);
 
-            const kbQuestion = await prisma.knowledgeBase.findFirst({
-                where: {
-                    domain: interview.domain,
-                    difficulty: difficulty
-                },
-                take: 1,
-                skip: skip
-            });
-
-            if (kbQuestion) {
-                questionText = kbQuestion.content;
-                // Add context if available
-                if (interview.jobDescription && Math.random() > 0.7) {
-                    questionText = `Considering the context of this role: ${questionText}`;
-                }
-            } else {
-                // Fallback to static bank
-                const bank = QUESTION_BANK['IT'][difficulty] || QUESTION_BANK['IT']['BEGINNER'];
+                // 3. Fallback to Static Bank
+                const bank = avatarRole === 'HR'
+                    ? QUESTION_BANK.HR
+                    : (QUESTION_BANK['IT'][difficulty] || QUESTION_BANK['IT']['BEGINNER']);
                 questionText = bank[Math.floor(Math.random() * bank.length)];
             }
         }
 
         return {
             question: questionText,
-            type: avatarRole === 'HR' ? 'BEHAVIORAL' : 'TECHNICAL',
+            type: type,
             avatarRole: avatarRole,
-            avatarId: avatarRole === 'HR' ? 'avatar-hr-1' : 'avatar-tech-1',
-            difficulty: difficulty // Return current difficulty for tracking
+            avatarId: avatarRole === 'HR' ? 'hr-1' : 'tech-1',
+            difficulty: difficulty
         };
     }
 
@@ -488,41 +487,56 @@ class AIService {
             return `You show potential but there's room for improvement. Focus on deepening your ${domain} knowledge and practice articulating your experiences using the STAR method. Consider reviewing fundamentals and working through more practice problems.`;
         }
     }
+
     async generateInterviewQuestions({ domain, role, company, difficulty, count = 5 }) {
         try {
             const prompt = `
-                Generate ${count} technical and behavioral interview questions for a ${difficulty} level ${role} position ${company ? `at ${company}` : ''} in the ${domain} domain.
+                You are an expert ${role} interviewer. Generate exactly ${count} professional interview questions for a ${difficulty} level candidate in the ${domain} domain${company ? ` specifically for a position at ${company}` : ''}.
                 
-                For each question, provide:
-                1. The question content
-                2. An ideal answer or key points to look for
-                3. The specific topic/concept being tested
+                CRITICAL INSTRUCTIONS:
+                1. Focus on actual industry-standard technical concepts and behavioral scenarios.
+                2. For EVERY question, you MUST provide a detailed "ideal answer" that covers the key technical or situational points the candidate should mention.
+                3. Ensure the topics are varied (e.g., if domain is IT, mix Frontend, Backend, DevOps as appropriate for the role).
+                4. The difficulty MUST strictly match '${difficulty}'.
                 
-                Format the output strictly as a JSON array of objects with keys: "content", "answer", "topic".
-                Do not include markdown formatting like \`\`\`json.
+                Format the output strictly as a JSON array of objects with these keys:
+                - "topic": A short 2-3 word topic name (e.g., "React Hooks", "STAR Scenario").
+                - "content": The actual question text.
+                - "answer": A comprehensive sample answer or the key logic needed for a perfect score.
+                
+                Output ONLY the JSON array. Do not include markdown code blocks or explanatory text.
             `;
 
-            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            const text = response.text();
+            const text = response.text().trim();
 
-            // Clean up potentially markdown-formatted JSON
-            const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            // Robust JSON extraction
+            let jsonStr = text;
+            if (text.includes('```')) {
+                jsonStr = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)?.[1] || text;
+            }
 
             try {
-                return JSON.parse(jsonStr);
+                const questions = JSON.parse(jsonStr);
+                if (!Array.isArray(questions)) throw new Error("AI did not return an array");
+                return questions.map(q => ({
+                    topic: q.topic || "General",
+                    content: q.content || q.question || "Generated Question",
+                    answer: q.answer || q.sampleAnswer || "Sample answer pending..."
+                }));
             } catch (e) {
-                console.error("Failed to parse AI response:", text);
-                throw new Error("AI generated invalid JSON");
+                console.error("Failed to parse AI response. Raw text:", text);
+                throw new Error("AI generated an invalid format. Please try again.");
             }
         } catch (error) {
             console.error("AI Generation Error:", error);
             // Fallback mock data if AI fails
             return Array(count).fill(null).map((_, i) => ({
-                content: `Sample ${difficulty} question about ${domain} (${i + 1})`,
-                answer: "Expected answer key points...",
-                topic: "General"
+                topic: "Fallback Topic",
+                content: `Sample ${difficulty} question for ${role} in ${domain} (ID: ${i + 1})`,
+                answer: "This is a detailed fallback sample answer protecting against AI downtime.",
             }));
         }
     }

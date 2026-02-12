@@ -40,6 +40,7 @@ interface ApplicationDetail {
     coverLetter?: string
     resumeUrl?: string
     applicant?: {
+        id: string
         name: string
         email: string
         phone?: string
@@ -50,6 +51,56 @@ interface ApplicationDetail {
         title: string
         skills?: string
     }
+}
+
+function AIInterviewList({ userId }: { userId: string }) {
+    const [interviews, setInterviews] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchInterviews = async () => {
+            try {
+                const res = await api.get(`/interviews/user/${userId}`)
+                setInterviews(res.data.interviews || [])
+            } catch (error) {
+                console.error("Failed to fetch interviews", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchInterviews()
+    }, [userId])
+
+    if (loading) return <div className="text-center py-4"><Loader2 className="animate-spin h-5 w-5 mx-auto text-primary" /></div>
+    if (interviews.length === 0) return <div className="text-center py-8 text-muted-foreground">No practice interviews found.</div>
+
+    return (
+        <div className="space-y-3">
+            {interviews.map((interview) => (
+                <div key={interview.id} className="flex items-center justify-between p-3 bg-white/50 border rounded-lg hover:bg-white transition-colors">
+                    <div>
+                        <div className="font-medium text-sm">{interview.role} ({interview.domain})</div>
+                        <div className="text-xs text-muted-foreground gap-2 flex items-center">
+                            <Badge variant="outline" className="text-[10px] h-4">{interview.difficulty}</Badge>
+                            <span>{new Date(interview.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {interview.evaluation ? (
+                            <Badge variant={interview.evaluation.overallScore >= 70 ? 'default' : 'secondary'} className={interview.evaluation.overallScore >= 70 ? 'bg-green-600' : 'bg-amber-500'}>
+                                {interview.evaluation.overallScore}%
+                            </Badge>
+                        ) : (
+                            <span className="text-xs text-muted-foreground">In Progress</span>
+                        )}
+                        <Button size="sm" variant="ghost" onClick={() => window.open(`/interviews/${interview.id}/report`, '_blank')}>
+                            View Report
+                        </Button>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
 }
 
 export default function CandidateProfilePage() {
@@ -437,7 +488,7 @@ export default function CandidateProfilePage() {
                                                                     entry.status}
                                                         </p>
                                                     </div>
-                                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                                    <p className="text-xs text-muted-foreground mt-1">
                                                         {new Date(entry.timestamp).toLocaleString()}
                                                     </p>
                                                     {(entry.notes || entry.content) && (
@@ -456,6 +507,29 @@ export default function CandidateProfilePage() {
                                             </div>
                                         ))}
                                     </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* AI Interviews Tab */}
+                        <TabsContent value="ai-interviews">
+                            <Card className="glass-card">
+                                <CardHeader>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Zap className="h-4 w-4 text-amber-500" /> AI Interview Results
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Performance in practice interviews on TechWell.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {!application?.applicant?.id ? (
+                                        <div className="text-center py-12 text-muted-foreground">
+                                            <p>This is an external candidate. AI Interview history is not available.</p>
+                                        </div>
+                                    ) : (
+                                        <AIInterviewList userId={application.applicant.id} />
+                                    )}
                                 </CardContent>
                             </Card>
                         </TabsContent>

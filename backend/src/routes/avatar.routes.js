@@ -28,7 +28,7 @@ router.get('/', authenticate, async (req, res, next) => {
  */
 router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
     try {
-        const { name, role, personality, avatarUrl, voiceId } = req.body;
+        const { name, role, personality, avatarUrl, voiceId, gender, provider } = req.body;
 
         const avatar = await prisma.avatar.create({
             data: {
@@ -36,7 +36,9 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, re
                 role,
                 personality,
                 avatarUrl,
-                voiceId
+                voiceId,
+                gender: gender || 'MALE',
+                provider: provider || 'ELEVEN_LABS'
             }
         });
 
@@ -53,7 +55,7 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, re
  */
 router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
     try {
-        const { name, role, personality, avatarUrl, voiceId, isActive } = req.body;
+        const { name, role, personality, avatarUrl, voiceId, isActive, gender, provider } = req.body;
 
         const avatar = await prisma.avatar.update({
             where: { id: req.params.id },
@@ -63,7 +65,9 @@ router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, 
                 personality,
                 avatarUrl,
                 voiceId,
-                isActive
+                isActive,
+                gender,
+                provider
             }
         });
 

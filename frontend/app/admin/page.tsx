@@ -44,9 +44,12 @@ interface Course {
     _count?: { enrollments: number }
 }
 
+import { InstituteSwitcher } from '@/components/admin/InstituteSwitcher'
+
 export default function AdminDashboard() {
     const router = useRouter()
     const { user, isAuthenticated, isLoading: authLoading, hasPermission } = useAuth()
+    // ...
 
     const [users, setUsers] = React.useState<User[]>([])
     const [courses, setCourses] = React.useState<Course[]>([])
@@ -152,6 +155,8 @@ export default function AdminDashboard() {
         )
     }
 
+    // ... existing imports
+
     return (
         <div className="space-y-8">
             {/* Page Header */}
@@ -165,6 +170,9 @@ export default function AdminDashboard() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
+                    {/* Institute Switcher for Super Admin */}
+                    {user?.role === 'SUPER_ADMIN' && <InstituteSwitcher />}
+
                     {/* Placeholder for DateRangePicker */}
                     <Button variant="outline">Last 30 Days</Button>
                     <AdminReportModal>

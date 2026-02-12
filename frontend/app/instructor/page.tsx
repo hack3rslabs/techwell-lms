@@ -60,6 +60,7 @@ interface TrainerStats {
     totalStudents: number
     activeBatches: number
     pendingEvaluations: number
+    completionRate: number
 }
 
 interface Batch {
@@ -120,9 +121,10 @@ export default function InstructorDashboard() {
                 <StatCard
                     icon={CheckCircle2}
                     label="Completion Rate"
-                    value="94%"
-                    trend="+5%"
+                    value={`${stats?.completionRate ?? 0}%`}
+                    trend="+5%" // Keep trend static or calculate if history available
                     color="bg-emerald-600"
+                    loading={loading}
                 />
             </div>
 

@@ -75,17 +75,67 @@ router.get('/', authenticate, async (req, res, next) => {
 });
 
 /**
+ * @route   GET /api/interviews/user/:userId
+ * @desc    Get interviews for a specific user (Recruiter/Admin)
+ * @access  Private (Employer/Admin)
+ */
+router.get('/user/:userId', authenticate, authorize('EMPLOYER', 'RECRUITER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const { page = 1, limit = 10 } = req.query;
+
+        const [interviews, total] = await Promise.all([
+            prisma.interview.findMany({
+                where: { userId },
+                select: {
+                    id: true,
+                    domain: true,
+                    role: true,
+                    difficulty: true,
+                    status: true,
+                    createdAt: true,
+                    evaluation: { select: { overallScore: true } }
+                },
+                skip: (Number(page) - 1) * Number(limit),
+                take: Number(limit),
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.interview.count({ where: { userId } })
+        ]);
+
+        res.json({
+            interviews,
+            pagination: {
+                page: Number(page),
+                limit: Number(limit),
+                total,
+                pages: Math.ceil(total / Number(limit))
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   GET /api/interviews/:id
  * @desc    Get interview details
  * @access  Private
  */
 router.get('/:id', authenticate, async (req, res, next) => {
     try {
+        const { role, id: userId } = req.user;
+        const interviewId = req.params.id;
+
+        const where = { id: interviewId };
+
+        // If not admin/recruiter, restrict to own data
+        if (!['ADMIN', 'SUPER_ADMIN', 'EMPLOYER', 'RECRUITER'].includes(role)) {
+            where.userId = userId;
+        }
+
         const interview = await prisma.interview.findFirst({
-            where: {
-                id: req.params.id,
-                userId: req.user.id
-            },
+            where,
             include: {
                 questions: {
                     orderBy: { order: 'asc' },
@@ -93,7 +143,8 @@ router.get('/:id', authenticate, async (req, res, next) => {
                         response: true
                     }
                 },
-                evaluation: true
+                evaluation: true,
+                user: { select: { name: true, email: true, avatar: true } } // Include user details for recruiters
             }
         });
 
@@ -114,12 +165,19 @@ router.get('/:id', authenticate, async (req, res, next) => {
  */
 router.get('/:id/report', authenticate, async (req, res, next) => {
     try {
-        // Check interview belongs to user
+        const { role, id: userId } = req.user;
+        const interviewId = req.params.id;
+
+        const where = { id: interviewId };
+
+        // If not admin/recruiter, restrict to own data
+        if (!['ADMIN', 'SUPER_ADMIN', 'EMPLOYER', 'RECRUITER'].includes(role)) {
+            where.userId = userId;
+        }
+
+        // Check interview exists and user has access
         const interview = await prisma.interview.findFirst({
-            where: {
-                id: req.params.id,
-                userId: req.user.id
-            },
+            where,
             include: {
                 evaluation: true
             }
@@ -130,8 +188,7 @@ router.get('/:id/report', authenticate, async (req, res, next) => {
         }
 
         // Generate or retrieve report
-        const aiService = require('../services/ai.service');
-        const report = await aiService.generateDetailedReport(req.params.id);
+        const report = await aiService.generateDetailedReport(interviewId);
 
         res.json({ report });
     } catch (error) {

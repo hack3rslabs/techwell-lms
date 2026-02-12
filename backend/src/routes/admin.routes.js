@@ -28,14 +28,25 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             revenueData
         ] = await Promise.all([
             // Only count users if permitted, else 0
-            rules.manageUsers ? prisma.user.count() : Promise.resolve(0),
-            prisma.course.count(),
-            prisma.enrollment.count(),
-            prisma.interview.count(),
+            rules.manageUsers ? prisma.user.count({
+                where: req.user.instituteId ? { instituteId: req.user.instituteId } : {}
+            }) : Promise.resolve(0),
+            prisma.course.count({
+                where: req.user.instituteId ? { instituteId: req.user.instituteId } : {}
+            }),
+            prisma.enrollment.count({
+                where: req.user.instituteId ? { course: { instituteId: req.user.instituteId } } : {}
+            }),
+            prisma.interview.count({
+                where: req.user.instituteId ? { user: { instituteId: req.user.instituteId } } : {}
+            }),
             // Only agg revenue if permitted, else 0
             rules.viewFinance ? prisma.payment.aggregate({
                 _sum: { amount: true },
-                where: { status: 'SUCCESS' }
+                where: {
+                    status: 'SUCCESS',
+                    ...(req.user.instituteId ? { course: { instituteId: req.user.instituteId } } : {})
+                }
             }) : Promise.resolve({ _sum: { amount: 0 } })
         ]);
 

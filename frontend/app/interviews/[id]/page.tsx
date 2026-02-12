@@ -93,6 +93,33 @@ const AVATARS: Record<string, AvatarConfig> = {
     'HR': { name: "AI Recruiter", role: "HR", color: "from-purple-500/20 to-pink-500/20", icon: Briefcase }
 }
 
+// Success Overlay Component
+function SuccessOverlay({ onRedirect }: { onRedirect: () => void }) {
+    React.useEffect(() => {
+        const timer = setTimeout(onRedirect, 3000);
+        return () => clearTimeout(timer);
+    }, [onRedirect]);
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-500">
+            <div className="text-center space-y-6 p-8 bg-card border rounded-2xl shadow-2xl max-w-md w-full animate-in zoom-in-50 duration-500 delay-150">
+                <div className="mx-auto h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle2 className="h-12 w-12 text-green-600 animate-in zoom-in duration-300 delay-300" />
+                </div>
+                <div className="space-y-2">
+                    <h2 className="text-3xl font-bold tracking-tight">Interview Completed!</h2>
+                    <p className="text-muted-foreground">Great job! We are generating your performance report now.</p>
+                </div>
+                <div className="flex justify-center gap-2">
+                    <div className="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                    <div className="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                    <div className="h-2 w-2 bg-primary rounded-full animate-bounce"></div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function InterviewRoomPage() {
     const router = useRouter()
     const params = useParams()
@@ -167,6 +194,8 @@ export default function InterviewRoomPage() {
     const [interview, setInterview] = React.useState<Interview | null>(null)
     const [timeLeft, setTimeLeft] = React.useState(0) // Seconds
     const [isCompleted, setIsCompleted] = React.useState(false)
+
+    const [showSuccess, setShowSuccess] = React.useState(false)
 
     React.useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -272,7 +301,7 @@ export default function InterviewRoomPage() {
         if (stream) {
             stream.getTracks().forEach(track => track.stop())
         }
-        router.push(`/interviews/${params.id}/report`)
+        setShowSuccess(true)
     }
 
     // Timer
@@ -558,6 +587,8 @@ export default function InterviewRoomPage() {
 
     return (
         <div className="min-h-screen bg-background">
+            {showSuccess && <SuccessOverlay onRedirect={() => router.push(`/interviews/${params.id}/report`)} />}
+
             {/* Header Bar */}
             <div className="h-14 bg-muted/50 border-b flex items-center justify-between px-4 backdrop-blur-md sticky top-0 z-20">
                 <div className="flex items-center gap-4">

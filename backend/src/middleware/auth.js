@@ -26,7 +26,14 @@ const authenticate = async (req, res, next) => {
                 name: true,
                 role: true,
                 permissions: true,
-                isActive: true
+                instituteId: true, // Support for institute Scoping
+                isActive: true,
+                systemRole: {
+                    select: {
+                        permissions: true,
+                        name: true
+                    }
+                }
             }
         });
 
@@ -38,7 +45,24 @@ const authenticate = async (req, res, next) => {
             return res.status(403).json({ error: 'Account is deactivated' });
         }
 
-        req.user = user;
+        // Merge permissions from SystemRole if exists
+        let permissions = new Set(user.permissions || []);
+        if (user.systemRole && user.systemRole.permissions) {
+            const rolePermissions = user.systemRole.permissions;
+            if (Array.isArray(rolePermissions)) {
+                rolePermissions.forEach(p => permissions.add(p));
+            }
+        }
+
+        // Backwards compatibility for Super Admin
+        if (user.role === 'SUPER_ADMIN') {
+            permissions.add('ALL');
+        }
+
+        req.user = {
+            ...user,
+            permissions: Array.from(permissions)
+        };
         next();
     } catch (error) {
         next(error);
@@ -76,7 +100,7 @@ const checkPermission = (requiredPermission) => {
         }
 
         // Super Admins have all permissions
-        if (req.user.role === 'SUPER_ADMIN') {
+        if (req.user.role === 'SUPER_ADMIN' || (req.user.permissions && req.user.permissions.includes('ALL'))) {
             return next();
         }
 

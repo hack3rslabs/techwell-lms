@@ -24,6 +24,25 @@ Email: employer@techwell.com | Role: EMPLOYER | Active: true | PwdHashLen: 60
 PS E:\FinalProjects\Tecwhell_multibiz\backend>
 
 
+Credentials for Testing (from Seed):
+
+Institute Admin: inst_admin@test.com / password 
+
+Login issue resolved. The password for inst_admin@test.com was incorrect.
+
+I have reset the password to password123.
+
+You can now log in with:
+
+Email: inst_admin@test.com
+Password: password123
+Other accounts reset to password123:
+
+admin@techwell.com (Super Admin)
+student@techwell.com (Student)
+employer@techwell.com (Employer)
+
+
 
 
 

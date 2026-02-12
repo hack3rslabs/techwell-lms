@@ -93,7 +93,9 @@ router.get('/me', authenticate, async (req, res, next) => {
                 role: true,
                 avatar: true,
                 phone: true,
-                createdAt: true
+                createdAt: true,
+                hasUnlimitedInterviews: true,
+                interviewLimit: true
             }
         });
         res.json(user);

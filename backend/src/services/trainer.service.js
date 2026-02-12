@@ -32,12 +32,16 @@ const getTrainerStats = async (instructorId) => {
         }
     });
 
-    // 3. Recent Activity (Announcements, etc.) - Optional for now
+    // 3. Calculate Completion Rate (Average progress)
+    const enrollments = batches.flatMap(batch => batch.enrollments);
+    const totalProgress = enrollments.reduce((acc, curr) => acc + (curr.progress || 0), 0);
+    const completionRate = enrollments.length > 0 ? Math.round(totalProgress / enrollments.length) : 0;
 
     return {
         totalStudents,
         activeBatches,
-        pendingEvaluations
+        pendingEvaluations,
+        completionRate
     };
 };
 

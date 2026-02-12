@@ -64,7 +64,7 @@ router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER'), asyn
         const application = await prisma.jobApplication.findUnique({
             where: { id },
             include: {
-                applicant: { select: { name: true, email: true, avatar: true, phone: true } },
+                applicant: { select: { id: true, name: true, email: true, avatar: true, phone: true } },
                 job: { select: { title: true, employerId: true } }
             }
         });
@@ -109,7 +109,7 @@ router.get('/applications/:jobId', authenticate, authorize('EMPLOYER'), async (r
         const applications = await prisma.jobApplication.findMany({
             where,
             include: {
-                applicant: { select: { name: true, email: true, avatar: true, phone: true } }, // Internal
+                applicant: { select: { id: true, name: true, email: true, avatar: true, phone: true } }, // Internal
                 interviews: true
             },
             orderBy: { atsScore: 'desc' } // Default sort by ATS Score

@@ -36,6 +36,7 @@ router.get('/me', authenticate, async (req, res, next) => {
                 email: true,
                 name: true,
                 role: true,
+                plan: true,
                 avatar: true,
                 phone: true,
                 emailVerified: true,
