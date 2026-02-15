@@ -203,12 +203,39 @@ router.get('/:id/report', authenticate, async (req, res, next) => {
  */
 router.post('/', authenticate, async (req, res, next) => {
     try {
-        const validatedData = createInterviewSchema.parse(req.body);
+        const userId = req.user.id;
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { plan: true }
+        });
+
+        // Limit FREE users to 2 interviews per month
+        if (user.plan === 'FREE') {
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+
+            const interviewCount = await prisma.interview.count({
+                where: {
+                    userId: userId,
+                    createdAt: {
+                        gte: startOfMonth
+                    }
+                }
+            });
+
+            if (interviewCount >= 2) {
+                return res.status(403).json({
+                    error: 'Monthly limit reached',
+                    message: 'Starter plan is limited to 2 AI interviews per month. Please upgrade to Pro for unlimited sessions.'
+                });
+            }
+        }
 
         const interview = await prisma.interview.create({
             data: {
                 ...validatedData,
-                userId: req.user.id,
+                userId: userId,
                 status: 'SCHEDULED'
             }
         });

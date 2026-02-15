@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 const plans = [
     {
-        name: 'Free',
+        name: 'Starter',
         icon: Zap,
         price: '₹0',
         period: 'forever',
@@ -16,11 +16,11 @@ const plans = [
         features: [
             { text: '3 free courses', included: true },
             { text: '2 AI mock interviews/month', included: true },
-            { text: 'Basic feedback reports', included: true },
+            { text: 'Standard feedback reports', included: true },
             { text: 'Community access', included: true },
             { text: 'Advanced analytics', included: false },
             { text: 'Priority support', included: false },
-            { text: 'Certificate', included: false },
+            { text: 'Professional Certificate', included: false },
         ],
         cta: 'Get Started',
         popular: false,

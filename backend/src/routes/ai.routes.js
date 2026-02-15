@@ -1,14 +1,14 @@
 const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { authenticate } = require('../middleware/auth');
+const OpenAI = require('openai');
+const { authenticate, authorize } = require('../middleware/auth');
 const { PrismaClient } = require('@prisma/client');
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Initialize Gemini
-const genAI = process.env.GEMINI_API_KEY
-    ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    : null;
+// Initialize OpenAI
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
 
 // Middleware to optionally authenticate (don't fail if no token)
 const optionalAuth = (req, res, next) => {
@@ -103,41 +103,61 @@ router.post('/chat', optionalAuth, async (req, res, next) => {
 
             userContext = `User: Guest / Prospective Student. Name: ${leadDetails?.name || 'Visitor'}.`;
             systemRole = `
-            You are "TechWell Receptionist", the front-desk AI.
-            - Your goal is to explain our services, courses, and pricing to potential students.
-            - Be welcoming, professional, and persuasive.
-            - Commonly asked: "What courses do you offer?", "Fees?", "Placement?". Answer generally about Tech & Business courses.
-            - If they ask for sensitive info (student profiles, deeper tech docs), politely ask them to Login.
+            You are Techwell GPT, the official AI assistant for Techwell.
+            Your role:
+            - Guide students about courses, careers, interviews, and placements
+            - Explain Techwell services clearly and professionally
+            - Help with platform usage, admissions, and learning paths
+            - Be concise, accurate, and practical
+            - If the user shows interest in joining, suggest counseling politely
+            - Never hallucinate fees, placements, or guarantees
+            - If you don’t know something, say so and suggest contacting Techwell support
+            Tone: Professional, supportive, business-focused.
             `;
         }
 
         // ==========================================
         // AI GENERATION
         // ==========================================
-        const prompt = `
-        ${systemRole}
-        ${userContext}
-        
-        Guidelines:
-        - Keep answers concise (max 3-4 sentences unless detailed explanation needed).
-        - Use proper formatting (bullet points) if listing items.
-        - Do NOT make up fake course prices if you don't know, just say "varies by course".
-        `;
-
         let aiResponse = "";
 
-        if (genAI) {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const chat = model.startChat({
-                history: history || [],
-                systemInstruction: prompt,
-            });
+        if (process.env.OPENAI_API_KEY) {
+            try {
+                const messages = [
+                    {
+                        role: "system",
+                        content: `${systemRole}\n${userContext}\n\nGuidelines:\n- Keep answers concise (max 3-4 sentences unless detailed explanation needed).\n- Use proper formatting (bullet points) if listing items.\n- Do NOT make up fake course prices if you don't know, just say "varies by course".`
+                    }
+                ];
 
-            const result = await chat.sendMessage(message);
-            const response = await result.response;
-            aiResponse = response.text();
+                // Add history if provided
+                if (history && Array.isArray(history)) {
+                    history.forEach(h => {
+                        if (h.role && h.parts && h.parts[0]) {
+                            messages.push({
+                                role: h.role === 'model' ? 'assistant' : 'user',
+                                content: h.parts[0].text
+                            });
+                        }
+                    });
+                }
+
+                messages.push({ role: "user", content: message });
+
+                const completion = await openai.chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: messages,
+                    temperature: 0.7,
+                    max_tokens: 500
+                });
+
+                aiResponse = completion.choices[0].message.content;
+            } catch (aiError) {
+                console.error("OpenAI Error:", aiError);
+                aiResponse = "I'm having trouble connecting to my AI brain. Please try again!";
+            }
         } else {
-            console.warn("GEMINI_API_KEY missing");
+            console.warn("OPENAI_API_KEY missing");
             aiResponse = `[MOCK AI] Hello ${req.user ? req.user.name : (leadDetails?.name || 'Guest')}! I received: "${message}". I am simulating a response because the AI key is not configured.`;
         }
 
@@ -181,31 +201,36 @@ router.post('/draft-email', authenticate, async (req, res) => {
         }
         `;
 
-        if (!genAI) {
+        if (!process.env.OPENAI_API_KEY) {
             return res.json({
                 subject: "Follow up regarding your inquiry at TechWell",
                 body: `Hello ${context ? context.split(',')[0].split(':')[1] : 'there'},\n\nI noticed you inquired about our courses. We have new batches starting soon!\n\nBest,\nTechWell Team`
             });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7,
+            max_tokens: 300,
+            response_format: { type: "json_object" }
+        });
 
-        // Clean markdown code blocks if any
-        const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-        try {
-            const json = JSON.parse(cleanText);
-            res.json(json);
-        } catch (e) {
-            // Fallback if AI didn't return perfect JSON
-            res.json({ subject: "TechWell Inquiry", body: text });
-        }
+        const result = JSON.parse(completion.choices[0].message.content);
+        res.json(result);
 
     } catch (error) {
         console.error("AI Draft Error:", error);
+
+        // Fallback for Quota Exceeded
+        if (error.status === 429 || error.code === 'insufficient_quota') {
+            return res.json({
+                subject: "Follow up regarding your inquiry at TechWell",
+                body: `Hello ${context ? context.split(',')[0].split(':')[1] : 'there'},\n\nI noticed you inquired about our courses. We have new batches starting soon!\n\nBest,\nTechWell Team`,
+                fallback: true
+            });
+        }
+
         res.status(500).json({ error: "Failed to draft email" });
     }
 });
@@ -246,6 +271,31 @@ router.post('/generate-questions', authenticate, async (req, res) => {
     } catch (error) {
         console.error('Generation Error:', error);
         res.status(500).json({ error: 'Failed to generate questions' });
+    }
+});
+
+/**
+ * @route   POST /api/ai/generate-from-jd
+ * @desc    Generate questions from Job Description context
+ * @access  Private (Admin)
+ */
+router.post('/generate-from-jd', authenticate, authorize(['ADMIN', 'SUPER_ADMIN']), async (req, res) => {
+    try {
+        const { context, domain, role, difficulty, count } = req.body;
+        const aiService = require('../services/ai.service');
+
+        const questions = await aiService.generateQuestionsFromContext({
+            context,
+            domain,
+            role,
+            difficulty,
+            count
+        });
+
+        res.json({ questions });
+    } catch (error) {
+        console.error('JD Generation Error:', error);
+        res.status(500).json({ error: 'Failed to generate from context' });
     }
 });
 

@@ -10,6 +10,9 @@ interface User {
     role: string;
     permissions?: string[];
     avatar?: string;
+    dob?: string;
+    qualification?: string;
+    college?: string;
     hasUnlimitedInterviews?: boolean;
 }
 
@@ -18,7 +21,7 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, name: string) => Promise<void>;
+    register: (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => Promise<void>;
     logout: () => void;
     refreshUser: () => Promise<void>;
     hasPermission: (permission: string) => boolean;
@@ -61,8 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
     };
 
-    const register = async (email: string, password: string, name: string) => {
-        const response = await authApi.register({ email, password, name });
+    const register = async (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => {
+        const response = await authApi.register({ email, password, name, dob, qualification, college });
         const { token, user } = response.data;
 
         localStorage.setItem('token', token);

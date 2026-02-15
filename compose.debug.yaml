@@ -1,0 +1,12 @@
+services:
+  estoolkit:
+    image: estoolkit
+    build:
+      context: frontend/node_modules/es-toolkit
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: development
+    ports:
+      - 3001:3001
+      - 9229:9229
+    command: ["node", "--inspect=0.0.0.0:9229", "./dist/index.js"]

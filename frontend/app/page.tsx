@@ -1,16 +1,22 @@
 import { Hero } from "@/components/home/Hero";
-import { WhyChooseSection } from "@/components/sections/WhyChooseSection";
+import { WhyTrust } from "@/components/home/WhyTrust";
+import { CredentialsSection } from "@/components/home/CredentialsSection";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { PricingSection } from "@/components/sections/PricingSection";
 import { CTASection } from "@/components/sections/CTASection";
 import { PlacementPartners } from "@/components/sections/PlacementPartners";
+import { StudentJourney } from "@/components/home/StudentJourney";
 
 export default function Home() {
   return (
-    <div className="flex flex-col gap-0">
+    <div className="flex flex-col gap-0 overflow-x-hidden">
       <Hero />
-      <WhyChooseSection />
+      <div className="-mt-12 relative z-20">
+        <StudentJourney />
+      </div>
       <PricingSection />
+      <WhyTrust />
+      <CredentialsSection />
       <CTASection />
       <Testimonials />
       <PlacementPartners />

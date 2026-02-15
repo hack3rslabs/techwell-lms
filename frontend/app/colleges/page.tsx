@@ -286,8 +286,8 @@ export default function CollegesPage() {
             </section>
 
             {/* Contact Form */}
-            <section id="contact" className="py-24">
-                <div className="container max-w-3xl">
+            <section id="contact" className="py-24 border-t">
+                <div className="max-w-3xl mx-auto px-4">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl font-bold mb-4">Partner With Us</h2>
                         <p className="text-xl text-muted-foreground">Fill out the form and our team will reach out within 24 hours.</p>

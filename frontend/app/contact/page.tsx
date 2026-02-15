@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from 'react'
-import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from 'lucide-react'
+import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2, Instagram, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,7 +9,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const contactInfo = [
     { icon: Mail, label: 'Email', value: 'support@techwell.co.in', href: 'mailto:support@techwell.co.in' },
     { icon: Phone, label: 'Phone', value: '+91 7997473473', href: 'tel:+917997473473' },
-    { icon: MapPin, label: 'Address', value: 'TechWell HQ, India', href: null },
+    {
+        icon: MapPin,
+        label: 'Address',
+        value: 'Techwell HQ',
+        href: 'https://www.google.com/maps/place/Techwell(Twiis+Innovations)/@18.2899025,83.9033944,17z/data=!3m1!4b1!4m6!3m5!1s0x3a3c1517a45fc9e1:0x39c24e2311f003a!8m2!3d18.2899025!4d83.9033944!16s%2Fg%2F11c2j7m7xv?entry=ttu&g_ep=EgoyMDI2MDIxMS4wIKXMDSoASAFQAw%3D%3D'
+    },
+    {
+        icon: Instagram,
+        label: 'Instagram',
+        value: '@techwell_official',
+        href: 'https://www.instagram.com/techwell_official/'
+    },
+    {
+        icon: ExternalLink,
+        label: 'Reviews',
+        value: 'Verified on Justdial',
+        href: 'https://www.justdial.com/Srikakulam/Techwell-It-Solutions-Opposite-Psnmh-Schoolabove-Andhra-Bank-Atm-O-Arasavilli/9999P8942-8942-161117181501-G1M1_BZDET'
+    },
 ]
 
 export default function ContactPage() {

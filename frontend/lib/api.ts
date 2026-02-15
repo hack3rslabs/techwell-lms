@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -45,8 +45,14 @@ api.interceptors.response.use(
 
 // Auth API
 export const authApi = {
-    register: (data: { email: string; password: string; name: string }) =>
-        api.post('/auth/register', data),
+    register: (data: {
+        email: string;
+        password: string;
+        name: string;
+        dob?: string;
+        qualification?: string;
+        college?: string
+    }) => api.post('/auth/register', data),
     login: (data: { email: string; password: string }) =>
         api.post('/auth/login', data),
     refresh: () => api.post('/auth/refresh'),
@@ -202,7 +208,16 @@ export const knowledgeBaseApi = {
         company?: string;
         difficulty: string;
         count: number;
-    }) => api.post('/ai/generate-questions', data)
+    }) => api.post('/ai/generate-questions', data),
+    generateFromContext: (data: {
+        context: string;
+        domain: string;
+        role: string;
+        difficulty: string;
+        count: number;
+    }) => api.post('/ai/generate-from-jd', data),
+    bulkDelete: (ids: string[]) => api.post('/knowledge-base/bulk-delete', { ids }),
+    bulkUpdate: (ids: string[], updates: any) => api.post('/knowledge-base/bulk-update', { ids, updates })
 };
 
 // ATS API

@@ -13,25 +13,28 @@ datasource db {
 // ============= USER & AUTH =============
 
 model User {
-  id            String  @id @default(cuid())
-  email         String  @unique
+  id            String    @id @default(cuid())
+  email         String    @unique
   password      String
   name          String
-  role          Role    @default(STUDENT)
-  plan          Plan    @default(FREE)
+  role          Role      @default(STUDENT)
+  plan          Plan      @default(FREE)
   avatar        String?
   phone         String?
-  isActive      Boolean @default(true)
-  emailVerified Boolean @default(false)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
   permissions   Json? // Array of permission strings e.g. ["MANAGE_COURSES", "VIEW_FINANCE"]
+  dob           DateTime?
+  qualification String?
+  college       String?
 
   // Relations
   enrollments    Enrollment[]
   interviews     Interview[]
   lessonProgress LessonProgress[]
 
-  instituteId    String?
-  institute      Institute? @relation(fields: [instituteId], references: [id])
+  instituteId String?
+  institute   Institute? @relation(fields: [instituteId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,51 +53,54 @@ model User {
   sentTicketMessages TicketMessage[]
 
   // Phase 25: Career
-  employerProfile    EmployerProfile?
-  jobs               Job[]             // Jobs posted by this user (if Employer)
-  applications       JobApplication[]  // Applications submitted by this user (if Student)
-  
+  employerProfile EmployerProfile?
+  jobs            Job[] // Jobs posted by this user (if Employer)
+  applications    JobApplication[] // Applications submitted by this user (if Student)
+
   // Relations: Tasks & Blogs
-  assignedTasks      Task[]            @relation("AssignedTo")
-  createdTasks       Task[]            @relation("CreatedBy")
-  blogPosts          BlogPost[]
-  taskComments       TaskComment[]
+  assignedTasks         Task[]                 @relation("AssignedTo")
+  createdTasks          Task[]                 @relation("CreatedBy")
+  blogPosts             BlogPost[]
+  taskComments          TaskComment[]
   assignmentSubmissions AssignmentSubmission[]
-  lessonComments     LessonComment[]
+  lessonComments        LessonComment[]
 
   // Trainer Portal
-  instructedBatches  Batch[]
-  announcements      Announcement[]
-  
+  instructedBatches Batch[]
+  announcements     Announcement[]
+
   // ATS Relations
   conductedJobInterviews JobInterview[]
 
   // RBAC System
   systemRoleId String?
   systemRole   SystemRole? @relation(fields: [systemRoleId], references: [id])
+  
+  // Library Bookmarks
+  libraryBookmarks LibraryBookmark[]
 }
 
 model SystemRole {
-  id          String   @id @default(cuid())
-  name        String   @unique // e.g., "Junior Admin", or maps to Role Enum
+  id          String  @id @default(cuid())
+  name        String  @unique // e.g., "Junior Admin", or maps to Role Enum
   description String?
-  isSystem    Boolean  @default(false) // If true, cannot be deleted (matches Enum roles)
-  permissions Json     // Array of permission codes ["MANAGE_USERS", "VIEW_FINANCE"]
+  isSystem    Boolean @default(false) // If true, cannot be deleted (matches Enum roles)
+  permissions Json // Array of permission codes ["MANAGE_USERS", "VIEW_FINANCE"]
 
-  users       User[]
+  users User[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SystemPermission {
-  id          String   @id @default(cuid())
-  code        String   @unique // MANAGE_USERS
-  name        String   // Manage Users
+  id          String  @id @default(cuid())
+  code        String  @unique // MANAGE_USERS
+  name        String // Manage Users
   description String?
-  module      String   // USERS, COURSES, FINANCE
+  module      String // USERS, COURSES, FINANCE
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 enum Role {
@@ -116,22 +122,22 @@ enum Plan {
 // ============= INSTITUTES =============
 
 model Institute {
-  id          String   @id @default(cuid())
-  name        String
-  code        String?  @unique
-  logoUrl     String?
-  address     String?
-  website     String?
-  phone       String?
-  email       String?
-  
+  id      String  @id @default(cuid())
+  name    String
+  code    String? @unique
+  logoUrl String?
+  address String?
+  website String?
+  phone   String?
+  email   String?
+
   // Relations
-  users       User[]
-  courses     Course[]
-  batches     Batch[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  users   User[]
+  courses Course[]
+  batches Batch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============= LMS - COURSES =============
@@ -180,8 +186,8 @@ model Course {
   batches       Batch[]
   announcements Announcement[]
 
-  instituteId   String?
-  institute     Institute? @relation(fields: [instituteId], references: [id])
+  instituteId String?
+  institute   Institute? @relation(fields: [instituteId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -192,62 +198,62 @@ model Course {
 // ============= TRAINER PORTAL: BATCHES =============
 
 model Batch {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   name         String
   courseId     String
   instructorId String
   instituteId  String?
 
-  startDate    DateTime?
-  endDate      DateTime?
-  description  String?
-  maxStudents  Int?
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+  maxStudents Int?
 
   // Relations
-  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  instructor   User     @relation(fields: [instructorId], references: [id], onDelete: Cascade)
-  institute    Institute? @relation(fields: [instituteId], references: [id])
+  course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructor    User           @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  institute     Institute?     @relation(fields: [instituteId], references: [id])
   announcements Announcement[]
   enrollments   Enrollment[] // Students in this batch
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Announcement {
-  id           String   @id @default(cuid())
-  title        String
-  content      String   @db.Text
-  priority     String   @default("NORMAL") // NORMAL, URGENT
+  id       String @id @default(cuid())
+  title    String
+  content  String @db.Text
+  priority String @default("NORMAL") // NORMAL, URGENT
 
   courseId     String?
   batchId      String?
   instructorId String
 
   // Relations
-  course       Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  batch        Batch?   @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  instructor   User     @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  course     Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  batch      Batch?  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  instructor User    @relation(fields: [instructorId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model LessonComment {
-  id        String   @id @default(cuid())
-  lessonId  String
-  userId    String
-  content   String   @db.Text
-  
-  parentId  String?  // For replies
-  isPinned  Boolean  @default(false)
+  id       String @id @default(cuid())
+  lessonId String
+  userId   String
+  content  String @db.Text
+
+  parentId             String? // For replies
+  isPinned             Boolean @default(false)
   isInstructorResponse Boolean @default(false)
 
   // Relations
-  lesson    Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent    LessonComment? @relation("CommentReplies", fields: [parentId], references: [id])
-  replies   LessonComment[] @relation("CommentReplies")
+  lesson  Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  LessonComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies LessonComment[] @relation("CommentReplies")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -279,7 +285,7 @@ model Module {
   description String?
   orderIndex  Int
   isPublished Boolean @default(false)
-  
+
   // Relations
   course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons Lesson[]
@@ -307,20 +313,20 @@ model Lesson {
   videoUrl String?
   duration Int? // in seconds
   order    Int
-  
+
   type        LessonType @default(VIDEO)
   isPublished Boolean    @default(false)
   isPreview   Boolean    @default(false)
-  
+
   // Configuration for Quizzes/Assignments
-  settings    Json?      // { timeLimit, passingScore, attemptsAllowed, maxFiles }
-  resources   Json?      // Array of { title, url, type }
+  settings  Json? // { timeLimit, passingScore, attemptsAllowed, maxFiles }
+  resources Json? // Array of { title, url, type }
 
   // Relations
-  module   Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  quizzes  Quiz[]
-  progress LessonProgress[]
-  comments LessonComment[]
+  module                Module                 @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  quizzes               Quiz[]
+  progress              LessonProgress[]
+  comments              LessonComment[]
   assignmentSubmissions AssignmentSubmission[]
 
   createdAt DateTime @default(now())
@@ -334,7 +340,7 @@ model Quiz {
   options       Json // Array of options
   correctAnswer String
   explanation   String?
-  
+
   // Relations
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
@@ -342,20 +348,20 @@ model Quiz {
 }
 
 model AssignmentSubmission {
-  id        String   @id @default(cuid())
-  lessonId  String
-  userId    String
-  
-  content   String?  @db.Text
-  fileUrl   String?
-  
-  grade     Int?
-  feedback  String?  @db.Text
-  status    String   @default("PENDING") // PENDING, GRADED, REJECTED
-  
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id       String @id @default(cuid())
+  lessonId String
+  userId   String
+
+  content String? @db.Text
+  fileUrl String?
+
+  grade    Int?
+  feedback String? @db.Text
+  status   String  @default("PENDING") // PENDING, GRADED, REJECTED
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -367,12 +373,12 @@ model Enrollment {
   progress           Int              @default(0) // percentage
   status             EnrollmentStatus @default(ACTIVE)
   hasInterviewAccess Boolean          @default(false) // Phase 19: Bundle Access
-  
-  batchId            String?
+
+  batchId String?
   // Relations
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  batch  Batch? @relation(fields: [batchId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  batch   Batch?  @relation(fields: [batchId], references: [id])
 
   enrolledAt  DateTime  @default(now())
   completedAt DateTime?
@@ -392,7 +398,7 @@ model LessonProgress {
   userId         String
   lessonId       String
   completed      Boolean  @default(false)
-  score          Int?     // For Quizzes
+  score          Int? // For Quizzes
   timeSpent      Int      @default(0) // in seconds
   lastAccessedAt DateTime @default(now())
 
@@ -431,9 +437,9 @@ model Interview {
   difficulty     Difficulty @default(INTERMEDIATE)
   panelCount     Int        @default(1)
   linkedCourseId String? // Phase 19: Link to specific course curriculum
-  
-  duration       Int        @default(30) // in minutes
-  selectedAvatars String[]   // Avatars selected for this session (Panel)
+
+  duration        Int      @default(30) // in minutes
+  selectedAvatars String[] // Avatars selected for this session (Panel)
 
   status      InterviewStatus @default(SCHEDULED)
   scheduledAt DateTime?
@@ -541,19 +547,19 @@ model Avatar {
 // ============= ADMIN & AI TRAINING =============
 
 model KnowledgeBase {
-  id             String   @id @default(cuid())
-  domain         String   // e.g., "Frontend", "Backend"
-  topic          String   // e.g., "React Hooks"
-  content        String   @db.Text // The Question
-  answer         String?  @db.Text // The Ideal Answer (for evaluation)
-  difficulty     Difficulty @default(INTERMEDIATE)
-  type           QuestionType @default(TECHNICAL) 
-  codeSnippet    String?  @db.Text // For coding questions
-  tags           Json?    // Array of strings
-  
-  status         KnowledgeStatus @default(PUBLISHED)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id          String       @id @default(cuid())
+  domain      String // e.g., "Frontend", "Backend"
+  topic       String // e.g., "React Hooks"
+  content     String       @db.Text // The Question
+  answer      String?      @db.Text // The Ideal Answer (for evaluation)
+  difficulty  Difficulty   @default(INTERMEDIATE)
+  type        QuestionType @default(TECHNICAL)
+  codeSnippet String?      @db.Text // For coding questions
+  tags        Json? // Array of strings
+
+  status    KnowledgeStatus @default(PUBLISHED)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 enum KnowledgeStatus {
@@ -975,8 +981,8 @@ model Task {
   creator    User?   @relation("CreatedBy", fields: [createdBy], references: [id])
 
   // Relations
-  leadId String?
-  lead   Lead?   @relation(fields: [leadId], references: [id])
+  leadId   String?
+  lead     Lead?         @relation(fields: [leadId], references: [id])
   comments TaskComment[]
 
   createdAt DateTime @default(now())
@@ -986,33 +992,33 @@ model Task {
 model TaskComment {
   id      String @id @default(cuid())
   content String
-  
-  taskId  String
-  task    Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  
-  userId  String
-  user    User   @relation(fields: [userId], references: [id])
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model BlogPost {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  content     String   @db.Text
-  summary     String?  @db.Text
-  coverImage  String?
-  
-  status      BlogStatus @default(DRAFT)
-  tags        Json?    // Array of strings
-  
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
-  
+  id         String  @id @default(cuid())
+  title      String
+  slug       String  @unique
+  content    String  @db.Text
+  summary    String? @db.Text
+  coverImage String?
+
+  status BlogStatus @default(DRAFT)
+  tags   Json? // Array of strings
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
   publishedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 enum BlogStatus {
@@ -1047,9 +1053,9 @@ model Ticket {
   category    TicketCategory @default(GENERAL)
 
   // Relations
-  userId     String
-  user       User    @relation(fields: [userId], references: [id])
-  assignedTo String? // ID of admin/staff assigned
+  userId        String
+  user          User    @relation(fields: [userId], references: [id])
+  assignedTo    String? // ID of admin/staff assigned
   internalNotes String? @db.Text
 
   messages TicketMessage[]
@@ -1162,93 +1168,93 @@ model SystemSettings {
 // ============= CAREER SYSTEM =============
 
 model EmployerProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   companyName String
   website     String?
-  description String?  @db.Text
+  description String? @db.Text
   logo        String?
   location    String?
   industry    String?
   companySize String?
-  
-  status      EmployerStatus @default(PENDING)
-  documentsVerified Boolean @default(false)
+
+  status            EmployerStatus @default(PENDING)
+  documentsVerified Boolean        @default(false)
   verificationNotes String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Job {
-  id          String   @id @default(cuid())
-  title       String
-  description String   @db.Text
+  id           String  @id @default(cuid())
+  title        String
+  description  String  @db.Text
   requirements String? @db.Text
-  location    String
-  type        JobType  @default(FULL_TIME)
-  experience  String?  // e.g. "0-1 years"
-  salary      String?  // e.g. "5-8 LPA"
-  
+  location     String
+  type         JobType @default(FULL_TIME)
+  experience   String? // e.g. "0-1 years"
+  salary       String? // e.g. "5-8 LPA"
+
   // New Fields
-  skills      String?  // Comma separated
-  clientName  String?  // For consultancies
-  shift       String?  // Day, Night, Rotational
-  domain      String?  // IT, Finance, etc.
+  skills        String? // Comma separated
+  clientName    String? // For consultancies
+  shift         String? // Day, Night, Rotational
+  domain        String? // IT, Finance, etc.
   qualification String?
-  
+
   // Relations
-  employerId  String
-  employer    User     @relation(fields: [employerId], references: [id])
-  
+  employerId String
+  employer   User   @relation(fields: [employerId], references: [id])
+
   applications JobApplication[]
-  
+
   status      JobStatus @default(DRAFT)
   publishedAt DateTime?
   expiresAt   DateTime?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model JobApplication {
-  id          String   @id @default(cuid())
-  
-  jobId       String
-  job         Job      @relation(fields: [jobId], references: [id])
-  
+  id String @id @default(cuid())
+
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id])
+
   // Applicant Info
-  applicantId String?  // Optional for external candidates
-  applicant   User?    @relation(fields: [applicantId], references: [id])
-  
+  applicantId String? // Optional for external candidates
+  applicant   User?   @relation(fields: [applicantId], references: [id])
+
   // Source Tracking (CRITICAL)
-  source      CandidateSource @default(INTERNAL)
-  
+  source CandidateSource @default(INTERNAL)
+
   // External Candidate Details
   externalName  String?
   externalEmail String?
   externalPhone String?
-  
+
   resumeUrl   String?
-  coverLetter String?  @db.Text
-  
+  coverLetter String? @db.Text
+
   // ATS & Scoring
   // Hidden field for storing parsed resume text for searching/scoring
-  resumeParsedText String? @db.Text 
+  resumeParsedText String? @db.Text
   atsScore         Float   @default(0) // Match percentage (0-100)
-  
-  status      ApplicationStatus @default(APPLIED)
+
+  status        ApplicationStatus @default(APPLIED)
   statusHistory Json? // Array of { status, updatedBy, timestamp, notes }
-  
+
   // Relations
-  interviews  JobInterview[]
-  emailLogs   EmailLog[]
-  auditLogs   AuditLog[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  interviews JobInterview[]
+  emailLogs  EmailLog[]
+  auditLogs  AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Unique constraint only applies if applicantId is present
   // For external, we might want unique on (jobId, externalEmail)
@@ -1299,97 +1305,96 @@ enum ApplicationStatus {
   REVIEWING
 }
 
-
 // ============= ATS & RECRUITMENT SYSTEM (NEW) =============
 
 model JobInterview {
-  id              String   @id @default(cuid())
-  
-  applicationId   String
-  application     JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  
+  id String @id @default(cuid())
+
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
   // Round Details
-  roundName       String   // e.g. "Technical Round 1", "HR Round"
-  roundType       InterviewRoundType @default(TECHNICAL)
-  
+  roundName String // e.g. "Technical Round 1", "HR Round"
+  roundType InterviewRoundType @default(TECHNICAL)
+
   // Schedule
-  scheduledAt     DateTime
-  duration        Int      @default(30) // minutes
-  meetingLink     String?
-  location        String?  // For offline
-  
+  scheduledAt DateTime
+  duration    Int      @default(30) // minutes
+  meetingLink String?
+  location    String? // For offline
+
   // Interviewer
-  interviewerId   String
-  interviewer     User     @relation(fields: [interviewerId], references: [id])
-  
+  interviewerId String
+  interviewer   User   @relation(fields: [interviewerId], references: [id])
+
   // Outcome
-  status          InterviewStatus @default(SCHEDULED)
-  feedback        String?  @db.Text
-  score           Int?     // 1-10 or 1-100
-  result          InterviewResult? // PASS/FAIL
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  status   InterviewStatus  @default(SCHEDULED)
+  feedback String?          @db.Text
+  score    Int? // 1-10 or 1-100
+  result   InterviewResult? // PASS/FAIL
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model EmailLog {
-  id          String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Context
-  jobId           String?
-  applicationId   String?
-  application     JobApplication? @relation(fields: [applicationId], references: [id])
-  
-  recipientEmail  String
-  recipientName   String?
-  
-  templateName    String // e.g. "APPLICATION_RECEIVED"
-  subject         String
-  body            String @db.Text
-  
-  status          EmailStatus @default(SENT)
-  sentAt          DateTime @default(now())
-  error           String?
-  
-  triggeredBy     String? // User ID who triggered this
+  jobId         String?
+  applicationId String?
+  application   JobApplication? @relation(fields: [applicationId], references: [id])
+
+  recipientEmail String
+  recipientName  String?
+
+  templateName String // e.g. "APPLICATION_RECEIVED"
+  subject      String
+  body         String @db.Text
+
+  status EmailStatus @default(SENT)
+  sentAt DateTime    @default(now())
+  error  String?
+
+  triggeredBy String? // User ID who triggered this
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  entityType  String   // JOB, APPLICATION, INTERVIEW, USER, SYSTEM
-  entityId    String?
-  action      String   // CREATE, UPDATE, DELETE, STATUS_CHANGE, LOGIN, APPROVE
-  
+  id         String  @id @default(cuid())
+  entityType String // JOB, APPLICATION, INTERVIEW, USER, SYSTEM
+  entityId   String?
+  action     String // CREATE, UPDATE, DELETE, STATUS_CHANGE, LOGIN, APPROVE
+
   // Request Context
-  method      String?  // POST, PUT, DELETE
-  path        String?  // /api/users/profile
-  ipAddress   String?
-  userAgent   String?
-  
+  method    String? // POST, PUT, DELETE
+  path      String? // /api/users/profile
+  ipAddress String?
+  userAgent String?
+
   // Data Changes
-  oldValue    Json?
-  newValue    Json?
-  
+  oldValue Json?
+  newValue Json?
+
   // For Application Context
   applicationId String?
   application   JobApplication? @relation(fields: [applicationId], references: [id])
-  
-  performedBy   String
-  details       Json?    // { oldStatus: "APPLIED", newStatus: "SHORTLISTED", notes: "..." }
-  
-  timestamp     DateTime @default(now())
+
+  performedBy String
+  details     Json? // { oldStatus: "APPLIED", newStatus: "SHORTLISTED", notes: "..." }
+
+  timestamp DateTime @default(now())
 }
 
 model SavedFilter {
-  id          String   @id @default(cuid())
-  name        String
-  userId      String   // Recruiter ID
-  page        String   // "CANDIDATES" or "JOBS"
-  
-  config      Json     // { source: ["INTERNAL"], minExperience: 2 }
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id     String @id @default(cuid())
+  name   String
+  userId String // Recruiter ID
+  page   String // "CANDIDATES" or "JOBS"
+
+  config Json // { source: ["INTERNAL"], minExperience: 2 }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum InterviewRoundType {
@@ -1411,4 +1416,176 @@ enum EmailStatus {
   SENT
   FAILED
   QUEUED
+}
+
+// ============= PROJECTS MARKETPLACE =============
+model Project {
+  id            String  @id @default(cuid())
+  title         String
+  description   String  @db.Text
+  price         String
+  originalPrice String?
+  image         String?
+  techStack     Json // Array of strings
+  category      String
+
+  // New Fields for Detailed Reports
+  features    Json? // Array of key features
+  capex       String? // Capital Expenditure (e.g. "5 Lakhs")
+  roi         String? // Return on Investment
+  projectType String  @default("ACADEMIC") // ACADEMIC, INDUSTRIAL, BUSINESS_DPR, NGO, GOVT_SCHEME
+  demoLink    String?
+  reportLink  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============= SKILLCAST (EXPERT INTERVIEWS) =============
+model Skillcast {
+  id          String  @id @default(cuid())
+  title       String
+  description String  @db.Text
+  videoUrl    String
+  expertName  String
+  designation String
+  company     String
+  linkedinUrl String?
+  experience  String?
+  thumbnail   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============= CMS: GALLERY =============
+model GalleryImage {
+  id       String  @id @default(cuid())
+  url      String  @db.Text
+  caption  String?
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============= AI BEHAVIOR INTELLIGENCE =============
+
+model AIBehaviorEvent {
+  id        String  @id @default(cuid())
+  sessionId String // Browser session ID
+  userId    String? // If logged in
+
+  eventType String // PAGE_VIEW, SCROLL, CLICK, TIME_ON_PAGE, CTA_CLICK
+  eventData Json // { page, scrollDepth, ctaId, duration, element, etc }
+
+  userAgent String?
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model UserIntent {
+  id        String  @id @default(cuid())
+  sessionId String  @unique
+  userId    String?
+
+  primaryIntent String // INTERVIEW_FOCUSED, COURSE_FOCUSED, JOB_FOCUSED, BROWSING
+
+  interviewScore Float @default(0)
+  courseScore    Float @default(0)
+  jobScore       Float @default(0)
+
+  confidence    Float   @default(0)
+  popupShown    Boolean @default(false)
+  popupResponse String? // What user selected in popup
+
+  metadata Json? // Additional tracking data
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([primaryIntent])
+}
+
+// ============= LIBRARY MANAGEMENT =============
+
+model LibraryCategory {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  icon        String?
+  order       Int     @default(0)
+
+  domains LibraryDomain[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LibraryDomain {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  categoryId  String
+  category    LibraryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  resources LibraryResource[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([categoryId, name])
+  @@index([categoryId])
+}
+
+model LibraryResource {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+  type        String // PDF or QA
+
+  // For PDF type
+  fileUrl  String?
+  fileName String?
+  fileSize Int?
+
+  // For Q&A type
+  content Json? // { questions: [{q, a}] }
+
+  domainId String
+  domain   LibraryDomain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  views     Int @default(0)
+  downloads Int @default(0)
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([domainId])
+  @@index([type])
+  @@index([createdAt])
+  
+  bookmarks LibraryBookmark[]
+}
+
+model LibraryBookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  resourceId String
+  createdAt  DateTime @default(now())
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource LibraryResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
 }

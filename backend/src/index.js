@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes');
+const usersRoutes = require('./routes/users.routes');
 const courseRoutes = require('./routes/course.routes');
 const interviewRoutes = require('./routes/interview.routes');
 const settingsRoutes = require('./routes/settings.routes');
@@ -15,7 +15,21 @@ const app = express();
 // Security Middleware
 app.use(helmet());
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:3000',
+            'http://192.168.29.183:3000',
+            process.env.FRONTEND_URL
+        ];
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            return callback(null, true); // Temporarily allow all for dev ease, or stick to strict:
+            // var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            // return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     credentials: true
 }));
 
@@ -46,9 +60,11 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/interviews', interviewRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/payments', require('./routes/payment.routes'));
 app.use('/api/finance', require('./routes/finance.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
@@ -74,10 +90,13 @@ app.use('/api/ats', require('./routes/ats.routes'));
 app.use('/api/ai-settings', require('./routes/ai-settings.routes'));
 app.use('/api/trainer', require('./routes/trainer.routes'));
 app.use('/api/rbac', require('./routes/rbac.routes'));
+app.use('/api/behavior', require('./routes/behavior.routes'));
+app.use('/api/library', require('./routes/library.routes'));
+app.use('/api/chatgpt', require('./routes/chatgpt.routes'));
 
 
 // Serve Static Uploads
-const path = require('path');
+const path = require('path'); // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // 404 handler
@@ -104,8 +123,12 @@ app.use((err, req, res, next) => {
         return res.status(401).json({ error: 'Token expired' });
     }
 
+    const errorMessage = process.env.NODE_ENV === 'production'
+        ? 'Internal server error'
+        : err.message || 'Internal server error';
+
     res.status(err.status || 500).json({
-        error: err.message || 'Internal server error'
+        error: errorMessage
     });
 });
 

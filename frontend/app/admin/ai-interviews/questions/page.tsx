@@ -39,9 +39,16 @@ import {
     ArrowLeft,
     Search,
     Filter,
-    BookOpen
+    BookOpen,
+    BrainCircuit
 } from 'lucide-react'
 import Link from 'next/link'
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@/components/ui/tabs"
 
 interface KnowledgeEntry {
     id: string
@@ -52,7 +59,7 @@ interface KnowledgeEntry {
     difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
     type?: 'TECHNICAL' | 'BEHAVIORAL' | 'HR' | 'CODING'
     codeSnippet?: string
-    tags?: any
+    tags?: string[]
     createdAt: string
 }
 
@@ -120,7 +127,7 @@ export default function QuestionsPage() {
     }
 
     const [isGenerating, setIsGenerating] = useState(false)
-    const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([])
+    const [generatedQuestions, setGeneratedQuestions] = useState<{ topic: string, content: string, answer: string }[]>([])
     const [isAiDialogOpen, setIsAiDialogOpen] = useState(false)
     const [aiParams, setAiParams] = useState({
         domain: 'IT',
@@ -130,12 +137,15 @@ export default function QuestionsPage() {
         company: ''
     })
 
+    const [activeTab, setActiveTab] = useState('manual')
+    const [jdText, setJdText] = useState('')
+
     const handleGenerate = async () => {
         setIsGenerating(true)
         try {
             const { knowledgeBaseApi } = await import('@/lib/api')
             const res = await knowledgeBaseApi.generate(aiParams)
-            setGeneratedQuestions(res.data.questions)
+            setGeneratedQuestions(res.data.questions || [])
         } catch (error) {
             console.error('Generation failed:', error)
             alert('Failed to generate questions')
@@ -144,15 +154,36 @@ export default function QuestionsPage() {
         }
     }
 
-    const saveGeneratedQuestion = async (q: any, index: number) => {
+    const handleGenerateFromJD = async () => {
+        if (!jdText.trim()) return;
+        setIsGenerating(true)
+        try {
+            const { knowledgeBaseApi } = await import('@/lib/api')
+            const res = await knowledgeBaseApi.generateFromContext({
+                context: jdText,
+                domain: aiParams.domain,
+                role: aiParams.role,
+                difficulty: aiParams.difficulty,
+                count: aiParams.count
+            })
+            setGeneratedQuestions(res.data.questions || [])
+        } catch (error) {
+            console.error('JD Generation failed:', error)
+            alert('Failed to generate from text')
+        } finally {
+            setIsGenerating(false)
+        }
+    }
+
+    const saveGeneratedQuestion = async (q: { topic: string, content: string, answer: string }, index: number) => {
         try {
             const { knowledgeBaseApi } = await import('@/lib/api')
             await knowledgeBaseApi.create({
                 domain: aiParams.domain,
-                topic: q.topic,
-                content: q.content,
-                difficulty: aiParams.difficulty,
-                answer: q.answer
+                topic: q.topic || '',
+                content: q.content || '',
+                difficulty: aiParams.difficulty as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED',
+                answer: q.answer || ''
             })
             // Remove from list
             setGeneratedQuestions(prev => prev.filter((_, i) => i !== index))
@@ -199,7 +230,7 @@ export default function QuestionsPage() {
             difficulty: entry.difficulty,
             type: entry.type || 'TECHNICAL',
             codeSnippet: entry.codeSnippet || '',
-            tags: Array.isArray(entry.tags) ? entry.tags.join(', ') : ''
+            tags: Array.isArray(entry.tags) ? entry.tags.join(', ') : (entry.tags || '')
         })
         setIsDialogOpen(true)
     }
@@ -219,6 +250,48 @@ export default function QuestionsPage() {
     // Client-side filtering is redundant if API handles it, but kept for speed if small dataset
     // We already fetch filtered data, so we can just use 'entries'
     const filteredEntries = entries;
+
+
+    // Bulk Management
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filteredEntries.length) {
+            setSelectedIds(new Set())
+        } else {
+            setSelectedIds(new Set(filteredEntries.map(e => e.id)))
+        }
+    }
+
+    const toggleSelect = (id: string) => {
+        const newSelected = new Set(selectedIds)
+        if (newSelected.has(id)) {
+            newSelected.delete(id)
+        } else {
+            newSelected.add(id)
+        }
+        setSelectedIds(newSelected)
+    }
+
+    // Reset selection when entries change
+    useEffect(() => {
+        setSelectedIds(new Set())
+    }, [filterDomain, filterDifficulty, searchQuery])
+
+
+    const handleBulkDelete = async () => {
+        if (!confirm(`Are you sure you want to delete ${selectedIds.size} entries?`)) return;
+
+        try {
+            const { knowledgeBaseApi } = await import('@/lib/api')
+            await knowledgeBaseApi.bulkDelete(Array.from(selectedIds))
+            setSelectedIds(new Set())
+            fetchEntries()
+        } catch (error) {
+            console.error('Bulk delete failed:', error)
+            alert('Failed to delete entries')
+        }
+    }
 
     const getDifficultyColor = (difficulty: string) => {
         switch (difficulty) {
@@ -293,7 +366,7 @@ export default function QuestionsPage() {
                                     <Label htmlFor="type">Question Type</Label>
                                     <Select
                                         value={formData.type}
-                                        onValueChange={(value: any) => setFormData(f => ({ ...f, type: value }))}
+                                        onValueChange={(value: string) => setFormData(f => ({ ...f, type: value as 'TECHNICAL' | 'BEHAVIORAL' | 'HR' | 'CODING' }))}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select type" />
@@ -408,65 +481,94 @@ export default function QuestionsPage() {
                         </DialogHeader>
 
                         {!generatedQuestions.length ? (
-                            <div className="grid gap-4 py-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Domain</Label>
-                                        <Select value={aiParams.domain} onValueChange={v => setAiParams(p => ({ ...p, domain: v }))}>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="IT">IT / Software</SelectItem>
-                                                <SelectItem value="Finance">Finance</SelectItem>
-                                                <SelectItem value="Marketing">Marketing</SelectItem>
-                                                <SelectItem value="HR">HR</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                            <div className="py-4">
+                                <Tabs defaultValue="manual" className="w-full" onValueChange={setActiveTab}>
+                                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                                        <TabsTrigger value="manual">Parameters</TabsTrigger>
+                                        <TabsTrigger value="jd">From Job Description (JD)</TabsTrigger>
+                                    </TabsList>
+
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                        <div className="space-y-2">
+                                            <Label>Domain</Label>
+                                            <Select value={aiParams.domain} onValueChange={v => setAiParams(p => ({ ...p, domain: v }))}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="IT">IT / Software</SelectItem>
+                                                    <SelectItem value="Finance">Finance</SelectItem>
+                                                    <SelectItem value="Marketing">Marketing</SelectItem>
+                                                    <SelectItem value="HR">HR</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Difficulty</Label>
+                                            <Select value={aiParams.difficulty} onValueChange={v => setAiParams(p => ({ ...p, difficulty: v }))}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="BEGINNER">Beginner</SelectItem>
+                                                    <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
+                                                    <SelectItem value="ADVANCED">Advanced</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label>Difficulty</Label>
-                                        <Select value={aiParams.difficulty} onValueChange={v => setAiParams(p => ({ ...p, difficulty: v }))}>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="BEGINNER">Beginner</SelectItem>
-                                                <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
-                                                <SelectItem value="ADVANCED">Advanced</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                        <div className="space-y-2">
+                                            <Label>Role / Job Title</Label>
+                                            <Input
+                                                value={aiParams.role}
+                                                onChange={e => setAiParams(p => ({ ...p, role: e.target.value }))}
+                                                placeholder="e.g. Senior React Dev"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Number of Questions</Label>
+                                            <Select value={String(aiParams.count)} onValueChange={v => setAiParams(p => ({ ...p, count: Number(v) }))}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="3">3 Questions</SelectItem>
+                                                    <SelectItem value="5">5 Questions</SelectItem>
+                                                    <SelectItem value="10">10 Questions</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Role / Job Title</Label>
-                                        <Input
-                                            value={aiParams.role}
-                                            onChange={e => setAiParams(p => ({ ...p, role: e.target.value }))}
-                                            placeholder="e.g. Senior React Dev"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Company Context (Optional)</Label>
-                                        <Input
-                                            value={aiParams.company}
-                                            onChange={e => setAiParams(p => ({ ...p, company: e.target.value }))}
-                                            placeholder="e.g. Google, Startup"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Number of Questions</Label>
-                                    <Select value={String(aiParams.count)} onValueChange={v => setAiParams(p => ({ ...p, count: Number(v) }))}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="3">3 Questions</SelectItem>
-                                            <SelectItem value="5">5 Questions</SelectItem>
-                                            <SelectItem value="10">10 Questions</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <Button onClick={handleGenerate} disabled={isGenerating} className="w-full mt-4">
-                                    {isGenerating ? <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> : <BookOpen className="mr-2 h-4 w-4" />}
-                                    Generate Questions
-                                </Button>
+
+
+                                    <TabsContent value="manual">
+                                        <div className="space-y-2 mb-4">
+                                            <Label>Company Context (Optional)</Label>
+                                            <Input
+                                                value={aiParams.company}
+                                                onChange={e => setAiParams(p => ({ ...p, company: e.target.value }))}
+                                                placeholder="e.g. Google, Startup"
+                                            />
+                                        </div>
+                                        <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
+                                            {isGenerating ? <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> : <BookOpen className="mr-2 h-4 w-4" />}
+                                            Generate Questions
+                                        </Button>
+                                    </TabsContent>
+
+                                    <TabsContent value="jd">
+                                        <div className="space-y-2 mb-4">
+                                            <Label>Job Description / Context Text</Label>
+                                            <Textarea
+                                                value={jdText}
+                                                onChange={(e) => setJdText(e.target.value)}
+                                                placeholder="Paste Job Description, Resume, or specific topic text here..."
+                                                className="min-h-[150px]"
+                                            />
+                                            <p className="text-xs text-muted-foreground">The AI will extract key requirements and generate relevant questions.</p>
+                                        </div>
+                                        <Button onClick={handleGenerateFromJD} disabled={isGenerating || !jdText.trim()} className="w-full">
+                                            {isGenerating ? <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> : <BrainCircuit className="mr-2 h-4 w-4" />}
+                                            Generate from Context
+                                        </Button>
+                                    </TabsContent>
+                                </Tabs>
                             </div>
                         ) : (
                             <div className="space-y-4">
@@ -544,6 +646,25 @@ export default function QuestionsPage() {
                 </Card>
             </div>
 
+            {/* Bulk Action Bar */}
+            {selectedIds.size > 0 && (
+                <div className="bg-muted p-4 rounded-lg flex items-center justify-between animate-in fade-in slide-in-from-top-4">
+                    <div className="flex items-center gap-4">
+                        <span className="font-medium">{selectedIds.size} selected</span>
+                        <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
+                            Cancel
+                        </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {/* Future: Add Bulk Update Difficulty/Domain here */}
+                        <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Selected
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             {/* Filters */}
             <Card>
                 <CardHeader className="pb-4">
@@ -586,6 +707,14 @@ export default function QuestionsPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[50px]">
+                                    <input
+                                        type="checkbox"
+                                        className="h-4 w-4 rounded border-gray-300"
+                                        checked={filteredEntries.length > 0 && selectedIds.size === filteredEntries.length}
+                                        onChange={toggleSelectAll}
+                                    />
+                                </TableHead>
                                 <TableHead>Topic</TableHead>
                                 <TableHead>Domain</TableHead>
                                 <TableHead>Difficulty</TableHead>
@@ -595,7 +724,15 @@ export default function QuestionsPage() {
                         </TableHeader>
                         <TableBody>
                             {filteredEntries.map((entry) => (
-                                <TableRow key={entry.id}>
+                                <TableRow key={entry.id} data-state={selectedIds.has(entry.id) && "selected"}>
+                                    <TableCell>
+                                        <input
+                                            type="checkbox"
+                                            className="h-4 w-4 rounded border-gray-300"
+                                            checked={selectedIds.has(entry.id)}
+                                            onChange={() => toggleSelect(entry.id)}
+                                        />
+                                    </TableCell>
                                     <TableCell className="font-medium">{entry.topic}</TableCell>
                                     <TableCell>{entry.domain}</TableCell>
                                     <TableCell>
@@ -616,7 +753,7 @@ export default function QuestionsPage() {
                             ))}
                             {filteredEntries.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                                         <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                         No entries found. Add some Q&A to train the AI.
                                     </TableCell>

@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button'
 
 export function CTASection() {
     return (
-        <section className="py-20 bg-gradient-to-br from-primary via-primary/90 to-purple-600 text-primary-foreground">
+        <section className="py-24 bg-gradient-to-br from-primary via-primary to-purple-700 text-primary-foreground relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] opacity-20 pointer-events-none" />
             <div className="container text-center">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                    Ready to Launch Your Career?
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+                    Don't Just Dream. <span className="underline decoration-secondary italic">Launch.</span>
                 </h2>
-                <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
-                    Join thousands of successful students today. Start with a free trial and unlock your potential.
+                <p className="text-xl opacity-90 mb-10 max-w-2xl mx-auto leading-relaxed">
+                    Join over 15,000 students who have already secured their futures.
+                    <span className="block font-semibold mt-2">Start your 7-day masterclass trial today.</span>
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link href="/register">

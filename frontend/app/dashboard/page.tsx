@@ -105,7 +105,17 @@ export default function DashboardPage() {
     const router = useRouter()
     const { user, isLoading: authLoading, logout } = useAuth()
 
-    const [activeTab, setActiveTab] = React.useState<'overview' | 'learning' | 'interviews' | 'applications' | 'certificates'>('overview')
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+    const initialTabParam = searchParams?.get('tab')
+
+    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates'
+    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates']
+
+    const [activeTab, setActiveTab] = React.useState<TabType>(
+        (initialTabParam && (validTabs as string[]).includes(initialTabParam))
+            ? initialTabParam as TabType
+            : 'overview'
+    )
     const [stats, setStats] = React.useState<{
         enrollments: number;
         interviews: { total: number; completed: number; averageScore: number };

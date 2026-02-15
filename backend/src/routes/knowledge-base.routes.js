@@ -143,4 +143,49 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req
     }
 });
 
+/**
+ * @route   POST /api/knowledge-base/bulk-delete
+ * @desc    Bulk delete knowledge base entries
+ * @access  Private/Admin
+ */
+router.post('/bulk-delete', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'No IDs provided' });
+        }
+
+        await prisma.knowledgeBase.deleteMany({
+            where: { id: { in: ids } }
+        });
+
+        res.json({ message: `${ids.length} entries deleted successfully` });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/knowledge-base/bulk-update
+ * @desc    Bulk update knowledge base entries (e.g., change domain or difficulty)
+ * @access  Private/Admin
+ */
+router.post('/bulk-update', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const { ids, updates } = req.body; // updates: { domain: 'IT', difficulty: 'ADVANCED' }
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'No IDs provided' });
+        }
+
+        await prisma.knowledgeBase.updateMany({
+            where: { id: { in: ids } },
+            data: updates
+        });
+
+        res.json({ message: `${ids.length} entries updated successfully` });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

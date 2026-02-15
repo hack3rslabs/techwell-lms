@@ -1,7 +1,0 @@
-E:\FinalProjects\Tecwhell_multibiz\frontend\app\admin\email-settings\page.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\app\colleges\page.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\app\portfolio\[username]\page.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\app\privacy\page.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\components\ai\ChatWidget.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\components\sections\Testimonials.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\components\sections\WhyChooseSection.tsx

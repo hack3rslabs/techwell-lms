@@ -206,7 +206,7 @@ export default function AvatarsPage() {
                                     <Label htmlFor="gender">Gender</Label>
                                     <Select
                                         value={formData.gender}
-                                        onValueChange={(value: any) => setFormData(f => ({ ...f, gender: value }))}
+                                        onValueChange={(value: Avatar['gender']) => setFormData(f => ({ ...f, gender: value }))}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Gender" />
@@ -312,12 +312,13 @@ export default function AvatarsPage() {
                             <CardHeader className="pb-2">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center overflow-hidden border-2 border-background shadow-sm">
+                                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center overflow-hidden border-2 border-background shadow-sm relative">
                                             {avatar.avatarUrl ? (
-                                                <img
+                                                <Image
                                                     src={avatar.avatarUrl}
                                                     alt={avatar.name}
-                                                    className="w-full h-full object-cover"
+                                                    fill
+                                                    className="object-cover"
                                                 />
                                             ) : (
                                                 <User className="h-8 w-8 text-primary" />
@@ -384,7 +385,7 @@ export default function AvatarsPage() {
                     {avatars.length === 0 && (
                         <div className="col-span-full py-20 text-center border-2 border-dashed rounded-2xl border-muted">
                             <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                            <p className="text-muted-foreground">No custom avatars yet. Click 'Add Avatar' to get started.</p>
+                            <p className="text-muted-foreground">No custom avatars yet. Click &apos;Add Avatar&apos; to get started.</p>
                         </div>
                     )}
                 </div>

@@ -82,7 +82,7 @@ export function exportToJSON<T>(data: T[], filename: string): void {
 /**
  * Generate and download a PDF (placeholder - would need a library like jsPDF)
  */
-export function downloadPDF(elementId: string, filename: string): void {
+export function downloadPDF(_elementId: string, _filename: string): void {
     // For now, use print functionality
     window.print();
     // In production, use a library like jsPDF or html2pdf

@@ -1,7 +1,13 @@
 const { PrismaClient } = require('@prisma/client');
+const OpenAI = require('openai');
 const prisma = new PrismaClient();
 
-// Mock Question Bank (Fallback if AI generation fails or for demo)
+// Initialize OpenAI
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
+
+// Mock Question Bank (Fallback if AI generation fails)
 const QUESTION_BANK = {
     'IT': {
         'BEGINNER': [
@@ -27,9 +33,6 @@ const QUESTION_BANK = {
     ]
 };
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 class AIService {
     constructor() {
         this.TOPIC_KEYWORDS = {
@@ -42,7 +45,7 @@ class AIService {
     }
 
     /**
-     * Generate the next question based on context
+     * Generate the next question based on context using OpenAI
      */
     async generateNextQuestion(interviewId, previousResponse = null) {
         const interview = await prisma.interview.findUnique({
@@ -52,7 +55,6 @@ class AIService {
 
         if (!interview) throw new Error('Interview not found');
 
-        // Fetch AI Settings
         const settings = await prisma.interviewSettings.findFirst() || {
             adaptiveDifficulty: true,
             escalationThreshold: 75,
@@ -67,7 +69,6 @@ class AIService {
             return null; // End Interview
         }
 
-        // Logic: Determine Avatar & Question Type
         let avatarRole = 'Technical';
         let difficulty = interview.difficulty;
 
@@ -90,8 +91,7 @@ class AIService {
         let questionText = "";
         let type = avatarRole === 'HR' ? 'BEHAVIORAL' : 'TECHNICAL';
 
-        // 1. Try Knowledge Base (Retrieval)
-        // We prioritize curated questions for consistency
+        // Try Knowledge Base first
         const kbCount = await prisma.knowledgeBase.count({
             where: {
                 domain: avatarRole === 'HR' ? 'HR' : interview.domain,
@@ -108,32 +108,34 @@ class AIService {
             skip: kbCount > 5 ? Math.floor(Math.random() * 5) : 0
         }) : null;
 
-        if (kbQuestion && Math.random() > 0.3) { // 70% chance to use KB if available
+        if (kbQuestion && Math.random() > 0.3) {
             questionText = kbQuestion.content;
         } else {
-            // 2. Generate with Gemini (Dynamic)
+            // Generate with OpenAI
             try {
-                const prompt = `
-                    Generate a single, unique interview question for a ${difficulty} level ${interview.role} in ${interview.domain}.
-                    Type: ${type} (${avatarRole}).
-                    Topic focus: ${interview.technology || interview.domain}.
-                    Previous Question: "${previousResponse?.question?.question || 'None'}"
-                    Previous Answer: "${previousResponse?.transcript || 'None'}"
-                    
-                    Instructions:
-                    - If previous answer was weak, ask a simpler follow-up.
-                    - If strong, ask a deeper concept.
-                    - Keep it concise (under 30 words).
-                    - Return ONLY the question text.
-                `;
+                const prompt = `Generate a single, unique interview question for a ${difficulty} level ${interview.role} in ${interview.domain}.
+Type: ${type} (${avatarRole}).
+Topic focus: ${interview.technology || interview.domain}.
+Previous Question: "${previousResponse?.question?.question || 'None'}"
+Previous Answer: "${previousResponse?.transcript || 'None'}"
 
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                const result = await model.generateContent(prompt);
-                questionText = result.response.text().trim();
+Instructions:
+- If previous answer was weak, ask a simpler follow-up.
+- If strong, ask a deeper concept.
+- Keep it concise (under 30 words).
+- Return ONLY the question text.`;
+
+                const completion = await openai.chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: prompt }],
+                    temperature: 0.7,
+                    max_tokens: 100
+                });
+
+                questionText = completion.choices[0].message.content.trim();
             } catch (error) {
-                console.error("Gemini Generation Error:", error);
-
-                // 3. Fallback to Static Bank
+                console.error("OpenAI Generation Error:", error);
+                // Fallback to Static Bank
                 const bank = avatarRole === 'HR'
                     ? QUESTION_BANK.HR
                     : (QUESTION_BANK['IT'][difficulty] || QUESTION_BANK['IT']['BEGINNER']);
@@ -151,11 +153,14 @@ class AIService {
     }
 
     /**
-     * Evaluate a response using Enhanced Keyword Matching
+     * Evaluate a response using OpenAI
      */
     async evaluateResponse(questionId, responseText, code = null) {
-        // If it's a coding question, we might expect code instead of audio
-        if ((!responseText || responseText.trim().length < 5) && !code) {
+        const questionData = await prisma.interviewQuestion.findUnique({
+            where: { id: questionId }
+        });
+
+        if (!responseText && !code) {
             return {
                 score: 0,
                 feedback: "No response detected. Please ensure you answer the question or write code.",
@@ -164,63 +169,52 @@ class AIService {
             };
         }
 
-        // 1. Identify Topic (Simple heuristic based on response + question context would be better, but using response for now)
-        let topic = 'BEHAVIORAL'; // Default
-        const lowerText = responseText.toLowerCase();
+        try {
+            const prompt = `You are an expert interviewer evaluating a candidate's answer.
 
-        if (lowerText.includes('react') || lowerText.includes('component')) topic = 'REACT';
-        else if (lowerText.includes('node') || lowerText.includes('express')) topic = 'NODE';
-        else if (lowerText.includes('database') || lowerText.includes('sql')) topic = 'DATABASE';
-        else if (lowerText.includes('scale') || lowerText.includes('system')) topic = 'SYSTEM_DESIGN';
+Question: "${questionData?.question || 'Unknown Question'}"
+Context/Type: ${questionData?.type || 'General'}
 
-        // 2. keyword Matching
-        const expectedKeywords = this.TOPIC_KEYWORDS[topic] || [];
-        const foundKeywords = expectedKeywords.filter(k => lowerText.includes(k));
-        const missingKeywords = expectedKeywords.filter(k => !lowerText.includes(k));
+Candidate Answer: "${responseText || ''}"
+${code ? `Candidate Code:\n${code}\n` : ''}
 
-        // 3. Scoring Logic
-        // Base score for simply answering (up to 40)
+Task: Evaluate the answer heavily on technical accuracy, clarity, and depth.
+
+Return a JSON object:
+{
+    "score": (0-100 integer),
+    "feedback": "2-3 sentences of constructive feedback to the candidate.",
+    "sentiment": "POSITIVE" | "NEUTRAL" | "NEGATIVE",
+    "missingKeywords": ["concept1", "concept2"],
+    "foundKeywords": ["concept3", "concept4"]
+}`;
+
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.3,
+                max_tokens: 300,
+                response_format: { type: "json_object" }
+            });
+
+            const result = JSON.parse(completion.choices[0].message.content);
+            return result;
+        } catch (error) {
+            console.error("AI Evaluation Error (Falling back to heuristic):", error);
+            // Fallback to heuristic evaluation if OpenAI fails
+            return this.evaluateResponseHeuristic(responseText, code);
+        }
+    }
+
+    // Kept for fallback
+    evaluateResponseHeuristic(responseText, code) {
         let score = Math.min(40, (responseText || "").length / 3);
-
-        // Bonus for Code (Simple heuristic for now)
-        if (code && code.length > 20) {
-            score += 30; // Significant bonus for writing code
-            if (code.includes('function') || code.includes('const') || code.includes('class')) {
-                score += 10;
-            }
-        }
-
-        // Bonus for structure (20)
-        if ((responseText || "").toLowerCase().includes('example') || (responseText || "").toLowerCase().includes('because')) {
-            score += 20;
-        }
-
-        // Bonus for accuracy (keywords) (up to 40)
-        const keywordScore = (foundKeywords.length / Math.max(1, expectedKeywords.length)) * 40;
-        score += keywordScore;
-
-        score = Math.min(100, Math.floor(score));
-
-        // 4. Generate Specific Feedback
-        let feedback = "";
-        if (score >= 80) {
-            feedback = "Excellent answer! You covered key concepts and provided good structure.";
-        } else if (score >= 60) {
-            feedback = `Good attempt. You mentioned ${foundKeywords.join(', ')} but could go deeper.`;
-        } else {
-            feedback = "Response needs improvement. Try to be more specific and technical.";
-        }
-
-        if (missingKeywords.length > 0 && score < 90) {
-            feedback += ` Consider discussing: ${missingKeywords.slice(0, 3).join(', ')}.`;
-        }
-
         return {
-            score,
-            feedback,
-            sentiment: score > 60 ? "POSITIVE" : "NEUTRAL",
-            foundKeywords,
-            missingKeywords
+            score: Math.min(70, Math.floor(score)),
+            feedback: "AI service unavailable. Score based on response length.",
+            sentiment: "NEUTRAL",
+            foundKeywords: [],
+            missingKeywords: []
         };
     }
 
@@ -233,9 +227,96 @@ class AIService {
                 domain: data.domain,
                 topic: data.topic,
                 content: data.content,
-                difficulty: data.difficulty
+                difficulty: data.difficulty,
+                answer: data.answer
             }
         });
+    }
+
+    /**
+     * Generate questions from a specific Context (Job Description / Text) using OpenAI
+     */
+    async generateQuestionsFromContext({ context, domain, role, difficulty, count = 5 }) {
+        try {
+            const prompt = `Analyze the following Job Description (JD) or Context:
+"${context.substring(0, 2000)}" 
+
+Generate ${count} interview questions specifically tailored to this context for a ${difficulty} level ${role} role.
+
+Output ONLY a JSON array of objects:
+[
+    {
+        "topic": "Topic Name",
+        "content": "Question Text",
+        "answer": "Ideal Answer Key",
+        "difficulty": "${difficulty}",
+         "type": "TECHNICAL"
+    }
+]`;
+
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.7,
+                max_tokens: 1500,
+                response_format: { type: "json_object" }
+            });
+
+            const result = JSON.parse(completion.choices[0].message.content);
+            // OpenAI might return {questions: [...]} or just [...]
+            return Array.isArray(result) ? result : (result.questions || []);
+
+        } catch (error) {
+            console.error("Context Generation Error:", error);
+            throw new Error("Failed to generate from context");
+        }
+    }
+
+    /**
+     * Generate interview questions using OpenAI
+     */
+    async generateInterviewQuestions({ domain, role, company, difficulty, count = 5 }) {
+        try {
+            const prompt = `You are an expert ${role} interviewer. Generate exactly ${count} professional interview questions for a ${difficulty} level candidate in the ${domain} domain${company ? ` specifically for a position at ${company}` : ''}.
+
+CRITICAL INSTRUCTIONS:
+1. Focus on actual industry-standard technical concepts and behavioral scenarios.
+2. For EVERY question, you MUST provide a detailed "ideal answer" that covers the key technical or situational points the candidate should mention.
+3. Ensure the topics are varied (e.g., if domain is IT, mix Frontend, Backend, DevOps as appropriate for the role).
+4. The difficulty MUST strictly match '${difficulty}'.
+
+Format the output strictly as a JSON array of objects with these keys:
+- "topic": A short 2-3 word topic name (e.g., "React Hooks", "STAR Scenario").
+- "content": The actual question text.
+- "answer": A comprehensive sample answer or the key logic needed for a perfect score.
+
+Output ONLY the JSON array.`;
+
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.7,
+                max_tokens: 2000,
+                response_format: { type: "json_object" }
+            });
+
+            const result = JSON.parse(completion.choices[0].message.content);
+            const questions = Array.isArray(result) ? result : (result.questions || []);
+
+            return questions.map(q => ({
+                topic: q.topic || "General",
+                content: q.content || q.question || "Generated Question",
+                answer: q.answer || q.sampleAnswer || "Sample answer pending..."
+            }));
+        } catch (error) {
+            console.error("AI Generation Error:", error);
+            // Fallback mock data if AI fails
+            return Array(count).fill(null).map((_, i) => ({
+                topic: "Fallback Topic",
+                content: `Sample ${difficulty} question for ${role} in ${domain} (ID: ${i + 1})`,
+                answer: "This is a detailed fallback sample answer protecting against AI downtime.",
+            }));
+        }
     }
 
     /**
@@ -255,7 +336,6 @@ class AIService {
 
         if (!interview) throw new Error('Interview not found');
 
-        // Calculate scores from responses
         let technicalScores = [];
         let behavioralScores = [];
         let questionBreakdown = [];
@@ -265,13 +345,8 @@ class AIService {
         for (const question of interview.questions) {
             const response = question.responses[0];
             if (response) {
-                // Re-evaluate to get granular data if not stored
-                const evalResult = await this.evaluateResponse(question.id, response.transcript);
-                const score = response.score || evalResult.score;
-                const feedback = response.feedback || evalResult.feedback;
-
-                if (evalResult.missingKeywords) evalResult.missingKeywords.forEach(k => allMissingKeywords.add(k));
-                if (evalResult.foundKeywords) evalResult.foundKeywords.forEach(k => allFoundKeywords.add(k));
+                const score = response.score || 0;
+                const feedback = response.feedback || "No feedback recorded";
 
                 questionBreakdown.push({
                     question: question.question,
@@ -298,12 +373,10 @@ class AIService {
             }
         }
 
-        // Calculate aggregate scores
         const technicalScore = technicalScores.length > 0
             ? Math.round(technicalScores.reduce((a, b) => a + b, 0) / technicalScores.length)
             : 0;
 
-        // Mocking other scores based on technical for consistency without real AI
         const communicationScore = Math.min(100, technicalScore + 10);
         const confidenceScore = Math.min(100, technicalScore + 5);
         const starMethodScore = behavioralScores.length > 0
@@ -317,70 +390,36 @@ class AIService {
             (starMethodScore * 0.15)
         );
 
-        // 2026 Feature: Market Readiness Score (Hiring Probability)
-        // Weighted: Tech (50%) + Comm (30%) + Confidence (20%)
         let marketReadinessScore = Math.round(
             (technicalScore * 0.5) +
             (communicationScore * 0.3) +
             (confidenceScore * 0.2)
         );
 
-        // Adjust for "red flags" (low scores in critical areas)
         if (technicalScore < 40) marketReadinessScore -= 10;
         if (communicationScore < 40) marketReadinessScore -= 5;
-
         marketReadinessScore = Math.max(0, Math.min(100, marketReadinessScore));
 
-        // Generate Insights
-        const strengths = [];
-        const weaknesses = [];
-        const recommendations = [];
+        const strengths = this.generateStrengths(technicalScore, communicationScore, confidenceScore, interview.domain);
+        const weaknesses = this.generateWeaknesses(technicalScore, communicationScore, starMethodScore, interview.domain);
+        const recommendations = this.generateRecommendations(technicalScore, starMethodScore, interview.domain);
+        const aiInsights = this.generateAIInsights(interview.role, interview.domain, overallScore, technicalScore);
 
-        if (technicalScore > 70) strengths.push("Strong grasp of technical concepts");
-        if (allFoundKeywords.size > 5) strengths.push(`Good vocabulary: used terms like ${Array.from(allFoundKeywords).slice(0, 3).join(', ')}`);
+        const detailedAnalysis = `Market Readiness: ${marketReadinessScore}%
+Based on your performance, you have a ${marketReadinessScore > 75 ? 'High' : marketReadinessScore > 50 ? 'Moderate' : 'Low'} probability of clearing screening rounds for this role.
+Your pacing and confidence markers indicate ${confidenceScore > 70 ? 'strong executive presence' : 'room for improvement in delivery'}.`;
 
-        if (marketReadinessScore > 80) strengths.push("High Market Readiness: Profile aligns well with current industry standards.");
-
-        if (technicalScore < 60) weaknesses.push("Technical depth needs improvement");
-        if (allMissingKeywords.size > 0) weaknesses.push(`Missed key concepts: ${Array.from(allMissingKeywords).slice(0, 3).join(', ')}`);
-
-        if (weaknesses.length === 0) weaknesses.push("Try to give more concrete examples");
-        if (strengths.length === 0) strengths.push("Good effort in attempting all questions");
-
-        recommendations.push("Review the missing concepts identified above.");
-        recommendations.push("Practice answering with the STAR method (Situation, Task, Action, Result).");
-
-        if (marketReadinessScore < 60) {
-            recommendations.push("Focus on core technical competency to improve Hiring Probability.");
-        }
-
-        const aiInsights = overallScore > 70
-            ? "You demonstrated good capability. Focus on refining your technical explanations."
-            : "Focus on fundamentals used in this interview. Review the specific feedback for each question.";
-
-        // 2026 Insight: Detailed Analysis
-        const detailedAnalysis = `
-            Market Readiness: ${marketReadinessScore}%
-            Based on your performance, you have a ${marketReadinessScore > 75 ? 'High' : marketReadinessScore > 50 ? 'Moderate' : 'Low'} probability of clearing screening rounds for this role.
-            Your pacing and confidence markers indicate ${confidenceScore > 70 ? 'strong executive presence' : 'room for improvement in delivery'}.
-        `;
-
-        // Save or update evaluation
         const evaluationData = {
             overallScore,
             technicalScore,
             communicationScore,
-            confidenceScore, // Changed from problemSolvingScore to match schema
+            confidenceScore,
             starMethodScore,
-            aiInsights: detailedAnalysis + "\n\n" + aiInsights, // Append new insights
+            aiInsights: detailedAnalysis + "\n\n" + aiInsights,
             strengths,
             weaknesses,
             recommendations
         };
-
-        // Note: Prisma schema uses 'confidenceScore' but code used 'problemSolvingScore'. 
-        // Adapting to Schema: Schema has confidenceScore, technicalScore, communicationScore, starMethodScore.
-        // Assuming schema is correct.
 
         let evaluation;
         if (interview.evaluation) {
@@ -487,60 +526,6 @@ class AIService {
             return `You show potential but there's room for improvement. Focus on deepening your ${domain} knowledge and practice articulating your experiences using the STAR method. Consider reviewing fundamentals and working through more practice problems.`;
         }
     }
-
-    async generateInterviewQuestions({ domain, role, company, difficulty, count = 5 }) {
-        try {
-            const prompt = `
-                You are an expert ${role} interviewer. Generate exactly ${count} professional interview questions for a ${difficulty} level candidate in the ${domain} domain${company ? ` specifically for a position at ${company}` : ''}.
-                
-                CRITICAL INSTRUCTIONS:
-                1. Focus on actual industry-standard technical concepts and behavioral scenarios.
-                2. For EVERY question, you MUST provide a detailed "ideal answer" that covers the key technical or situational points the candidate should mention.
-                3. Ensure the topics are varied (e.g., if domain is IT, mix Frontend, Backend, DevOps as appropriate for the role).
-                4. The difficulty MUST strictly match '${difficulty}'.
-                
-                Format the output strictly as a JSON array of objects with these keys:
-                - "topic": A short 2-3 word topic name (e.g., "React Hooks", "STAR Scenario").
-                - "content": The actual question text.
-                - "answer": A comprehensive sample answer or the key logic needed for a perfect score.
-                
-                Output ONLY the JSON array. Do not include markdown code blocks or explanatory text.
-            `;
-
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text().trim();
-
-            // Robust JSON extraction
-            let jsonStr = text;
-            if (text.includes('```')) {
-                jsonStr = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)?.[1] || text;
-            }
-
-            try {
-                const questions = JSON.parse(jsonStr);
-                if (!Array.isArray(questions)) throw new Error("AI did not return an array");
-                return questions.map(q => ({
-                    topic: q.topic || "General",
-                    content: q.content || q.question || "Generated Question",
-                    answer: q.answer || q.sampleAnswer || "Sample answer pending..."
-                }));
-            } catch (e) {
-                console.error("Failed to parse AI response. Raw text:", text);
-                throw new Error("AI generated an invalid format. Please try again.");
-            }
-        } catch (error) {
-            console.error("AI Generation Error:", error);
-            // Fallback mock data if AI fails
-            return Array(count).fill(null).map((_, i) => ({
-                topic: "Fallback Topic",
-                content: `Sample ${difficulty} question for ${role} in ${domain} (ID: ${i + 1})`,
-                answer: "This is a detailed fallback sample answer protecting against AI downtime.",
-            }));
-        }
-    }
 }
 
 module.exports = new AIService();
-

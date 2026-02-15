@@ -1,6 +1,8 @@
 const express = require('express');
+const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
+
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -18,29 +20,28 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        // Create unique filename: user-id-timestamp.ext
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
 
-// File filter to accept only images
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb(new Error('Only images (JPEG, PNG, GIF) are allowed!'));
-    }
-};
-
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: fileFilter
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /jpeg|jpg|png|gif/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        if (mimetype && extname) return cb(null, true);
+        cb(new Error('Only images (JPEG, PNG, GIF) are allowed!'));
+    }
+});
+
+// Validation schema
+const updateProfileSchema = z.object({
+    name: z.string().min(2).optional(),
+    phone: z.string().optional(),
+    avatar: z.string().url().optional()
 });
 
 /**
@@ -50,29 +51,16 @@ const upload = multer({
  */
 router.post('/profile-image', authenticate, upload.single('avatar'), async (req, res, next) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No image file uploaded' });
-        }
-
+        if (!req.file) return res.status(400).json({ error: 'No image file uploaded' });
         const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-
-        // Update user profile with new avatar URL
         const user = await prisma.user.update({
             where: { id: req.user.id },
             data: { avatar: avatarUrl },
             select: { id: true, name: true, email: true, avatar: true }
         });
-
-        res.json({
-            message: 'Profile picture updated successfully',
-            avatar: avatarUrl,
-            user
-        });
+        res.json({ message: 'Profile picture updated', avatar: avatarUrl, user });
     } catch (error) {
-        // Cleanup file if DB update fails
-        if (req.file) {
-            fs.unlinkSync(req.file.path);
-        }
+        if (req.file) fs.unlinkSync(req.file.path);
         next(error);
     }
 });
@@ -84,42 +72,134 @@ router.post('/profile-image', authenticate, upload.single('avatar'), async (req,
  */
 router.get('/me', authenticate, async (req, res, next) => {
     try {
+        const hasInterviewAccess = await prisma.enrollment.findFirst({
+            where: { userId: req.user.id, hasInterviewAccess: true, status: 'ACTIVE' }
+        });
+
         const user = await prisma.user.findUnique({
             where: { id: req.user.id },
             select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                avatar: true,
-                phone: true,
-                createdAt: true,
-                hasUnlimitedInterviews: true,
-                interviewLimit: true
+                id: true, email: true, name: true, role: true, plan: true,
+                avatar: true, phone: true, emailVerified: true, createdAt: true,
+                _count: { select: { enrollments: true, interviews: true } }
             }
         });
-        res.json(user);
+
+        res.json({
+            user: {
+                ...user,
+                hasUnlimitedInterviews: !!hasInterviewAccess || user.role === 'SUPER_ADMIN' || user.role === 'ADMIN'
+            }
+        });
     } catch (error) {
         next(error);
     }
 });
 
 /**
- * @route   PUT /api/users/profile
- * @desc    Update user profile details
+ * @route   PUT /api/users/me
+ * @desc    Update current user profile
  * @access  Private
  */
-router.put('/profile', authenticate, async (req, res, next) => {
+router.put('/me', authenticate, async (req, res, next) => {
     try {
-        const { name, phone } = req.body;
-
+        const validatedData = updateProfileSchema.parse(req.body);
         const user = await prisma.user.update({
             where: { id: req.user.id },
-            data: { name, phone },
-            select: { id: true, name: true, email: true, phone: true, avatar: true }
+            data: validatedData,
+            select: { id: true, email: true, name: true, role: true, avatar: true, phone: true }
         });
+        res.json({ message: 'Profile updated', user });
+    } catch (error) {
+        next(error);
+    }
+});
 
-        res.json(user);
+/**
+ * @route   GET /api/users
+ * @desc    Get all users (Admin only)
+ * @access  Private/Admin
+ */
+router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const { page = 1, limit = 20, role, search } = req.query;
+        const where = {};
+        if (role) where.role = role;
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } }
+            ];
+        }
+
+        const [usersRaw, total] = await Promise.all([
+            prisma.user.findMany({
+                where,
+                select: {
+                    id: true, email: true, name: true, role: true, isActive: true, createdAt: true,
+                    employerProfile: { select: { status: true } },
+                    payments: { select: { amount: true, status: true }, where: { status: 'SUCCESS' } }
+                },
+                skip: (Number(page) - 1) * Number(limit),
+                take: Number(limit),
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.user.count({ where })
+        ]);
+
+        const users = usersRaw.map(u => ({
+            ...u,
+            totalPaid: u.payments.reduce((sum, p) => sum + p.amount, 0),
+            payments: undefined
+        }));
+
+        res.json({
+            users,
+            pagination: {
+                page: Number(page),
+                limit: Number(limit),
+                total,
+                pages: Math.ceil(total / Number(limit))
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/users/:id/activity
+ * @desc    Get user activity logs (Admin only)
+ * @access  Private/Admin
+ */
+router.get('/:id/activity', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const activity = await prisma.auditLog.findMany({
+            where: { performedBy: req.params.id },
+            orderBy: { timestamp: 'desc' },
+            take: 50
+        });
+        res.json(activity);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PATCH /api/users/:id/status
+ * @desc    Activate/Deactivate user (Admin only)
+ * @access  Private/Admin
+ */
+router.patch('/:id/status', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const { isActive } = req.body;
+        if (req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot change your own status' });
+        const user = await prisma.user.update({
+            where: { id: req.params.id },
+            data: { isActive: Boolean(isActive) },
+            select: { id: true, email: true, isActive: true }
+        });
+        res.json({ message: `User ${isActive ? 'activated' : 'deactivated'}`, user });
     } catch (error) {
         next(error);
     }
@@ -128,53 +208,16 @@ router.put('/profile', authenticate, async (req, res, next) => {
 /**
  * @route   PATCH /api/users/:id/approve
  * @desc    Approve/Reject Employer (Admin)
- * @access  Private (Admin)
+ * @access  Private/Admin
  */
-router.patch('/:id/approve', authenticate, async (req, res, next) => {
+router.patch('/:id/approve', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
     try {
-        if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Access denied' });
-        }
-
-        const { status, notes } = req.body; // APPROVED, REJECTED
-        const { id } = req.params;
-
+        const { status, notes } = req.body;
         const employerProfile = await prisma.employerProfile.update({
-            where: { userId: id },
-            data: {
-                status,
-                verificationNotes: notes,
-                documentsVerified: status === 'APPROVED'
-            }
+            where: { userId: req.params.id },
+            data: { status, verificationNotes: notes, documentsVerified: status === 'APPROVED' }
         });
-
-        // Update User role if approved to ensure they have access?
-        // Actually, role is already 'EMPLOYER', status controls visibility.
-
         res.json(employerProfile);
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   GET /api/users/:id/activity
- * @desc    Get user audit logs (360 View)
- * @access  Private (Admin)
- */
-router.get('/:id/activity', authenticate, async (req, res, next) => {
-    try {
-        if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Access denied' });
-        }
-
-        const activity = await prisma.auditLog.findMany({
-            where: { performedBy: req.params.id },
-            orderBy: { timestamp: 'desc' },
-            take: 50
-        });
-
-        res.json(activity);
     } catch (error) {
         next(error);
     }

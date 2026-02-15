@@ -1,85 +1,84 @@
 /**
  * AI Course Generation Service
- * Uses Google Gemini to generate comprehensive course curriculums.
+ * Uses OpenAI ChatGPT to generate comprehensive course curriculums.
  */
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 
-const genAI = process.env.GEMINI_API_KEY
-    ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    : null;
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
 
 const generateCourseStructure = async (topic, difficulty) => {
-    if (!genAI) {
-        console.warn("Gemini API Key missing. Falling back to mock.");
+    if (!process.env.OPENAI_API_KEY) {
+        console.warn("OpenAI API Key missing. Falling back to mock.");
         return mockGenerate(topic, difficulty);
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const prompt = `Act as an expert curriculum designer and subject matter expert.
+Create a comprehensive professional course structure for the topic: "${topic}".
+Difficulty Level: ${difficulty}.
 
-        const prompt = `
-        Act as an expert curriculum designer and subject matter expert.
-        Create a comprehensive professional course structure for the topic: "${topic}".
-        Difficulty Level: ${difficulty}.
-        
-        The output MUST be valid JSON strictly following this schema:
+The output MUST be valid JSON strictly following this schema:
+{
+    "title": "Engaging Course Title",
+    "description": "2-3 sentence marketing description",
+    "category": "Technology/Business/Design/etc",
+    "difficulty": "${difficulty}",
+    "price": Number (approximate market price in INR, e.g. 4999),
+    "discountPrice": Number (slightly lower than price),
+    "courseCode": "Short alphanumeric code (e.g. REACT-101)",
+    "jobRoles": ["Role 1", "Role 2"],
+    "bannerUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
+    "modules": [
         {
-            "title": "Engaging Course Title",
-            "description": "2-3 sentence marketing description",
-            "category": "Technology/Business/Design/etc",
-            "difficulty": "${difficulty}",
-            "price": Number (approximate market price in INR, e.g. 4999),
-            "discountPrice": Number (slightly lower than price),
-            "courseCode": "Short alphanumeric code (e.g. REACT-101)",
-            "jobRoles": ["Role 1", "Role 2"],
-            "bannerUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
-            "modules": [
+            "title": "Module Title",
+            "description": "Brief description",
+            "orderIndex": 0,
+            "lessons": [
                 {
-                    "title": "Module Title",
-                    "description": "Brief description",
-                    "orderIndex": 0,
-                    "lessons": [
+                    "title": "Lesson Title",
+                    "content": "Detailed educational content in Markdown format. Should be at least 3-4 paragraphs.",
+                    "videoUrl": "https://www.youtube.com/watch?v=dummy (or a relevant real link if known)",
+                    "duration": Number (estimated seconds, e.g. 600 for 10 mins),
+                    "order": 0,
+                    "quizzes": [
                         {
-                            "title": "Lesson Title",
-                            "content": "Detailed educational content in Markdown format. Should be at least 3-4 paragraphs.",
-                            "videoUrl": "https://www.youtube.com/watch?v=dummy (or a relevant real link if known)",
-                            "duration": Number (estimated seconds, e.g. 600 for 10 mins),
-                            "order": 0,
-                            "quizzes": [
-                                {
-                                    "question": "Multiple choice question",
-                                    "options": ["Option A", "Option B", "Option C", "Option D"],
-                                    "correctAnswer": "Option A"
-                                }
-                            ]
+                            "question": "Multiple choice question",
+                            "options": ["Option A", "Option B", "Option C", "Option D"],
+                            "correctAnswer": "Option A"
                         }
                     ]
                 }
             ]
         }
-        
-        Requirements:
-        1. Generate at least 4 Modules.
-        2. Each Module must have at least 3 Lessons.
-        3. Include at least 1 Quiz per Module (attached to the last lesson).
-        4. "bannerUrl" should be a relevant Unsplash ID (keep the provided one as fallback if unsure).
-        5. "videoUrl" should be a valid-looking YouTube URL (e.g., specific to the topic if possible, or a placeholder).
-        6. "content" MUST be rich markdown text, not just a summary.
-        7. Ensure content is high-quality and relevant to the difficulty level.
-        `;
+    ]
+}
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+Requirements:
+1. Generate at least 4 Modules.
+2. Each Module must have at least 3 Lessons.
+3. Include at least 1 Quiz per Module (attached to the last lesson).
+4. "bannerUrl" should be a relevant Unsplash ID (keep the provided one as fallback if unsure).
+5. "videoUrl" should be a valid-looking YouTube URL (e.g., specific to the topic if possible, or a placeholder).
+6. "content" MUST be rich markdown text, not just a summary.
+7. Ensure content is high-quality and relevant to the difficulty level.
 
-        // Clean up markdown code blocks if present
-        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+Output ONLY the JSON object, no markdown code blocks.`;
 
-        const courseData = JSON.parse(jsonStr);
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7,
+            max_tokens: 4000,
+            response_format: { type: "json_object" }
+        });
+
+        const courseData = JSON.parse(completion.choices[0].message.content);
         return courseData;
 
     } catch (error) {
-        console.error("Gemini Generation Error:", error);
+        console.error("OpenAI Generation Error:", error);
         // Fallback to mock on error
         return mockGenerate(topic, difficulty);
     }

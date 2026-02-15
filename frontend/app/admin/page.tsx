@@ -19,8 +19,13 @@ import {
     BarChart3,
     BrainCircuit
 } from 'lucide-react'
-import { AdminCharts } from '@/components/admin/AdminCharts'
+import dynamic from 'next/dynamic'
 import { AdminReportModal } from '@/components/admin/report-modal'
+
+const AdminCharts = dynamic(() => import('@/components/admin/AdminCharts').then(mod => mod.AdminCharts), {
+    loading: () => <div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl flex items-center justify-center text-muted-foreground text-sm">Loading Analytics...</div>,
+    ssr: false
+})
 
 
 // Simple Alert Component if toast missing

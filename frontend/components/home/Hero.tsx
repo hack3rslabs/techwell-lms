@@ -120,7 +120,7 @@ export function Hero() {
                 <div className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-purple-500/5 rounded-full blur-[120px]" />
             </div>
 
-            <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+            <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 pb-4">
                 <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 mb-16">
 
                     {/* Left Column: Hero Text */}
@@ -135,7 +135,7 @@ export function Hero() {
                             >
                                 {/* Badge Removed as per request */}
 
-                                <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground mb-6 leading-[1.1]">
+                                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6 leading-tight lg:leading-[1.1]">
                                     Launch Your <br />
                                     <span className={`text-transparent bg-clip-text bg-gradient-to-r ${slides[currentSlide].color} animate-gradient`}>
                                         {currentSlide === 0 && "Tech Career"}
@@ -280,95 +280,180 @@ export function Hero() {
                 {/* Premium Feature Boxes - Redesigned */}
                 <div className="mt-16">
                     <h2 className="text-2xl font-bold text-center mb-10 text-muted-foreground/60 tracking-widest uppercase">Explore Our Ecosystem</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {boxes.map((box, index) => {
-                            const CardWrapper = ({ children }: { children: React.ReactNode }) =>
-                                box.external ? (
-                                    <a href={box.href} target="_blank" rel="noopener noreferrer" className="block h-full perspective-1000">
-                                        {children}
-                                    </a>
-                                ) : (
-                                    <Link href={box.href} className="block h-full perspective-1000">
-                                        {children}
-                                    </Link>
-                                )
 
-                            return (
-                                <CardWrapper key={index}>
-                                    <motion.div
-                                        whileHover={{
-                                            y: -10,
-                                            rotateX: 5,
-                                            scale: 1.02,
-                                            boxShadow: "0 20px 40px -10px rgba(0,0,0,0.2)"
-                                        }}
-                                        transition={{ type: "spring", stiffness: 300 }}
-                                        className={cn(
-                                            "relative h-full min-h-[280px] rounded-2xl p-6 flex flex-col overflow-hidden glass border border-white/10 transition-all duration-300 group",
-                                            box.border
-                                        )}
-                                    >
-                                        {/* Hover Gradient Background */}
-                                        <div className={cn(
-                                            "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-500",
-                                            box.gradient
-                                        )} />
+                    {/* Grid updated to max-3 columns as requested */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                        {/* 1. LMS */}
+                        <motion.div
+                            whileHover={{ y: -5 }}
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                <GraduationCap className="h-6 w-6" />
+                            </div>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">LMS & Courses</h3>
+                            <p className="text-sm text-muted-foreground">Comprehensive learning management system with premium courses.</p>
+                            <Link href="/courses" className="absolute inset-0 z-10" />
+                        </motion.div>
 
-                                        <div className={cn(
-                                            "w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg bg-background/50 backdrop-blur-sm ring-1 ring-white/20 group-hover:scale-110 transition-transform duration-300",
-                                            box.iconColor
-                                        )}>
-                                            <box.icon className="w-7 h-7" />
-                                        </div>
+                        {/* 2. Projects (NEW) */}
+                        <motion.div
+                            whileHover={{ y: -5 }}
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                <Building2 className="h-6 w-6" /> {/* Using Building2 as generic project/biz icon or Briefcase if imported */}
+                            </div>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">Projects Market</h3>
+                            <p className="text-sm text-muted-foreground">Final year projects with source code and documentation.</p>
+                            <Link href="/projects" className="absolute inset-0 z-10" />
+                        </motion.div>
 
-                                        <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors">{box.title}</h3>
+                        {/* 3. Job Portal */}
+                        <motion.div
+                            whileHover={{ y: -5 }}
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10 text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                                <Handshake className="h-6 w-6" />
+                            </div>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">Job Portal</h3>
+                            <p className="text-sm text-muted-foreground">Connect with top employers and find your dream job.</p>
+                            <Link href="/jobs" className="absolute inset-0 z-10" />
+                        </motion.div>
 
-                                        <p className="text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed flex-grow">
-                                            {box.description}
-                                        </p>
+                        {/* 4. AI Interviews */}
+                        <motion.div
+                            whileHover={{ y: -5 }}
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                                <Video className="h-6 w-6" />
+                            </div>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">AI Interviews</h3>
+                            <p className="text-sm text-muted-foreground">Practice with AI-driven mock interviews and get feedback.</p>
+                            <Link href="/interviews" className="absolute inset-0 z-10" />
+                        </motion.div>
 
-                                        <div className="flex items-center justify-between mt-auto">
-                                            <span className={cn("text-sm font-bold tracking-wide", box.iconColor)}>{box.cta}</span>
-                                            <div className={cn(
-                                                "w-8 h-8 rounded-full flex items-center justify-center bg-white/5 group-hover:bg-white/20 transition-colors",
-                                                box.iconColor
-                                            )}>
-                                                <ArrowRight className="w-4 h-4" />
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                </CardWrapper>
-                            )
-                        })}
+                        {/* 5. Resume Builder (Placeholder link) */}
+                        <motion.div
+                            whileHover={{ y: -5 }}
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-pink-500/50 hover:shadow-lg hover:shadow-pink-500/10"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500 group-hover:bg-pink-500 group-hover:text-white transition-colors">
+                                <School className="h-6 w-6" />
+                            </div>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">Resume Builder</h3>
+                            <p className="text-sm text-muted-foreground">Create ATS-friendly resumes with our smart builder.</p>
+                            <Link href="/resume-builder" className="absolute inset-0 z-10" />
+                        </motion.div>
+
+                        {/* 6. For Colleges */}
+                        <motion.div
+                            whileHover={{ y: -5 }}
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                                <Building2 className="h-6 w-6" />
+                            </div>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">For Colleges</h3>
+                            <p className="text-sm text-muted-foreground">Partner with us to empower your students.</p>
+                            <Link href="/colleges" className="absolute inset-0 z-10" aria-label="For Colleges" />
+                        </motion.div>
+
+                        {/* 7. Campus to Career */}
+                        <motion.div
+                            whileHover={{ y: -5 }}
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-teal-500/50 hover:shadow-lg hover:shadow-teal-500/10"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-teal-500/10 text-teal-500 group-hover:bg-teal-500 group-hover:text-white transition-colors">
+                                <GraduationCap className="h-6 w-6" />
+                            </div>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">Campus to Career</h3>
+                            <p className="text-sm text-muted-foreground">Bridge the gap between academic learning and industry demands.</p>
+                            <a href="https://elearnstack.com/#menu1" target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10" aria-label="Campus to Career" />
+                        </motion.div>
+
+                        {/* 8. Business Suite */}
+                        <motion.div
+                            whileHover={{ y: -5 }}
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                <Building2 className="h-6 w-6" />
+                            </div>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">Business Suite (MSME)</h3>
+                            <p className="text-sm text-muted-foreground">All-in-one ERP: GST Billing, CRM, HRMS, and Project Management.</p>
+                            <a href="https://www.twiis.in" target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10" aria-label="Business Suite" />
+                        </motion.div>
                     </div>
                 </div>
             </div>
 
-            {/* Social Dock */}
-            <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-5 hidden sm:flex">
-                {[
-                    { icon: MessageCircle, href: "https://wa.me/911234567890", bg: "bg-[#25D366]", title: "WhatsApp" },
-                    { icon: Send, href: "https://t.me/techwell", bg: "bg-[#0088cc]", title: "Telegram" },
-                    { icon: Phone, href: "tel:+919876543210", bg: "bg-primary", title: "Call Us" }
-                ].map((item, i) => (
-                    <a
-                        key={i}
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                            "w-12 h-12 rounded-full glass text-white flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-primary/50 relative group",
-                            item.bg
-                        )}
-                        title={item.title}
-                    >
-                        <item.icon className="h-5 w-5 fill-current" />
-                        <span className="absolute right-14 bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                            {item.title}
-                        </span>
-                    </a>
-                ))}
-            </div>
+            {/* Support Widget (Floating Chatbot) - Moved to left to avoid overlap with global widgets */}
+            <SupportWidget />
         </div>
     )
+}
+
+function SupportWidget() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const toggleOpen = () => setIsOpen(!isOpen);
+
+    const options = [
+        { icon: MessageCircle, label: "WhatsApp", href: "https://wa.me/911234567890", color: "bg-[#25D366]" },
+        { icon: Send, label: "Telegram", href: "https://t.me/techwell", color: "bg-[#0088cc]" },
+        { icon: Phone, label: "Call Us", href: "tel:+919876543210", color: "bg-blue-500" },
+        { icon: MessageCircle, label: "AI Chat", href: "/chat", color: "bg-purple-600" }, // Placeholder for chatbot
+    ];
+
+    return (
+        <div className="fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3 print:hidden">
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                        className="flex flex-col gap-3 mb-2"
+                    >
+                        {options.map((opt, idx) => (
+                            <motion.a
+                                key={idx}
+                                href={opt.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className="flex items-center gap-3 bg-card/80 backdrop-blur-md border border-white/10 p-2 pr-4 rounded-full shadow-lg hover:scale-105 transition-transform group"
+                            >
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${opt.color} shadow-md`}>
+                                    <opt.icon className="w-5 h-5" />
+                                </div>
+                                <span className="text-sm font-medium">{opt.label}</span>
+                            </motion.a>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <Button
+                size="lg"
+                onClick={toggleOpen}
+                className={`w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ${isOpen ? 'rotate-90 bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'} flex items-center justify-center`}
+            >
+                {isOpen ? <CheckCircle2 className="w-6 h-6 -rotate-45" /> : <MessageCircle className="w-7 h-7" />}
+            </Button>
+        </div>
+    );
 }

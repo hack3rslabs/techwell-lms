@@ -18,6 +18,7 @@ import {
     Award
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import DOMPurify from 'isomorphic-dompurify'
 
 interface Lesson {
     id: string
@@ -385,7 +386,12 @@ export default function CourseLearnPage() {
                                 {(activeLesson.type === 'TEXT' || activeLesson.type === 'ASSIGNMENT' || activeLesson.type === 'PDF') && (
                                     <div className="prose dark:prose-invert max-w-none bg-card p-6 rounded-xl border shadow-sm">
                                         <h2 className="text-xl font-bold mb-4 not-prose border-b pb-2">{activeLesson.title}</h2>
-                                        <div dangerouslySetInnerHTML={{ __html: activeLesson.content || '' }} />
+                                        import DOMPurify from 'isomorphic-dompurify';
+
+                                        // ... (rest of imports)
+
+                                        // Inside component
+                                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(activeLesson.content || '') }} />
 
                                         {activeLesson.type === 'ASSIGNMENT' && (
                                             <div className="mt-8 p-6 bg-muted/30 rounded-lg border-2 border-dashed text-center">

@@ -1,9 +1,10 @@
 "use client"
 
 import Link from 'next/link'
-import { GraduationCap, Users, Award, Target, CheckCircle2, ArrowRight } from 'lucide-react'
+import { GraduationCap, Users, Award, Target, ArrowRight, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { WhyTrust } from '@/components/home/WhyTrust'
+import { CredentialsSection } from '@/components/home/CredentialsSection'
 
 const stats = [
     { value: '10,000+', label: 'Students Trained' },
@@ -32,6 +33,10 @@ export default function AboutPage() {
             {/* Hero */}
             <section className="bg-gradient-to-br from-primary/10 via-background to-purple-500/10 py-20">
                 <div className="container text-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border shadow-sm mb-6 animate-fade-in-up">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">TechWell Founded in 2015</span>
+                    </div>
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">
                         Transforming Tech Education with AI
                     </h1>
@@ -54,6 +59,13 @@ export default function AboutPage() {
                     </div>
                 </div>
             </section>
+
+            {/* Why Choose Techwell */}
+            <WhyTrust />
+
+            {/* Credentials Section */}
+            <CredentialsSection />
+
 
             {/* Stats */}
             <section className="py-16 border-b">
@@ -79,7 +91,7 @@ export default function AboutPage() {
                             <h2 className="text-3xl font-bold mb-6">Our Story</h2>
                             <div className="space-y-4 text-muted-foreground">
                                 <p>
-                                    Founded in 2023, TechWell emerged from a simple observation: traditional education
+                                    Founded in 2015, TechWell emerged from a simple observation: traditional education
                                     wasn&apos;t keeping pace with the rapidly evolving tech industry. Graduates struggled
                                     to bridge the gap between academic knowledge and job-ready skills.
                                 </p>
@@ -108,15 +120,13 @@ export default function AboutPage() {
                     <h2 className="text-3xl font-bold text-center mb-12">Our Values</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {values.map((value, idx) => (
-                            <Card key={idx} className="text-center hover:shadow-lg transition-shadow">
-                                <CardContent className="pt-6">
-                                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                                        <value.icon className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <h3 className="font-semibold mb-2">{value.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{value.description}</p>
-                                </CardContent>
-                            </Card>
+                            <div key={idx} className="bg-card p-6 rounded-xl border hover:shadow-lg transition-shadow text-center">
+                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                                    <value.icon className="h-6 w-6 text-primary" />
+                                </div>
+                                <h3 className="font-semibold mb-2">{value.title}</h3>
+                                <p className="text-sm text-muted-foreground">{value.description}</p>
+                            </div>
                         ))}
                     </div>
                 </div>

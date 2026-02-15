@@ -1,4 +1,0 @@
-﻿E:\FinalProjects\Tecwhell_multibiz\frontend\app\admin\certificates\page.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\app\admin\leads\page.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\app\admin\reports\page.tsx
-E:\FinalProjects\Tecwhell_multibiz\frontend\app\admin\users\page.tsx

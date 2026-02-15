@@ -25,7 +25,8 @@ import {
     Magnet,
     GraduationCap,
     Bot,
-    Briefcase
+    Briefcase,
+    Image as ImageIcon
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -83,6 +84,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                     subItems: [
                         { label: 'Blogs', href: '/admin/blogs' },
                         { label: 'Reviews', href: '/admin/reviews' },
+                        { label: 'Library', href: '/admin/library' },
                     ]
                 },
                 {
@@ -105,6 +107,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                     icon: Briefcase,
                     subItems: [
                         { label: 'Job Board', href: '/admin/jobs' },
+                        { label: 'Projects Market', href: '/admin/projects' },
                     ]
                 },
                 {
@@ -174,6 +177,13 @@ export function AdminSidebar({ className }: SidebarProps) {
                 ]
             },
             {
+                label: "Gallery Manager",
+                icon: ImageIcon,
+                href: "/admin/gallery",
+                active: pathname.startsWith("/admin/gallery"),
+                permission: 'MANAGE_CONTENT'
+            },
+            {
                 label: "Blog Manager",
                 icon: FileText,
                 href: "/admin/blogs",
@@ -181,15 +191,23 @@ export function AdminSidebar({ className }: SidebarProps) {
                 permission: 'MANAGE_CONTENT'
             },
             {
+                label: "Skillcasts",
+                icon: Video,
+                href: "/admin/skillcasts",
+                active: pathname.startsWith("/admin/skillcasts"),
+                permission: 'MANAGE_CONTENT'
+            },
+            {
                 label: "AI Settings",
                 icon: Sparkles,
                 href: "/admin/ai",
-                active: pathname.startsWith("/admin/ai"),
+                active: pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/behavior-analytics"),
                 permission: 'MANAGE_SETTINGS',
                 subItems: [
                     { label: "API Configuration", href: "/admin/ai" },
                     { label: "Knowledge Base", href: "/admin/ai/knowledge-base" },
                     { label: "Q&A Training", href: "/admin/ai/training" },
+                    { label: "Behavior Analytics", href: "/admin/behavior-analytics" },
                 ]
             },
             {

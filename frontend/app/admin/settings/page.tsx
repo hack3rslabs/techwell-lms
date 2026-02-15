@@ -52,7 +52,7 @@ export default function SettingsPage() {
                 name: userRes.data.name || '',
                 phone: userRes.data.phone || ''
             })
-            setAvatarPreview(userRes.data.avatar ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${userRes.data.avatar}` : null)
+            setAvatarPreview(userRes.data.avatar ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001'}${userRes.data.avatar}` : null)
 
             if (settingsRes.data) {
                 setSystemSettings(settingsRes.data)
