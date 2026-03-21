@@ -20,9 +20,27 @@ const loginSchema = z.object({
     password: z.string().min(1, 'Password is required')
 });
 
+// In-memory store for pending registrations (OTP verification)
+const pendingRegistrations = new Map();
+const OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+
+function generateOtp() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Cleanup expired entries every 5 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [email, data] of pendingRegistrations) {
+        if (now - data.createdAt > OTP_EXPIRY_MS) {
+            pendingRegistrations.delete(email);
+        }
+    }
+}, 5 * 60 * 1000);
+
 /**
  * @route   POST /api/auth/register
- * @desc    Register a new user
+ * @desc    Step 1: Validate data, send OTP to email
  * @access  Public
  */
 router.post('/register', async (req, res, next) => {
@@ -38,17 +56,85 @@ router.post('/register', async (req, res, next) => {
             return res.status(400).json({ error: 'Email already registered' });
         }
 
+        // Generate OTP
+        const otp = generateOtp();
+
         // Hash password
         const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
-        // Create user
+        // Store pending registration
+        pendingRegistrations.set(validatedData.email, {
+            email: validatedData.email,
+            password: hashedPassword,
+            name: validatedData.name,
+            phone: validatedData.phone,
+            dob: req.body.dob,
+            qualification: req.body.qualification,
+            college: req.body.college,
+            otp,
+            createdAt: Date.now()
+        });
+
+        // Send OTP email
+        const { sendOtpEmail } = require('../services/email.service');
+        sendOtpEmail(validatedData.email, otp).catch(err => console.error('OTP email error:', err));
+
+        console.log(`[OTP] Code for ${validatedData.email}: ${otp}`);
+
+        res.status(200).json({
+            message: 'OTP sent to your email',
+            email: validatedData.email
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/auth/verify-otp
+ * @desc    Step 2: Verify OTP and create user account
+ * @access  Public
+ */
+router.post('/verify-otp', async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ error: 'Email and OTP are required' });
+        }
+
+        const pending = pendingRegistrations.get(email);
+
+        if (!pending) {
+            return res.status(400).json({ error: 'No pending registration found. Please register again.' });
+        }
+
+        // Check expiry
+        if (Date.now() - pending.createdAt > OTP_EXPIRY_MS) {
+            pendingRegistrations.delete(email);
+            return res.status(400).json({ error: 'OTP has expired. Please register again.' });
+        }
+
+        // Verify OTP
+        if (pending.otp !== otp.toString()) {
+            return res.status(400).json({ error: 'Invalid OTP. Please try again.' });
+        }
+
+        // OTP verified - create user
+        const userData = {
+            email: pending.email,
+            password: pending.password,
+            name: pending.name,
+            phone: pending.phone || undefined,
+            emailVerified: true
+        };
+
+        if (pending.dob) userData.dob = new Date(pending.dob);
+        if (pending.qualification) userData.qualification = pending.qualification;
+        if (pending.college) userData.college = pending.college;
+
         const user = await prisma.user.create({
-            data: {
-                email: validatedData.email,
-                password: hashedPassword,
-                name: validatedData.name,
-                phone: validatedData.phone
-            },
+            data: userData,
             select: {
                 id: true,
                 email: true,
@@ -58,6 +144,14 @@ router.post('/register', async (req, res, next) => {
             }
         });
 
+        const userWithAccess = {
+            ...user,
+            hasUnlimitedInterviews: true
+        };
+
+        // Remove from pending
+        pendingRegistrations.delete(email);
+
         // Generate token
         const token = jwt.sign(
             { userId: user.id },
@@ -65,14 +159,52 @@ router.post('/register', async (req, res, next) => {
             { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
         );
 
-        // Send Welcome Email (Async, don't wait)
+        // Send Welcome Email
         const { sendWelcomeEmail } = require('../services/email.service');
         sendWelcomeEmail(user).catch(err => console.error('Email error:', err));
 
         res.status(201).json({
-            message: 'User registered successfully',
-            user,
+            message: 'Account created successfully',
+            user: userWithAccess,
             token
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/auth/resend-otp
+ * @desc    Resend OTP for pending registration
+ * @access  Public
+ */
+router.post('/resend-otp', async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required' });
+        }
+
+        const pending = pendingRegistrations.get(email);
+
+        if (!pending) {
+            return res.status(400).json({ error: 'No pending registration found. Please register again.' });
+        }
+
+        // Generate new OTP and reset timer
+        const otp = generateOtp();
+        pending.otp = otp;
+        pending.createdAt = Date.now();
+
+        // Send OTP email
+        const { sendOtpEmail } = require('../services/email.service');
+        sendOtpEmail(email, otp).catch(err => console.error('OTP email error:', err));
+
+        console.log(`[OTP] Resent code for ${email}: ${otp}`);
+
+        res.status(200).json({
+            message: 'OTP resent to your email'
         });
     } catch (error) {
         next(error);
@@ -126,7 +258,8 @@ router.post('/login', async (req, res, next) => {
                 email: user.email,
                 name: user.name,
                 role: user.role,
-                permissions: user.permissions || []
+                permissions: user.permissions || [],
+                hasUnlimitedInterviews: true
             },
             token
         });

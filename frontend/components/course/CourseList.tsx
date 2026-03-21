@@ -159,7 +159,11 @@ export default function CourseList() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredCourses.map((course) => (
-                        <Card key={course.id} className="flex flex-col group hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden border-border/50">
+                        <Card
+                            key={course.id}
+                            className="flex flex-col group hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden border-border/50 cursor-pointer"
+                            onClick={() => router.push(`/courses/${course.id}`)}
+                        >
                             <div className="h-48 bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                                 <GraduationCap className="h-20 w-20 text-primary/30" />
                             </div>
@@ -196,22 +200,10 @@ export default function CourseList() {
                                         {course.price === 0 ? 'Free' : `₹${course.price}`}
                                     </span>
                                 </div>
-                                {course.isEnrolled ? (
-                                    <Button size="lg" variant="secondary" className="rounded-xl font-bold" onClick={() => router.push(`/courses/${course.id}`)}>
-                                        Continue Learning
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        size="lg"
-                                        className="rounded-xl font-bold shadow-lg shadow-primary/20"
-                                        onClick={() => handleEnroll(course.id)}
-                                        disabled={enrollingId === course.id}
-                                    >
-                                        {enrollingId === course.id ? (
-                                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                        ) : null}
-                                        Enrol Now
-                                    </Button>
+                                {course.isEnrolled && (
+                                    <span className="text-xs px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-full font-semibold dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
+                                        ✓ Enrolled
+                                    </span>
                                 )}
                             </CardFooter>
                         </Card>

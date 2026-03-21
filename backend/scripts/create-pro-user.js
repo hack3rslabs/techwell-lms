@@ -76,12 +76,7 @@ async function createProUser() {
 
         console.log('\n📋 User Details:');
         console.log('================');
-        console.log('Email:', result.rows[0].email);
-        console.log('Password: student123');
-        console.log('Name:', result.rows[0].name);
-        console.log('Role:', result.rows[0].role);
-        console.log('Unlimited Interviews:', result.rows[0].hasUnlimitedInterviews);
-        console.log('User ID:', result.rows[0].id);
+        console.log('User status: Ready');
         console.log('\n✅ Pro user ready for testing!');
 
     } catch (error) {

@@ -13,6 +13,7 @@ interface User {
     dob?: string;
     qualification?: string;
     college?: string;
+    phone?: string;
     hasUnlimitedInterviews?: boolean;
 }
 
@@ -21,7 +22,9 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => Promise<void>;
+    register: (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => Promise<any>;
+    verifyOtp: (email: string, otp: string) => Promise<void>;
+    resendOtp: (email: string) => Promise<any>;
     logout: () => void;
     refreshUser: () => Promise<void>;
     hasPermission: (permission: string) => boolean;
@@ -66,11 +69,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const register = async (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => {
         const response = await authApi.register({ email, password, name, dob, qualification, college });
+        // The backend now only sends { message: 'OTP sent...', email }
+        // We do NOT set user/token yet, we wait for OTP verification.
+        return response;
+    };
+
+    const verifyOtp = async (email: string, otp: string) => {
+        const response = await authApi.verifyOtp({ email, otp });
         const { token, user } = response.data;
 
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
+    };
+
+    const resendOtp = async (email: string) => {
+        return await authApi.resendOtp({ email });
     };
 
     const logout = () => {
@@ -102,6 +116,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 isAuthenticated,
                 login,
                 register,
+                verifyOtp,
+                resendOtp,
                 logout,
                 refreshUser,
                 hasPermission,

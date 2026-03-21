@@ -288,10 +288,10 @@ export default function VideoSettingsPage() {
                                     </div>
                                     {formData.platform === 'ZOOM' && (
                                         <div className="col-span-2 space-y-2">
-                                            <Label htmlFor="apiKey">API Key / SDK Key (optional)</Label>
+                                            <Label htmlFor="apiKey">Account ID / SDK Key</Label>
                                             <Input
                                                 id="apiKey"
-                                                placeholder="Zoom SDK Key for embedded meetings"
+                                                placeholder="Your Zoom Account ID (Required for OAuth)"
                                                 value={formData.apiKey}
                                                 onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
                                             />
@@ -305,7 +305,7 @@ export default function VideoSettingsPage() {
                                         <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
                                             <li>Go to <a href="https://marketplace.zoom.us" target="_blank" rel="noreferrer" className="text-primary underline">Zoom Marketplace</a></li>
                                             <li>Create a Server-to-Server OAuth app</li>
-                                            <li>Copy Client ID and Client Secret</li>
+                                            <li>Copy Account ID, Client ID and Client Secret</li>
                                             <li>Add scopes: meeting:write, meeting:read</li>
                                         </ol>
                                     )}

@@ -188,6 +188,16 @@ async function main() {
             name: 'Student',
             isSystem: true,
             permissions: ['VIEW_COURSES', 'VIEW_TICKETS']
+        },
+        {
+            name: 'Staff',
+            isSystem: true,
+            permissions: ['VIEW_USERS', 'VIEW_COURSES', 'VIEW_TICKETS', 'MANAGE_TICKETS']
+        },
+        {
+            name: 'Employer',
+            isSystem: true,
+            permissions: ['VIEW_USERS', 'VIEW_COURSES']
         }
     ];
 

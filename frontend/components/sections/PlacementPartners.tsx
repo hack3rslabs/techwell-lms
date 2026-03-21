@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react"
+import { useState } from "react"
 import Image from "next/image"
 
 const partners = [
@@ -45,6 +47,27 @@ const partners = [
     { name: "Swiggy", domain: "swiggy.com" },
 ]
 
+function PartnerLogo({ company }: { company: { name: string; domain: string } }) {
+    const [error, setError] = useState(false);
+
+    if (error) {
+        return (
+            <div className="text-xl font-bold text-muted-foreground whitespace-nowrap px-4 select-none">
+                {company.name}
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={`https://logo.clearbit.com/${company.domain}?size=120`}
+            alt={company.name}
+            className="h-10 md:h-12 w-auto object-contain"
+            onError={() => setError(true)}
+        />
+    );
+}
+
 export function PlacementPartners() {
     // Duplicate for marquee loop
     const marqueePartners = [...partners, ...partners];
@@ -66,18 +89,7 @@ export function PlacementPartners() {
                                 className="relative flex flex-col items-center justify-center min-w-[120px] h-[80px] opacity-90 hover:opacity-100 transition-all duration-300 cursor-pointer hover:scale-125 filter hover:drop-shadow-lg"
                                 title={company.name}
                             >
-                                {/* Using Clearbit Logo API for demos */}
-                                <img
-                                    src={`https://logo.clearbit.com/${company.domain}?size=120`}
-                                    alt={company.name}
-                                    className="h-10 md:h-12 w-auto object-contain"
-                                    onError={(e) => {
-                                        // Fallback to text if image fails
-                                        e.currentTarget.style.display = 'none';
-                                        e.currentTarget.parentElement!.innerText = company.name;
-                                        e.currentTarget.parentElement!.className = "text-xl font-bold text-muted-foreground whitespace-nowrap px-4";
-                                    }}
-                                />
+                                <PartnerLogo company={company} />
                             </div>
                         ))}
                     </div>

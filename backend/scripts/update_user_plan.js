@@ -14,8 +14,7 @@ async function main() {
         console.log(`Successfully updated user ${email} to PRO plan.`);
     } catch (e) {
         if (e.code === 'P2025') {
-            console.error(`User with email ${email} not found.`);
-            // Try to create it if it doesn't exist? No, better to warn.
+            console.error('User not found.');
         } else {
             console.error(e);
         }

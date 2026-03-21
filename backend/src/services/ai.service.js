@@ -1,11 +1,17 @@
 const { PrismaClient } = require('@prisma/client');
-const OpenAI = require('openai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+const pdf = require('pdf-parse');
+const fs = require('fs');
+const path = require('path');
 
-// Initialize OpenAI
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+// Initialize Gemini
+const GEMINI_KEY = process.env.GEMINI_API_KEY;
+if (!GEMINI_KEY) {
+    console.error('CRITICAL ERROR: GEMINI_API_KEY is not defined in the environment variables!');
+}
+const genAI = new GoogleGenerativeAI(GEMINI_KEY || 'MISSING_KEY');
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 // Mock Question Bank (Fallback if AI generation fails)
 const QUESTION_BANK = {
@@ -45,115 +51,250 @@ class AIService {
     }
 
     /**
-     * Generate the next question based on context using OpenAI
+     * Utility to extract text from a PDF file (local or remote URL)
      */
-    async generateNextQuestion(interviewId, previousResponse = null) {
-        const interview = await prisma.interview.findUnique({
-            where: { id: interviewId },
-            include: { questions: true }
-        });
-
-        if (!interview) throw new Error('Interview not found');
-
-        const settings = await prisma.interviewSettings.findFirst() || {
-            adaptiveDifficulty: true,
-            escalationThreshold: 75,
-            initialDifficulty: 'INTERMEDIATE',
-            maxQuestions: 10,
-            hrQuestionRatio: 3
-        };
-
-        const questionCount = interview.questions.length;
-
-        if (questionCount >= settings.maxQuestions) {
-            return null; // End Interview
+    async extractTextFromPDF(resumeUrl) {
+        if (!resumeUrl) {
+            console.log('[PDF Extract] No resume URL provided');
+            return null;
         }
 
-        let avatarRole = 'Technical';
-        let difficulty = interview.difficulty;
+        try {
+            let dataBuffer;
 
-        // Adaptive Difficulty Logic
-        if (settings.adaptiveDifficulty && previousResponse && previousResponse.score) {
-            if (previousResponse.score >= settings.escalationThreshold) {
-                if (difficulty === 'BEGINNER') difficulty = 'INTERMEDIATE';
-                else if (difficulty === 'INTERMEDIATE') difficulty = 'ADVANCED';
-            } else if (previousResponse.score < 50) {
-                if (difficulty === 'ADVANCED') difficulty = 'INTERMEDIATE';
-                else if (difficulty === 'INTERMEDIATE') difficulty = 'BEGINNER';
+            // Handle HTTP/HTTPS URLs (remote files)
+            if (resumeUrl.startsWith('http://') || resumeUrl.startsWith('https://')) {
+                console.log(`[PDF Extract] Downloading from remote URL: ${resumeUrl}`);
+                try {
+                    const response = await fetch(resumeUrl, { timeout: 10000 });
+                    if (!response.ok) {
+                        console.warn(`[PDF Extract] Failed to download - HTTP ${response.status}`);
+                        return null;
+                    }
+                    const buffer = await response.arrayBuffer();
+                    dataBuffer = Buffer.from(buffer);
+                    console.log(`[PDF Extract] Downloaded ${dataBuffer.length} bytes from remote URL`);
+                } catch (fetchError) {
+                    console.warn(`[PDF Extract] Failed to fetch remote PDF:`, fetchError.message);
+                    return null;
+                }
+            } else {
+                // Handle local filesystem paths
+                const absolutePath = path.isAbsolute(resumeUrl)
+                    ? resumeUrl
+                    : path.join(__dirname, '../../', resumeUrl);
+
+                console.log(`[PDF Extract] Attempting to read local file: ${absolutePath}`);
+
+                if (!fs.existsSync(absolutePath)) {
+                    console.warn(`[PDF Extract] File not found at path: ${absolutePath}`);
+                    return null;
+                }
+
+                dataBuffer = fs.readFileSync(absolutePath);
+                console.log(`[PDF Extract] Read ${dataBuffer.length} bytes from local file`);
             }
-        }
 
-        // HR Question Check
-        if ((questionCount + 1) % settings.hrQuestionRatio === 0) {
-            avatarRole = 'HR';
-        }
-
-        let questionText = "";
-        let type = avatarRole === 'HR' ? 'BEHAVIORAL' : 'TECHNICAL';
-
-        // Try Knowledge Base first
-        const kbCount = await prisma.knowledgeBase.count({
-            where: {
-                domain: avatarRole === 'HR' ? 'HR' : interview.domain,
-                difficulty: difficulty
+            // Parse PDF
+            console.log('[PDF Extract] Parsing PDF content...');
+            const data = await pdf(dataBuffer);
+            const extractedText = data.text || '';
+            
+            if (!extractedText || extractedText.trim().length === 0) {
+                console.warn('[PDF Extract] PDF parsing returned empty text');
+                return null;
             }
-        });
 
-        const kbQuestion = kbCount > 0 ? await prisma.knowledgeBase.findFirst({
-            where: {
-                domain: avatarRole === 'HR' ? 'HR' : interview.domain,
-                difficulty: difficulty
-            },
-            take: 1,
-            skip: kbCount > 5 ? Math.floor(Math.random() * 5) : 0
-        }) : null;
-
-        if (kbQuestion && Math.random() > 0.3) {
-            questionText = kbQuestion.content;
-        } else {
-            // Generate with OpenAI
-            try {
-                const prompt = `Generate a single, unique interview question for a ${difficulty} level ${interview.role} in ${interview.domain}.
-Type: ${type} (${avatarRole}).
-Topic focus: ${interview.technology || interview.domain}.
-Previous Question: "${previousResponse?.question?.question || 'None'}"
-Previous Answer: "${previousResponse?.transcript || 'None'}"
-
-Instructions:
-- If previous answer was weak, ask a simpler follow-up.
-- If strong, ask a deeper concept.
-- Keep it concise (under 30 words).
-- Return ONLY the question text.`;
-
-                const completion = await openai.chat.completions.create({
-                    model: "gpt-4o-mini",
-                    messages: [{ role: "user", content: prompt }],
-                    temperature: 0.7,
-                    max_tokens: 100
-                });
-
-                questionText = completion.choices[0].message.content.trim();
-            } catch (error) {
-                console.error("OpenAI Generation Error:", error);
-                // Fallback to Static Bank
-                const bank = avatarRole === 'HR'
-                    ? QUESTION_BANK.HR
-                    : (QUESTION_BANK['IT'][difficulty] || QUESTION_BANK['IT']['BEGINNER']);
-                questionText = bank[Math.floor(Math.random() * bank.length)];
-            }
+            console.log(`[PDF Extract] Successfully extracted ${extractedText.length} characters from PDF`);
+            return extractedText.substring(0, 5000); // Limit to 5000 chars for API efficiency
+        } catch (error) {
+            console.error(`[PDF Extract] Error extracting PDF:`, error.message, error.stack);
+            return null;
         }
-
-        return {
-            question: questionText,
-            type: type,
-            avatarRole: avatarRole,
-            avatarId: avatarRole === 'HR' ? 'hr-1' : 'tech-1',
-            difficulty: difficulty
-        };
     }
 
     /**
-     * Evaluate a response using OpenAI
+     * Generate the next question based on context using Gemini
+     */
+    async generateNextQuestion(interviewId, previousResponse = null) {
+        try {
+            console.log(`[generateNextQuestion] Starting for interview: ${interviewId}`);
+            
+            const interview = await prisma.interview.findUnique({
+                where: { id: interviewId },
+                include: { questions: true }
+            });
+
+            if (!interview) {
+                console.error(`[generateNextQuestion] Interview not found: ${interviewId}`);
+                throw new Error('Interview not found');
+            }
+
+            const questionCount = interview.questions.length;
+            const existingQuestionTexts = interview.questions.map(q => q.question);
+
+            const settings = await prisma.interviewSettings.findFirst() || {
+                adaptiveDifficulty: true,
+                escalationThreshold: 75,
+                initialDifficulty: 'INTERMEDIATE',
+                maxQuestions: 10,
+                hrQuestionRatio: 3
+            };
+
+            console.log(`[generateNextQuestion] Interview found with ${questionCount} existing questions`);
+
+            if (questionCount >= settings.maxQuestions) {
+                console.log(`[generateNextQuestion] Max questions reached: ${questionCount}/${settings.maxQuestions}`);
+                return null; // End Interview
+            }
+
+            let avatarRole = 'Technical';
+            let difficulty = interview.difficulty;
+
+            // Adaptive Difficulty Logic
+            if (settings.adaptiveDifficulty && previousResponse && previousResponse.score) {
+                if (previousResponse.score >= settings.escalationThreshold) {
+                    if (difficulty === 'BEGINNER') difficulty = 'INTERMEDIATE';
+                    else if (difficulty === 'INTERMEDIATE') difficulty = 'ADVANCED';
+                } else if (previousResponse.score < 50) {
+                    if (difficulty === 'ADVANCED') difficulty = 'INTERMEDIATE';
+                    else if (difficulty === 'INTERMEDIATE') difficulty = 'BEGINNER';
+                }
+            }
+
+            // HR Question Check
+            if ((questionCount + 1) % settings.hrQuestionRatio === 0) {
+                avatarRole = 'HR';
+                console.log(`[generateNextQuestion] HR round detected`);
+            }
+
+            let questionText = "";
+            let type = avatarRole === 'HR' ? 'BEHAVIORAL' : 'TECHNICAL';
+
+            // Try Knowledge Base first
+            try {
+                const kbCount = await prisma.knowledgeBase.count({
+                    where: {
+                        domain: avatarRole === 'HR' ? 'HR' : interview.domain,
+                        difficulty: difficulty,
+                        content: {
+                            notIn: existingQuestionTexts
+                        }
+                    }
+                });
+
+                console.log(`[generateNextQuestion] Found ${kbCount} NEW KB questions for domain: ${interview.domain}, difficulty: ${difficulty}`);
+
+                const kbQuestion = kbCount > 0 ? await prisma.knowledgeBase.findFirst({
+                    where: {
+                        domain: avatarRole === 'HR' ? 'HR' : interview.domain,
+                        difficulty: difficulty,
+                        content: {
+                            notIn: existingQuestionTexts
+                        }
+                    },
+                    take: 1,
+                    skip: kbCount > 5 ? Math.floor(Math.random() * 5) : (kbCount > 0 ? Math.floor(Math.random() * kbCount) : 0)
+                }) : null;
+
+                if (kbQuestion && Math.random() > 0.3) {
+                    console.log(`[generateNextQuestion] Using KB question`);
+                    questionText = kbQuestion.content;
+                } else {
+                    console.log(`[generateNextQuestion] Will generate question with AI`);
+                    throw new Error('Using AI generation'); // Force AI generation
+                }
+            } catch (kbError) {
+                // Generate with Gemini
+                try {
+                    console.log(`[generateNextQuestion] Attempting AI generation...`);
+                    
+                    // Fetch Resume Text if available
+                    let resumeText = null;
+                    if (interview.resumeUrl) {
+                        console.log(`[generateNextQuestion] Extracting resume from: ${interview.resumeUrl}`);
+                        resumeText = await this.extractTextFromPDF(interview.resumeUrl);
+                        if (resumeText) {
+                            console.log(`[generateNextQuestion] Resume extracted: ${resumeText.length} chars`);
+                        } else {
+                            console.warn(`[generateNextQuestion] Resume extraction returned null`);
+                        }
+                    }
+
+                    const prompt = `You are a professional AI Technical Interviewer. 
+Your goal is to conduct a highly personalized interview based on the candidate's resume.
+
+Candidate Resume Context:
+"""
+${resumeText || "No resume content available."}
+"""
+
+Target Role: ${interview.role}
+Target Technology: ${interview.technology || interview.domain}
+Difficulty: ${difficulty}
+
+Core Task:
+Generate exactly ONE (1) technical interview question for the next step of the interview.
+
+Focus heavily on:
+1. Specific Skills mentioned in the resume.
+2. Projects the candidate has worked on.
+3. Their professional Experience.
+
+Current Interview Progress:
+- Questions Asked So Far: ${questionCount}
+- Questions Already Asked (IMPORTANT: DO NOT REPEAT THESE):
+${existingQuestionTexts.map((q, i) => `  ${i + 1}. ${q}`).join('\n')}
+
+- Previous Candidate Answer: "${previousResponse?.transcript || 'None'}"
+
+Instructions:
+- Generate exactly ONE (1) NEW technical interview question that follows naturally from the previous topic BUT is not identical to any previous questions.
+- Keep the question concise and professional (max 40 words).
+- If resume content is available, tailor the question to a specific project or skill found there.
+- Ensure the question is different in substance and wording from the "Questions Already Asked" list above.
+- Return ONLY the question text. Do not include any prefix like "Interviewer:" or numbering.`;
+
+                    console.log(`[generateNextQuestion] Sending prompt to Gemini...`);
+                    const result = await model.generateContent(prompt);
+                    const response = await result.response;
+                    questionText = response.text().trim();
+                    console.log(`[generateNextQuestion] AI generated question: ${questionText.substring(0, 50)}...`);
+                } catch (geminiError) {
+                    console.error(`[generateNextQuestion] Gemini error:`, geminiError.message);
+                    // Fallback to Static Bank
+                    console.log(`[generateNextQuestion] Using fallback question bank`);
+                    const bank = avatarRole === 'HR'
+                        ? QUESTION_BANK.HR
+                        : (QUESTION_BANK['IT'][difficulty] || QUESTION_BANK['IT']['BEGINNER']);
+                    questionText = bank[Math.floor(Math.random() * bank.length)];
+                    console.log(`[generateNextQuestion] Fallback question: ${questionText}`);
+                }
+            }
+
+            console.log(`[generateNextQuestion] Success: Generated question of type ${type}`);
+            return {
+                question: questionText || "Tell me about a challenging project you've worked on.",
+                type: type,
+                avatarRole: avatarRole,
+                avatarId: avatarRole === 'HR' ? 'hr-1' : 'tech-1',
+                difficulty: difficulty
+            };
+        } catch (error) {
+            console.error(`[generateNextQuestion] CRITICAL ERROR:`, error.message, error.stack);
+            // Return a safe fallback question
+            return {
+                question: "Tell me about yourself and your background in this field.",
+                type: 'TECHNICAL',
+                avatarRole: 'Technical',
+                avatarId: 'tech-1',
+                difficulty: 'BEGINNER'
+            };
+        }
+    }
+
+    /**
+     * Evaluate a response using Gemini
      */
     async evaluateResponse(questionId, responseText, code = null) {
         const questionData = await prisma.interviewQuestion.findUnique({
@@ -170,38 +311,14 @@ Instructions:
         }
 
         try {
-            const prompt = `You are an expert interviewer evaluating a candidate's answer.
+            const prompt = `You are an expert interviewer evaluating a candidate's answer.\n\nQuestion: "${questionData?.question || 'Unknown Question'}"\nContext/Type: ${questionData?.type || 'General'}\n\nCandidate Answer: "${responseText || ''}"\n${code ? `Candidate Code:\n${code}\n` : ''}\n\nTask: Evaluate the answer heavily on technical accuracy, clarity, and depth.\n\nReturn EXACTLY a JSON object in this format (no markdown blocks, no extra text):\n{\n    "score": (0-100 integer),\n    "feedback": "2-3 sentences of constructive feedback.",\n    "sentiment": "POSITIVE" | "NEUTRAL" | "NEGATIVE",\n    "missingKeywords": ["concept1", "concept2"],\n    "foundKeywords": ["concept3", "concept4"]\n}`;
 
-Question: "${questionData?.question || 'Unknown Question'}"
-Context/Type: ${questionData?.type || 'General'}
-
-Candidate Answer: "${responseText || ''}"
-${code ? `Candidate Code:\n${code}\n` : ''}
-
-Task: Evaluate the answer heavily on technical accuracy, clarity, and depth.
-
-Return a JSON object:
-{
-    "score": (0-100 integer),
-    "feedback": "2-3 sentences of constructive feedback to the candidate.",
-    "sentiment": "POSITIVE" | "NEUTRAL" | "NEGATIVE",
-    "missingKeywords": ["concept1", "concept2"],
-    "foundKeywords": ["concept3", "concept4"]
-}`;
-
-            const completion = await openai.chat.completions.create({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content: prompt }],
-                temperature: 0.3,
-                max_tokens: 300,
-                response_format: { type: "json_object" }
-            });
-
-            const result = JSON.parse(completion.choices[0].message.content);
-            return result;
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text().trim().replace(/```json|```/gi, '');
+            return JSON.parse(text);
         } catch (error) {
-            console.error("AI Evaluation Error (Falling back to heuristic):", error);
-            // Fallback to heuristic evaluation if OpenAI fails
+            console.error("Gemini Evaluation Error (Falling back to heuristic):", error);
             return this.evaluateResponseHeuristic(responseText, code);
         }
     }
@@ -211,7 +328,7 @@ Return a JSON object:
         let score = Math.min(40, (responseText || "").length / 3);
         return {
             score: Math.min(70, Math.floor(score)),
-            feedback: "AI service unavailable. Score based on response length.",
+            feedback: "AI service unavailable or error occurred. Score based on response depth.",
             sentiment: "NEUTRAL",
             foundKeywords: [],
             missingKeywords: []
@@ -234,74 +351,63 @@ Return a JSON object:
     }
 
     /**
-     * Generate questions from a specific Context (Job Description / Text) using OpenAI
+     * Generate questions from a specific Context (Job Description / Text) using Gemini
      */
     async generateQuestionsFromContext({ context, domain, role, difficulty, count = 5 }) {
         try {
-            const prompt = `Analyze the following Job Description (JD) or Context:
-"${context.substring(0, 2000)}" 
+            const prompt = `You are an AI Technical Interviewer.
+Analyze the following Background/Resume/Job Description:
+"""
+${context.substring(0, 4000)}
+"""
 
-Generate ${count} interview questions specifically tailored to this context for a ${difficulty} level ${role} role.
+Task:
+Generate exactly ${count} technical interview questions tailored to this context for a ${difficulty} level ${role} role.
 
-Output ONLY a JSON array of objects:
+Focus on:
+- Skills mentioned in the text
+- Projects and accomplishments
+- Relative experience
+
+Output Requirements:
+- Return ONLY a JSON array of objects.
+- Keys: "topic", "content", "answer", "difficulty", "type".
+- "type" should be "TECHNICAL".
+
+JSON Format:
 [
     {
-        "topic": "Topic Name",
-        "content": "Question Text",
-        "answer": "Ideal Answer Key",
+        "topic": "Topic name",
+        "content": "Question text",
+        "answer": "Ideal model answer",
         "difficulty": "${difficulty}",
-         "type": "TECHNICAL"
+        "type": "TECHNICAL"
     }
 ]`;
 
-            const completion = await openai.chat.completions.create({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content: prompt }],
-                temperature: 0.7,
-                max_tokens: 1500,
-                response_format: { type: "json_object" }
-            });
-
-            const result = JSON.parse(completion.choices[0].message.content);
-            // OpenAI might return {questions: [...]} or just [...]
-            return Array.isArray(result) ? result : (result.questions || []);
-
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text().trim().replace(/```json|```/gi, '');
+            const parsed = JSON.parse(text);
+            return Array.isArray(parsed) ? parsed : (parsed.questions || []);
         } catch (error) {
-            console.error("Context Generation Error:", error);
+            console.error("Gemini Context Generation Error:", error);
             throw new Error("Failed to generate from context");
         }
     }
 
     /**
-     * Generate interview questions using OpenAI
+     * Generate interview questions using Gemini
      */
     async generateInterviewQuestions({ domain, role, company, difficulty, count = 5 }) {
         try {
-            const prompt = `You are an expert ${role} interviewer. Generate exactly ${count} professional interview questions for a ${difficulty} level candidate in the ${domain} domain${company ? ` specifically for a position at ${company}` : ''}.
+            const prompt = `You are an expert ${role} interviewer. Generate exactly ${count} professional interview questions for a ${difficulty} level candidate in the ${domain} domain${company ? ` specifically for a position at ${company}` : ''}.\n\nInstructions:\n1. Focus on actual industry-standard technical concepts.\n2. Provide a detailed "ideal answer".\n3. Format strictly as a JSON array of objects with keys: "topic", "content", "answer".\n4. Return ONLY the JSON (no markdown).`;
 
-CRITICAL INSTRUCTIONS:
-1. Focus on actual industry-standard technical concepts and behavioral scenarios.
-2. For EVERY question, you MUST provide a detailed "ideal answer" that covers the key technical or situational points the candidate should mention.
-3. Ensure the topics are varied (e.g., if domain is IT, mix Frontend, Backend, DevOps as appropriate for the role).
-4. The difficulty MUST strictly match '${difficulty}'.
-
-Format the output strictly as a JSON array of objects with these keys:
-- "topic": A short 2-3 word topic name (e.g., "React Hooks", "STAR Scenario").
-- "content": The actual question text.
-- "answer": A comprehensive sample answer or the key logic needed for a perfect score.
-
-Output ONLY the JSON array.`;
-
-            const completion = await openai.chat.completions.create({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content: prompt }],
-                temperature: 0.7,
-                max_tokens: 2000,
-                response_format: { type: "json_object" }
-            });
-
-            const result = JSON.parse(completion.choices[0].message.content);
-            const questions = Array.isArray(result) ? result : (result.questions || []);
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text().trim().replace(/```json|```/gi, '');
+            const parsed = JSON.parse(text);
+            const questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
 
             return questions.map(q => ({
                 topic: q.topic || "General",
@@ -309,12 +415,12 @@ Output ONLY the JSON array.`;
                 answer: q.answer || q.sampleAnswer || "Sample answer pending..."
             }));
         } catch (error) {
-            console.error("AI Generation Error:", error);
-            // Fallback mock data if AI fails
+            console.error("Gemini Generation Error:", error);
+            // Fallback mock data
             return Array(count).fill(null).map((_, i) => ({
                 topic: "Fallback Topic",
                 content: `Sample ${difficulty} question for ${role} in ${domain} (ID: ${i + 1})`,
-                answer: "This is a detailed fallback sample answer protecting against AI downtime.",
+                answer: "Fallback sample answer.",
             }));
         }
     }
@@ -327,7 +433,7 @@ Output ONLY the JSON array.`;
             where: { id: interviewId },
             include: {
                 questions: {
-                    include: { responses: true }
+                    include: { response: true }
                 },
                 evaluation: true,
                 user: true
@@ -339,11 +445,9 @@ Output ONLY the JSON array.`;
         let technicalScores = [];
         let behavioralScores = [];
         let questionBreakdown = [];
-        let allMissingKeywords = new Set();
-        let allFoundKeywords = new Set();
 
         for (const question of interview.questions) {
-            const response = question.responses[0];
+            const response = question.response;
             if (response) {
                 const score = response.score || 0;
                 const feedback = response.feedback || "No feedback recorded";
@@ -405,9 +509,7 @@ Output ONLY the JSON array.`;
         const recommendations = this.generateRecommendations(technicalScore, starMethodScore, interview.domain);
         const aiInsights = this.generateAIInsights(interview.role, interview.domain, overallScore, technicalScore);
 
-        const detailedAnalysis = `Market Readiness: ${marketReadinessScore}%
-Based on your performance, you have a ${marketReadinessScore > 75 ? 'High' : marketReadinessScore > 50 ? 'Moderate' : 'Low'} probability of clearing screening rounds for this role.
-Your pacing and confidence markers indicate ${confidenceScore > 70 ? 'strong executive presence' : 'room for improvement in delivery'}.`;
+        const detailedAnalysis = `Market Readiness: ${marketReadinessScore}%\nBased on your performance, you have a ${marketReadinessScore > 75 ? 'High' : marketReadinessScore > 50 ? 'Moderate' : 'Low'} probability of clearing screening rounds for this role.\nYour pacing and confidence markers indicate ${confidenceScore > 70 ? 'strong executive presence' : 'room for improvement in delivery'}.`;
 
         const evaluationData = {
             overallScore,
@@ -452,79 +554,36 @@ Your pacing and confidence markers indicate ${confidenceScore > 70 ? 'strong exe
         };
     }
 
-    calculateMockScore(responseText) {
-        if (!responseText) return 50;
-        const lengthScore = Math.min(40, responseText.length / 5);
-        const hasStructure = responseText.includes('.') ? 15 : 0;
-        const hasKeywords = (responseText.match(/because|example|therefore|specifically/gi) || []).length * 10;
-        return Math.min(100, Math.floor(45 + lengthScore + hasStructure + hasKeywords));
-    }
-
-    generateMockFeedback(question, answer, score) {
-        if (score >= 85) {
-            return "Excellent response with strong technical depth and clear examples.";
-        } else if (score >= 70) {
-            return "Good answer. Consider providing more specific examples to strengthen your response.";
-        } else if (score >= 55) {
-            return "Adequate response but could benefit from more detail and structure. Try using the STAR method.";
-        } else {
-            return "Response needs improvement. Focus on answering the question directly with concrete examples.";
-        }
-    }
-
     generateStrengths(techScore, commScore, confScore, domain) {
         const strengths = [];
-        if (techScore >= 75) {
-            strengths.push(`Strong technical understanding of ${domain} concepts and best practices`);
-        }
-        if (commScore >= 75) {
-            strengths.push("Clear and articulate communication of complex ideas");
-        }
-        if (confScore >= 75) {
-            strengths.push("Confident presentation with good pacing and structure");
-        }
-        strengths.push("Demonstrated problem-solving approach in technical discussions");
+        if (techScore >= 75) strengths.push(`Strong technical understanding of ${domain} concepts`);
+        if (commScore >= 75) strengths.push("Clear and articulate communication");
+        if (confScore >= 75) strengths.push("Confident presentation");
+        strengths.push("Demonstrated problem-solving approach");
         return strengths;
     }
 
     generateWeaknesses(techScore, commScore, starScore, domain) {
         const weaknesses = [];
-        if (techScore < 70) {
-            weaknesses.push("Could deepen technical knowledge in some areas");
-        }
-        if (commScore < 70) {
-            weaknesses.push("Some responses could be more concise and focused");
-        }
-        if (starScore < 70) {
-            weaknesses.push("Need more specific examples using the STAR method for behavioral questions");
-        }
-        if (weaknesses.length === 0) {
-            weaknesses.push("Minor improvements possible in response time management");
-        }
+        if (techScore < 70) weaknesses.push("Could deepen technical knowledge in core areas");
+        if (commScore < 70) weaknesses.push("Some responses could be more concise");
+        if (starScore < 70) weaknesses.push("Use more specific STAR method examples");
+        if (weaknesses.length === 0) weaknesses.push("Minor improvements in response pacing");
         return weaknesses;
     }
 
     generateRecommendations(techScore, starScore, domain) {
         const recommendations = [];
-        if (techScore < 80) {
-            recommendations.push(`Practice more ${domain} system design questions focusing on scalability`);
-        }
-        if (starScore < 80) {
-            recommendations.push("Prepare 3-5 strong STAR stories for behavioral questions");
-        }
-        recommendations.push("Work on providing concise answers within 2-3 minute timeframe");
-        recommendations.push("Review common interview patterns for your target role");
+        if (techScore < 80) recommendations.push(`Practice more ${domain} system design questions`);
+        if (starScore < 80) recommendations.push("Prepare more STAR stories for behavioral rounds");
+        recommendations.push("Work on providing structured answers within 2 mins");
         return recommendations;
     }
 
     generateAIInsights(role, domain, overallScore, techScore) {
-        if (overallScore >= 85) {
-            return `Outstanding performance! You show excellent potential as a ${role} with strong ${domain} expertise. Your technical answers were well-structured and demonstrated deep understanding. You're well-prepared for senior-level interviews.`;
-        } else if (overallScore >= 70) {
-            return `Good performance overall. You demonstrate solid ${role} capabilities with reasonable ${domain} knowledge. Focus on strengthening your technical depth and using more concrete examples. With some targeted practice, you'll be ready for mid-to-senior level positions.`;
-        } else {
-            return `You show potential but there's room for improvement. Focus on deepening your ${domain} knowledge and practice articulating your experiences using the STAR method. Consider reviewing fundamentals and working through more practice problems.`;
-        }
+        if (overallScore >= 85) return `Outstanding! You show excellent potential as a ${role}.`;
+        if (overallScore >= 70) return `Good job. Solid ${role} capabilities with room to grow technical depth.`;
+        return `Potential identified, but focus on fundamentals and STAR method clarity.`;
     }
 }
 

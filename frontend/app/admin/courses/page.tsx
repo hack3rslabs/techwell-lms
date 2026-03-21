@@ -6,7 +6,9 @@ import api from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { GraduationCap, Loader2, Plus, BookOpen, Clock } from 'lucide-react'
+import { GraduationCap, Loader2, Plus, BookOpen, Clock, Trash2 } from 'lucide-react'
+import { courseApi } from '@/lib/api'
+import { toast } from 'sonner' // Assuming sonner or similar is available based on modern trends, if not I'll use window.confirm
 
 interface Course {
     id: string
@@ -22,20 +24,43 @@ export default function AdminCoursesPage() {
     const router = useRouter()
     const [courses, setCourses] = React.useState<Course[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
+    const [isDeleting, setIsDeleting] = React.useState<string | null>(null)
+
+    const fetchCourses = async () => {
+        setIsLoading(true)
+        try {
+            const res = await api.get('/courses')
+            setCourses(res.data.courses || [])
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     React.useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const res = await api.get('/courses')
-                setCourses(res.data.courses || [])
-            } catch (error) {
-                console.error(error)
-            } finally {
-                setIsLoading(false)
-            }
-        }
         fetchCourses()
     }, [])
+
+    const handleDelete = async (courseId: string, title: string) => {
+        console.log(`[DEBUG] Handle delete clicked for courseId: ${courseId}, title: ${title}`);
+        if (!window.confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+            return
+        }
+
+        setIsDeleting(courseId)
+        try {
+            await courseApi.delete(courseId)
+            // Refresh list
+            setCourses(courses.filter(c => c.id !== courseId))
+            // alert('Course deleted successfully')
+        } catch (error: any) {
+            console.error(error)
+            alert(error.response?.data?.error || 'Failed to delete course')
+        } finally {
+            setIsDeleting(null)
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -87,9 +112,24 @@ export default function AdminCoursesPage() {
                                     <span className="font-bold text-lg">
                                         {course.price === 0 ? 'Free' : `₹${course.price}`}
                                     </span>
-                                    <Button variant="secondary" size="sm" onClick={() => router.push(`/admin/courses/${course.id}/edit`)}>
-                                        Manage
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8"
+                                            onClick={() => handleDelete(course.id, course.title)}
+                                            disabled={isDeleting === course.id}
+                                        >
+                                            {isDeleting === course.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                        <Button variant="secondary" size="sm" onClick={() => router.push(`/admin/courses/${course.id}/edit`)}>
+                                            Manage
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

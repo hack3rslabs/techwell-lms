@@ -7,12 +7,17 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Eye, EyeOff, Loader2, Check, X } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Eye, EyeOff, Loader2, Check, X, Mail } from 'lucide-react'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 
 export default function RegisterPage() {
     const router = useRouter()
-    const { register, isAuthenticated } = useAuth()
+    const { register, verifyOtp, resendOtp, isAuthenticated } = useAuth()
+
+    const [step, setStep] = React.useState<'form' | 'otp'>('form')
+    const [otpValue, setOtpValue] = React.useState('')
+    const [timeLeft, setTimeLeft] = React.useState(0)
 
     const [name, setName] = React.useState('')
     const [email, setEmail] = React.useState('')
@@ -39,6 +44,13 @@ export default function RegisterPage() {
         special: /[^A-Za-z0-9]/.test(password),
     }
 
+    React.useEffect(() => {
+        if (timeLeft > 0 && step === 'otp') {
+            const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+            return () => clearTimeout(timerId);
+        }
+    }, [timeLeft, step]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
@@ -57,13 +69,121 @@ export default function RegisterPage() {
 
         try {
             await register(email, password, name, dob, qualification, college)
-            router.push('/dashboard')
+            setStep('otp')
+            setTimeLeft(60) // 60 seconds before resend is allowed
         } catch (err: unknown) {
             const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Registration failed. Please try again.'
             setError(errorMessage)
         } finally {
             setIsLoading(false)
         }
+    }
+
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setError('')
+        
+        if (otpValue.length !== 6) {
+            setError('Please enter the 6-digit OTP')
+            return
+        }
+
+        setIsLoading(true)
+        try {
+            await verifyOtp(email, otpValue)
+            router.push('/dashboard')
+        } catch (err: unknown) {
+            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Custom invalid OTP.'
+            setError(errorMessage)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleResendOtp = async () => {
+        setError('')
+        try {
+            await resendOtp(email)
+            setTimeLeft(60)
+            setOtpValue('')
+        } catch (err: unknown) {
+            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to resend OTP.'
+            setError(errorMessage)
+        }
+    }
+
+    if (step === 'otp') {
+        return (
+            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background via-background to-primary/5">
+                <div className="w-full max-w-md space-y-6">
+                    <div className="flex justify-center">
+                        <Link href="/">
+                            <Image src="/logo-light.png" alt="TechWell" width={160} height={48} className="dark:hidden" priority />
+                            <Image src="/logo-dark.png" alt="TechWell" width={160} height={48} className="hidden dark:block" priority />
+                        </Link>
+                    </div>
+                    <Card className="border-muted shadow-xl backdrop-blur-sm bg-background/80">
+                        <CardHeader className="text-center pt-8">
+                            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                <Mail className="w-8 h-8 text-primary" />
+                            </div>
+                            <CardTitle className="text-2xl font-bold">Verify your email</CardTitle>
+                            <CardDescription className="text-base mt-2">
+                                We&apos;ve sent a 6-digit code to <br />
+                                <span className="font-semibold text-foreground">{email}</span>
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="px-8 pb-8">
+                            <form onSubmit={handleVerifyOtp} className="space-y-6">
+                                {error && (
+                                    <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg animate-in fade-in zoom-in duration-300">
+                                        {error}
+                                    </div>
+                                )}
+                                
+                                <div className="flex justify-center flex-col items-center gap-4">
+                                    <InputOTP maxLength={6} value={otpValue} onChange={setOtpValue} disabled={isLoading}>
+                                        <InputOTPGroup className="gap-2">
+                                            <InputOTPSlot index={0} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={1} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={2} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={3} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={4} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={5} className="w-12 h-14 text-lg border-2" />
+                                        </InputOTPGroup>
+                                    </InputOTP>
+                                </div>
+
+                                <Button type="submit" className="w-full h-12 text-base font-semibold shadow-lg transition-all" disabled={isLoading || otpValue.length !== 6}>
+                                    {isLoading ? (
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...</>
+                                    ) : 'Verify Code'}
+                                </Button>
+                            </form>
+                        </CardContent>
+                        <CardFooter className="flex flex-col border-t border-border px-8 py-6">
+                            <div className="text-sm text-muted-foreground mb-4">
+                                Didn&apos;t receive the code?
+                            </div>
+                            {timeLeft > 0 ? (
+                                <div className="text-sm font-medium text-foreground">
+                                    Resend code in <span className="text-primary">{timeLeft}s</span>
+                                </div>
+                            ) : (
+                                <Button variant="outline" className="w-full" onClick={handleResendOtp} disabled={isLoading}>
+                                    Resend Code
+                                </Button>
+                            )}
+                            <div className="mt-6 text-sm">
+                                <button type="button" onClick={() => setStep('form')} className="text-primary hover:underline font-medium flex items-center gap-1">
+                                    &larr; Back to registration
+                                </button>
+                            </div>
+                        </CardFooter>
+                    </Card>
+                </div>
+            </div>
+        )
     }
 
     return (

@@ -233,7 +233,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl font-extrabold tracking-tight">
-                            Welcome, <span className="text-gradient">{user.name}</span>!
+                            Welcome, <span className="text-foreground">{user.name}</span>!
                         </h1>
                         <p className="text-muted-foreground mt-1 text-lg">Track your progress and manage your learning journey.</p>
                     </div>
@@ -488,7 +488,11 @@ export default function DashboardPage() {
                                 {enrollments.map((enrollment) => {
                                     const progress = enrollment.progress || 0
                                     return (
-                                        <div key={enrollment.id} className="bg-card border border-border p-0 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                                        <div
+                                            key={enrollment.id}
+                                            className="bg-card border border-border p-0 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                                            onClick={() => router.push(`/courses/${enrollment.course.id}/learn`)}
+                                        >
                                             <div className="p-6 pb-2">
                                                 <div className="flex justify-between items-start">
                                                     <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
@@ -508,30 +512,19 @@ export default function DashboardPage() {
                                                         style={{ width: `${progress}%` }}
                                                     />
                                                 </div>
-                                                <div className="flex justify-between items-center text-sm mb-4">
+                                                <div className="flex justify-between items-center text-sm">
                                                     <span className="text-muted-foreground">Progress</span>
                                                     <span className={`font-bold ${progress === 100 ? 'text-green-600' : 'text-foreground'}`}>{progress}%</span>
                                                 </div>
 
                                                 {enrollment.hasInterviewAccess && (
-                                                    <div className="mb-4 pt-4 border-t border-border">
-                                                        <div className="flex justify-between items-center text-sm mb-2">
-                                                            <span className="text-muted-foreground flex items-center gap-1">
-                                                                <Video className="h-3 w-3" /> Interview Prep
-                                                            </span>
+                                                    <div className="mt-4 pt-4 border-t border-border">
+                                                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                                            <Video className="h-3 w-3" />
+                                                            <span>Interview Prep Available</span>
                                                         </div>
-                                                        <Button variant="secondary" size="sm" className="w-full text-xs h-8" onClick={() => router.push('/interviews')}>
-                                                            Practice Now
-                                                        </Button>
                                                     </div>
                                                 )}
-                                                <Button
-                                                    className="w-full shadow-sm"
-                                                    onClick={() => router.push(`/courses/${enrollment.course.id}/learn`)}
-                                                >
-                                                    <PlayCircle className="mr-2 h-4 w-4" />
-                                                    {progress === 100 ? 'Review Course' : progress > 0 ? 'Continue' : 'Start Learning'}
-                                                </Button>
                                             </div>
                                         </div>
                                     )

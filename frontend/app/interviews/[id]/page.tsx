@@ -13,16 +13,18 @@ import {
     MicOff,
     Phone,
     ChevronRight,
-    MessageSquare,
     Clock,
-    User,
     Bot,
     Loader2,
     CheckCircle2,
     ArrowLeft,
     Send,
     Briefcase,
-    AlertTriangle
+    AlertTriangle,
+    Maximize,
+    Minimize,
+    Volume2,
+    VolumeX
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
@@ -94,9 +96,10 @@ const AVATARS: Record<string, AvatarConfig> = {
 }
 
 // Success Overlay Component
-function SuccessOverlay({ onRedirect }: { onRedirect: () => void }) {
+function SuccessOverlay({ onRedirect, onDashboard }: { onRedirect: () => void, onDashboard: () => void }) {
     React.useEffect(() => {
-        const timer = setTimeout(onRedirect, 3000);
+        // Reduced auto-redirect time to let user choose
+        const timer = setTimeout(onRedirect, 10000);
         return () => clearTimeout(timer);
     }, [onRedirect]);
 
@@ -110,7 +113,26 @@ function SuccessOverlay({ onRedirect }: { onRedirect: () => void }) {
                     <h2 className="text-3xl font-bold tracking-tight">Interview Completed!</h2>
                     <p className="text-muted-foreground">Great job! We are generating your performance report now.</p>
                 </div>
-                <div className="flex justify-center gap-2">
+                
+                <div className="flex flex-col gap-3 pt-4">
+                    <Button 
+                        onClick={onRedirect}
+                        className="w-full h-12 rounded-xl font-bold"
+                    >
+                        View Performance Report
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button 
+                        variant="outline"
+                        onClick={onDashboard}
+                        className="w-full h-12 rounded-xl font-bold"
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Dashboard
+                    </Button>
+                </div>
+
+                <div className="flex justify-center gap-2 mt-4">
                     <div className="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                     <div className="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
                     <div className="h-2 w-2 bg-primary rounded-full animate-bounce"></div>
@@ -147,6 +169,29 @@ export default function InterviewRoomPage() {
     const [speechStartTime, setSpeechStartTime] = React.useState<number | null>(null)
     const [tabSwitchCount, setTabSwitchCount] = React.useState(0)
     const [isTabActive, setIsTabActive] = React.useState(true)
+    const [isStarted, setIsStarted] = React.useState(false)
+    const [isFullscreen, setIsFullscreen] = React.useState(false)
+    const [isVoiceEnabled, setIsVoiceEnabled] = React.useState(true)
+
+    // Fullscreen Toggle
+    const toggleFullscreen = React.useCallback(() => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen().then(() => setIsFullscreen(false));
+        }
+    }, [])
+
+    // Listen for fullscreen change (e.g. Esc key)
+    React.useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement)
+        }
+        document.addEventListener('fullscreenchange', handleFullscreenChange)
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }, [])
 
     // Anti-Cheat: Tab Visibility
     React.useEffect(() => {
@@ -285,12 +330,15 @@ export default function InterviewRoomPage() {
     // Initial Question Fetch
     React.useEffect(() => {
         const startInterview = async () => {
-            if (messages.length === 0 && !isCompleted && !currentQuestion) {
+            // Only trigger if started AND no question has been loaded yet AND not already loading
+            if (isStarted && !isCompleted && !currentQuestion && !isAIProcessing) {
+                console.log("[InterviewRoom] Triggering initial question fetch...");
                 await fetchNextQuestion();
             }
         }
         startInterview();
-    }, [messages.length, isCompleted])
+        // Removed currentQuestion and isAIProcessing from dependencies to prevent infinite loops on failure
+    }, [isStarted, isCompleted])
 
     const handleEndInterview = async () => {
         try {
@@ -298,9 +346,25 @@ export default function InterviewRoomPage() {
         } catch (error) {
             console.error('Failed to complete interview:', error)
         }
+        
+        // Ensure ALL tracks are stopped and disabled
         if (stream) {
-            stream.getTracks().forEach(track => track.stop())
+            stream.getTracks().forEach(track => {
+                track.enabled = false;
+                track.stop();
+                console.log(`Stopped track: ${track.kind}`);
+            });
+            setStream(null);
         }
+        setIsVideoOn(false);
+        setIsMicOn(false);
+        
+        // Stop recognition if active
+        if (isRecording) {
+            recognitionRef.current?.stop();
+            setIsRecording(false);
+        }
+
         setShowSuccess(true)
     }
 
@@ -331,15 +395,28 @@ export default function InterviewRoomPage() {
                 setMessages(prev => [...prev, {
                     id: Date.now().toString(),
                     role: 'interviewer',
-                    content: "Thank you! The interview is complete. Generating your feedback report...",
+                    content: "Thank you! The interview is complete. Generating your performance report...",
                     timestamp: new Date()
                 }]);
-                // Redirect to report after short delay
-                setTimeout(() => router.push(`/interviews/${params.id}/report`), 3000);
+                
+                // Cleanup camera on auto-completion
+                if (stream) {
+                    stream.getTracks().forEach(track => {
+                        track.enabled = false;
+                        track.stop();
+                    });
+                    setStream(null);
+                }
+                setIsVideoOn(false);
+                setIsMicOn(false);
+
+                // Show success overlay after a brief delay for the message to be read
+                setTimeout(() => setShowSuccess(true), 2000);
                 return;
             }
 
             const questionData = res.data.question;
+            if (!questionData) throw new Error("No question data received");
 
             setCurrentQuestion({
                 id: questionData.id || 'temp',
@@ -364,8 +441,8 @@ export default function InterviewRoomPage() {
             console.error("Failed to fetch next question:", error);
             toast({
                 variant: "destructive",
-                title: "Connection Error",
-                description: "Failed to load the next question. Please check your connection."
+                title: "AI Connection Error",
+                description: "Failed to load the next question. Please check your connection or try again."
             });
         } finally {
             setIsAIProcessing(false);
@@ -420,6 +497,10 @@ export default function InterviewRoomPage() {
         if (isRecording) {
             recognitionRef.current?.stop()
         } else {
+            // Ensure mic is hardware-on for STT to work
+            if (!isMicOn) {
+                setIsMicOn(true)
+            }
             setUserResponse('')
             recognitionRef.current?.start()
             setIsRecording(true)
@@ -430,6 +511,8 @@ export default function InterviewRoomPage() {
     }
 
     const speakText = (text: string) => {
+        if (!isVoiceEnabled) return; // Skip if voice is disabled
+
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             // Cancel any ongoing speech
             window.speechSynthesis.cancel()
@@ -438,23 +521,40 @@ export default function InterviewRoomPage() {
             utterance.rate = 0.95
             utterance.pitch = 1
 
-            // Get voices and find a good one (prefer female for HR, male for Tech maybe)
-            const voices = window.speechSynthesis.getVoices()
-            const preferredVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Premium'))
-            if (preferredVoice) utterance.voice = preferredVoice
+            // Get voices
+            let voices = window.speechSynthesis.getVoices()
+            
+            // If voices aren't loaded, wait for them
+            if (voices.length === 0) {
+                const voiceRetry = setInterval(() => {
+                    voices = window.speechSynthesis.getVoices()
+                    if (voices.length > 0) {
+                        clearInterval(voiceRetry)
+                        const preferred = voices.find(v => v.name.includes('Google') || v.name.includes('Premium'))
+                        if (preferred) utterance.voice = preferred
+                        window.speechSynthesis.speak(utterance)
+                    }
+                }, 100)
+                // Cleanup retry after 3s
+                setTimeout(() => clearInterval(voiceRetry), 3000)
+            } else {
+                const preferredVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Premium'))
+                if (preferredVoice) utterance.voice = preferredVoice
+                window.speechSynthesis.speak(utterance)
+            }
 
             utterance.onend = () => {
-                // Start 10s timeout after speaking is done
                 startResponseTimer()
-                // Auto-start recording
                 toggleRecording()
                 toast({
                     description: "Listening...",
                     duration: 2000,
                 })
             }
-
-            window.speechSynthesis.speak(utterance)
+        } else {
+            // Fallback for no speech synthesis
+            startResponseTimer()
+            toggleRecording()
         }
     }
 
@@ -578,7 +678,7 @@ export default function InterviewRoomPage() {
             return AVATARS[primaryAvatarId]
         }
         // 3. Fallback
-        return AVATARS['tech-1'] || AVATARS['Technical']
+        return AVATARS['tech-1'] || AVATARS['Technical'] || { name: "AI Interviewer", role: "Specialist", color: "from-blue-500/20 to-cyan-500/20", icon: Bot }
     }
 
     const activeAvatar = getActiveAvatar()
@@ -587,7 +687,46 @@ export default function InterviewRoomPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            {showSuccess && <SuccessOverlay onRedirect={() => router.push(`/interviews/${params.id}/report`)} />}
+            {showSuccess && <SuccessOverlay 
+                onRedirect={() => router.push(`/interviews/${params.id}/report`)} 
+                onDashboard={() => router.push('/dashboard')}
+            />}
+
+            {/* Start Interview Overlay */}
+            {!isStarted && !showSuccess && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-md transition-all duration-500">
+                    <Card className="max-w-md w-full p-10 text-center space-y-8 border-2 border-primary/20 shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="relative mx-auto h-32 w-32">
+                            <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-25" />
+                            <div className="relative h-full w-full bg-primary/10 rounded-full flex items-center justify-center border-4 border-primary/20">
+                                <Bot className="h-16 w-16 text-primary animate-pulse" />
+                            </div>
+                        </div>
+                        <div className="space-y-3">
+                            <h1 className="text-3xl font-black tracking-tight">{activeAvatar.name} is ready</h1>
+                            <p className="text-muted-foreground text-sm font-medium leading-relaxed px-4">
+                                Hello! I'm {activeAvatar.name}. Please ensure your camera and microphone are working.
+                                Click below to begin the session.
+                            </p>
+                        </div>
+                        <Button
+                            size="lg"
+                            className="w-full h-14 rounded-2xl text-lg font-bold uppercase tracking-widest shadow-xl shadow-primary/30 hover:scale-105 transition-all group"
+                            onClick={async () => {
+                                setIsStarted(true);
+                                try {
+                                    await interviewApi.start(params.id as string);
+                                } catch (e) {
+                                    console.error("Failed to sync start status:", e);
+                                }
+                            }}
+                        >
+                            Start Interview
+                            <ChevronRight className="h-6 w-6 ml-2 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                    </Card>
+                </div>
+            )}
 
             {/* Header Bar */}
             <div className="h-14 bg-muted/50 border-b flex items-center justify-between px-4 backdrop-blur-md sticky top-0 z-20">
@@ -612,77 +751,49 @@ export default function InterviewRoomPage() {
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 text-sm bg-background/50 px-3 py-1 rounded-full border">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <span className="font-mono font-bold">{formatTime(timeLeft)}</span>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 bg-background/50 p-1 rounded-xl border group">
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
+                            onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
+                            title={isVoiceEnabled ? "Mute AI Voice" : "Unmute AI Voice"}
+                        >
+                            {isVoiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4 text-red-500" />}
+                        </Button>
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
+                            onClick={toggleFullscreen}
+                            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                        >
+                            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                        </Button>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">Progress:</span>
-                        <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map(step => (
-                                <div
-                                    key={step}
-                                    className={`h-1.5 w-6 rounded-full ${step <= questionCount ? 'bg-primary' : 'bg-muted'}`}
-                                />
-                            ))}
+
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2 text-sm bg-background/50 px-3 py-1 rounded-full border border-primary/20 shadow-sm">
+                            <Clock className="h-4 w-4 text-primary animate-pulse" />
+                            <span className="font-mono font-bold">{formatTime(timeLeft)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm hidden sm:flex">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">Progress</span>
+                            <div className="flex gap-1">
+                                {[1, 2, 3, 4, 5].map(step => (
+                                    <div
+                                        key={step}
+                                        className={`h-1 w-4 rounded-full transition-all duration-500 ${step <= questionCount ? 'bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]' : 'bg-muted'}`}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
-                {/* Left Sidebar: Panel visualization */}
-                <div className="w-64 border-r bg-muted/30 flex flex-col p-4 gap-4 hidden md:flex">
-                    <div className="space-y-1">
-                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest pl-2">Interviewer Panel</h3>
-                        <p className="text-[10px] text-muted-foreground pl-2">{interview?.panelCount || 1} Experts Conducting</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        {/* List only avatars selected for this panel */}
-                        {Object.entries(AVATARS)
-                            .filter(([id]) => interview?.selectedAvatars?.includes(id))
-                            .map(([id, avatar]) => {
-                                const isActive = activeAvatar?.name === avatar.name;
-                                return (
-                                    <div
-                                        key={id}
-                                        className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 border-2 ${isActive
-                                            ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10 scale-105'
-                                            : 'bg-white/5 border-transparent opacity-60 grayscale hover:grayscale-0 hover:opacity-100 hover:bg-white/10'
-                                            }`}
-                                    >
-                                        <div className={`p-2 rounded-lg bg-gradient-to-br ${avatar.color}`}>
-                                            <avatar.icon className={`h-5 w-5 ${isActive ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
-                                        </div>
-                                        <div className="flex-1 min-w-0 text-left">
-                                            <div className="flex items-center gap-1.5">
-                                                <p className={`text-sm font-bold truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{avatar.name}</p>
-                                                {isActive && <div className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />}
-                                            </div>
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider truncate">{avatar.role}</p>
-                                        </div>
-                                        {isActive && (
-                                            <div className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[8px] font-black uppercase tracking-tighter">
-                                                Active
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                    </div>
-
-                    <div className="mt-auto p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                        <div className="flex items-center gap-2 mb-2">
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
-                            <span className="text-xs font-bold">Live Mentoring</span>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground leading-relaxed">
-                            Interviewer is analyzing your STAR method utilization and technical depth in real-time.
-                        </p>
-                    </div>
-                </div>
+            <div className={`flex h-[calc(100vh-3.5rem)] overflow-hidden transition-all duration-500 ${isFullscreen ? 'max-w-[1600px] mx-auto' : ''}`}>
 
                 {/* Video Section */}
                 <div className="flex-1 p-4 flex flex-col gap-4 bg-muted/10 relative">
@@ -703,9 +814,16 @@ export default function InterviewRoomPage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="text-center space-y-2 z-10">
-                                            <h2 className="font-bold text-lg leading-tight">{currentQuestion.question}</h2>
-                                            <p className="text-xs text-muted-foreground/80">Code your solution in the editor.</p>
+                                        <div className="z-10 w-full px-4 text-center">
+                                            <div className="bg-background/80 backdrop-blur-md p-4 rounded-xl border border-primary/20 shadow-lg mb-4">
+                                                <h2 className="font-bold text-base leading-tight">
+                                                    {currentQuestion.question}
+                                                </h2>
+                                            </div>
+                                            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                                Coding Challenge
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -734,12 +852,54 @@ export default function InterviewRoomPage() {
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 h-full min-h-0">
                             {/* AI Interviewer - Dynamic Avatar */}
                             <Card className={`relative overflow-hidden border-2 transition-all duration-500 flex flex-col ${isAIProcessing ? 'border-primary/50' : 'border-transparent shadow-xl'}`}>
-                                <CardContent className={`h-full flex items-center justify-center p-0 bg-gradient-to-br ${activeAvatar.color}`}>
-                                    <div className="text-center">
-                                        <div className="h-32 w-32 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center mx-auto mb-6 shadow-2xl animate-in zoom-in duration-500">
+                                <CardContent className={`h-full flex flex-col items-center justify-center p-8 bg-gradient-to-br ${activeAvatar.color} relative`}>
+                                    <div className="absolute top-4 left-4 bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full border border-primary/20 z-20">
+                                        <div className="flex items-center gap-2">
+                                            <Bot className="h-3 w-3 text-primary" />
+                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Interviewer</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center space-y-6 mb-12">
+                                        <div className="h-32 w-32 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center mx-auto shadow-2xl animate-in zoom-in duration-500">
                                             {activeAvatar && <AvatarIcon className="h-16 w-16 text-primary" />}
                                         </div>
-                                        <h2 className="font-bold text-2xl tracking-tight">{activeAvatar.name}</h2>
+                                        <div className="space-y-1">
+                                            <h2 className="font-bold text-2xl tracking-tight">{activeAvatar.name}</h2>
+                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">{activeAvatar.role}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Prominent Question Overlay */}
+                                    <div className="absolute bottom-8 left-4 right-4 z-10">
+                                        {currentQuestion ? (
+                                            <div className="bg-background/90 backdrop-blur-md p-6 rounded-2xl border-2 border-primary/20 shadow-2xl animate-in slide-in-from-bottom-5 duration-500">
+                                                <p className="text-xl font-black leading-relaxed text-foreground text-center">
+                                                    "{currentQuestion.question}"
+                                                </p>
+                                            </div>
+                                        ) : isAIProcessing ? (
+                                            <div className="flex flex-col items-center gap-4 text-center">
+                                                <div className="flex gap-1 items-end h-8">
+                                                    {[1, 2, 3, 4, 5].map(i => (
+                                                        <div key={i} className="w-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i * 100}ms` }} />
+                                                    ))}
+                                                </div>
+                                                <p className="font-bold text-sm text-primary uppercase tracking-widest animate-pulse">AI is thinking...</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-4">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="lg" 
+                                                    className="bg-primary/10 border-primary/20 text-primary font-bold rounded-2xl px-8 h-12 hover:scale-105 transition-all"
+                                                    onClick={fetchNextQuestion}
+                                                >
+                                                    <Bot className="h-4 w-4 mr-2" />
+                                                    Start Asking Questions
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -828,31 +988,84 @@ export default function InterviewRoomPage() {
                             </Card>
                         </div>
                     )}
+                    {/* Transcription/Answer Box */}
+                    <Card className="border-2 border-primary/10 shadow-lg overflow-hidden transition-all duration-300">
+                        <div className="bg-muted/30 px-4 py-2 flex items-center justify-between border-b border-white/5">
+                            <div className="flex items-center gap-2">
+                                <Bot className="h-4 w-4 text-primary" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Your Answer</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {isRecording && (
+                                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 rounded-full border border-red-500/20">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                                        <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter">Recording...</span>
+                                    </div>
+                                )}
+                                <span className="text-[9px] font-mono text-muted-foreground">{userResponse.length} characters</span>
+                            </div>
+                        </div>
+                        <textarea
+                            value={userResponse}
+                            onChange={(e) => setUserResponse(e.target.value)}
+                            placeholder={isRecording ? "Listening to your answer... Click 'Stop' or wait for the auto-submit." : "Type your answer here or click the microphone to speak..."}
+                            className="w-full h-32 p-4 bg-background text-foreground text-sm font-medium resize-none focus:outline-none focus:ring-1 focus:ring-primary/20 leading-relaxed transition-all"
+                            spellCheck={true}
+                        />
+                    </Card>
 
-                    {/* Controls */}
-                    <div className="bg-background/80 backdrop-blur-md p-4 rounded-3xl border shadow-xl flex items-center justify-center gap-6 max-w-md mx-auto w-full">
+                    {/* Controls - Minimalist Auto-hide in Fullscreen */}
+                    <div className={`transition-all duration-500 ${isFullscreen ? 'opacity-0 hover:opacity-100 fixed bottom-8 transform -translate-x-1/2 left-1/2 z-50' : 'bg-background/80 backdrop-blur-md p-4 rounded-3xl border shadow-xl flex items-center justify-center gap-6 max-w-md mx-auto w-full'}`}>
                         <div className="flex flex-col items-center gap-1">
                             <Button
                                 variant={isMicOn ? "outline" : "destructive"}
                                 size="icon"
-                                className={`h-12 w-12 rounded-2xl transition-all ${isRecording ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                                className={`h-12 w-12 rounded-2xl transition-all ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
                                 onClick={() => setIsMicOn(!isMicOn)}
+                                title={isMicOn ? "Mute Microphone" : "Unmute Microphone"}
                             >
                                 {isMicOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
                             </Button>
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">{isMicOn ? (isRecording ? 'Listening...' : 'Mic On') : 'Mic Muted'}</span>
+                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">{isMicOn ? 'Mute' : 'Unmute'}</span>}
+                        </div>
+
+                        <div className="flex flex-col items-center gap-1">
+                            <Button
+                                variant={isRecording ? "destructive" : "outline"}
+                                size="icon"
+                                className={`h-12 w-12 rounded-2xl transition-all ${isRecording ? 'ring-4 ring-primary/20 animate-pulse shadow-xl shadow-primary/20 bg-primary/10' : ''} ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
+                                onClick={toggleRecording}
+                                title={isRecording ? "Stop Transcribing" : "Start Transcribing"}
+                            >
+                                {isRecording ? <div className="h-3 w-3 bg-red-500 rounded-sm animate-pulse" /> : <Bot className="h-5 w-5 text-primary" />}
+                            </Button>
+                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">{isRecording ? 'Stop' : 'Transcribe'}</span>}
                         </div>
 
                         <div className="flex flex-col items-center gap-1">
                             <Button
                                 variant={isVideoOn ? "outline" : "destructive"}
                                 size="icon"
-                                className="h-12 w-12 rounded-2xl transition-all"
+                                className={`h-12 w-12 rounded-2xl transition-all ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
                                 onClick={() => setIsVideoOn(!isVideoOn)}
                             >
                                 {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
                             </Button>
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">{isVideoOn ? 'Stop Video' : 'Start Video'}</span>
+                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">{isVideoOn ? 'Stop Video' : 'Start Video'}</span>}
+                        </div>
+
+                        <div className="flex flex-col items-center gap-1">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className={`h-12 w-12 rounded-2xl transition-all hover:bg-primary/20 hover:text-primary ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
+                                onClick={() => handleSendResponse(false)}
+                                disabled={isAIProcessing || isThinking || !userResponse.trim()}
+                                title="Submit Answer"
+                            >
+                                <Send className="h-5 w-5" />
+                            </Button>
+                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">Submit</span>}
                         </div>
 
                         <div className="h-10 w-px bg-border mx-2" />
@@ -866,121 +1079,11 @@ export default function InterviewRoomPage() {
                             >
                                 <Phone className="h-5 w-5 rotate-[135deg]" />
                             </Button>
-                            <span className="text-[10px] font-bold text-red-600 uppercase">End Session</span>
+                            {!isFullscreen && <span className="text-[10px] font-bold text-red-600 uppercase">End Session</span>}
                         </div>
                     </div>
                 </div>
 
-                {/* Chat Section */}
-                <div className="w-96 border-l flex flex-col bg-background/50 backdrop-blur-xl shrink-0">
-                    <div className="p-4 border-b flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-primary/10 rounded-lg">
-                                <MessageSquare className="h-4 w-4 text-primary" />
-                            </div>
-                            <h3 className="font-bold text-sm">Session Log</h3>
-                        </div>
-                        <div className="bg-muted px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter">Live</div>
-                    </div>
-
-                    {/* Messages Container */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                        {messages.length === 0 && (
-                            <div className="h-full flex flex-col items-center justify-center text-center opacity-40 grayscale">
-                                <Bot className="h-12 w-12 mb-2" />
-                                <p className="text-xs font-medium">Interviewer is connecting...</p>
-                            </div>
-                        )}
-                        {messages.map((msg) => (
-                            <div
-                                key={msg.id}
-                                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
-                            >
-                                <div className={`max-w-[85%] rounded-2xl px-4 py-3 relative ${msg.role === 'user'
-                                    ? 'bg-primary text-primary-foreground rounded-tr-none shadow-lg shadow-primary/10'
-                                    : 'bg-muted/50 border rounded-tl-none'
-                                    }`}>
-                                    <p className="text-sm leading-relaxed">{msg.content}</p>
-                                    <div className={`mt-2 flex items-center justify-between gap-4 ${msg.role === 'user' ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
-                                        <p className="text-[9px] font-bold uppercase tracking-wider">
-                                            {msg.role === 'user' ? 'You' : activeAvatar?.name}
-                                        </p>
-                                        <p className="text-[9px] font-mono">
-                                            {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {(isThinking || isAIProcessing) && (
-                            <div className="flex justify-start">
-                                <div className="bg-muted/30 border rounded-2xl rounded-tl-none px-4 py-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex gap-1">
-                                            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
-                                        </div>
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            {activeAvatar?.name} is speaking
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Input Area */}
-                    {
-                        !isCompleted ? (
-                            <div className="p-4 border-t space-y-3 bg-background">
-                                <div className="relative">
-                                    <textarea
-                                        value={userResponse}
-                                        onChange={(e) => setUserResponse(e.target.value)}
-                                        placeholder="Click to type your response..."
-                                        className="w-full min-h-[100px] p-4 text-sm rounded-2xl border bg-muted/20 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50 font-medium"
-                                        disabled={isAIProcessing || isThinking}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault()
-                                                handleSendResponse()
-                                            }
-                                        }}
-                                    />
-                                    <div className="absolute bottom-3 right-3 text-[9px] font-bold text-muted-foreground uppercase opacity-50">
-                                        Press Enter ↵
-                                    </div>
-                                </div>
-                                <Button
-                                    className="w-full h-11 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                                    onClick={() => handleSendResponse(false)}
-                                    disabled={!userResponse.trim() || isThinking || isAIProcessing}
-                                >
-                                    <Send className="h-4 w-4 mr-2" />
-                                    Submit Answer
-                                </Button>
-                            </div>
-                        ) : (
-                            <div className="p-6 border-t text-center bg-green-500/5 space-y-4">
-                                <div className="h-12 w-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-                                    <CheckCircle2 className="h-6 w-6 text-green-600" />
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="font-bold text-lg">Interview Concluded</p>
-                                    <p className="text-xs text-muted-foreground">Detailed feedback and scoring ready</p>
-                                </div>
-                                <Button
-                                    className="w-full rounded-full h-11 bg-green-600 hover:bg-green-700 font-bold"
-                                    onClick={handleEndInterview}
-                                >
-                                    Generate Full Report
-                                    <ChevronRight className="h-4 w-4 ml-2" />
-                                </Button>
-                            </div>
-                        )
-                    }
-                </div>
             </div>
         </div>
     )

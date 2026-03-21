@@ -84,6 +84,74 @@ router.delete('/integrations/:id', authenticate, authorize('SUPER_ADMIN'), async
     }
 });
 
+// ============= MEETING CREATION =============
+
+/**
+ * @route   POST /api/video/create-meeting
+ * @desc    Generate a real meeting link using the active integration
+ * @access  Private (Admin/Instructor)
+ */
+router.post('/create-meeting', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+    try {
+        const { platform, title, scheduledAt, duration } = req.body;
+        const { generateMeetingLink } = require('../services/meeting.service');
+
+        const result = await generateMeetingLink(scheduledAt, { title, duration, platform });
+
+        res.json({
+            meetingLink: result.meetingLink,
+            meetingId: result.meetingId || null,
+            password: result.password || null,
+            platform: result.platform
+        });
+    } catch (error) {
+        console.error('Create meeting error:', error);
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/video/integrations/:id/test
+ * @desc    Test a video integration connection
+ * @access  Private (Admin)
+ */
+router.post('/integrations/:id/test', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const integration = await prisma.videoIntegration.findUnique({ where: { id } });
+
+        if (!integration) {
+            return res.status(404).json({ success: false, message: 'Integration not found' });
+        }
+
+        if (integration.platform === 'ZOOM') {
+            const axios = require('axios');
+            const accountId = integration.apiKey || process.env.ZOOM_ACCOUNT_ID;
+            const clientId = integration.clientId || process.env.ZOOM_CLIENT_ID;
+            const clientSecret = integration.clientSecret || process.env.ZOOM_CLIENT_SECRET;
+
+            const tokenUrl = `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${accountId}`;
+            const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+            const tokenRes = await axios.post(tokenUrl, null, {
+                headers: {
+                    'Authorization': `Basic ${authHeader}`,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            if (tokenRes.data.access_token) {
+                return res.json({ success: true, message: 'Zoom connection successful! Token generated.' });
+            }
+        }
+
+        res.json({ success: true, message: `${integration.platform} connection test passed.` });
+    } catch (error) {
+        console.error('Test connection error:', error?.response?.data || error.message);
+        res.json({ success: false, message: 'Connection failed: ' + (error?.response?.data?.reason || error.message) });
+    }
+});
+
 // ============= CLASSES =============
 
 /**

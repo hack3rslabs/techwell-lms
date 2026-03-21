@@ -103,7 +103,7 @@ export default function RootLayout({
               <div className="print:hidden">
                 <Header />
               </div>
-              <main className="flex-1">
+              <main className="flex-1 w-full">
                 {children}
               </main>
               {/* Footer - hidden on print */}

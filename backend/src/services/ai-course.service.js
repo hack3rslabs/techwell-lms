@@ -1,16 +1,16 @@
 /**
  * AI Course Generation Service
- * Uses OpenAI ChatGPT to generate comprehensive course curriculums.
+ * Uses Google Gemini (Google AI Studio) to generate comprehensive course curriculums.
  */
-const OpenAI = require('openai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const generateCourseStructure = async (topic, difficulty) => {
-    if (!process.env.OPENAI_API_KEY) {
-        console.warn("OpenAI API Key missing. Falling back to mock.");
+    if (!process.env.GEMINI_API_KEY) {
+        console.warn("Gemini API Key missing. Falling back to mock.");
         return mockGenerate(topic, difficulty);
     }
 
@@ -60,25 +60,18 @@ Requirements:
 2. Each Module must have at least 3 Lessons.
 3. Include at least 1 Quiz per Module (attached to the last lesson).
 4. "bannerUrl" should be a relevant Unsplash ID (keep the provided one as fallback if unsure).
-5. "videoUrl" should be a valid-looking YouTube URL (e.g., specific to the topic if possible, or a placeholder).
-6. "content" MUST be rich markdown text, not just a summary.
-7. Ensure content is high-quality and relevant to the difficulty level.
+5. "videoUrl" should be a valid-looking YouTube URL.
+6. "content" MUST be rich markdown text.
+7. Return ONLY the JSON object, no markdown code blocks.`;
 
-Output ONLY the JSON object, no markdown code blocks.`;
-
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7,
-            max_tokens: 4000,
-            response_format: { type: "json_object" }
-        });
-
-        const courseData = JSON.parse(completion.choices[0].message.content);
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim().replace(/```json|```/gi, '');
+        const courseData = JSON.parse(text);
         return courseData;
 
     } catch (error) {
-        console.error("OpenAI Generation Error:", error);
+        console.error("Gemini Course Generation Error:", error);
         // Fallback to mock on error
         return mockGenerate(topic, difficulty);
     }

@@ -113,14 +113,14 @@ export function Hero() {
     ]
 
     return (
-        <div className="relative overflow-hidden bg-background min-h-screen flex flex-col justify-start pt-12">
+        <div className="relative overflow-x-hidden bg-background min-h-screen flex flex-col justify-start pt-12">
             {/* Rich Ambient Background */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute top-[-10%] right-[-5%] w-[1000px] h-[1000px] bg-primary/5 rounded-full blur-[120px] animate-pulse-slow" />
                 <div className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-purple-500/5 rounded-full blur-[120px]" />
             </div>
 
-            <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+            <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 pb-16">
                 <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 mb-16">
 
                     {/* Left Column: Hero Text */}
@@ -282,7 +282,7 @@ export function Hero() {
                     <h2 className="text-2xl font-bold text-center mb-10 text-muted-foreground/60 tracking-widest uppercase">Explore Our Ecosystem</h2>
 
                     {/* Grid updated to max-3 columns as requested */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                         {/* 1. LMS */}
                         <motion.div
                             whileHover={{ y: -5 }}

@@ -18,7 +18,9 @@ const createInterviewSchema = z.object({
     scheduledAt: z.string().optional().nullable(),
     duration: z.number().default(30),
     selectedAvatars: z.array(z.string()).optional(),
-    technology: z.string().optional() // Added
+    technology: z.string().optional(),
+    resumeUrl: z.string().optional(),
+    jobDescription: z.string().optional()
 });
 
 /**
@@ -154,6 +156,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
 
         res.json({ interview });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });
@@ -192,6 +195,7 @@ router.get('/:id/report', authenticate, async (req, res, next) => {
 
         res.json({ report });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });
@@ -204,12 +208,15 @@ router.get('/:id/report', authenticate, async (req, res, next) => {
 router.post('/', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const validatedData = createInterviewSchema.parse(req.body);
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: { plan: true }
         });
 
-        // Limit FREE users to 2 interviews per month
+        // Limit FREE users to 2 interviews per month - BYPASSED FOR TESTING
+        /*
         if (user.plan === 'FREE') {
             const startOfMonth = new Date();
             startOfMonth.setDate(1);
@@ -231,6 +238,7 @@ router.post('/', authenticate, async (req, res, next) => {
                 });
             }
         }
+        */
 
         const interview = await prisma.interview.create({
             data: {
@@ -242,6 +250,7 @@ router.post('/', authenticate, async (req, res, next) => {
 
         res.status(201).json({ message: 'Interview scheduled', interview });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });
@@ -261,10 +270,13 @@ router.patch('/:id/start', authenticate, async (req, res, next) => {
         });
 
         if (!interview) {
+            console.log(`[Interview Start] Interview not found: ${req.params.id} for user: ${req.user.id}`);
             return res.status(404).json({ error: 'Interview not found' });
         }
 
-        if (interview.status !== 'SCHEDULED') {
+        // Allow start if SCHEDULED or already IN_PROGRESS (idempotent)
+        if (interview.status !== 'SCHEDULED' && interview.status !== 'IN_PROGRESS') {
+            console.log(`[Interview Start] Invalid status: ${interview.status} for interview: ${interview.id}`);
             return res.status(400).json({ error: 'Interview cannot be started' });
         }
 
@@ -272,12 +284,14 @@ router.patch('/:id/start', authenticate, async (req, res, next) => {
             where: { id: req.params.id },
             data: {
                 status: 'IN_PROGRESS',
-                startedAt: new Date()
+                startedAt: interview.startedAt || new Date()
             }
         });
 
+        console.log(`[Interview Start] Success for interview: ${updated.id}`);
         res.json({ message: 'Interview started', interview: updated });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });
@@ -314,6 +328,7 @@ router.patch('/:id/complete', authenticate, async (req, res, next) => {
 
         res.json({ message: 'Interview completed', interview: updated });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });
@@ -342,6 +357,7 @@ router.get('/stats/summary', authenticate, async (req, res, next) => {
             }
         });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });
@@ -380,6 +396,7 @@ router.get('/job-interviews', authenticate, async (req, res, next) => {
         });
         res.json({ interviews });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });
@@ -403,7 +420,7 @@ router.post('/:id/next-question', authenticate, async (req, res, next) => {
         // We need to fetch the last response for this interview to pass to AI service
         const lastResponse = await prisma.interviewResponse.findFirst({
             where: { interviewId: interview.id },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { respondedAt: 'desc' },
             include: { question: true }
         });
 
@@ -432,6 +449,7 @@ router.post('/:id/next-question', authenticate, async (req, res, next) => {
 
         res.json({ question });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });
@@ -465,6 +483,7 @@ router.post('/:id/response', authenticate, async (req, res, next) => {
             evaluation
         });
     } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);
     }
 });

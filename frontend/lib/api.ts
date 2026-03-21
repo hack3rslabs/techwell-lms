@@ -53,6 +53,10 @@ export const authApi = {
         qualification?: string;
         college?: string
     }) => api.post('/auth/register', data),
+    verifyOtp: (data: { email: string; otp: string }) =>
+        api.post('/auth/verify-otp', data),
+    resendOtp: (data: { email: string }) =>
+        api.post('/auth/resend-otp', data),
     login: (data: { email: string; password: string }) =>
         api.post('/auth/login', data),
     refresh: () => api.post('/auth/refresh'),
@@ -64,6 +68,8 @@ export const userApi = {
     updateMe: (data: { name?: string; phone?: string; avatar?: string }) =>
         api.put('/users/me', data),
     getAdminStats: () => api.get('/admin/stats'),
+    getEnrollments: () => api.get('/admin/enrollments'),
+    deleteUser: (id: string) => api.delete(`/users/${id}`),
 };
 
 export const employerApi = {
@@ -100,6 +106,15 @@ export const courseApi = {
     completeLesson: (courseId: string, lessonId: string) => api.post(`/courses/${courseId}/lessons/${lessonId}/complete`),
 
     updateCurriculum: (id: string, data: { modules: unknown[] }) => api.put(`/courses/${id}/curriculum`, data),
+    delete: (id: string) => api.delete(`/courses/${id}`),
+};
+
+// Enrollment Request API
+export const enrollmentRequestApi = {
+    submit: (data: { courseId: string; name: string; email: string; phone?: string; qualification?: string }) => api.post('/enrollment-requests', data),
+    getMyRequest: (courseId: string) => api.get(`/enrollment-requests/my/${courseId}`),
+    getAll: () => api.get('/enrollment-requests'),
+    updateStatus: (id: string, status: 'APPROVED' | 'REJECTED') => api.put(`/enrollment-requests/${id}/status`, { status }),
 };
 
 // Interview API
@@ -117,7 +132,8 @@ export const interviewApi = {
         scheduledAt?: string | null;
         duration?: number;
         selectedAvatars?: string[];
-        technology?: string; // Added
+        technology?: string;
+        resumeUrl?: string;
     }) => api.post('/interviews', data),
     start: (id: string) => api.patch(`/interviews/${id}/start`),
     complete: (id: string, data?: { score?: number }) => api.patch(`/interviews/${id}/complete`, data),
@@ -308,6 +324,15 @@ export const libraryApi = {
     toggleBookmark: (resourceId: string) => api.post('/library/bookmarks', { resourceId }),
     getResources: (params?: { category?: string; domain?: string; search?: string }) => api.get('/library/resources', { params }),
     getCategories: () => api.get('/library/categories'),
+};
+
+export const rbacApi = {
+    getRoles: () => api.get('/rbac/roles'),
+    getPermissions: () => api.get('/rbac/permissions'),
+    createRole: (data: { name: string; description?: string; permissions: string[] }) => api.post('/rbac/roles', data),
+    updateRole: (id: string, data: { name?: string; description?: string; permissions: string[] }) => api.put(`/rbac/roles/${id}`, data),
+    deleteRole: (id: string) => api.delete(`/rbac/roles/${id}`),
+    assignRole: (userId: string, roleId: string) => api.post('/rbac/assign', { userId, roleId }),
 };
 
 export default api;

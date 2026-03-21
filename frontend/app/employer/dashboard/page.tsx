@@ -164,14 +164,14 @@ export default function EmployerDashboard() {
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+        <div className="container space-y-8 animate-in fade-in duration-500 pb-10">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">
                         Hiring Overview
                     </h1>
-                    <p className="text-gray-500 mt-1 text-sm font-medium">Welcome back! Here's what's happening with your jobs today.</p>
+                    <p className="text-muted-foreground mt-1 text-sm font-medium">Welcome back! Here's what's happening with your jobs today.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" onClick={() => router.push('/employer/reports')} className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm">

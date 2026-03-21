@@ -49,7 +49,7 @@ export default function InstructorDashboard() {
                             Instructor Panel
                         </div>
                         <h1 className="text-3xl font-extrabold tracking-tight">
-                            Hello, <span className="text-gradient hover:animate-pulse cursor-default">{user?.name || 'Instructor'}</span>
+                            Hello, <span className="text-foreground cursor-default">{user?.name || 'Instructor'}</span>
                         </h1>
                         <p className="text-muted-foreground mt-1">Manage your courses and track student progress.</p>
                     </div>

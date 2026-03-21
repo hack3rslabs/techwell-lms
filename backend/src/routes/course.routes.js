@@ -6,6 +6,8 @@ const { authenticate, authorize, optionalAuth } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
+console.log('Loading Course Routes...');
+
 // Validation schemas
 const createCourseSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -26,6 +28,45 @@ const createCourseSchema = z.object({
     hasInterviewPrep: z.boolean().default(false),
     interviewPrice: z.number().min(0).default(0),
     bundlePrice: z.number().min(0).default(0)
+});
+
+/**
+ * @route   DELETE /api/courses/:id
+ * @desc    Delete a course
+ * @access  Private/Admin/Instructor
+ */
+router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+    console.log(`[DEBUG] Attempting to delete course: ${req.params.id} by user: ${req.user.id}`);
+    try {
+        const courseId = req.params.id;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        const course = await prisma.course.findUnique({
+            where: { id: courseId }
+        });
+
+        if (!course) {
+            console.log(`[DEBUG] Course not found: ${courseId}`);
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        // Only allow admins or the creator (instructor) to delete
+        if (!['SUPER_ADMIN', 'ADMIN'].includes(userRole) && course.instructorId !== userId) {
+            console.log(`[DEBUG] Access denied for user: ${userId} role: ${userRole}`);
+            return res.status(403).json({ error: 'Access denied. You can only delete your own courses.' });
+        }
+
+        await prisma.course.delete({
+            where: { id: courseId }
+        });
+
+        console.log(`[DEBUG] Course deleted successfully: ${courseId}`);
+        res.json({ message: 'Course deleted successfully' });
+    } catch (error) {
+        console.error('[DEBUG] Delete course error:', error);
+        next(error);
+    }
 });
 
 /**
@@ -88,8 +129,27 @@ router.get('/', optionalAuth, async (req, res, next) => {
             prisma.course.count({ where })
         ]);
 
+        let coursesWithEnrollment = courses;
+        if (req.user && courses.length > 0) {
+            const courseIds = courses.map(c => c.id);
+            const enrollments = await prisma.enrollment.findMany({
+                where: {
+                    userId: req.user.id,
+                    courseId: { in: courseIds }
+                },
+                select: { courseId: true }
+            });
+            const enrolledCourseIds = new Set(enrollments.map(e => e.courseId));
+            coursesWithEnrollment = courses.map((c) => ({
+                ...c,
+                isEnrolled: enrolledCourseIds.has(c.id)
+            }));
+        } else {
+            coursesWithEnrollment = courses.map((c) => ({ ...c, isEnrolled: false }));
+        }
+
         res.json({
-            courses,
+            courses: coursesWithEnrollment,
             pagination: {
                 page: Number(page),
                 limit: Number(limit),
@@ -133,7 +193,7 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
             where: { id: req.params.id },
             include: {
                 modules: {
-                    orderBy: { order: 'asc' },
+                    orderBy: { orderIndex: 'asc' },
                     include: {
                         lessons: {
                             orderBy: { order: 'asc' },
@@ -609,5 +669,6 @@ router.put('/lessons/:lessonId', authenticate, authorize('SUPER_ADMIN', 'ADMIN',
         next(error);
     }
 });
+
 
 module.exports = router;

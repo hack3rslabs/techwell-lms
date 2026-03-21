@@ -291,9 +291,9 @@ export default function InterviewsPage() {
                                     {interview.score !== undefined && interview.score !== null && (
                                         <span className="text-sm font-medium">{interview.score}%</span>
                                     )}
-                                    {interview.status === 'SCHEDULED' && (
+                                    {(interview.status === 'SCHEDULED' || interview.status === 'IN_PROGRESS') && (
                                         <Button size="sm" onClick={() => handleStartInterview(interview.id)}>
-                                            Start
+                                            {interview.status === 'IN_PROGRESS' ? 'Resume' : 'Start'}
                                         </Button>
                                     )}
                                     {interview.status === 'COMPLETED' && (

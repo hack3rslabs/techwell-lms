@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import { interviewApi } from '@/lib/api'
+import { interviewApi, uploadApi } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -174,6 +174,21 @@ export default function NewInterviewPage() {
                 ? new Date(`${formData.scheduledDate} ${formData.scheduledTime}`).toISOString()
                 : null
 
+            // 1. Upload Resume if exists
+            let finalResumeUrl = formData.resumeUrl;
+            if (formData.resumeFile) {
+                const uploadData = new FormData();
+                uploadData.append('file', formData.resumeFile);
+                try {
+                    const uploadRes = await uploadApi.upload(uploadData);
+                    finalResumeUrl = uploadRes.data.url;
+                } catch (error) {
+                    console.error('Resume upload failed:', error);
+                    // Continue anyway but without resume context
+                }
+            }
+
+            // 2. Create Interview
             const response = await interviewApi.create({
                 domain: formData.domain,
                 role: formData.role,
@@ -184,13 +199,11 @@ export default function NewInterviewPage() {
                 scheduledAt,
                 duration: formData.duration,
                 selectedAvatars: formData.selectedAvatars,
-                technology: formData.technology // Added
+                technology: formData.technology,
+                resumeUrl: finalResumeUrl
             })
 
             const interviewId = response.data.interview.id
-
-            // Even for INSTANT, we now redirect to the start/technical-check page as requested by user
-            // This ensures prerequisites are checked before entering the room
             router.push(`/interviews/${interviewId}/start`)
         } catch (error) {
             console.error('Failed to create interview:', error)

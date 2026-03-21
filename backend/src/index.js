@@ -24,9 +24,8 @@ app.use(cors({
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
-            return callback(null, true); // Temporarily allow all for dev ease, or stick to strict:
-            // var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            // return callback(new Error(msg), false);
+            var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
         }
         return callback(null, true);
     },
@@ -56,6 +55,16 @@ app.use(auditMiddleware);
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/test-debug', (req, res) => {
+    res.send('BACKEND IS ALIVE AND UPDATED AT ' + new Date().toISOString());
+});
+
+// Log all requests
+app.use((req, res, next) => {
+    console.log(`[DEBUG LOG] ${req.method} ${req.url}`);
+    next();
 });
 
 // API Routes
@@ -93,6 +102,7 @@ app.use('/api/rbac', require('./routes/rbac.routes'));
 app.use('/api/behavior', require('./routes/behavior.routes'));
 app.use('/api/library', require('./routes/library.routes'));
 app.use('/api/chatgpt', require('./routes/chatgpt.routes'));
+app.use('/api/enrollment-requests', require('./routes/enrollment-requests.routes'));
 
 
 // Serve Static Uploads
@@ -101,6 +111,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // 404 handler
 app.use((req, res) => {
+    console.log(`[404] ${req.method} ${req.url}`);
     res.status(404).json({ error: 'Route not found' });
 });
 

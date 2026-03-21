@@ -29,7 +29,6 @@ import {
     Image as ImageIcon
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuth } from "@/lib/auth-context"
 import { useState, useEffect } from "react"
 
@@ -43,94 +42,108 @@ export function AdminSidebar({ className }: SidebarProps) {
     const [isMobileOpen, setIsMobileOpen] = useState(false)
     const [expandedMenus, setExpandedMenus] = useState<string[]>([])
 
+    // Unified Routes Configuration
+    const getRoutesConfig = () => [
+        {
+            label: "Dashboard",
+            icon: LayoutDashboard,
+            href: "/admin",
+            active: pathname === "/admin",
+        },
+        {
+            label: "User Management",
+            icon: Users,
+            subItems: [
+                { label: "Users & Roles", href: "/admin/users", permission: 'MANAGE_USERS' },
+                { label: "Courses", href: "/admin/courses", permission: 'MANAGE_COURSES' },
+                { label: "Certificates", href: "/admin/certificates", permission: 'MANAGE_CERTIFICATES' },
+                { label: "Enroll Requests", href: "/admin/enrolls", permission: 'MANAGE_USERS' },
+                { label: "Employer Requests", href: "/admin/employers", permission: 'MANAGE_USERS' },
+            ]
+        },
+        {
+            label: "Leads & CRM",
+            icon: Magnet,
+            permission: 'VIEW_LEADS',
+            subItems: [
+                { label: "All Leads", href: "/admin/leads" },
+                { label: "Meetings", href: "/admin/meetings" },
+                { label: "Tasks", href: "/admin/tasks" },
+            ]
+        },
+        {
+            label: "Learning CMS",
+            icon: GraduationCap,
+            permission: 'MANAGE_CONTENT',
+            subItems: [
+                { label: "Blogs", href: "/admin/blogs" },
+                { label: "Gallery", href: "/admin/gallery" },
+                { label: "Skillcasts", href: "/admin/skillcasts" },
+                { label: "Reviews", href: "/admin/reviews" },
+                { label: "Library", href: "/admin/library" },
+            ]
+        },
+        {
+            label: "AI Subsystems",
+            icon: Bot,
+            permission: 'MANAGE_SETTINGS',
+            subItems: [
+                { label: "AI Configurations", href: "/admin/ai" },
+                { label: "Training Data", href: "/admin/ai/training" },
+                { label: "AI Interviews", href: "/admin/ai-interviews" },
+            ]
+        },
+        {
+            label: "Finance",
+            icon: CreditCard,
+            permission: 'VIEW_FINANCE',
+            subItems: [
+                { label: "Payments", href: "/admin/payments" },
+                { label: "Pricing & Plans", href: "/admin/pricing" },
+            ]
+        },
+        {
+            label: "Operations",
+            icon: Briefcase,
+            subItems: [
+                { label: "Job Board", href: "/admin/jobs" },
+                { label: "Projects Market", href: "/admin/projects" },
+                { label: "Support Tickets", href: "/admin/support", permission: 'VIEW_SUPPORT' },
+            ]
+        },
+        {
+            label: "Technical & Config",
+            icon: Settings,
+            permission: 'MANAGE_SETTINGS',
+            subItems: [
+                { label: "General Settings", href: "/admin/settings" },
+                { label: "Video Integration", href: "/admin/video-settings" },
+                { label: "System Logs", href: "/admin/logs" },
+            ]
+        }
+    ]
+
     // Close mobile menu on route change
     useEffect(() => {
         if (isMobileOpen) {
-            // Defer to avoid cascading render lint
             setTimeout(() => setIsMobileOpen(false), 0)
         }
     }, [pathname, isMobileOpen])
 
-    // Auto-expand active parent menu
+    // Auto-expand active parent menu dynamically based on current route
     useEffect(() => {
-        function getRoutesInternal() {
-            const routesList = [
-                {
-                    label: 'Dashboard',
-                    href: '/admin',
-                    icon: LayoutDashboard
-                },
-                {
-                    label: 'User Management',
-                    icon: Users,
-                    subItems: [
-                        { label: 'All Users', href: '/admin/users' },
-                        { label: 'Courses', href: '/admin/courses' },
-                        { label: 'Certificates', href: '/admin/certificates' },
-                    ]
-                },
-                {
-                    label: 'Leads & CRM',
-                    icon: Magnet,
-                    subItems: [
-                        { label: 'All Leads', href: '/admin/leads' },
-                        { label: 'Meetings', href: '/admin/meetings' },
-                        { label: 'Tasks', href: '/admin/tasks' },
-                    ]
-                },
-                {
-                    label: 'Learning CMS',
-                    icon: GraduationCap,
-                    subItems: [
-                        { label: 'Blogs', href: '/admin/blogs' },
-                        { label: 'Reviews', href: '/admin/reviews' },
-                        { label: 'Library', href: '/admin/library' },
-                    ]
-                },
-                {
-                    label: 'AI Agents',
-                    icon: Bot,
-                    subItems: [
-                        { label: 'Configurations', href: '/admin/ai' },
-                        { label: 'Training Data', href: '/admin/ai/training' },
-                    ]
-                },
-                {
-                    label: 'Finance',
-                    icon: CreditCard,
-                    subItems: [
-                        { label: 'Payments', href: '/admin/payments' },
-                    ]
-                },
-                {
-                    label: 'Operations',
-                    icon: Briefcase,
-                    subItems: [
-                        { label: 'Job Board', href: '/admin/jobs' },
-                        { label: 'Projects Market', href: '/admin/projects' },
-                    ]
-                },
-                {
-                    label: 'Technical',
-                    icon: Settings,
-                    subItems: [
-                        { label: 'Video Settings', href: '/admin/video-settings' },
-                        { label: 'System Logs', href: '/admin/logs' },
-                    ]
-                }
-            ]
-            return routesList
-        }
-
-        const routes = getRoutesInternal()
+        const routes = getRoutesConfig()
         routes.forEach(route => {
             if (route.subItems && route.subItems.some(sub => pathname.startsWith(sub.href))) {
-                if (!expandedMenus.includes(route.label)) {
-                    setExpandedMenus(prev => [...prev, route.label])
-                }
+                setExpandedMenus(prev => {
+                    if (!prev.includes(route.label)) {
+                        return [...prev, route.label]
+                    }
+                    return prev
+                })
             }
         })
-    }, [pathname, expandedMenus])
+    }, [pathname])
 
     const toggleMenu = (label: string) => {
         setExpandedMenus(prev =>
@@ -140,155 +153,45 @@ export function AdminSidebar({ className }: SidebarProps) {
         )
     }
 
-    const getRoutes = () => {
-        const routes = [
-            {
-                label: "Dashboard",
-                icon: LayoutDashboard,
-                href: "/admin",
-                active: pathname === "/admin",
-                // Dashboard is always visible to staff, but maybe limited widgets
-            },
-            {
-                label: "Leads & CRM",
-                icon: MessageSquare,
-                href: "/admin/leads",
-                active: pathname.startsWith("/admin/leads"),
-                permission: 'VIEW_LEADS'
-            },
-            {
-                label: "Tasks",
-                icon: Calendar,
-                href: "/admin/tasks",
-                active: pathname.startsWith("/admin/tasks"),
-                permission: 'VIEW_TASKS'
-            },
-            {
-                label: "Courses",
-                icon: BookOpen,
-                href: "/admin/courses",
-                active: pathname.startsWith("/admin/courses"),
-                permission: 'MANAGE_COURSES',
-                subItems: [
-                    { label: "All Courses", href: "/admin/courses" },
-                    { label: "Create New", href: "/admin/courses/new" },
-                    { label: "Review Queue", href: "/admin/courses/review" },
-                    { label: "Live Classes", href: "/admin/courses/live" },
-                ]
-            },
-            {
-                label: "Gallery Manager",
-                icon: ImageIcon,
-                href: "/admin/gallery",
-                active: pathname.startsWith("/admin/gallery"),
-                permission: 'MANAGE_CONTENT'
-            },
-            {
-                label: "Blog Manager",
-                icon: FileText,
-                href: "/admin/blogs",
-                active: pathname.startsWith("/admin/blogs"),
-                permission: 'MANAGE_CONTENT'
-            },
-            {
-                label: "Skillcasts",
-                icon: Video,
-                href: "/admin/skillcasts",
-                active: pathname.startsWith("/admin/skillcasts"),
-                permission: 'MANAGE_CONTENT'
-            },
-            {
-                label: "AI Settings",
-                icon: Sparkles,
-                href: "/admin/ai",
-                active: pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/behavior-analytics"),
-                permission: 'MANAGE_SETTINGS',
-                subItems: [
-                    { label: "API Configuration", href: "/admin/ai" },
-                    { label: "Knowledge Base", href: "/admin/ai/knowledge-base" },
-                    { label: "Q&A Training", href: "/admin/ai/training" },
-                    { label: "Behavior Analytics", href: "/admin/behavior-analytics" },
-                ]
-            },
-            {
-                label: "AI Interviews",
-                icon: BrainCircuit,
-                href: "/admin/ai-interviews",
-                active: pathname.startsWith("/admin/ai-interviews"),
-                permission: 'MANAGE_SETTINGS'
-            },
-            {
-                label: "Video Integration",
-                icon: VideoIcon,
-                href: "/admin/video-settings",
-                active: pathname.startsWith("/admin/video-settings"),
-                permission: 'MANAGE_SETTINGS'
-            },
-            {
-                label: "Interviews",
-                icon: Video,
-                href: "/admin/interviews",
-                active: pathname.startsWith("/admin/interviews"),
-                permission: 'VIEW_INTERVIEWS'
-            },
-            {
-                label: "Users & Roles",
-                icon: Users,
-                href: "/admin/users",
-                active: pathname.startsWith("/admin/users"),
-                permission: 'MANAGE_USERS'
-            },
-            {
-                label: "Certificates",
-                icon: Award,
-                href: "/admin/certificates",
-                active: pathname.startsWith("/admin/certificates"),
-                permission: 'MANAGE_CERTIFICATES'
-            },
-            {
-                label: "Pricing & Plans",
-                icon: CreditCard,
-                href: "/admin/pricing",
-                active: pathname.startsWith("/admin/pricing"),
-                permission: 'VIEW_FINANCE'
-            },
-            {
-                label: "System Settings",
-                icon: Settings,
-                href: "/admin/settings",
-                active: pathname.startsWith("/admin/settings"),
-                permission: 'MANAGE_SETTINGS',
-                subItems: [
-                    { label: "General Settings", href: "/admin/settings" },
-                    { label: "Email Services", href: "/admin/email-settings" },
-                    { label: "Video Integration", href: "/admin/video-settings" },
-                    { label: "Lead Integrations", href: "/admin/leads/integrations" },
-                ]
-            },
-            {
-                label: "Support Tickets",
-                icon: MessageSquare,
-                href: "/admin/support",
-                active: pathname.startsWith("/admin/support"),
-                permission: 'VIEW_SUPPORT'
-            },
-            {
-                label: "Employer Requests",
-                icon: Users,
-                href: "/admin/employers",
-                active: pathname.startsWith("/admin/employers"),
-                permission: 'MANAGE_USERS'
-            },
-        ]
-
-        // Filter routes based on permissions
-        return routes.filter(route => {
-            if (!route.permission) return true
-            return hasPermission(route.permission)
-        })
+    // Prepare routes depending on permissions
+    const routesFilter = () => {
+        const rawRoutes = getRoutesConfig()
+        
+        return rawRoutes.map(parent => {
+            // First check if parent has a macro permission requirement
+            if (parent.permission && !hasPermission(parent.permission)) {
+                return null;
+            }
+            
+            // Then filter subItems based on granular permissions if any
+            let finalParent = { ...parent };
+            
+            if (parent.subItems) {
+                const subItems = parent.subItems.filter(sub => {
+                    if (sub.permission && !hasPermission(sub.permission)) return false;
+                    return true;
+                });
+                
+                // If all subItems were filtered out, hide parent
+                if (subItems.length === 0) return null;
+                
+                finalParent.subItems = subItems;
+            }
+            
+            // Inject active states dynamically if not explicitly defined
+            if (finalParent.active === undefined) {
+                if (finalParent.subItems) {
+                    finalParent.active = finalParent.subItems.some(sub => pathname === sub.href || pathname.startsWith(sub.href + '/'));
+                } else if (finalParent.href) {
+                    finalParent.active = pathname === finalParent.href || pathname.startsWith(finalParent.href + '/');
+                }
+            }
+            
+            return finalParent;
+        }).filter(Boolean) as ReturnType<typeof getRoutesConfig>;
     }
 
-    const routes = getRoutes()
+    const availableRoutes = routesFilter();
 
     return (
         <>
@@ -310,16 +213,16 @@ export function AdminSidebar({ className }: SidebarProps) {
                 className
             )}>
                 {/* Header - Fixed */}
-                <div className="px-6 py-4 border-b flex-shrink-0">
+                <div className="px-6 py-4 border-b flex-shrink-0 bg-background z-10">
                     <h2 className="text-2xl font-bold tracking-tight text-primary">Admin Panel</h2>
                     <p className="text-xs text-muted-foreground mt-1">Super Admin Console</p>
                 </div>
 
-                {/* Scrollable Menu Area */}
-                <ScrollArea className="flex-1 min-h-0 py-4 px-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 transition-colors">
-                    <nav className="space-y-1">
-                        {routes.map((route) => (
-                            <div key={route.href}>
+                {/* Scrollable Menu Area - Pure native scrolling */}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 relative" style={{ overscrollBehavior: 'contain' }}>
+                    <nav className="space-y-1 pb-6 w-full">
+                        {availableRoutes.map((route) => (
+                            <div key={route.href || route.label} className="w-full">
                                 {route.subItems ? (
                                     <>
                                         <button
@@ -334,38 +237,41 @@ export function AdminSidebar({ className }: SidebarProps) {
                                                 {route.label}
                                             </div>
                                             {expandedMenus.includes(route.label) ? (
-                                                <ChevronDown className="h-4 w-4" />
+                                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
                                             ) : (
-                                                <ChevronRight className="h-4 w-4" />
+                                                <ChevronRight className="h-4 w-4 flex-shrink-0" />
                                             )}
                                         </button>
                                         {expandedMenus.includes(route.label) && (
                                             <div className="ml-8 mt-1 space-y-1">
-                                                {route.subItems.map((sub) => (
-                                                    <Link
-                                                        key={sub.href}
-                                                        href={sub.href}
-                                                        className={cn(
-                                                            "text-sm flex p-2 rounded-md transition hover:bg-primary/5",
-                                                            pathname === sub.href ? "text-primary font-medium" : "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {sub.label}
-                                                    </Link>
-                                                ))}
+                                                {route.subItems.map((sub) => {
+                                                    const isSubActive = pathname === sub.href || pathname.startsWith(sub.href + '/');
+                                                    return (
+                                                        <Link
+                                                            key={sub.href}
+                                                            href={sub.href}
+                                                            className={cn(
+                                                                "text-sm flex p-2 rounded-md transition hover:bg-primary/5 break-words whitespace-normal",
+                                                                isSubActive ? "text-primary font-medium bg-primary/5" : "text-muted-foreground"
+                                                            )}
+                                                        >
+                                                            {sub.label}
+                                                        </Link>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </>
                                 ) : (
                                     <Link
-                                        href={route.href}
+                                        href={route.href!}
                                         className={cn(
-                                            "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition",
+                                            "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition break-words whitespace-normal",
                                             route.active ? "text-primary bg-primary/10" : "text-muted-foreground"
                                         )}
                                     >
                                         <div className="flex items-center flex-1">
-                                            <route.icon className={cn("h-5 w-5 mr-3", route.active ? "text-primary" : "text-muted-foreground")} />
+                                            <route.icon className={cn("h-5 w-5 mr-3 flex-shrink-0", route.active ? "text-primary" : "text-muted-foreground")} />
                                             {route.label}
                                         </div>
                                     </Link>
@@ -373,16 +279,16 @@ export function AdminSidebar({ className }: SidebarProps) {
                             </div>
                         ))}
                     </nav>
-                </ScrollArea>
+                </div>
 
                 {/* Bottom Actions - Fixed */}
-                <div className="border-t p-3 flex-shrink-0">
+                <div className="border-t p-3 flex-shrink-0 bg-background mt-auto">
                     <Button
                         variant="ghost"
                         className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
                         onClick={logout}
                     >
-                        <LogOut className="h-5 w-5 mr-3" />
+                        <LogOut className="h-5 w-5 mr-3 flex-shrink-0" />
                         Sign Out
                     </Button>
                 </div>

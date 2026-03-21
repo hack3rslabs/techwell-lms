@@ -5,15 +5,27 @@
  * Future: Integrate SendGrid/AWS SES.
  */
 
-const sendEmail = async (to, subject, html) => {
-    // In production, we would use a real provider here
-    console.log(`\n================ EMAIL SENT ================`);
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    // console.log(`Body: ${html}`); // Too verbose for console
-    console.log(`============================================\n`);
+const { sendEmail: realSendEmail } = require('../utils/emailSender');
 
-    return true;
+const sendEmail = async (to, subject, html) => {
+    try {
+        const success = await realSendEmail({
+            to,
+            subject,
+            html,
+            text: html.replace(/<[^>]*>/g, '') // Basic HTML to text conversion
+        });
+        
+        if (!success) {
+            console.log('Falling back to console logging for email:');
+            console.log(`To: ${to}, Subject: ${subject}`);
+        }
+        
+        return success;
+    } catch (error) {
+        console.error('Email service error:', error);
+        return false;
+    }
 };
 
 const sendWelcomeEmail = async (user) => {
@@ -94,8 +106,25 @@ const sendInterviewScheduledEmail = async (applicantEmail, applicantName, interv
     return sendEmail(applicantEmail, subject, html);
 };
 
+const sendOtpEmail = async (email, otp) => {
+    const subject = 'TechWell - Verify Your Email';
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Verify Your Email</h1>
+            <p>Your OTP verification code is:</p>
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                <h2 style="font-size: 36px; letter-spacing: 8px; color: #111827; margin: 0;">${otp}</h2>
+            </div>
+            <p style="color: #6b7280;">This code is valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>
+            <p>Best regards,<br/>The TechWell Team</p>
+        </div>
+    `;
+    return sendEmail(email, subject, html);
+};
+
 module.exports = {
     sendWelcomeEmail,
     sendCertificateEmail,
-    sendInterviewScheduledEmail
+    sendInterviewScheduledEmail,
+    sendOtpEmail
 };

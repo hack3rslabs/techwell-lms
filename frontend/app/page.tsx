@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-0 overflow-x-hidden">
       <Hero />
-      <div className="-mt-12 relative z-20">
+      <div className="mt-8 relative z-20">
         <StudentJourney />
       </div>
       <PricingSection />

@@ -254,5 +254,24 @@ router.post('/staff', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (re
         next(error);
     }
 });
+/**
+ * @route   GET /api/admin/enrollments
+ * @desc    Get all active enrollments
+ * @access  Private/Admin
+ */
+router.get('/enrollments', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res, next) => {
+    try {
+        const enrollments = await prisma.enrollment.findMany({
+            include: {
+                course: { select: { id: true, title: true, price: true } },
+                user: { select: { id: true, name: true, email: true, phone: true } }
+            },
+            orderBy: { enrolledAt: 'desc' }
+        });
+        res.json({ enrollments });
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;

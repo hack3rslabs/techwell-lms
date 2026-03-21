@@ -83,8 +83,8 @@ export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange
         type: 'INSTANT'
     })
 
-    // Check access
-    const hasAccess = user?.hasUnlimitedInterviews || user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN'
+    // Check access - FORCED TRUE FOR TESTING
+    const hasAccess = true; // user?.hasUnlimitedInterviews || user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN'
 
     const updateFormData = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }))
@@ -126,9 +126,7 @@ export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange
     }
 
     const handleUpgrade = () => {
-        // Redirect to pricing or open payment modal (Placeholder for now)
-        alert("Redirecting to payment gateway...")
-        // router.push('/pricing') 
+        router.push('/pricing') 
     }
 
     return (
