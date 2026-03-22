@@ -1,12 +1,12 @@
-version: "3.9"
-
 services:
   migrate:
     build: ./backend
     command: npx prisma migrate deploy
     environment:
       DATABASE_URL: ${DATABASE_URL:?}
+      NODE_ENV: ${NODE_ENV:-production}
     restart: "no"
+    exclude_from_hc: true
 
   backend:
     build: ./backend
@@ -20,6 +20,7 @@ services:
       - migrate
     volumes:
       - uploads_prod:/app/uploads
+    restart: unless-stopped
 
   frontend:
     build: ./frontend
@@ -28,6 +29,7 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
   uploads_prod:
