@@ -2,38 +2,32 @@ version: "3.9"
 
 services:
   migrate:
-    build:
-      context: ./backend
+    build: ./backend
+    command: npx prisma migrate deploy
     environment:
       DATABASE_URL: ${DATABASE_URL:?}
-    command: sh -c "npx prisma migrate deploy"
     restart: "no"
 
   backend:
-    build:
-      context: ./backend
-    depends_on:
-      - migrate
+    build: ./backend
     environment:
-      NODE_ENV: production
-      PORT: 5000
       DATABASE_URL: ${DATABASE_URL:?}
       JWT_SECRET: ${JWT_SECRET:?}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       FRONTEND_URL: ${FRONTEND_URL:?}
+      NODE_ENV: ${NODE_ENV:-production}
+    depends_on:
+      - migrate
     volumes:
       - uploads_prod:/app/uploads
-    expose:
-      - "5000"
 
   frontend:
-    build:
-      context: ./frontend
+    build: ./frontend
     environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
-    expose:
-      - "3000"
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?}
+      NODE_ENV: ${NODE_ENV:-production}
+    depends_on:
+      - backend
 
 volumes:
   uploads_prod:
