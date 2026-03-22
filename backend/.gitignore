@@ -1,4 +1,6 @@
 node_modules
 .env
-uploads
-npm-debug.log
+.env.*
+.next
+dist
+coverage
