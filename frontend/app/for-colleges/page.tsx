@@ -227,7 +227,7 @@ export default function ForCollegesPage() {
                                         <p className="text-xs text-muted-foreground uppercase">Training & Placement Cell</p>
                                     </div>
                                 </div>
-                                <p className="text-muted-foreground italic">"TechWell has become an integral part of our placement preparation. Students are more confident and better prepared than ever before."</p>
+                                <p className="text-muted-foreground italic">&quot;TechWell has become an integral part of our placement preparation. Students are more confident and better prepared than ever before.&quot;</p>
                             </Card>
                             <Card className="p-8 border-secondary/10">
                                 <div className="flex items-center gap-4 mb-4">
@@ -239,7 +239,7 @@ export default function ForCollegesPage() {
                                         <p className="text-xs text-muted-foreground uppercase">Career Development Centre</p>
                                     </div>
                                 </div>
-                                <p className="text-muted-foreground italic">"We've seen a remarkable improvement in student placement rates. The AI-powered feedback is incredibly valuable."</p>
+                                <p className="text-muted-foreground italic">&quot;We&apos;ve seen a remarkable improvement in student placement rates. The AI-powered feedback is incredibly valuable.&quot;</p>
                             </Card>
                         </div>
                     </div>

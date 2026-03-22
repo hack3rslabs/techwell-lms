@@ -32,6 +32,21 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 import { useState, useEffect } from "react"
 
+interface RouteItem {
+    label: string;
+    href: string;
+    permission?: string;
+}
+
+interface RouteConfig {
+    label: string;
+    icon: any;
+    href?: string;
+    permission?: string;
+    subItems?: RouteItem[];
+    active?: boolean;
+}
+
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     isCollapsed?: boolean // Added member to avoid empty interface warning
 }
@@ -43,7 +58,7 @@ export function AdminSidebar({ className }: SidebarProps) {
     const [expandedMenus, setExpandedMenus] = useState<string[]>([])
 
     // Unified Routes Configuration
-    const getRoutesConfig = () => [
+    const getRoutesConfig = (): RouteConfig[] => [
         {
             label: "Dashboard",
             icon: LayoutDashboard,
@@ -164,7 +179,7 @@ export function AdminSidebar({ className }: SidebarProps) {
             }
             
             // Then filter subItems based on granular permissions if any
-            let finalParent = { ...parent };
+            const finalParent = { ...parent };
             
             if (parent.subItems) {
                 const subItems = parent.subItems.filter(sub => {

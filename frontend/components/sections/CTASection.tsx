@@ -10,7 +10,7 @@ export function CTASection() {
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] opacity-20 pointer-events-none" />
             <div className="container text-center">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
-                    Don't Just Dream. <span className="underline decoration-secondary italic">Launch.</span>
+                    Don&apos;t Just Dream. <span className="underline decoration-secondary italic">Launch.</span>
                 </h2>
                 <p className="text-xl opacity-90 mb-10 max-w-2xl mx-auto leading-relaxed">
                     Join over 15,000 students who have already secured their futures.

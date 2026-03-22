@@ -148,7 +148,7 @@ export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange
                         <div className="space-y-2">
                             <DialogTitle className="text-2xl font-bold">Unlock Unlimited Interviews</DialogTitle>
                             <DialogDescription className="text-base max-w-sm mx-auto">
-                                You've used your free credits. Upgrade to Pro to practice with personalized AI interviews without limits.
+                                You&apos;ve used your free credits. Upgrade to Pro to practice with personalized AI interviews without limits.
                             </DialogDescription>
                         </div>
 

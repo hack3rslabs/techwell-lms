@@ -8,11 +8,6 @@ export function Footer() {
     const [year, setYear] = React.useState(2024)
     const [images, setImages] = React.useState<any[]>([])
 
-    React.useEffect(() => {
-        setYear(new Date().getFullYear())
-        fetchGallery()
-    }, [])
-
     const fetchGallery = async () => {
         try {
             const res = await fetch('/api/admin/gallery')
@@ -24,6 +19,11 @@ export function Footer() {
             console.error('Failed to fetch gallery', error)
         }
     }
+
+    React.useEffect(() => {
+        setYear(new Date().getFullYear())
+        fetchGallery()
+    }, [])
 
     return (
         <footer className="bg-muted/50 border-t mt-auto">

@@ -94,7 +94,7 @@ export const courseApi = {
     getById: (id: string) => api.get(`/courses/${id}`),
     create: (data: { title: string; description: string; category: string; price?: number }) =>
         api.post('/courses', data),
-    update: (id: string, data: Partial<{ title: string; description: string; category: string; price?: number;[key: string]: any }>) =>
+    update: (id: string, data: Partial<{ title: string; description: string; category: string; price?: number;[key: string]: unknown }>) =>
         api.put(`/courses/${id}`, data),
     enroll: (courseId: string) => api.post(`/courses/${courseId}/enroll`),
     getMyEnrollments: () => api.get('/courses/my/enrolled'),
@@ -233,19 +233,19 @@ export const knowledgeBaseApi = {
         count: number;
     }) => api.post('/ai/generate-from-jd', data),
     bulkDelete: (ids: string[]) => api.post('/knowledge-base/bulk-delete', { ids }),
-    bulkUpdate: (ids: string[], updates: any) => api.post('/knowledge-base/bulk-update', { ids, updates })
+    bulkUpdate: (ids: string[], updates: unknown) => api.post('/knowledge-base/bulk-update', { ids, updates })
 };
 
 // ATS API
 export const atsApi = {
     applyExternal: (data: unknown) => api.post('/ats/apply/external', data),
     getApplication: (id: string) => api.get(`/ats/applications/detail/${id}`),
-    getApplications: (jobId: string, params?: any) => api.get(`/ats/applications/${jobId}`, { params }),
+    getApplications: (jobId: string, params?: unknown) => api.get(`/ats/applications/${jobId}`, { params }),
     updateStatus: (id: string, data: { status: string; notes?: string }) => api.patch(`/ats/status/${id}`, data),
     addNote: (appId: string, data: { content: string; tags?: string[]; rating?: number }) => api.post(`/ats/notes/${appId}`, data),
     rateCandidate: (appId: string, data: { rating: number; tags?: string[] }) => api.patch(`/ats/rate/${appId}`, data),
-    scheduleInterview: (data: any) => api.post('/ats/interviews', data),
-    submitFeedback: (interviewId: string, data: any) => api.patch(`/ats/interviews/${interviewId}/feedback`, data),
+    scheduleInterview: (data: unknown) => api.post('/ats/interviews', data),
+    submitFeedback: (interviewId: string, data: unknown) => api.patch(`/ats/interviews/${interviewId}/feedback`, data),
     getAnalytics: () => api.get('/ats/analytics'),
     getActivity: (limit?: number) => api.get('/ats/activity', { params: { limit } }),
     bulkStatusUpdate: (data: { applicationIds: string[]; status: string; notes?: string }) => api.post('/ats/bulk-status', data),
@@ -255,8 +255,8 @@ export const atsApi = {
 // Avatar API
 export const avatarApi = {
     getAll: () => api.get('/avatars'),
-    create: (data: any) => api.post('/avatars', data),
-    update: (id: string, data: any) => api.put(`/avatars/${id}`, data),
+    create: (data: unknown) => api.post('/avatars', data),
+    update: (id: string, data: unknown) => api.put(`/avatars/${id}`, data),
     delete: (id: string) => api.delete(`/avatars/${id}`),
     toggleActive: (id: string) => api.patch(`/avatars/${id}/toggle`),
 };
@@ -265,8 +265,8 @@ export const avatarApi = {
 export const blogApi = {
     getAll: (params?: { page?: number; limit?: number; status?: string; search?: string }) => api.get('/blogs', { params }),
     getBySlug: (slug: string) => api.get(`/blogs/${slug}`),
-    create: (data: any) => api.post('/blogs', data),
-    update: (id: string, data: any) => api.put(`/blogs/${id}`, data),
+    create: (data: unknown) => api.post('/blogs', data),
+    update: (id: string, data: unknown) => api.put(`/blogs/${id}`, data),
     delete: (id: string) => api.delete(`/blogs/${id}`),
 };
 
@@ -282,22 +282,22 @@ export const ticketApi = {
 
 // Lead/CRM API
 export const leadApi = {
-    getAll: (params?: any) => api.get('/leads', { params }),
-    create: (data: any) => api.post('/leads', data),
-    update: (id: string, data: any) => api.put(`/leads/${id}`, data),
+    getAll: (params?: unknown) => api.get('/leads', { params }),
+    create: (data: unknown) => api.post('/leads', data),
+    update: (id: string, data: unknown) => api.put(`/leads/${id}`, data),
     delete: (id: string) => api.delete(`/leads/${id}`),
     convert: (id: string) => api.post(`/leads/${id}/convert`),
-    getAnalytics: (params?: any) => api.get('/leads/analytics', { params }),
+    getAnalytics: (params?: unknown) => api.get('/leads/analytics', { params }),
     import: (formData: FormData) => api.post('/leads/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     getIntegrations: () => api.get('/leads/integrations'),
-    configureIntegration: (data: any) => api.post('/leads/integrations', data),
+    configureIntegration: (data: unknown) => api.post('/leads/integrations', data),
 };
 
 // Task API
 export const taskApi = {
     getAll: (params?: { status?: string; priority?: string; assignedTo?: string }) => api.get('/tasks', { params }),
-    create: (data: any) => api.post('/tasks', data),
-    update: (id: string, data: any) => api.put(`/tasks/${id}`, data),
+    create: (data: unknown) => api.post('/tasks', data),
+    update: (id: string, data: unknown) => api.put(`/tasks/${id}`, data),
     delete: (id: string) => api.delete(`/tasks/${id}`),
     addComment: (id: string, text: string) => api.post(`/tasks/${id}/comments`, { text }),
 };
@@ -305,8 +305,8 @@ export const taskApi = {
 // Live Class API
 export const liveClassApi = {
     getAll: (courseId?: string) => api.get('/live-classes', { params: { courseId } }),
-    create: (data: any) => api.post('/live-classes', data),
-    update: (id: string, data: any) => api.patch(`/live-classes/${id}`, data),
+    create: (data: unknown) => api.post('/live-classes', data),
+    update: (id: string, data: unknown) => api.patch(`/live-classes/${id}`, data),
     delete: (id: string) => api.delete(`/live-classes/${id}`),
 };
 

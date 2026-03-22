@@ -166,7 +166,7 @@ export default function ProjectDetailsPage() {
                                     <Separator />
 
                                     <div className="space-y-4">
-                                        <h4 className="font-semibold text-sm">What's Included:</h4>
+                                        <h4 className="font-semibold text-sm">What&apos;s Included:</h4>
                                         <ul className="space-y-3 text-sm text-muted-foreground">
                                             <li className="flex gap-2">
                                                 <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />

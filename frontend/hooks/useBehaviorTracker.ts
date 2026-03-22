@@ -132,9 +132,14 @@ class BehaviorTracker {
 export function useBehaviorTracker(userId?: string) {
     const pathname = usePathname();
     const tracker = BehaviorTracker.getInstance();
-    const pageStartTime = useRef<number>(Date.now());
+    const pageStartTime = useRef<number | null>(null);
     const lastScrollDepth = useRef<number>(0);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    // Initialize page start time
+    if (pageStartTime.current === null) {
+        pageStartTime.current = Date.now();
+    }
 
     // Track page view
     useEffect(() => {
@@ -149,12 +154,14 @@ export function useBehaviorTracker(userId?: string) {
 
         // Track time on page when leaving
         return () => {
-            const duration = Math.floor((Date.now() - pageStartTime.current) / 1000);
-            if (duration > 0) {
-                tracker.track('TIME_ON_PAGE', {
-                    page: pathname,
-                    duration
-                }, userId);
+            if (pageStartTime.current !== null) {
+                const duration = Math.floor((Date.now() - pageStartTime.current) / 1000);
+                if (duration > 0) {
+                    tracker.track('TIME_ON_PAGE', {
+                        page: pathname,
+                        duration
+                    }, userId);
+                }
             }
         };
     }, [pathname, userId]);

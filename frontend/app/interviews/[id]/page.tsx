@@ -705,7 +705,7 @@ export default function InterviewRoomPage() {
                         <div className="space-y-3">
                             <h1 className="text-3xl font-black tracking-tight">{activeAvatar.name} is ready</h1>
                             <p className="text-muted-foreground text-sm font-medium leading-relaxed px-4">
-                                Hello! I'm {activeAvatar.name}. Please ensure your camera and microphone are working.
+                                Hello! I&apos;m {activeAvatar.name}. Please ensure your camera and microphone are working.
                                 Click below to begin the session.
                             </p>
                         </div>
@@ -875,7 +875,7 @@ export default function InterviewRoomPage() {
                                         {currentQuestion ? (
                                             <div className="bg-background/90 backdrop-blur-md p-6 rounded-2xl border-2 border-primary/20 shadow-2xl animate-in slide-in-from-bottom-5 duration-500">
                                                 <p className="text-xl font-black leading-relaxed text-foreground text-center">
-                                                    "{currentQuestion.question}"
+                                                    &quot;{currentQuestion.question}&quot;
                                                 </p>
                                             </div>
                                         ) : isAIProcessing ? (
