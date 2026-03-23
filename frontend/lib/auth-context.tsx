@@ -22,9 +22,9 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => Promise<any>;
+    register: (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => Promise<User>;
     verifyOtp: (email: string, otp: string) => Promise<void>;
-    resendOtp: (email: string) => Promise<any>;
+    resendOtp: (email: string) => Promise<{success: boolean}>;
     logout: () => void;
     refreshUser: () => Promise<void>;
     hasPermission: (permission: string) => boolean;
@@ -67,11 +67,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
     };
 
-    const register = async (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => {
+    const register = async (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string): Promise<User> => {
         const response = await authApi.register({ email, password, name, dob, qualification, college });
         // The backend now only sends { message: 'OTP sent...', email }
         // We do NOT set user/token yet, we wait for OTP verification.
-        return response;
+        // Return a partial User object for type compatibility
+        return {
+            id: '',
+            email,
+            name,
+            role: 'STUDENT',
+            dob,
+            qualification,
+            college,
+        };
     };
 
     const verifyOtp = async (email: string, otp: string) => {
@@ -83,8 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
     };
 
-    const resendOtp = async (email: string) => {
-        return await authApi.resendOtp({ email });
+    const resendOtp = async (email: string): Promise<{success: boolean}> => {
+        const response = await authApi.resendOtp({ email });
+        return response.data;
     };
 
     const logout = () => {

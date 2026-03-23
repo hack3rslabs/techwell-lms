@@ -42,18 +42,20 @@ export function Header() {
                         <Image
                             src="/logo-light.png"
                             alt="TechWell"
-                            width={140}
-                            height={40}
-                            className="dark:hidden"
+                            width={280}
+                            height={80}
+                            className="dark:hidden h-10 w-auto"
                             priority
+                            quality={100}
                         />
                         <Image
                             src="/logo-dark.png"
                             alt="TechWell"
-                            width={140}
-                            height={40}
-                            className="hidden dark:block"
+                            width={280}
+                            height={80}
+                            className="hidden dark:block h-10 w-auto"
                             priority
+                            quality={100}
                         />
                     </Link>
                     <GlobalSearch />

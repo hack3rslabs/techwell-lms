@@ -35,15 +35,15 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                         title: c.title,
                         description: c.description,
                         category: c.category,
-                        price: c.price,
-                        discountPrice: c.discountPrice || 0,
+                        price: Number(c.price) || 0,
+                        discountPrice: Number(c.discountPrice) || 0,
                         difficulty: c.difficulty,
                         courseCode: c.courseCode || '',
                         bannerUrl: c.bannerUrl || '',
                         jobRoles: c.jobRoles || [],
                         courseType: c.courseType || 'RECORDED',
                         hasInterviewPrep: c.hasInterviewPrep || false,
-                        interviewPrice: c.interviewPrice || 0
+                        interviewPrice: Number(c.interviewPrice) || 0
                     })
                     if (c.modules) {
                         setModules(c.modules)
@@ -98,22 +98,77 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
     // Handlers
     const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        
+        // Client-side validation
+        if (!basicData.title || basicData.title.trim().length < 3) {
+            alert('Title must be at least 3 characters')
+            return
+        }
+        if (!basicData.description || basicData.description.trim().length < 10) {
+            alert('Description must be at least 10 characters')
+            return
+        }
+        if (!basicData.category || basicData.category.trim().length < 2) {
+            alert('Please select a valid category')
+            return
+        }
+        
+        // Validate URLs if provided
+        const validateUrl = (url: string): boolean => {
+            if (!url) return true // URL is optional
+            try {
+                new URL(url)
+                return true
+            } catch {
+                return false
+            }
+        }
+        
+        if (basicData.bannerUrl && !validateUrl(basicData.bannerUrl)) {
+            alert('Banner URL must be a valid URL (e.g., https://example.com/image.jpg)')
+            return
+        }
+        
         setIsLoading(true)
         try {
+            // Clean jobRoles: remove empty strings
+            const cleanJobRoles = Array.isArray(basicData.jobRoles) ? basicData.jobRoles.filter(Boolean) : [];
+            
+            // Ensure all numeric fields are actually numbers (not strings)
+            const payload = {
+                ...basicData,
+                jobRoles: cleanJobRoles,
+                price: Number(basicData.price) || 0,
+                discountPrice: Number(basicData.discountPrice) || 0,
+                interviewPrice: Number(basicData.interviewPrice) || 0,
+            };
             if (courseId) {
                 // Update existing
-                await courseApi.update(courseId, basicData)
+                await courseApi.update(courseId, payload)
             } else {
                 // Create new
-                const res = await courseApi.create(basicData)
+                const res = await courseApi.create(payload)
                 setCourseId(res.data.course.id)
                 // Pre-fill AI topic with title
                 setAiTopic(basicData.title)
             }
             setStep(2)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to save course:', error)
-            alert('Failed to save course details')
+            console.error('Response data:', error.response?.data)
+            // Show backend validation errors with details
+            if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
+                const validationErrors = error.response.data.details
+                    .map((err: any) => `${err.path?.join('.')} - ${err.message}`)
+                    .join('\n')
+                alert(`Validation Error:\n${validationErrors}`)
+            } else if (error.response?.data?.error) {
+                alert(`Error: ${error.response.data.error}`)
+            } else if (error.response?.status === 400) {
+                alert(`Error: Invalid data. Check console for details.\n${JSON.stringify(error.response.data)}`)
+            } else {
+                alert(`Error: ${error.message || 'Failed to save course details'}`)
+            }
         } finally {
             setIsLoading(false)
         }
@@ -147,6 +202,48 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         } finally {
             setIsGenerating(false)
         }
+    }
+
+    const handleAddModule = () => {
+        const newModule: Module = {
+            title: 'New Module',
+            description: 'Module description',
+            orderIndex: modules.length,
+            isPublished: false,
+            lessons: []
+        }
+        setModules([...modules, newModule])
+    }
+
+    const handleUpdateModule = (idx: number, updates: Partial<Module>) => {
+        const newModules = [...modules]
+        newModules[idx] = { ...newModules[idx], ...updates }
+        setModules(newModules)
+    }
+
+    const handleDeleteModule = (idx: number) => {
+        const newModules = modules.filter((_, i) => i !== idx)
+        // Update orderIndex for remaining modules
+        newModules.forEach((m, i) => { m.orderIndex = i })
+        setModules(newModules)
+    }
+
+    const handleAddLesson = (moduleIdx: number) => {
+        const newLesson: Lesson = {
+            title: 'New Lesson',
+            type: 'VIDEO',
+            duration: 0,
+            isPublished: false
+        }
+        const newModules = [...modules]
+        newModules[moduleIdx].lessons.push(newLesson)
+        setModules(newModules)
+    }
+
+    const handleDeleteLesson = (moduleIdx: number, lessonIdx: number) => {
+        const newModules = [...modules]
+        newModules[moduleIdx].lessons = newModules[moduleIdx].lessons.filter((_, i) => i !== lessonIdx)
+        setModules(newModules)
     }
 
     const handleSaveCurriculum = async () => {
@@ -293,7 +390,13 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                 <label className="text-sm font-medium">Job Roles (Comma separated)</label>
                                 <Input
                                     value={basicData.jobRoles.join(', ')}
-                                    onChange={e => setBasicData({ ...basicData, jobRoles: e.target.value.split(',').map(s => s.trim()) })}
+                                    onChange={e => {
+                                        const roles = e.target.value
+                                            .split(',')
+                                            .map(s => s.trim())
+                                            .filter(Boolean); // Remove empty strings
+                                        setBasicData({ ...basicData, jobRoles: roles });
+                                    }}
                                     placeholder="Frontend Dev, UI Engineer..."
                                 />
                             </div>
@@ -408,7 +511,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Course Curriculum</CardTitle>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={handleAddModule}>
                                 <Plus className="mr-2 h-4 w-4" /> Add Module
                             </Button>
                         </CardHeader>
@@ -422,14 +525,38 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                     {modules.map((mod, idx) => (
                                         <div key={idx} className="border rounded-lg p-4 bg-card">
                                             <div className="flex items-center justify-between mb-3">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-3 flex-1">
                                                     <GripVertical className="h-5 w-5 text-muted-foreground" />
-                                                    <div>
-                                                        <h4 className="font-medium">{mod.title}</h4>
-                                                        <p className="text-sm text-muted-foreground">{mod.description}</p>
+                                                    <div className="flex-1">
+                                                        <Input
+                                                            type="text"
+                                                            placeholder="Module title"
+                                                            className="h-8 font-medium mb-2"
+                                                            value={mod.title}
+                                                            onChange={(e) => handleUpdateModule(idx, { title: e.target.value })}
+                                                        />
+                                                        <Textarea
+                                                            placeholder="Module description"
+                                                            className="text-sm min-h-[50px]"
+                                                            value={mod.description}
+                                                            onChange={(e) => handleUpdateModule(idx, { description: e.target.value })}
+                                                        />
                                                     </div>
                                                 </div>
-                                                <Badge variant="secondary">{mod.lessons.length} Lessons</Badge>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="secondary">{mod.lessons.length} Lessons</Badge>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            if (confirm('Delete this module?')) {
+                                                                handleDeleteModule(idx)
+                                                            }
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
                                             </div>
                                             <div className="pl-8 space-y-4 border-l-2 ml-2">
                                                 {mod.lessons.map((lesson, lIdx) => (

@@ -287,13 +287,23 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), 
 
         const validatedData = createCourseSchema.parse(body);
 
-        const course = await prisma.course.create({
-            data: {
-                ...validatedData,
-                price: validatedData.price,
-                discountPrice: validatedData.discountPrice,
-                instructorId: req.user.id
+        // Remove undefined (optional) fields to avoid unique constraint issues
+        const dataToCreate = {
+            ...validatedData,
+            price: validatedData.price,
+            discountPrice: validatedData.discountPrice,
+            instructorId: req.user.id
+        };
+
+        // Remove undefined optional fields
+        Object.keys(dataToCreate).forEach(key => {
+            if (dataToCreate[key] === undefined) {
+                delete dataToCreate[key];
             }
+        });
+
+        const course = await prisma.course.create({
+            data: dataToCreate
         });
 
         res.status(201).json({ message: 'Course created', course });

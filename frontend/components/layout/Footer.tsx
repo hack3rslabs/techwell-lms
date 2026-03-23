@@ -55,10 +55,10 @@ export function Footer() {
                             <a href="https://www.instagram.com/techwell_official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-primary transition-colors">
                                 <Instagram className="h-5 w-5" />
                             </a>
-                            <a href="#" aria-label="LinkedIn" className="text-muted-foreground hover:text-primary transition-colors">
+                            <a href="https://www.linkedin.com/in/techwell-it" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-muted-foreground hover:text-primary transition-colors">
                                 <Linkedin className="h-5 w-5" />
                             </a>
-                            <a href="#" aria-label="YouTube" className="text-muted-foreground hover:text-primary transition-colors">
+                            <a href="https://www.youtube.com/@techwellInstitutes/featured" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-muted-foreground hover:text-primary transition-colors">
                                 <Youtube className="h-5 w-5" />
                             </a>
                             <a href="#" aria-label="Twitter" className="text-muted-foreground hover:text-primary transition-colors">

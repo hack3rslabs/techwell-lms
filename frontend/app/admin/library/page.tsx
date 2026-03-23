@@ -37,7 +37,7 @@ interface Resource {
     views: number;
     downloads: number;
     url?: string;
-    content?: any;
+    content?: Record<string, unknown>;
 }
 
 interface QAItem {

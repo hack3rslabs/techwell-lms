@@ -54,9 +54,10 @@ export default function AdminCoursesPage() {
             // Refresh list
             setCourses(courses.filter(c => c.id !== courseId))
             // alert('Course deleted successfully')
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
             console.error(error)
-            alert(error.response?.data?.error || 'Failed to delete course')
+            alert(err.response?.data?.error || 'Failed to delete course')
         } finally {
             setIsDeleting(null)
         }

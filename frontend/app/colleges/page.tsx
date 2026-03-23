@@ -37,7 +37,7 @@ export default function CollegesPage() {
                 url = `mailto:?subject=Interview Preparation with ElevateAI&body=${text}%0A%0A${link}`
                 break
             case 'linkedin':
-                url = `https://www.linkedin.com/sharing/share-offsite/?url=${link}`
+                url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://www.linkedin.com/in/techwell-it')}`
                 break
             case 'twitter':
                 url = `https://twitter.com/intent/tweet?text=${text}&url=${link}`
@@ -225,30 +225,29 @@ export default function CollegesPage() {
                         <div className="bg-card/40 backdrop-blur p-8 rounded-2xl border border-white/10">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
-                                    <span className="text-xl font-bold text-primary">IIT</span>
+                                    <Check className="w-6 h-6 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="font-bold">IIT Delhi</p>
-                                    <p className="text-sm text-muted-foreground">Training & Placement Cell</p>
+                                    <p className="font-bold">Increased Placement Efficiency</p>
+                                    <p className="text-sm text-muted-foreground">Streamlined mock interviews and progress tracking.</p>
                                 </div>
                             </div>
-                            <p className="text-muted-foreground/80 italic">&quot;ElevateAI has become an integral part of our placement preparation. Students are more confident and better prepared than ever before.&quot;</p>
                         </div>
                         <div className="bg-card/40 backdrop-blur p-8 rounded-2xl border border-white/10">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-12 h-12 bg-secondary/20 rounded-full flex items-center justify-center">
-                                    <span className="text-xl font-bold text-secondary">VIT</span>
+                                    <TrendingUp className="w-6 h-6 text-secondary" />
                                 </div>
                                 <div>
-                                    <p className="font-bold">VIT Vellore</p>
-                                    <p className="text-sm text-muted-foreground">Career Development Centre</p>
+                                    <p className="font-bold">Student Success Focused</p>
+                                    <p className="text-sm text-muted-foreground">Personalized feedback for every candidate.</p>
                                 </div>
                             </div>
-                            <p className="text-muted-foreground/80 italic">&quot;We&apos;ve seen a remarkable improvement in student placement rates. The AI-powered feedback is incredibly valuable.&quot;</p>
                         </div>
                     </div>
                 </div>
             </section>
+           
 
             {/* Share Section */}
             <section className="py-24" id="share">
@@ -341,3 +340,4 @@ export default function CollegesPage() {
         </div>
     )
 }
+

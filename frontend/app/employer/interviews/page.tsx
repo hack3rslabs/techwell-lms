@@ -101,9 +101,10 @@ export default function EmployerInterviewsPage() {
         }
     }, [])
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
         fetchInterviews()
-    }, [fetchInterviews])
+    }, [])
 
     const filteredInterviews = interviews.filter(interview => {
         const matchesSearch = interview.candidateName.toLowerCase().includes(searchQuery.toLowerCase()) ||

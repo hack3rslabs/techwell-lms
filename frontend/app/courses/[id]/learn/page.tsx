@@ -55,7 +55,7 @@ export default function CourseLearnPage() {
     interface QuizQuestion {
         id: string
         question: string
-        options: string[] | any // Simplified for now
+        options: QuizOption[]
         correctAnswer: string
     }
     interface Lesson {
@@ -70,7 +70,7 @@ export default function CourseLearnPage() {
         isCompleted: boolean
         lastScore?: number
         quizzes?: QuizQuestion[]
-        settings?: any
+        settings?: Record<string, unknown>
     }
     interface Module {
         id: string
@@ -100,7 +100,6 @@ export default function CourseLearnPage() {
         const fetchContent = async () => {
             try {
                 // Use the new LMS route
-                // @ts-ignore
                 const res = await api.get(`/courses/${params.id}/learn`)
                 if (res.data.course) {
                     setCourse(res.data.course)
@@ -179,8 +178,10 @@ export default function CourseLearnPage() {
         setQuizSubmitted(true)
 
         // Pass if score > passing (default 60)
-        const passing = activeLesson.settings?.passingScore || 60
-        if (score >= passing) {
+        const passingScore = typeof activeLesson.settings?.passingScore === 'number' 
+            ? activeLesson.settings.passingScore 
+            : 60
+        if (score >= passingScore) {
             handleLessonComplete(activeLesson.id, score)
         }
     }
@@ -334,18 +335,18 @@ export default function CourseLearnPage() {
                                                     <div key={q.id} className="space-y-3">
                                                         <p className="font-medium text-sm">{idx + 1}. {q.question}</p>
                                                         <div className="space-y-2 pl-4">
-                                                            {/* Assuming options is an array of strings for V1 */}
-                                                            {Array.isArray(q.options) && q.options.map((opt: string, oIdx: number) => (
+                                                            {/* Map through QuizOption objects */}
+                                                            {Array.isArray(q.options) && q.options.map((opt: QuizOption, oIdx: number) => (
                                                                 <label key={oIdx} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                                                                     <input
                                                                         type="radio"
                                                                         name={q.id}
-                                                                        value={opt}
-                                                                        checked={quizAnswers[q.id] === opt}
-                                                                        onChange={() => setQuizAnswers(prev => ({ ...prev, [q.id]: opt }))}
+                                                                        value={opt.optionText}
+                                                                        checked={quizAnswers[q.id] === opt.optionText}
+                                                                        onChange={() => setQuizAnswers(prev => ({ ...prev, [q.id]: opt.optionText }))}
                                                                         className="w-4 h-4 accent-primary"
                                                                     />
-                                                                    <span className="text-sm">{opt}</span>
+                                                                    <span className="text-sm">{opt.optionText}</span>
                                                                 </label>
                                                             ))}
                                                         </div>

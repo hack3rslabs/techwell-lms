@@ -4,8 +4,13 @@ import Link from 'next/link'
 import { Check, Zap, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { useAuth } from '@/lib/auth-context'
 
 export function PricingSection() {
+    const { isAuthenticated, isLoading } = useAuth()
+
+    if (isLoading || isAuthenticated) return null
+
     return (
         <section className="py-16 bg-muted/30">
             <div className="container">

@@ -103,6 +103,7 @@ app.use('/api/behavior', require('./routes/behavior.routes'));
 app.use('/api/library', require('./routes/library.routes'));
 app.use('/api/chatgpt', require('./routes/chatgpt.routes'));
 app.use('/api/enrollment-requests', require('./routes/enrollment-requests.routes'));
+app.use('/api/employer-requests', require('./routes/employer-requests.routes'));
 
 
 // Serve Static Uploads

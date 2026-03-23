@@ -59,7 +59,7 @@ export default function MeetingsPage() {
                         </div>
                         <h2 className="text-xl font-semibold mb-2">No meetings scheduled</h2>
                         <p className="mb-6 text-muted-foreground">
-                            You don't have any upcoming meetings. Integrate your calendar or schedule one manually to get started.
+                            You don&apos;t have any upcoming meetings. Integrate your calendar or schedule one manually to get started.
                         </p>
                         <div className="flex gap-4">
                             <Button variant="outline">

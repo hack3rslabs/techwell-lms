@@ -24,7 +24,7 @@ export default function ReportsPage() {
     const { user, hasPermission } = useAuth()
     const [activeTab, setActiveTab] = React.useState("business")
     const [loading, setLoading] = React.useState(false)
-    const [data, setData] = React.useState<any>(null)
+    const [data, setData] = React.useState<Record<string, any> | null>(null)
 
     const fetchReport = React.useCallback(async (type: string) => {
         setLoading(true)

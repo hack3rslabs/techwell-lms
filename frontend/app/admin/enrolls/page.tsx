@@ -16,9 +16,32 @@ import { enrollmentRequestApi, userApi } from '@/lib/api'
 import { CheckCircle2, XCircle, Loader2, BookOpen, GraduationCap } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
+interface EnrollmentRequest {
+    id: string
+    userId: string
+    courseId: string
+    status: 'PENDING' | 'APPROVED' | 'REJECTED'
+    requestedAt: string
+    createdAt: string
+    email?: string
+    phone?: string
+    qualification?: string
+    user?: { name: string; email: string }
+    course?: { title: string; price?: number }
+}
+
+interface Enrollment {
+    id: string
+    userId: string
+    courseId: string
+    enrolledAt: string
+    user?: { name: string; email: string; phone?: string }
+    course?: { title: string; price: number }
+}
+
 export default function EnrollmentRequestsPage() {
-    const [requests, setRequests] = React.useState<any[]>([])
-    const [enrollments, setEnrollments] = React.useState<any[]>([])
+    const [requests, setRequests] = React.useState<EnrollmentRequest[]>([])
+    const [enrollments, setEnrollments] = React.useState<Enrollment[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [isLoadingEnrollments, setIsLoadingEnrollments] = React.useState(true)
     const [processingId, setProcessingId] = React.useState<string | null>(null)
@@ -59,9 +82,10 @@ export default function EnrollmentRequestsPage() {
             if (status === 'APPROVED') {
                 fetchEnrollments() // Refresh active enrollments on approval
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
             console.error(`Failed to update request to ${status}:`, error)
-            alert(error.response?.data?.error || 'Failed to update request status')
+            alert(err.response?.data?.error || 'Failed to update request status')
         } finally {
             setProcessingId(null)
         }
@@ -188,8 +212,8 @@ export default function EnrollmentRequestsPage() {
                                             {requests.map((req) => (
                                                 <TableRow key={req.id}>
                                                     <TableCell>
-                                                        <div className="font-medium text-foreground">{req.name}</div>
-                                                        <div className="text-xs text-muted-foreground">{req.user?.name}</div>
+                                                        <div className="font-medium text-foreground">{req.user?.name || '-'}</div>
+                                                        <div className="text-xs text-muted-foreground">{req.email}</div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="font-medium">{req.course?.title}</div>

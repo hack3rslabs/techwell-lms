@@ -2,7 +2,7 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticate, authorize } = require('../middleware/auth');
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 const router = express.Router();
 
 /**
@@ -58,20 +58,54 @@ router.post('/', authenticate, async (req, res, next) => {
             }
         }
 
-        // Create new request
-        const request = await prisma.enrollmentRequest.create({
-            data: {
-                userId,
-                courseId,
-                name,
-                email,
-                phone,
-                qualification,
-                status: 'PENDING'
-            }
+        // Create enrollment request
+        const result = await prisma.$transaction(async (tx) => {
+            const request = await tx.enrollmentRequest.create({
+                data: {
+                    userId,
+                    courseId,
+                    name,
+                    email,
+                    phone,
+                    qualification,
+                    status: 'PENDING'
+                }
+            });
+            return request;
         });
 
-        res.status(201).json({ message: 'Enrollment request submitted successfully.', request });
+        // Create or update lead record (non-blocking, outside transaction)
+        if (name && email) {
+            const leadData = {
+                name,
+                email,
+                phone: phone || null,
+                qualification: qualification || null,
+                source: 'Course Enrollment',
+                status: 'NEW',
+                notes: `Enrollment request for course: ${course.title}`
+            };
+            
+            console.log('[Enrollment→Lead] Attempting to create lead with data:', leadData);
+            
+            prisma.lead.create({
+                data: leadData
+            }).then(lead => {
+                console.log('[Lead Created Successfully] ID:', lead.id, 'Email:', lead.email, 'Name:', lead.name);
+            }).catch(err => {
+                // If lead creation fails, just log it - don't block enrollment
+                console.error('[Lead Creation Error] Failed to save lead:', {
+                    message: err.message,
+                    error: err.toString(),
+                    code: err.code,
+                    leadEmail: email
+                });
+            });
+        } else {
+            console.log('[Enrollment→Lead] Skipped: Missing name or email', { name, email });
+        }
+
+        res.status(201).json({ message: 'Enrollment request submitted successfully.', request: result });
     } catch (error) {
         next(error);
     }

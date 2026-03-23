@@ -79,7 +79,7 @@ export default function AdminSupportPage() {
     const fetchTickets = async () => {
         setIsLoading(true)
         try {
-            const params: any = {}
+            const params: Record<string, string> = {}
             if (filterStatus !== 'ALL') params.status = filterStatus
             if (filterPriority !== 'ALL') params.priority = filterPriority
 

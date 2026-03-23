@@ -3,10 +3,9 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import api, { rbacApi } from '@/lib/api'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, UserCheck, UserX, Loader2, Users, Download, Eye, CheckCircle, XCircle, Plus, Trash2, Shield, ShieldAlert, AlertCircle } from 'lucide-react'
+import { Search, UserCheck, UserX, Loader2, Users, Download, Eye, CheckCircle, Plus, Trash2, Shield, ShieldAlert, AlertCircle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { exportToCSV } from '@/lib/export-utils'
@@ -48,9 +47,8 @@ export default function AdminUsersPage() {
     const [roles, setRoles] = React.useState<Role[]>([])
     const [permissions, setPermissions] = React.useState<Permission[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
-    const [isRolesLoading, setIsRolesLoading] = React.useState(false)
     const [searchQuery, setSearchQuery] = React.useState("")
-    const [activeTab, setActiveTab] = React.useState("all")
+    const [activeTab, setActiveTab] = React.useState<string>('all')
 
     // Role Modals
     const [isCreateRoleOpen, setIsCreateRoleOpen] = React.useState(false)
@@ -58,7 +56,6 @@ export default function AdminUsersPage() {
     const [isCreateFormOpen, setIsCreateFormOpen] = React.useState(false)
     const [isUserFormOpen, setIsUserFormOpen] = React.useState(false)
     const [roleToDelete, setRoleToDelete] = React.useState<Role | null>(null)
-    const [selectedTemplate, setSelectedTemplate] = React.useState<Role | null>(null)
     const [selectedRoleId, setSelectedRoleId] = React.useState<string>('')
     const [selectedRoleName, setSelectedRoleName] = React.useState<string>('')
 
@@ -66,7 +63,7 @@ export default function AdminUsersPage() {
     const [isDeleteUserOpen, setIsDeleteUserOpen] = React.useState(false)
     const [userToDelete, setUserToDelete] = React.useState<User | null>(null)
     const [isDeleting, setIsDeleting] = React.useState(false)
-    const [currentUser, setCurrentUser] = React.useState<any>(null)
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null)
 
     // Form State
     const [newRoleData, setNewRoleData] = React.useState({
@@ -95,13 +92,10 @@ export default function AdminUsersPage() {
 
     const fetchRoles = async () => {
         try {
-            setIsRolesLoading(true)
             const res = await rbacApi.getRoles()
             setRoles(res.data)
         } catch (error) {
             console.error('Failed to fetch roles:', error)
-        } finally {
-            setIsRolesLoading(false)
         }
     }
 
@@ -188,8 +182,9 @@ export default function AdminUsersPage() {
             setIsCreateRoleOpen(false);
             fetchRoles();
             setNewRoleData({ name: "", description: "", permissions: [] });
-        } catch (error: any) {
-            toast({ title: "Failed to create role", description: error.response?.data?.error || "Error", variant: "destructive" });
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
+            toast({ title: "Failed to create role", description: err.response?.data?.error || "Error", variant: "destructive" });
         }
     }
 
@@ -207,10 +202,11 @@ export default function AdminUsersPage() {
             setIsUserFormOpen(false);
             fetchUsers();
             setNewUserData({ name: "", email: "", password: "", phone: "" });
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
             toast({ 
                 title: "Failed to create user", 
-                description: error.response?.data?.error || "Error checking duplicates or validation.", 
+                description: err.response?.data?.error || "Error checking duplicates or validation.", 
                 variant: "destructive" 
             });
         }
@@ -223,8 +219,9 @@ export default function AdminUsersPage() {
             toast({ title: "Role deleted successfully" });
             setIsDeleteRoleOpen(false);
             fetchRoles();
-        } catch (error: any) {
-            toast({ title: "Failed to delete role", description: error.response?.data?.error || "Error", variant: "destructive" });
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
+            toast({ title: "Failed to delete role", description: err.response?.data?.error || "Error", variant: "destructive" });
         }
     }
 
@@ -250,12 +247,13 @@ export default function AdminUsersPage() {
             setIsDeleteUserOpen(false);
             setUserToDelete(null);
             fetchUsers();
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
             console.error("Deletion error FULL:", error);
-            console.error("Response data:", error.response?.data);
+            console.error("Response data:", err.response?.data);
             toast({
                 title: "Failed to delete user",
-                description: error.response?.data?.error || "This user might have active relations (Jobs, Projects) that prevent deletion.",
+                description: err.response?.data?.error || "This user might have active relations (Jobs, Projects) that prevent deletion.",
                 variant: "destructive"
             });
         } finally {
@@ -680,7 +678,7 @@ export default function AdminUsersPage() {
                             Permanent Deletion
                         </DialogTitle>
                         <DialogDescription className="text-foreground/80">
-                            This action will permanently delete the role <span className="font-bold text-white">"{roleToDelete?.name}"</span> from the system.
+                            This action will permanently delete the role <span className="font-bold text-white">&quot;{roleToDelete?.name}&quot;</span> from the system.
                             {roleToDelete?.isSystem && (
                                 <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs flex gap-3">
                                     <AlertCircle className="h-5 w-5 flex-shrink-0" />
@@ -708,7 +706,7 @@ export default function AdminUsersPage() {
                         </DialogTitle>
                         {userToDelete ? (
                             <DialogDescription className="text-foreground/80">
-                                You are about to permanently delete <span className="font-bold text-white">"{userToDelete.name}"</span> ({userToDelete.email}).
+                                You are about to permanently delete <span className="font-bold text-white">&quot;{ userToDelete.name }&quot;</span> ({userToDelete.email}).
                             </DialogDescription>
                         ) : (
                             <div className="py-6 flex justify-center">

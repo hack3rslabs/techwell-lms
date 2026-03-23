@@ -180,12 +180,13 @@ export default function InterviewStartPage() {
         try {
             await interviewApi.start(params.id as string)
             router.push(`/interviews/${params.id}`)
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
             console.error('Failed to start interview:', error)
             toast({
                 variant: "destructive",
                 title: "Failed to Start",
-                description: error.response?.data?.error || "An unexpected error occurred. Please try again."
+                description: err.response?.data?.error || "An unexpected error occurred. Please try again."
             })
         }
     }

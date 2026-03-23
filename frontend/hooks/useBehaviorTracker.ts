@@ -13,7 +13,7 @@ interface BehaviorEvent {
     sessionId: string;
     userId?: string;
     eventType: string;
-    eventData: Record<string, any>;
+    eventData: Record<string, unknown>;
 }
 
 const FEATURE_ENABLED = process.env.NEXT_PUBLIC_ENABLE_BEHAVIOR_AI === 'true';
@@ -56,7 +56,7 @@ class BehaviorTracker {
         return sessionId;
     }
 
-    track(eventType: string, eventData: Record<string, any>, userId?: string) {
+    track(eventType: string, eventData: Record<string, unknown>, userId?: string) {
         if (!FEATURE_ENABLED) return;
 
         try {
@@ -136,10 +136,12 @@ export function useBehaviorTracker(userId?: string) {
     const lastScrollDepth = useRef<number>(0);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    // Initialize page start time
-    if (pageStartTime.current === null) {
-        pageStartTime.current = Date.now();
-    }
+    // Initialize page start time in effect
+    useEffect(() => {
+        if (pageStartTime.current === null) {
+            pageStartTime.current = Date.now();
+        }
+    }, []);
 
     // Track page view
     useEffect(() => {
@@ -212,7 +214,7 @@ export function useBehaviorTracker(userId?: string) {
         }, userId);
     }, [pathname, userId]);
 
-    const trackCustomEvent = useCallback((eventType: string, eventData: Record<string, any>) => {
+    const trackCustomEvent = useCallback((eventType: string, eventData: Record<string, unknown>) => {
         if (!FEATURE_ENABLED) return;
 
         tracker.track(eventType, {

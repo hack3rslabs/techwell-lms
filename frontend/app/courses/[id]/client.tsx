@@ -115,7 +115,13 @@ export default function CourseDetailClient() {
     const [expandedModules, setExpandedModules] = React.useState<string[]>([])
     const [purchaseType, setPurchaseType] = React.useState<'COURSE_ONLY' | 'BUNDLE'>('COURSE_ONLY');
 
-    const [enrollmentRequest, setEnrollmentRequest] = React.useState<any>(null)
+    interface EnrollmentRequest {
+        id: string
+        courseId: string
+        userId: string
+        status: string
+    }
+    const [enrollmentRequest, setEnrollmentRequest] = React.useState<EnrollmentRequest | null>(null)
     const [isRequesting, setIsRequesting] = React.useState(false)
     const [showRequestDialog, setShowRequestDialog] = React.useState(false)
     const [dialogMessage, setDialogMessage] = React.useState<{ title: string; desc: string; type: 'success' | 'error' } | null>(null)
@@ -187,11 +193,12 @@ export default function CourseDetailClient() {
             // Refresh request status
             const reqResponse = await enrollmentRequestApi.getMyRequest(course!.id)
             setEnrollmentRequest(reqResponse.data.request)
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
             console.error('Failed to submit enrollment request:', error)
             setDialogMessage({
                 title: 'Submission Failed',
-                desc: error.response?.data?.error || 'Failed to submit request. Please try again.',
+                desc: err.response?.data?.error || 'Failed to submit request. Please try again.',
                 type: 'error'
             })
         } finally {

@@ -54,7 +54,19 @@ interface ApplicationDetail {
 }
 
 function AIInterviewList({ userId }: { userId: string }) {
-    const [interviews, setInterviews] = useState<any[]>([])
+    interface Interview {
+        id: string
+        title: string
+        status: string
+        createdAt: string
+        role?: string
+        domain?: string
+        difficulty?: string
+        evaluation?: {
+            overallScore: number
+        }
+    }
+    const [interviews, setInterviews] = useState<Interview[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {

@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { Slider } from "@/components/ui/slider"
 import api from "@/lib/api"
 import { useAuth } from "@/lib/auth-context"
+import EmployerRequestDialog from "@/components/jobs/EmployerRequestDialog"
 
 interface Job {
     id: string
@@ -85,7 +86,7 @@ export default function JobListing() {
             <div className="bg-white dark:bg-slate-900 border-b sticky top-16 z-30 shadow-sm">
                 <div className="container py-4">
                     <div className="flex gap-4 max-w-4xl mx-auto">
-                        <div className="relative flex-1">
+                        <div className="relative w-1/2">
                             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                             <Input
                                 className="pl-10 h-11"
@@ -161,11 +162,14 @@ export default function JobListing() {
                         <h2 className="font-bold text-xl">
                             {filteredJobs.length} Opportunities Found
                         </h2>
-                        {!user || user.role === 'EMPLOYER' ? (
-                            <Link href="/employer/register">
-                                <Button variant="default" size="sm">Post a Job</Button>
-                            </Link>
-                        ) : null}
+                        <div className="flex gap-3">
+                            <EmployerRequestDialog />
+                            {!user || user.role === 'EMPLOYER' ? (
+                                <Link href="/employer/register">
+                                    <Button variant="default" size="sm">Post a Job</Button>
+                                </Link>
+                            ) : null}
+                        </div>
                     </div>
 
                     {isLoading ? (

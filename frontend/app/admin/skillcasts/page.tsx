@@ -19,12 +19,25 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 
+interface Skillcast {
+    id: string
+    title: string
+    description: string
+    videoUrl: string
+    expertName: string
+    designation: string
+    company: string
+    linkedinUrl: string
+    experience: string
+    thumbnail?: string
+}
+
 export default function AdminSkillcastPage() {
-    const [skillcasts, setSkillcasts] = useState<any[]>([])
+    const [skillcasts, setSkillcasts] = useState<Skillcast[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState("")
     const [isDialogOpen, setIsDialogOpen] = useState(false)
-    const [editingItem, setEditingItem] = useState<any>(null)
+    const [editingItem, setEditingItem] = useState<Skillcast | null>(null)
 
     // Form Stats
     const [formData, setFormData] = useState({

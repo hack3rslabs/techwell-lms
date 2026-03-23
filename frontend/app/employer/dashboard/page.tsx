@@ -171,7 +171,7 @@ export default function EmployerDashboard() {
                     <h1 className="text-3xl font-bold text-foreground tracking-tight">
                         Hiring Overview
                     </h1>
-                    <p className="text-muted-foreground mt-1 text-sm font-medium">Welcome back! Here's what's happening with your jobs today.</p>
+                    <p className="text-muted-foreground mt-1 text-sm font-medium">Welcome back! Here&apos;s what&apos;s happening with your jobs today.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" onClick={() => router.push('/employer/reports')} className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm">
