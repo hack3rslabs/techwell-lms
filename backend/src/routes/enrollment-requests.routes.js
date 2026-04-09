@@ -76,20 +76,28 @@ router.post('/', authenticate, async (req, res, next) => {
 
         // Create or update lead record (non-blocking, outside transaction)
         if (name && email) {
-            const leadData = {
-                name,
-                email,
-                phone: phone || null,
-                qualification: qualification || null,
-                source: 'Course Enrollment',
-                status: 'NEW',
-                notes: `Enrollment request for course: ${course.title}`
-            };
-            
-            console.log('[Enrollment→Lead] Attempting to create lead with data:', leadData);
-            
-            prisma.lead.create({
-                data: leadData
+            // Fetch user details to get college etc.
+            prisma.user.findUnique({
+                where: { id: userId },
+                select: { college: true, dob: true, qualification: true }
+            }).then(userData => {
+                const leadData = {
+                    name,
+                    email,
+                    phone: phone || null,
+                    qualification: qualification || userData?.qualification || null,
+                    college: userData?.college || null,
+                    dob: userData?.dob || null,
+                    source: 'Course Enrollment',
+                    status: 'NEW',
+                    notes: `Enrollment request for course: ${course.title}`
+                };
+                
+                console.log('[Enrollment→Lead] Attempting to create lead with data:', leadData);
+                
+                return prisma.lead.create({
+                    data: leadData
+                });
             }).then(lead => {
                 console.log('[Lead Created Successfully] ID:', lead.id, 'Email:', lead.email, 'Name:', lead.name);
             }).catch(err => {

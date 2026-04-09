@@ -50,7 +50,7 @@ export default function VerifyCertificatePage() {
     const [isLoading, setIsLoading] = React.useState(true)
     const [isExporting, setIsExporting] = React.useState(false)
     const [copiedLink, setCopiedLink] = React.useState(false)
-    const [showShareMenu, setShowShareMenu] = React.useState(false)
+    const [_showShareMenu, _setShowShareMenu] = React.useState(false)
 
     React.useEffect(() => {
         fetchCertificate()

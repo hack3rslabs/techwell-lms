@@ -30,7 +30,7 @@ interface EmailConfig {
 
 export default function EmailSettingsPage() {
     const [configs, setConfigs] = React.useState<EmailConfig[]>([])
-    const [isLoading, setIsLoading] = React.useState(true)
+    const [_isLoading, setIsLoading] = React.useState(true)
     const [showAddForm, setShowAddForm] = React.useState(false)
     const [testEmail, setTestEmail] = React.useState('')
 
@@ -70,7 +70,7 @@ export default function EmailSettingsPage() {
             setShowAddForm(false)
             fetchConfigs()
             resetForm()
-        } catch (error) {
+        } catch (_error) {
             alert('Failed to save configuration')
         }
     }
@@ -79,7 +79,7 @@ export default function EmailSettingsPage() {
         try {
             await api.put(`/email-settings/config/${id}/activate`)
             fetchConfigs()
-        } catch (error) {
+        } catch (_error) {
             alert('Failed to activate')
         }
     }

@@ -19,13 +19,13 @@ async function getCourse(id: string) {
         // Based on previous code: response.data.course
         const data = await res.json()
         return data.course
-    } catch (error) {
+    } catch (_error) {
         return null
     }
 }
 
 export async function generateMetadata(
-    { params, searchParams }: Props,
+    { params, searchParams: _searchParams }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const { id } = await params

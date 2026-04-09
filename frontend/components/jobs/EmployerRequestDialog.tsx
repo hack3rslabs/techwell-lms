@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { useToast } from '@/components/ui/use-toast'
-import api from '@/lib/api'
+import { employerRequestApi } from '@/lib/api'
 import { Briefcase } from 'lucide-react'
 
 // Personal email domains to reject
@@ -32,11 +32,19 @@ const PERSONAL_DOMAINS = [
 ]
 
 function isBusinessEmail(email: string): boolean {
+  console.log('[isBusinessEmail] Checking email:', email)
   if (!email || !email.includes('@')) {
+    console.log('[isBusinessEmail] Invalid email format (no @)')
     return false
   }
   const domain = email.split('@')[1].toLowerCase()
-  return !PERSONAL_DOMAINS.includes(domain)
+  console.log('[isBusinessEmail] Extracted domain:', domain)
+  console.log('[isBusinessEmail] PERSONAL_DOMAINS:', PERSONAL_DOMAINS)
+  const isPersonal = PERSONAL_DOMAINS.includes(domain)
+  console.log('[isBusinessEmail] Is personal domain:', isPersonal)
+  const result = !isPersonal
+  console.log('[isBusinessEmail] Result (is business):', result)
+  return result
 }
 
 interface FormData {
@@ -50,6 +58,7 @@ export default function EmployerRequestDialog() {
   const { toast } = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [formData, setFormData] = useState<FormData>({
     name: '',
     designation: '',
@@ -65,37 +74,54 @@ export default function EmployerRequestDialog() {
     }))
   }
 
-  const validateForm = (): string | null => {
+  const validateForm = (): { [key: string]: string } => {
+    const newErrors: { [key: string]: string } = {}
+
     if (!formData.name.trim()) {
-      return 'Name is required'
+      newErrors.name = 'Name is required'
     }
+
     if (!formData.designation.trim()) {
-      return 'Designation is required'
+      newErrors.designation = 'Designation is required'
     }
+
     if (!formData.email.trim()) {
-      return 'Email is required'
+      newErrors.email = 'Email is required'
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.email)) {
+        newErrors.email = 'Invalid email format'
+      } else {
+        const isValidBusiness = isBusinessEmail(formData.email)
+        console.log('[Validation] Email:', formData.email, 'Is Business Email:', isValidBusiness)
+        
+        if (!isValidBusiness) {
+          newErrors.email = 'Please use your company email. Personal email domains (Gmail, Yahoo, Outlook, etc.) are not allowed.'
+        }
+      }
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      return 'Invalid email format'
-    }
-
-    if (!isBusinessEmail(formData.email)) {
-      return 'Please use your company email. Personal email domains (Gmail, Yahoo, Outlook, etc.) are not allowed.'
-    }
-
-    return null
+    setErrors(newErrors)
+    return newErrors
   }
-
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log('[EmployerRequest] handleSubmit called', e)
     e.preventDefault()
+    console.log('[EmployerRequest] preventDefault called')
 
-    const validationError = validateForm()
-    if (validationError) {
+    const validationErrors = validateForm()
+    console.log('[EmployerRequest] Validation Errors:', validationErrors)
+    console.log('[EmployerRequest] Form Data:', formData)
+    
+    if (Object.keys(validationErrors).length > 0) {
+      console.log('[EmployerRequest] Showing validation error toast')
+      // Show the first error in toast
+      const firstErrorKey = Object.keys(validationErrors)[0]
+      const firstErrorMessage = validationErrors[firstErrorKey]
+      
       toast({
         title: 'Validation Error',
-        description: validationError,
+        description: firstErrorMessage,
         variant: 'destructive',
       })
       return
@@ -103,12 +129,21 @@ export default function EmployerRequestDialog() {
 
     setIsLoading(true)
     try {
-      const response = await api.post('/employer-requests', {
+      console.log('[EmployerRequest] Submitting form with data:', {
         name: formData.name.trim(),
         designation: formData.designation.trim(),
         email: formData.email.trim(),
-        phone: formData.phone.trim() || null,
+        phone: formData.phone.trim() || undefined,
       })
+
+      const response = await employerRequestApi.submit({
+        name: formData.name.trim(),
+        designation: formData.designation.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || undefined,
+      })
+
+      console.log('[EmployerRequest] Success response:', response)
 
       toast({
         title: 'Success',
@@ -123,9 +158,13 @@ export default function EmployerRequestDialog() {
         email: '',
         phone: '',
       })
+      setErrors({})
       setIsOpen(false)
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to submit employer request'
+      console.error('[EmployerRequest] Error:', error)
+      console.error('[EmployerRequest] Error Response:', error.response?.data)
+      
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to submit employer request'
       toast({
         title: 'Error',
         description: errorMessage,
@@ -164,7 +203,11 @@ export default function EmployerRequestDialog() {
               value={formData.name}
               onChange={handleInputChange}
               disabled={isLoading}
+              className={errors.name ? 'border-red-500 border-2' : ''}
             />
+            {errors.name && (
+              <p className="text-sm font-medium text-red-600">{errors.name}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -178,7 +221,11 @@ export default function EmployerRequestDialog() {
               value={formData.designation}
               onChange={handleInputChange}
               disabled={isLoading}
+              className={errors.designation ? 'border-red-500 border-2' : ''}
             />
+            {errors.designation && (
+              <p className="text-sm font-medium text-red-600">{errors.designation}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -193,10 +240,16 @@ export default function EmployerRequestDialog() {
               value={formData.email}
               onChange={handleInputChange}
               disabled={isLoading}
+              className={errors.email ? 'border-red-500 border-2' : ''}
             />
-            <p className="text-xs text-muted-foreground">
-              Please use your company email address (not Gmail, Yahoo, Outlook, etc.)
-            </p>
+            {errors.email && (
+              <p className="text-sm font-medium text-red-600">{errors.email}</p>
+            )}
+            {!errors.email && (
+              <p className="text-xs text-muted-foreground">
+                Please use your company email address (not Gmail, Yahoo, Outlook, etc.)
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

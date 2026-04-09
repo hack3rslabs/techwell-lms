@@ -19,7 +19,7 @@ interface UserIntent {
 }
 
 export function PersonalizedHints({ sessionId, children, ctaId }: PersonalizedHintsProps) {
-    const [intent, setIntent] = useState<UserIntent | null>(null);
+    const [_intent, setIntent] = useState<UserIntent | null>(null);
     const [isRelevant, setIsRelevant] = useState(false);
 
     useEffect(() => {
@@ -94,7 +94,7 @@ interface RecommendedCardProps {
     href: string;
 }
 
-export function RecommendedCard({ intent, title, description, href }: RecommendedCardProps) {
+export function RecommendedCard({ intent: _intent, title, description, href }: RecommendedCardProps) {
     if (!FEATURE_ENABLED) return null;
 
     return (

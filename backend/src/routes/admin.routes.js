@@ -274,4 +274,110 @@ router.get('/enrollments', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAF
     }
 });
 
+/**
+ * @route   GET /api/admin/students
+ * @desc    Get all students who were approved through enrollment requests,
+ *          along with their enrollment and progress details
+ * @access  Private/Admin
+ */
+router.get('/students', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res, next) => {
+    try {
+        const { search, course, status, page = 1, limit = 50 } = req.query;
+        const skip = (Number(page) - 1) * Number(limit);
+
+        // Build filter for enrollments
+        const where = {};
+        
+        if (status) {
+            where.status = status;
+        }
+
+        if (search) {
+            where.user = {
+                OR: [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { email: { contains: search, mode: 'insensitive' } },
+                    { phone: { contains: search, mode: 'insensitive' } },
+                ]
+            };
+        }
+
+        if (course) {
+            where.courseId = course;
+        }
+
+        const [enrollmentRecords, total] = await Promise.all([
+            prisma.enrollment.findMany({
+                where,
+                include: {
+                    course: {
+                        select: { id: true, title: true, category: true, price: true, thumbnail: true }
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            phone: true,
+                            avatar: true,
+                            qualification: true,
+                            college: true,
+                            plan: true,
+                            createdAt: true,
+                        }
+                    }
+                },
+                orderBy: { enrolledAt: 'desc' },
+                skip,
+                take: Number(limit),
+            }),
+            prisma.enrollment.count({ where })
+        ]);
+
+        // Map the Enrollment data to the structure the frontend expects 
+        // (Frontend expects top level name, email, phone etc if it came from request, but mainly user object)
+        const students = enrollmentRecords.map(e => ({
+            id: e.id,
+            userId: e.userId,
+            courseId: e.courseId,
+            name: e.user.name,
+            email: e.user.email,
+            phone: e.user.phone,
+            qualification: e.user.qualification,
+            status: e.status,
+            createdAt: e.enrolledAt,
+            updatedAt: e.enrolledAt,
+            course: e.course,
+            user: {
+                ...e.user,
+                enrollments: [e] // Pass the current enrollment in the array so frontend progress works
+            }
+        }));
+
+        // Get distinct courses for the filter dropdown
+        const courses = await prisma.course.findMany({
+            where: {
+                enrollments: {
+                    some: {}
+                }
+            },
+            select: { id: true, title: true },
+            orderBy: { title: 'asc' }
+        });
+
+        res.json({
+            students,
+            courses,
+            pagination: {
+                total,
+                page: Number(page),
+                limit: Number(limit),
+                totalPages: Math.ceil(total / Number(limit))
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

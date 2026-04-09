@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0)
+    const [isVideoOpen, setIsVideoOpen] = useState(false)
 
     const slides = [
         {
@@ -56,7 +57,7 @@ export function Hero() {
         external?: boolean
     }
 
-    const boxes: HeroBox[] = [
+    const _boxes: HeroBox[] = [
         {
             title: "Smart Learning",
             description: "Adaptive AI courses Personalized for you.",
@@ -159,30 +160,15 @@ export function Hero() {
                                         </Button>
                                     </Link>
 
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 px-10 text-lg rounded-full gap-3 glass hover:bg-white/10 border-white/20 backdrop-blur-md hover:scale-105 transition-all">
-                                                <PlayCircle className="w-6 h-6 text-primary" />
-                                                Watch Demo
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="sm:max-w-[900px] p-0 bg-black border-none overflow-hidden rounded-2xl">
-                                            <DialogTitle className="sr-only">Product Demo Video</DialogTitle>
-                                            <DialogDescription className="sr-only">Watch a demonstration of our platform features.</DialogDescription>
-                                            <div className="aspect-video w-full bg-black flex items-center justify-center relative">
-                                                <iframe
-                                                    width="100%"
-                                                    height="100%"
-                                                    src="https://www.youtube.com/embed/SNB1_f_c6fQ?autoplay=1"
-                                                    title="TechWell Platform Demo"
-                                                    frameBorder="0"
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                                    allowFullScreen
-                                                    className="w-full h-full"
-                                                />
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
+                                        onClick={() => setIsVideoOpen(true)}
+                                        className="w-full sm:w-auto h-16 px-10 text-lg rounded-full gap-3 glass hover:bg-white/10 border-white/20 backdrop-blur-md hover:scale-105 transition-all shadow-xl"
+                                    >
+                                        <PlayCircle className="w-6 h-6 text-primary" />
+                                        Watch Demo
+                                    </Button>
                                 </div>
 
                                 <div className="flex items-center justify-center lg:justify-start gap-10 opacity-90">
@@ -258,21 +244,8 @@ export function Hero() {
                                 </div>
                             </div>
 
-                            {/* Floating Badge */}
-                            <motion.div
-                                animate={{ y: [0, -10, 0] }}
-                                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                                className="absolute -bottom-8 -left-8 glass p-4 rounded-xl shadow-2xl border border-white/20 z-20 max-w-[200px]"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-green-100 p-2 rounded-full shadow-inner"><CheckCircle2 className="text-green-600 h-6 w-6" /></div>
-                                    <div>
-                                        <div className="text-xs text-muted-foreground font-medium">Recently Placed</div>
-                                        <div className="font-bold text-sm text-foreground">Rohan S. @ Google</div>
-                                        <div className="text-[10px] text-green-600 font-bold">₹45 LPA Package</div>
-                                    </div>
-                                </div>
-                            </motion.div>
+
+
                         </div>
                     </div>
                 </div>
@@ -400,6 +373,29 @@ export function Hero() {
 
             {/* Support Widget (Floating Chatbot) - Moved to left to avoid overlap with global widgets */}
             <SupportWidget />
+
+            {/* Video Demo Modal - Moved outside of AnimatePresence to ensure persistence */}
+            <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
+                <DialogContent className="sm:max-w-[900px] p-0 bg-black border-none overflow-hidden rounded-2xl">
+                    <DialogTitle className="sr-only">Product Demo Video</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Watch a demonstration of our platform features.
+                    </DialogDescription>
+
+                    <div className="aspect-video w-full bg-black flex items-center justify-center relative">
+                        {isVideoOpen && (
+                            <iframe
+                                src="https://www.youtube.com/embed/Fq5kgzzXWco?autoplay=1&rel=0"
+                                title="TechWell Platform Demo"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="w-full h-full"
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

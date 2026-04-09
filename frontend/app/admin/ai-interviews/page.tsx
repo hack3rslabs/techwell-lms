@@ -28,7 +28,7 @@ export default function AIInterviewsPage() {
         hrQuestionRatio: 3, // Every Nth question is HR
     })
 
-    const [isLoading, setIsLoading] = useState(true)
+    const [_isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         loadSettings()

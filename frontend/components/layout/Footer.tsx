@@ -5,18 +5,20 @@ import Image from 'next/image'
 import { Mail, Phone, MapPin, Twitter, Linkedin, Youtube, Github, Instagram, ExternalLink } from 'lucide-react'
 
 export function Footer() {
-    const [year, setYear] = React.useState(2024)
+    const [_year, setYear] = React.useState(2024)
     const [images, setImages] = React.useState<any[]>([])
 
     const fetchGallery = async () => {
         try {
-            const res = await fetch('/api/admin/gallery')
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+            const res = await fetch(`${apiUrl}/admin/gallery`)
+            if (!res.ok) throw new Error('Failed to fetch gallery')
             const data = await res.json()
             if (Array.isArray(data)) {
                 setImages(data.slice(0, 6)) // Show top 6
             }
-        } catch (error) {
-            console.error('Failed to fetch gallery', error)
+        } catch (_error) {
+            console.warn('Gallery feature is not fully implemented on backend yet or unreachable.')
         }
     }
 
@@ -31,20 +33,20 @@ export function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
                     {/* Brand */}
                     <div className="space-y-4">
-                        <Link href="/" className="flex items-center gap-2">
+                        <Link href="/" className="relative flex h-9 w-[140px] items-center">
                             <Image
                                 src="/logo-light.png"
                                 alt="TechWell"
-                                width={120}
-                                height={35}
-                                className="dark:hidden"
+                                width={140}
+                                height={40}
+                                className="object-contain object-left dark:hidden"
                             />
                             <Image
                                 src="/logo-dark.png"
                                 alt="TechWell"
-                                width={120}
-                                height={35}
-                                className="hidden dark:block"
+                                width={140}
+                                height={40}
+                                className="hidden object-contain object-left dark:block"
                             />
                         </Link>
                         <p className="text-sm text-muted-foreground">
@@ -192,12 +194,13 @@ export function Footer() {
                         <h4 className="font-semibold mb-4">Gallery</h4>
                         <div className="grid grid-cols-3 gap-2">
                             {images.length > 0 ? (
-                                images.map((image, i) => (
+                                images.map((image, _i) => (
                                     <div key={image.id} className="aspect-square relative rounded-md overflow-hidden bg-muted/80 hover:opacity-80 transition-opacity cursor-pointer border">
                                         <Image
                                             src={image.url}
                                             alt={image.caption || "Gallery"}
                                             fill
+                                            sizes="(max-width: 768px) 33vw, 10vw"
                                             className="object-cover"
                                         />
                                     </div>
@@ -210,6 +213,7 @@ export function Footer() {
                                                 src="/logo-dark.png"
                                                 alt="Gallery"
                                                 fill
+                                                sizes="(max-width: 768px) 33vw, 10vw"
                                                 className="object-cover opacity-20"
                                             />
                                         </div>

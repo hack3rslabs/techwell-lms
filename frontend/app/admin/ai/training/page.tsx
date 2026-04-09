@@ -42,7 +42,7 @@ export default function AIQATrainingPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isGenerating, setIsGenerating] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
-    const [editingId, setEditingId] = useState<string | null>(null)
+    const [_editingId, _setEditingId] = useState<string | null>(null)
 
     const [newQuestion, setNewQuestion] = useState('')
     const [domain, setDomain] = useState('General')
@@ -176,7 +176,7 @@ export default function AIQATrainingPage() {
         }
     }
 
-    const getTabIcon = (level: string) => {
+    const _getTabIcon = (level: string) => {
         switch (level) {
             case 'beginner': return <GraduationCap className="h-4 w-4" />
             case 'medium': return <BookOpen className="h-4 w-4" />

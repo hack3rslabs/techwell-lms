@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
+import _Link from "next/link"
 
 export default function ProjectDetailsPage() {
     const params = useParams()

@@ -32,18 +32,29 @@ export default function BlogPage() {
     }, [searchQuery])
 
     React.useEffect(() => {
+        const abortController = new AbortController()
+        
         const fetchPosts = async () => {
             setIsLoading(true)
             try {
-                const res = await api.get(`/blogs?status=PUBLISHED&search=${debouncedSearch}`)
-                setPosts(res.data.blogs || [])
+                const res = await api.get(`/blogs?status=PUBLISHED&search=${debouncedSearch}`, {
+                    signal: abortController.signal
+                })
+                if (!abortController.signal.aborted) {
+                    setPosts(res.data.blogs || [])
+                }
             } catch (error) {
-                console.error(error)
+                if (!abortController.signal.aborted) {
+                    console.error(error)
+                }
             } finally {
-                setIsLoading(false)
+                if (!abortController.signal.aborted) {
+                    setIsLoading(false)
+                }
             }
         }
         fetchPosts()
+        return () => abortController.abort()
     }, [debouncedSearch])
 
     return (

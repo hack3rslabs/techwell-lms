@@ -7,7 +7,8 @@ import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { GraduationCap, Clock, Users, Star, Search, Loader2 } from 'lucide-react'
+import { GraduationCap, Search, Loader2 } from 'lucide-react'
+import { getFullImageUrl } from '@/lib/image-utils'
 
 interface Course {
     id: string
@@ -18,6 +19,7 @@ interface Course {
     duration: number
     price: number
     thumbnail?: string
+    bannerUrl?: string
     instructor?: { name: string }
     _count?: { enrollments: number }
     isEnrolled?: boolean
@@ -48,29 +50,40 @@ export default function CourseList() {
     const [search, setSearch] = React.useState('')
     const [category, setCategory] = React.useState('')
     const [difficulty, setDifficulty] = React.useState('')
-    const [enrollingId, setEnrollingId] = React.useState<string | null>(null)
+    const [_enrollingId, setEnrollingId] = React.useState<string | null>(null)
 
-    const fetchCourses = React.useCallback(async () => {
-        try {
-            setIsLoading(true)
-            const response = await courseApi.getAll({
-                search: search || undefined,
-                category: category || undefined
-            })
-            setCourses(response.data.courses || [])
-        } catch (error) {
-            console.error('Failed to fetch courses:', error)
-        } finally {
-            setIsLoading(false)
+    React.useEffect(() => {
+        const abortController = new AbortController()
+        
+        const fetchCourses = async () => {
+            try {
+                setIsLoading(true)
+                const response = await courseApi.getAll({
+                    search: search || undefined,
+                    category: category || undefined
+                })
+                if (!abortController.signal.aborted) {
+                    setCourses(response.data.courses || [])
+                }
+            } catch (error) {
+                if (!abortController.signal.aborted) {
+                    console.error('Failed to fetch courses:', error)
+                }
+            } finally {
+                if (!abortController.signal.aborted) {
+                    setIsLoading(false)
+                }
+            }
+        }
+
+        const debounce = setTimeout(fetchCourses, 300)
+        return () => {
+            clearTimeout(debounce)
+            abortController.abort()
         }
     }, [search, category])
 
-    React.useEffect(() => {
-        const debounce = setTimeout(fetchCourses, 300)
-        return () => clearTimeout(debounce)
-    }, [fetchCourses])
-
-    const handleEnroll = async (courseId: string) => {
+    const _handleEnroll = async (courseId: string) => {
         if (!isAuthenticated) {
             router.push('/login')
             return
@@ -164,8 +177,20 @@ export default function CourseList() {
                             className="flex flex-col group hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden border-border/50 cursor-pointer"
                             onClick={() => router.push(`/courses/${course.id}`)}
                         >
-                            <div className="h-48 bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                                <GraduationCap className="h-20 w-20 text-primary/30" />
+                            <div className="h-48 relative bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10 flex items-center justify-center overflow-hidden">
+                                {course.bannerUrl || course.thumbnail ? (
+                                    <img
+                                        src={getFullImageUrl(course.bannerUrl || course.thumbnail)}
+                                        alt={course.title}
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = "none";
+                                        }}
+                                    />
+                                ) : null}
+                                <GraduationCap className={`h-20 w-20 text-primary/30 ${(course.bannerUrl || course.thumbnail) ? 'hidden' : ''}`} />
                             </div>
                             <CardHeader className="pb-2">
                                 <div className="flex items-center justify-between mb-3">
@@ -177,22 +202,7 @@ export default function CourseList() {
                                 <CardTitle className="text-xl line-clamp-1 group-hover:text-primary transition-colors">{course.title}</CardTitle>
                                 <CardDescription className="line-clamp-2 text-sm leading-relaxed">{course.description}</CardDescription>
                             </CardHeader>
-                            <CardContent className="pb-4 flex-1">
-                                <div className="flex items-center gap-6 text-xs font-semibold text-muted-foreground/80">
-                                    <div className="flex items-center gap-1.5">
-                                        <Clock className="h-4 w-4 text-primary/60" />
-                                        {course.duration}h Content
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <Users className="h-4 w-4 text-primary/60" />
-                                        {course._count?.enrollments || 0} Learners
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <Star className="h-4 w-4 text-amber-500" />
-                                        4.8 (120+)
-                                    </div>
-                                </div>
-                            </CardContent>
+
                             <CardFooter className="pt-4 border-t border-border/10 flex items-center justify-between bg-muted/5">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Price</span>

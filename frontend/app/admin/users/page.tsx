@@ -48,7 +48,7 @@ export default function AdminUsersPage() {
     const [permissions, setPermissions] = React.useState<Permission[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [searchQuery, setSearchQuery] = React.useState("")
-    const [activeTab, setActiveTab] = React.useState<string>('all')
+    const [_activeTab, setActiveTab] = React.useState<string>('all')
 
     // Role Modals
     const [isCreateRoleOpen, setIsCreateRoleOpen] = React.useState(false)

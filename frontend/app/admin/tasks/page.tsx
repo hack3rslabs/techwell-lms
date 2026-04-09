@@ -49,7 +49,7 @@ export default function TaskManagerPage() {
         name: string
     }
     const [users, setUsers] = React.useState<TaskUser[]>([])
-    const [isLoading, setIsLoading] = React.useState(true)
+    const [_isLoading, setIsLoading] = React.useState(true)
     const [isAddOpen, setIsAddOpen] = React.useState(false)
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null)
     const [detailOpen, setDetailOpen] = React.useState(false)

@@ -56,7 +56,7 @@ interface Interview {
     score?: number
 }
 
-const DOMAINS = [
+const _DOMAINS = [
     { value: 'TECHNOLOGY', label: 'Technology / Software' },
     { value: 'DATA_SCIENCE', label: 'Data Science & AI' },
     { value: 'PRODUCT', label: 'Product Management' },
@@ -65,7 +65,7 @@ const DOMAINS = [
     { value: 'FINANCE', label: 'Finance & Banking' },
 ]
 
-const DIFFICULTIES = [
+const _DIFFICULTIES = [
     { value: 'BEGINNER', label: 'Beginner', desc: 'For freshers, 0-2 years experience' },
     { value: 'INTERMEDIATE', label: 'Intermediate', desc: 'For mid-level, 2-5 years experience' },
     { value: 'ADVANCED', label: 'Advanced', desc: 'For seniors, 5+ years experience' },
@@ -82,8 +82,8 @@ export default function InterviewsPage() {
 
     // New Interview Form State
     const [isOpen, setIsOpen] = useState(false)
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [step, setStep] = useState(1) // 1: Details, 2: JD/Resume, 3: Review/Launch
+    const [_isSubmitting, setIsSubmitting] = useState(false)
+    const [_step, _setStep] = useState(1) // 1: Details, 2: JD/Resume, 3: Review/Launch
     const [formData, setFormData] = useState({
         domain: 'TECHNOLOGY',
         role: '',
@@ -143,7 +143,7 @@ export default function InterviewsPage() {
         setFormData(prev => ({ ...prev, [field]: value }))
     }
 
-    const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const _handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
             updateFormData('resumeFile', file)
@@ -151,7 +151,7 @@ export default function InterviewsPage() {
         }
     }
 
-    const handleCreateInterview = async () => {
+    const _handleCreateInterview = async () => {
         if (!formData.role || !formData.technology) return
 
         setIsSubmitting(true)

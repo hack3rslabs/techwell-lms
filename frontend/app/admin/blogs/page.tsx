@@ -35,9 +35,9 @@ interface Blog {
 }
 
 export default function BlogManagerPage() {
-    const router = useRouter()
+    const _router = useRouter()
     const [blogs, setBlogs] = useState<Blog[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    const [_isLoading, setIsLoading] = useState(true)
     const [showModal, setShowModal] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [search, setSearch] = useState('')

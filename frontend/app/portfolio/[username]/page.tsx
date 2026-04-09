@@ -61,7 +61,7 @@ export default function PublicPortfolioPage() {
 
     const [portfolio, setPortfolio] = React.useState<PortfolioData | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
-    const [error, setError] = React.useState<string | null>(null)
+    const [_error, setError] = React.useState<string | null>(null)
     const [copiedLink, setCopiedLink] = React.useState(false)
 
     React.useEffect(() => {
@@ -113,7 +113,7 @@ export default function PublicPortfolioPage() {
 
     const handleShareLinkedIn = () => {
         const url = encodeURIComponent(getPortfolioUrl())
-        const title = encodeURIComponent(`Check out my TechWell Portfolio`)
+        const _title = encodeURIComponent(`Check out my TechWell Portfolio`)
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank')
     }
 
@@ -125,7 +125,7 @@ export default function PublicPortfolioPage() {
 
     const handleShareCertificateLinkedIn = (cert: PortfolioData['certificates'][0]) => {
         const certUrl = encodeURIComponent(`${getPortfolioUrl()}/certificate/${cert.uniqueId}`)
-        const title = encodeURIComponent(`Certificate: ${cert.courseName}`)
+        const _title = encodeURIComponent(`Certificate: ${cert.courseName}`)
         window.open(`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(cert.courseName)}&organizationName=TechWell&issueYear=2026&issueMonth=1&certUrl=${certUrl}&certId=${cert.uniqueId}`, '_blank')
     }
 
@@ -308,7 +308,7 @@ export default function PublicPortfolioPage() {
                                                 size="sm"
                                                 onClick={() => {
                                                     const url = encodeURIComponent(`${getPortfolioUrl()}/interview/${interview.id}`)
-                                                    const text = encodeURIComponent(`I scored ${interview.score}% in a ${interview.role} AI Interview! 🎯`)
+                                                    const _text = encodeURIComponent(`I scored ${interview.score}% in a ${interview.role} AI Interview! 🎯`)
                                                     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank')
                                                 }}
                                             >

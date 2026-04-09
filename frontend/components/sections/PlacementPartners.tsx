@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useState } from "react"
-import Image from "next/image"
+import _Image from "next/image"
 
 const partners = [
     // FAANG & Big Tech

@@ -35,7 +35,7 @@ router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res
 
         const leads = await prisma.lead.findMany({
             where,
-            orderBy: { createdAt: 'desc' },
+            orderBy: { updatedAt: 'desc' },
             include: {
                 _count: {
                     select: { tasks: true }
@@ -46,6 +46,154 @@ router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res
         res.json(leads);
     } catch (error) {
         next(error);
+    }
+});
+
+/**
+ * @route   GET /api/leads/counts
+ * @desc    Get lead counts for sidebar badges
+ * @access  Private/Admin
+ */
+router.get('/counts', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const currentUser = await prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: { leadLastSeenAt: true }
+        });
+
+        const unreadWhere = currentUser?.leadLastSeenAt
+            ? { createdAt: { gt: currentUser.leadLastSeenAt } }
+            : {};
+
+        const [totalCount, unreadCount] = await Promise.all([
+            prisma.lead.count(),
+            prisma.lead.count({ where: unreadWhere })
+        ]);
+
+        res.json({
+            totalCount,
+            unreadCount,
+            hasUnread: unreadCount > 0,
+            lastSeenAt: currentUser?.leadLastSeenAt || null
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/leads/mark-seen
+ * @desc    Mark leads as seen for the current admin
+ * @access  Private/Admin
+ */
+router.post('/mark-seen', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const seenAt = new Date();
+
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: { leadLastSeenAt: seenAt }
+        });
+
+        res.json({
+            success: true,
+            seenAt
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/leads/capture
+ * @desc    Public endpoint to capture leads from the website (Shared Interest button)
+ * @access  Public
+ */
+router.post('/capture', async (req, res, next) => {
+    try {
+        const { name, email, phone, qualification, courseId, courseTitle } = req.body;
+        console.log('[Shared Interest→Leads] Received request:', { name, email, phone, qualification, courseId, courseTitle });
+
+        if (!name || !email) {
+            console.warn('[Shared Interest→Leads] Missing required fields - Name or Email');
+            return res.status(400).json({ error: 'Name and email are required' });
+        }
+
+        const notes = courseTitle ? `Interested in course: ${courseTitle}` : 'General Inquiry';
+        console.log('[Shared Interest→Leads] Creating/updating lead with notes:', notes);
+
+        // Check if lead exists by email to prevent duplicates
+        const existingLead = await prisma.lead.findFirst({
+            where: { email }
+        });
+
+        let lead;
+        if (existingLead) {
+            console.log('[Shared Interest→Leads] Updating existing lead:', existingLead.id);
+            // Update existing lead with new notes and qualification if provided
+            lead = await prisma.lead.update({
+                where: { id: existingLead.id },
+                data: {
+                    name, // update name in case it changed
+                    phone: phone || existingLead.phone,
+                    qualification: qualification || existingLead.qualification,
+                    notes: existingLead.notes ? `${existingLead.notes} | ${notes}` : notes,
+                    status: 'NEW',
+                    createdAt: new Date() // Reset createdAt so it appears as a new lead
+                    // keep existing source initially
+                }
+            });
+            console.log('[Shared Interest→Leads] Lead updated successfully:', { id: lead.id, email: lead.email });
+        } else {
+             console.log('[Shared Interest→Leads] Creating new lead...');
+             lead = await prisma.lead.create({
+                data: {
+                    name,
+                    email,
+                    phone: phone || null,
+                    qualification: qualification || null,
+                    college: null,
+                    location: null,
+                    source: 'Website Interest',
+                    notes,
+                    status: 'NEW',
+                    dob: null
+                }
+            });
+            console.log('[Shared Interest→Leads] Lead created successfully:', { id: lead.id, email: lead.email, status: lead.status });
+
+             // Auto-Reply (Lead Follow-up Automation)
+             sendEmail({
+                to: email,
+                subject: 'Welcome to TechWell - Your Journey Begins!',
+                text: `Hi ${name},\n\nThank you for exploring TechWell. We have received your interest and a career counselor will be in touch shortly.\n\nBest Regards,\nTechWell Team`,
+                html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                        <h2 style="color: #1469E2;">Welcome to TechWell, ${name}!</h2>
+                        <p>Thank you for expressing interest in our career programs.</p>
+                        <p>We are dedicated to helping you land your dream job in tech.</p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+                        <p><strong>Next Steps:</strong></p>
+                        <ul>
+                            <li>Our team will review your profile.</li>
+                            <li>You will receive a call/message within 24 hours.</li>
+                            <li>Explore our <a href="https://techwell.co.in/courses">Free Courses</a> in the meantime.</li>
+                        </ul>
+                        <br/>
+                        <p>Best Regards,<br/><strong>The TechWell Team</strong></p>
+                       </div>`
+            }).catch(err => console.error('[Shared Interest→Leads] Auto-Reply Failed:', err.message));
+        }
+
+        res.status(200).json({ success: true, message: 'Shared interest captured and added to Leads', leadId: lead.id, leadStatus: lead.status });
+        console.log('[Shared Interest→Leads] Response sent successfully - Lead ID:', lead.id);
+    } catch (error) {
+        // Just log the error, don't crash because this is a public form
+        console.error('[Shared Interest→Leads] Error:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        res.status(500).json({ error: 'Failed to capture interest: ' + error.message });
     }
 });
 

@@ -42,13 +42,13 @@ export default function InterviewStartPage() {
     const videoRef = useRef<HTMLVideoElement>(null)
     const [stream, setStream] = useState<MediaStream | null>(null)
     const [audioLevel, setAudioLevel] = useState(0)
-    const [isReady, setIsReady] = useState(false)
+    const [_isReady, setIsReady] = useState(false)
     interface Interview {
         id: string
         role: string
         title?: string
     }
-    const [interview, setInterview] = useState<Interview | null>(null)
+    const [_interview, setInterview] = useState<Interview | null>(null)
 
     const [checks, setChecks] = useState<CheckItem[]>([
         { id: 'camera', label: 'Camera Access', icon: Camera, status: 'pending' },

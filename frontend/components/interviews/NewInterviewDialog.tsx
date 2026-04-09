@@ -59,7 +59,7 @@ interface NewInterviewDialogProps {
 
 export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange }: NewInterviewDialogProps) {
     const router = useRouter()
-    const { user } = useAuth()
+    const { user: _user } = useAuth()
 
     // Internal state if not controlled
     const [internalOpen, setInternalOpen] = useState(false)

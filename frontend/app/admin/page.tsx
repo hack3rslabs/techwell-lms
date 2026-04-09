@@ -57,7 +57,7 @@ export default function AdminDashboard() {
     // ...
 
     const [users, setUsers] = React.useState<User[]>([])
-    const [courses, setCourses] = React.useState<Course[]>([])
+    const [_courses, setCourses] = React.useState<Course[]>([])
 
     // Updated Stats State
     const [stats, setStats] = React.useState({
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
     })
 
     const [isLoading, setIsLoading] = React.useState(true)
-    const [searchQuery, setSearchQuery] = React.useState('')
+    const [searchQuery, _setSearchQuery] = React.useState('')
     // const [activeTab, setActiveTab] = React.useState<'overview' | 'users' | 'courses' | 'ai-training'>('overview')
 
     // AI Training State
@@ -79,8 +79,8 @@ export default function AdminDashboard() {
         difficulty: 'INTERMEDIATE',
         content: ''
     })
-    const [isTraining, setIsTraining] = React.useState(false)
-    const [trainMessage, setTrainMessage] = React.useState<{ msg: string, type: 'success' | 'error' } | null>(null)
+    const [_isTraining, setIsTraining] = React.useState(false)
+    const [_trainMessage, setTrainMessage] = React.useState<{ msg: string, type: 'success' | 'error' } | null>(null)
 
     React.useEffect(() => {
         if (!authLoading && (!isAuthenticated || !['SUPER_ADMIN', 'ADMIN'].includes(user?.role || ''))) {
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
         }
     }, [isAuthenticated, user])
 
-    const toggleUserStatus = async (userId: string, isActive: boolean) => {
+    const _toggleUserStatus = async (userId: string, isActive: boolean) => {
         try {
             await api.patch(`/users/${userId}/status`, { isActive: !isActive })
             setUsers(users.map(u => u.id === userId ? { ...u, isActive: !isActive } : u))
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
         }
     }
 
-    const handleTrainAI = async (e: React.FormEvent) => {
+    const _handleTrainAI = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!trainingData.topic || !trainingData.content) return
 
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
         }
     }
 
-    const filteredUsers = searchQuery
+    const _filteredUsers = searchQuery
         ? users.filter(u =>
             u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             u.email.toLowerCase().includes(searchQuery.toLowerCase())

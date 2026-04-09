@@ -393,3 +393,200 @@
 .score-bar-w-100 {
   width: 100%;
 }
+
+/* Sidebar Scroll */
+.sidebar-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+/* Custom Scrollbar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ── Admin Panel Design System ────────────────────────── */
+
+/* Glass Card: used for admin cards, boxes, and containers */
+.admin-glass-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.04),
+    0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.admin-glass-card:hover {
+  box-shadow:
+    0 4px 12px 0 rgba(0, 0, 0, 0.06),
+    0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+/* Admin Sidebar */
+.admin-glass-sidebar {
+  background: var(--card);
+  border-right: 1px solid var(--border);
+}
+
+/* Admin Sidebar / Card Headers */
+.admin-glass-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Admin Dashboard Metrics */
+.admin-metric-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.admin-metric-card:hover {
+  box-shadow:
+    0 4px 12px 0 rgba(0, 0, 0, 0.06),
+    0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+/* Admin Tables */
+.admin-table-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.admin-table-header {
+  background: var(--card);
+  border-bottom: 2px solid var(--border);
+  padding: 1rem 1.5rem;
+}
+
+.admin-table-row {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.admin-table-row:hover {
+  background-color: var(--muted);
+}
+
+.admin-table-row:last-child {
+  border-bottom: none;
+}
+
+/* Admin Forms */
+.admin-form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+}
+
+/* Admin Buttons */
+.admin-btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius);
+  transition: background-color 0.2s ease;
+}
+
+.admin-btn-primary:hover {
+  background: var(--primary-foreground);
+  color: var(--primary);
+}
+
+.admin-btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-radius: var(--radius);
+  transition: background-color 0.2s ease;
+}
+
+.admin-btn-secondary:hover {
+  background: var(--secondary-foreground);
+  color: var(--secondary);
+}
+
+/* Admin Badges */
+.admin-badge-success {
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.admin-badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.admin-badge-danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.admin-badge-info {
+  background: #e0f2fe;
+  color: #1e40af;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Admin Scroll */
+.admin-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+/* Admin Custom Scrollbar */
+.admin-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+
+.admin-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+/* Blog Prose Styles */
+.prose h1 { @apply text-3xl font-bold mb-4 mt-8; }
+.prose h2 { @apply text-2xl font-bold mb-3 mt-6; }
+.prose h3 { @apply text-xl font-bold mb-2 mt-4; }
+.prose p { @apply mb-4 leading-relaxed; }
+.prose ul { @apply list-disc pl-6 mb-4 mt-2; }
+.prose ol { @apply list-decimal pl-6 mb-4 mt-2; }
+.prose li { @apply mb-2; }
+.prose blockquote { @apply border-l-4 border-primary pl-4 italic my-4; }
+.prose pre { @apply bg-muted p-4 rounded-lg overflow-x-auto my-4; }
+.prose img { @apply rounded-lg my-6 max-w-full; }
+.prose a { @apply text-primary underline; }

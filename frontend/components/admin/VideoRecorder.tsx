@@ -202,7 +202,7 @@ export function VideoRecorder({
 
             onUploadComplete?.(mockUrl)
             setIsUploading(false)
-        } catch (err) {
+        } catch (_err) {
             setError('Failed to upload recording')
             setIsUploading(false)
         }

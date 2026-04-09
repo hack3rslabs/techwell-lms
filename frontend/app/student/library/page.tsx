@@ -40,24 +40,24 @@ interface Resource {
 
 export default function StudentLibraryPage() {
     const { user } = useAuth();
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-    const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
-    const [resources, setResources] = useState<Resource[]>([]);
+    const [categories, _setCategories] = useState<Category[]>([]);
+    const [selectedCategory, _setSelectedCategory] = useState<Category | null>(null);
+    const [selectedDomain, _setSelectedDomain] = useState<Domain | null>(null);
+    const [resources, _setResources] = useState<Resource[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
-    const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
+    const [_loading, _setLoading] = useState(true);
+    const [bookmarks, _setBookmarks] = useState<Set<string>>(new Set());
+    const [showBookmarksOnly, _setShowBookmarksOnly] = useState(false);
 
     // View Modal State
     const [viewResource, setViewResource] = useState<Resource | null>(null);
 
     const handleShowBookmarks = () => {};
     const handleSearch = () => {};
-    const handleCategoryClick = (category: Category) => {};
-    const handleDomainClick = (domain: Domain) => {};
-    const handleToggleBookmark = (resource: Resource) => {};
-    const handleDownload = (resourceId: string) => {};
+    const handleCategoryClick = (_category: Category) => {};
+    const handleDomainClick = (_domain: Domain) => {};
+    const handleToggleBookmark = (_resource: Resource) => {};
+    const handleDownload = (_resourceId: string) => {};
 
     const handleView = async (resource: Resource) => {
         // Optimistically set resource for immediate feedback

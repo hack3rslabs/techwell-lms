@@ -1,5 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const router = express.Router();
 
 const prisma = new PrismaClient({
@@ -240,27 +242,84 @@ router.put('/:id/approve', async (req, res) => {
       });
     }
 
-    // Update the request status
+    // Check if user already exists with this email
+    const existingUser = await prisma.user.findUnique({
+      where: { email: request.email.toLowerCase() },
+    });
+
+    let userId;
+
+    if (existingUser) {
+      // If user exists, just update their role to EMPLOYER
+      userId = existingUser.id;
+      await prisma.user.update({
+        where: { id: userId },
+        data: { role: 'EMPLOYER' },
+      });
+    } else {
+      // Create new employer user account with temporary password
+      const temporaryPassword = crypto.randomBytes(12).toString('hex');
+      const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+      const newUser = await prisma.user.create({
+        data: {
+          email: request.email.toLowerCase(),
+          password: hashedPassword,
+          name: request.name,
+          phone: request.phone || null,
+          role: 'EMPLOYER',
+          isActive: true,
+          emailVerified: false,
+        },
+      });
+
+      userId = newUser.id;
+
+      // TODO: Send email to employer with login credentials
+      console.log(`[Employer Account Created] Email: ${request.email}, Temp Password: ${temporaryPassword}`);
+    }
+
+    // Create or update EmployerProfile
+    const existingProfile = await prisma.employerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!existingProfile) {
+      await prisma.employerProfile.create({
+        data: {
+          userId,
+          companyName: request.name,
+          status: 'APPROVED',
+        },
+      });
+    }
+
+    // Update the employer request status
     const updatedRequest = await prisma.employerRequest.update({
       where: { id },
       data: {
         status: 'APPROVED',
         adminNotes: adminNotes || null,
+        approvedUserId: userId,
       },
     });
 
-    console.log(`[Employer Request Approved] ID: ${id}, Email: ${request.email}`);
+    console.log(`[Employer Request Approved] ID: ${id}, Email: ${request.email}, User ID: ${userId}`);
 
     res.json({
       success: true,
-      message: 'Employer request approved successfully',
-      data: updatedRequest,
+      message: 'Employer request approved successfully and account created',
+      data: {
+        ...updatedRequest,
+        userId,
+      },
     });
   } catch (error) {
     console.error('[Approve Employer Request Error]:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to approve employer request',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 });

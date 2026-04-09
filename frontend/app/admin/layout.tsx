@@ -13,18 +13,16 @@ export default function AdminLayout({
 }) {
     const { user, isAuthenticated, isLoading } = useAuth()
     const router = useRouter()
-    // Hydration fix
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true)
     }, [])
 
     useEffect(() => {
         if (!isLoading && mounted) {
             if (!isAuthenticated || !['SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN', 'STAFF'].includes(user?.role || '')) {
-                router.push('/dashboard') // Redirect unauthorized
+                router.push('/dashboard')
             }
         }
     }, [isLoading, isAuthenticated, user, router, mounted])
@@ -38,15 +36,25 @@ export default function AdminLayout({
     }
 
     if (!isAuthenticated || !['SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN', 'STAFF'].includes(user?.role || '')) {
-        return null // Will redirect
+        return null
     }
 
     return (
         <div className="flex min-h-screen">
-            <AdminSidebar className="w-64 flex-shrink-0 hidden md:block" />
-            <div className="flex-1 md:ml-64 p-8 bg-muted/10 min-h-screen">
-                {children}
+
+            {/* Sidebar */}
+            <AdminSidebar className="w-64 fixed left-0 top-0 h-screen hidden md:block" />
+
+            {/* Main Content */}
+            <div className="flex flex-col flex-1 md:ml-64 min-h-screen">
+
+                {/* Page Content */}
+                <main className="flex-1 p-8 bg-muted/10">
+                    {children}
+                </main>
+
             </div>
+
         </div>
     )
 }

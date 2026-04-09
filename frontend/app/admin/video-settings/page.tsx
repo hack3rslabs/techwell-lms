@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,13 +53,22 @@ interface LiveClass {
     course?: { id: string; title: string }
 }
 
+interface CourseOption {
+    id: string
+    title: string
+}
+
 export default function VideoSettingsPage() {
+    const searchParams = useSearchParams()
     const [integrations, setIntegrations] = useState<VideoIntegration[]>([])
     const [liveClasses, setLiveClasses] = useState<LiveClass[]>([])
+    const [courses, setCourses] = useState<CourseOption[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [showAddForm, setShowAddForm] = useState(false)
     const [testingId, setTestingId] = useState<string | null>(null)
     const [testResult, setTestResult] = useState<{ id: string, success: boolean, message: string } | null>(null)
+    const [activeTab, setActiveTab] = useState('integrations')
+    const [isScheduling, setIsScheduling] = useState(false)
 
     const [formData, setFormData] = useState({
         platform: 'ZOOM',
@@ -81,40 +91,77 @@ export default function VideoSettingsPage() {
         fetchData()
     }, [])
 
+    useEffect(() => {
+        const action = searchParams.get('action')
+
+        if (action === 'new-meeting') {
+            setActiveTab('upcoming')
+            setShowScheduleForm(true)
+            setShowAddForm(false)
+            return
+        }
+
+        if (action === 'connect-integration') {
+            setActiveTab('integrations')
+            setShowAddForm(true)
+            setShowScheduleForm(false)
+        }
+    }, [searchParams])
+
     const handleScheduleClass = async () => {
+        if (!scheduleData.courseId || !scheduleData.title || !scheduleData.scheduledAt) {
+            alert('Please select a course, add a title, and choose a date/time.')
+            return
+        }
+
+        const scheduledAtIso = new Date(scheduleData.scheduledAt).toISOString()
+
         try {
+            setIsScheduling(true)
             // First create the meeting link (mock/real)
             const meetingRes = await api.post('/video/create-meeting', {
                 platform: scheduleData.platform,
                 title: scheduleData.title,
-                scheduledAt: scheduleData.scheduledAt,
+                scheduledAt: scheduledAtIso,
                 duration: scheduleData.duration
             })
 
             // Then save the class
             await api.post('/video/classes', {
                 ...scheduleData,
+                scheduledAt: scheduledAtIso,
                 meetingLink: meetingRes.data.meetingLink,
                 meetingId: meetingRes.data.meetingId,
                 password: meetingRes.data.password
             })
 
             setShowScheduleForm(false)
+            setScheduleData({
+                courseId: '',
+                title: '',
+                scheduledAt: '',
+                duration: 60,
+                platform: 'ZOOM'
+            })
             fetchData() // Refresh list
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to schedule class:', error)
-            alert('Failed to schedule class. Ensure an integration is active.')
+            alert(error?.response?.data?.error || 'Failed to schedule class.')
+        } finally {
+            setIsScheduling(false)
         }
     }
 
     const fetchData = async () => {
         try {
-            const [intRes, classRes] = await Promise.all([
+            const [intRes, classRes, courseRes] = await Promise.all([
                 api.get('/video/integrations'),
-                api.get('/video/classes?upcoming=true')
+                api.get('/video/classes?upcoming=true'),
+                api.get('/courses', { params: { page: 1, limit: 100 } })
             ])
             setIntegrations(intRes.data || [])
             setLiveClasses(classRes.data || [])
+            setCourses(courseRes.data?.courses || courseRes.data || [])
         } catch (error) {
             console.error("Failed to fetch video settings", error)
         } finally {
@@ -229,7 +276,7 @@ export default function VideoSettingsPage() {
                 </Button>
             </div>
 
-            <Tabs defaultValue="integrations">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
                     <TabsTrigger value="integrations">Integrations</TabsTrigger>
                     <TabsTrigger value="upcoming">Upcoming Classes</TabsTrigger>
@@ -431,11 +478,18 @@ export default function VideoSettingsPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Course</Label>
-                                        <Input
-                                            placeholder="Enter Course ID for now (Select later)"
+                                        <select
+                                            className="w-full h-10 px-3 rounded-md border bg-background"
                                             value={scheduleData.courseId}
                                             onChange={e => setScheduleData({ ...scheduleData, courseId: e.target.value })}
-                                        />
+                                        >
+                                            <option value="">Select a course</option>
+                                            {courses.map((course) => (
+                                                <option key={course.id} value={course.id}>
+                                                    {course.title}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Topic</Label>
@@ -476,7 +530,9 @@ export default function VideoSettingsPage() {
                                 </div>
                                 <div className="flex gap-2 justify-end">
                                     <Button variant="outline" onClick={() => setShowScheduleForm(false)}>Cancel</Button>
-                                    <Button onClick={handleScheduleClass}>Create Session</Button>
+                                    <Button onClick={handleScheduleClass} disabled={isScheduling}>
+                                        {isScheduling ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Session'}
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>

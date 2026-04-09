@@ -63,7 +63,7 @@ router.post('/batches', authenticate, authorize('INSTRUCTOR', 'ADMIN', 'INSTITUT
 router.get('/students', authenticate, authorize('INSTRUCTOR', 'ADMIN', 'INSTITUTE_ADMIN'), async (req, res, next) => {
     try {
         const { batchId } = req.query;
-        const students = await trainerService.getTrainerStudents(req.user.id, batchId);
+        const students = await trainerService.getTrainerStudents(req.user, batchId);
         res.json(students);
     } catch (error) {
         next(error);
@@ -81,7 +81,7 @@ router.get('/students/:studentId/progress', authenticate, authorize('INSTRUCTOR'
 
         if (!courseId) return res.status(400).json({ error: 'Course ID is required' });
 
-        const progress = await trainerService.getStudentDetailedProgress(req.user.id, studentId, courseId);
+        const progress = await trainerService.getStudentDetailedProgress(req.user, studentId, courseId);
         res.json(progress);
     } catch (error) {
         next(error);
