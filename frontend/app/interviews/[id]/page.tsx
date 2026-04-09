@@ -157,7 +157,7 @@ export default function InterviewRoomPage() {
     const [currentQuestion, setCurrentQuestion] = React.useState<Question | null>(null)
     const [questionCount, setQuestionCount] = React.useState(0)
 
-    const [messages, setMessages] = React.useState<Message[]>([])
+    const [_messages, setMessages] = React.useState<Message[]>([])
     const [userResponse, setUserResponse] = React.useState('')
     const [codeResponse, setCodeResponse] = React.useState('') // New: Code Editor State
     const [isThinking, setIsThinking] = React.useState(false)
@@ -167,7 +167,7 @@ export default function InterviewRoomPage() {
     const [wpm, setWpm] = React.useState(0)
     const [fillerCount, setFillerCount] = React.useState(0)
     const [speechStartTime, setSpeechStartTime] = React.useState<number | null>(null)
-    const [tabSwitchCount, setTabSwitchCount] = React.useState(0)
+    const [_tabSwitchCount, setTabSwitchCount] = React.useState(0)
     const [isTabActive, setIsTabActive] = React.useState(true)
     const [isStarted, setIsStarted] = React.useState(false)
     const [isFullscreen, setIsFullscreen] = React.useState(false)

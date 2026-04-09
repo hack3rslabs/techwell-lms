@@ -12,14 +12,14 @@ console.log('Loading Course Routes...');
 const createCourseSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
-    thumbnail: z.string().url().optional(),
+    thumbnail: z.string().optional(),
     category: z.string().min(2),
     difficulty: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']).default('BEGINNER'),
     price: z.number().min(0).default(0),
     discountPrice: z.number().min(0).default(0),
     courseCode: z.string().optional(),
     jobRoles: z.array(z.string()).optional(),
-    bannerUrl: z.string().url().optional(),
+    bannerUrl: z.string().optional(),
     // Course Types
     courseType: z.enum(['RECORDED', 'LIVE', 'HYBRID']).default('RECORDED'),
     liveSchedule: z.any().optional(),
@@ -76,6 +76,7 @@ router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTO
  */
 router.get('/', optionalAuth, async (req, res, next) => {
     try {
+        console.log('[COURSES GET] Fetching courses...');
         const { category, difficulty, search, page = 1, limit = 12 } = req.query;
 
         const where = {};
@@ -103,18 +104,13 @@ router.get('/', optionalAuth, async (req, res, next) => {
             ];
         }
 
+        console.log('[COURSES GET] Query params:', { category, difficulty, search, page, limit });
+        console.log('[COURSES GET] Where clause:', where);
+
         const [courses, total] = await Promise.all([
             prisma.course.findMany({
                 where,
-                select: {
-                    id: true,
-                    title: true,
-                    description: true,
-                    thumbnail: true,
-                    category: true,
-                    difficulty: true,
-                    price: true,
-                    isPublished: true, // Add this
+                include: {
                     _count: {
                         select: {
                             modules: true,
@@ -128,6 +124,8 @@ router.get('/', optionalAuth, async (req, res, next) => {
             }),
             prisma.course.count({ where })
         ]);
+
+        console.log(`[COURSES GET] Found ${courses.length} courses, total: ${total}`);
 
         let coursesWithEnrollment = courses;
         if (req.user && courses.length > 0) {
@@ -158,6 +156,7 @@ router.get('/', optionalAuth, async (req, res, next) => {
             }
         });
     } catch (error) {
+        console.error('[COURSES GET] Error fetching courses:', error);
         next(error);
     }
 });
@@ -376,14 +375,62 @@ router.post('/:id/enroll', authenticate, async (req, res, next) => {
             return res.status(400).json({ error: 'Already enrolled in this course' });
         }
 
-        const enrollment = await prisma.enrollment.create({
-            data: {
-                userId: req.user.id,
-                courseId: course.id
+        const user = await prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: {
+                name: true,
+                email: true,
+                phone: true,
+                qualification: true,
+                college: true,
+                dob: true
             }
         });
 
-        res.status(201).json({ message: 'Enrolled successfully', enrollment });
+        if (!user?.name || !user?.email) {
+            return res.status(400).json({ error: 'Complete your profile before showing interest in a course.' });
+        }
+
+        const interestNote = `Interested in course: ${course.title}`;
+        const existingLead = await prisma.lead.findFirst({
+            where: { email: user.email }
+        });
+
+        let lead;
+        if (existingLead) {
+            lead = await prisma.lead.update({
+                where: { id: existingLead.id },
+                data: {
+                    name: user.name,
+                    phone: user.phone || existingLead.phone,
+                    qualification: user.qualification || existingLead.qualification,
+                    college: user.college || existingLead.college,
+                    dob: user.dob || existingLead.dob,
+                    source: existingLead.source || 'Course Enrollment',
+                    status: existingLead.status === 'CONVERTED' ? 'CONVERTED' : 'INTERESTED',
+                    notes: existingLead.notes ? `${existingLead.notes} | ${interestNote}` : interestNote
+                }
+            });
+        } else {
+            lead = await prisma.lead.create({
+                data: {
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone || null,
+                    qualification: user.qualification || null,
+                    college: user.college || null,
+                    dob: user.dob || null,
+                    source: 'Course Enrollment',
+                    status: 'INTERESTED',
+                    notes: interestNote
+                }
+            });
+        }
+
+        res.status(200).json({
+            message: 'Interest captured successfully. Our team can follow up from Leads.',
+            leadId: lead.id
+        });
     } catch (error) {
         next(error);
     }
@@ -404,6 +451,7 @@ router.get('/my/enrolled', authenticate, async (req, res, next) => {
                         id: true,
                         title: true,
                         thumbnail: true,
+                        bannerUrl: true,
                         category: true,
                         difficulty: true
                     }

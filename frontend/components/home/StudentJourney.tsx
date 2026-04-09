@@ -53,7 +53,7 @@ const steps = [
 
 export function StudentJourney() {
     const router = useRouter()
-    const { isAuthenticated, isLoading: authLoading } = useAuth()
+    const { isAuthenticated, isLoading: _authLoading } = useAuth()
     const [loadingStep, setLoadingStep] = useState<number | null>(null)
 
     const handleStepClick = (stepIndex: number, href: string, isProtected?: boolean) => {

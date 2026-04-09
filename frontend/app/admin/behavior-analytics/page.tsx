@@ -6,7 +6,7 @@ import { Brain, TrendingUp, MousePointer, Clock, BarChart3 } from 'lucide-react'
 
 // Fix: Ensure we don't have double /api
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
+const _API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
 // Note: The fetches below use /api prefix, so we need to be careful. 
 // Actually, looking at the fetches: `${API_URL}/api/behavior...`
 // If API_URL already has /api, we get /api/api/behavior.
@@ -260,7 +260,7 @@ export default function BehaviorAnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {timeData.map((item, index) => (
+                            {timeData.map((item, _index) => (
                                 <div key={item.page} className="space-y-1">
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="font-mono truncate max-w-xs">{item.page}</span>

@@ -2,14 +2,16 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import api, { courseApi } from '@/lib/api'
+import api, { courseApi, uploadApi, type CoursePayload } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import Image from "next/image"
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Wand2, Plus, GripVertical, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react'
 import { VideoUpload } from '@/components/admin/VideoUpload'
+import { getFullImageUrl } from '@/lib/image-utils'
 
 interface CourseCreationWizardProps {
     redirectPath: string
@@ -23,6 +25,8 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
     const [step, setStep] = React.useState(1)
     const [isLoading, setIsLoading] = React.useState(false)
     const [courseId, setCourseId] = React.useState<string | null>(initialCourseId || null)
+    const [bannerFile, setBannerFile] = React.useState<File | null>(null)
+    const [bannerPreview, setBannerPreview] = React.useState<string | null>(null)
 
     // Fetch initial data if editing
     React.useEffect(() => {
@@ -98,7 +102,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
     // Handlers
     const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        
+
         // Client-side validation
         if (!basicData.title || basicData.title.trim().length < 3) {
             alert('Title must be at least 3 characters')
@@ -112,36 +116,60 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
             alert('Please select a valid category')
             return
         }
-        
-        // Validate URLs if provided
-        const validateUrl = (url: string): boolean => {
-            if (!url) return true // URL is optional
-            try {
-                new URL(url)
-                return true
-            } catch {
+
+        // Validate image file
+        const _validateImage = (file: File | null): boolean => {
+            if (!file) return true // optional
+
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
+
+            if (!allowedTypes.includes(file.type)) {
+                alert("Only JPG, PNG, or WEBP images are allowed")
                 return false
             }
+
+            const maxSize = 2 * 1024 * 1024 // 2MB
+
+            if (file.size > maxSize) {
+                alert("Image size must be less than 2MB")
+                return false
+            }
+
+            return true
         }
-        
-        if (basicData.bannerUrl && !validateUrl(basicData.bannerUrl)) {
-            alert('Banner URL must be a valid URL (e.g., https://example.com/image.jpg)')
-            return
-        }
-        
+
+
         setIsLoading(true)
         try {
+            // Upload banner file first if selected
+            let uploadedBannerUrl = basicData.bannerUrl;
+            if (bannerFile) {
+                const formData = new FormData();
+                formData.append('file', bannerFile);
+                const uploadRes = await uploadApi.upload(formData);
+                uploadedBannerUrl = uploadRes.data.url;
+            }
+
             // Clean jobRoles: remove empty strings
             const cleanJobRoles = Array.isArray(basicData.jobRoles) ? basicData.jobRoles.filter(Boolean) : [];
-            
+
+            // Build payload without bannerUrl first, then add it only if it has a value
+            const { bannerUrl: _ignoreBanner, ...basicDataWithoutBanner } = basicData;
+
             // Ensure all numeric fields are actually numbers (not strings)
-            const payload = {
-                ...basicData,
+            const payload: CoursePayload = {
+                ...basicDataWithoutBanner,
+                difficulty: basicData.difficulty as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED',
                 jobRoles: cleanJobRoles,
                 price: Number(basicData.price) || 0,
                 discountPrice: Number(basicData.discountPrice) || 0,
                 interviewPrice: Number(basicData.interviewPrice) || 0,
             };
+
+            // Only include bannerUrl if we have a real value
+            if (uploadedBannerUrl && uploadedBannerUrl.length > 0) {
+                payload.bannerUrl = uploadedBannerUrl;
+            }
             if (courseId) {
                 // Update existing
                 await courseApi.update(courseId, payload)
@@ -232,7 +260,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         const newLesson: Lesson = {
             title: 'New Lesson',
             type: 'VIDEO',
-            duration: 0,
+            duration: 5 * 60,
             isPublished: false
         }
         const newModules = [...modules]
@@ -348,12 +376,55 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Banner URL</label>
+                                <label className="text-sm font-medium">Banner Image</label>
                                 <Input
-                                    value={basicData.bannerUrl}
-                                    onChange={e => setBasicData({ ...basicData, bannerUrl: e.target.value })}
-                                    placeholder="https://..."
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,image/jpg"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0] || null
+
+                                        if (!file) return
+
+                                        const allowedTypes = [
+                                            "image/jpeg",
+                                            "image/png",
+                                            "image/webp",
+                                            "image/jpg"
+                                        ]
+
+                                        if (!allowedTypes.includes(file.type)) {
+                                            alert("Only JPG, PNG, WEBP allowed")
+                                            return
+                                        }
+
+                                        const maxSize = 2 * 1024 * 1024
+
+                                        if (file.size > maxSize) {
+                                            alert("Image must be under 2MB")
+                                            return
+                                        }
+
+                                        setBannerFile(file)
+                                        setBannerPreview(URL.createObjectURL(file))
+                                    }}
                                 />
+                                {(bannerPreview || basicData.bannerUrl) && (
+                                    <div className="mt-2 rounded-lg overflow-hidden border max-w-xs">
+                                        <Image
+                                            src={
+                                                bannerPreview
+                                                    ? bannerPreview
+                                                    : basicData.bannerUrl
+                                                        ? getFullImageUrl(basicData.bannerUrl)
+                                                        : "/placeholder.jpg"
+                                            }
+                                            alt="Banner preview"
+                                            width={400}
+                                            height={200}
+                                            className="w-full h-32 object-cover"
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">

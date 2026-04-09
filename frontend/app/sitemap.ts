@@ -1,15 +1,15 @@
 import { MetadataRoute } from 'next'
-import api from '@/lib/api'
+import _api from '@/lib/api'
 
 // Helper to fetch keys if API is available, otherwise returns defaults
-async function getDynamicRoutes(endpoint: string, routePrefix: string) {
+async function _getDynamicRoutes(_endpoint: string, _routePrefix: string) {
     try {
         // In a real build, we might fetch directly from DB or public API
         // For SSG/ISR support. 
         // const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`)
         // const data = await res.json()
         return [] // data.map(item => ({ url: `${baseUrl}${routePrefix}/${item.slug || item.id}`, lastModified: new Date() }))
-    } catch (e) {
+    } catch (_e) {
         return []
     }
 }

@@ -63,7 +63,7 @@ interface KnowledgeEntry {
     createdAt: string
 }
 
-const SAMPLE_ENTRIES: KnowledgeEntry[] = [
+const _SAMPLE_ENTRIES: KnowledgeEntry[] = [
     {
         id: '1',
         domain: 'IT',
@@ -78,7 +78,7 @@ const SAMPLE_ENTRIES: KnowledgeEntry[] = [
 
 export default function QuestionsPage() {
     const [entries, setEntries] = useState<KnowledgeEntry[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    const [_isLoading, setIsLoading] = useState(true)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingEntry, setEditingEntry] = useState<KnowledgeEntry | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
@@ -137,7 +137,7 @@ export default function QuestionsPage() {
         company: ''
     })
 
-    const [activeTab, setActiveTab] = useState('manual')
+    const [_activeTab, setActiveTab] = useState('manual')
     const [jdText, setJdText] = useState('')
 
     const handleGenerate = async () => {

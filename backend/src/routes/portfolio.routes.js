@@ -6,6 +6,52 @@ const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 /**
+ * @route   GET /api/portfolio/me/settings
+ * @desc    Get current user's portfolio settings
+ * @access  Private
+ */
+router.get('/me/settings', authenticate, async (req, res, next) => {
+    try {
+        // Return basic settings - can be extended with actual settings model
+        res.json({
+            portfolioPublic: true,
+            showCertificates: true,
+            showInterviews: true,
+            headline: null,
+            linkedinUrl: null,
+            websiteUrl: null
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PUT /api/portfolio/me/settings
+ * @desc    Update portfolio settings
+ * @access  Private
+ */
+router.put('/me/settings', authenticate, async (req, res, next) => {
+    try {
+        const { portfolioPublic, showCertificates, showInterviews, headline, linkedinUrl } = req.body;
+
+        // In real implementation, save to database
+        res.json({
+            message: 'Settings updated',
+            settings: {
+                portfolioPublic,
+                showCertificates,
+                showInterviews,
+                headline,
+                linkedinUrl
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   GET /api/portfolio/:username
  * @desc    Get public portfolio for a user
  * @access  Public
@@ -96,52 +142,6 @@ router.get('/:username', async (req, res, next) => {
                 totalCertificates: certificates.length,
                 totalInterviews: interviewAchievements.length,
                 averageScore: avgScore
-            }
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   GET /api/portfolio/me/settings
- * @desc    Get current user's portfolio settings
- * @access  Private
- */
-router.get('/me/settings', authenticate, async (req, res, next) => {
-    try {
-        // Return basic settings - can be extended with actual settings model
-        res.json({
-            portfolioPublic: true,
-            showCertificates: true,
-            showInterviews: true,
-            headline: null,
-            linkedinUrl: null,
-            websiteUrl: null
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   PUT /api/portfolio/me/settings
- * @desc    Update portfolio settings
- * @access  Private
- */
-router.put('/me/settings', authenticate, async (req, res, next) => {
-    try {
-        const { portfolioPublic, showCertificates, showInterviews, headline, linkedinUrl } = req.body;
-
-        // In real implementation, save to database
-        res.json({
-            message: 'Settings updated',
-            settings: {
-                portfolioPublic,
-                showCertificates,
-                showInterviews,
-                headline,
-                linkedinUrl
             }
         });
     } catch (error) {

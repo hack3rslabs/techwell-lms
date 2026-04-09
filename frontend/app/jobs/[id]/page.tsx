@@ -4,7 +4,7 @@ import * as React from "react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { MapPin, Briefcase, Building2, Banknote, Clock, Share2, Bookmark, CheckCircle, GraduationCap, Globe } from "lucide-react"
-import Link from "next/link"
+import _Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -46,9 +46,9 @@ interface JobDetail {
 export default function JobDetailPage() {
     const params = useParams()
     const { user } = useAuth()
-    const router = useRouter()
-    const [job, setJob] = useState<JobDetail | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const _router = useRouter()
+    const [job, _setJob] = useState<JobDetail | null>(null)
+    const [isLoading, _setIsLoading] = useState(true)
     const [isApplying, setIsApplying] = useState(false)
     const [applicationForm, setApplicationForm] = useState({
         resumeUrl: '',

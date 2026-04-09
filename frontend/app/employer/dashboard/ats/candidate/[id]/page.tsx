@@ -220,8 +220,8 @@ export default function CandidateProfilePage() {
 
     // Separate notes vs status changes from history
     const notes = (application.statusHistory || []).filter(h => h.type === 'NOTE')
-    const statusHistory = (application.statusHistory || []).filter(h => !h.type || h.type === 'STATUS')
-    const ratings = (application.statusHistory || []).filter(h => h.type === 'RATING')
+    const _statusHistory = (application.statusHistory || []).filter(h => !h.type || h.type === 'STATUS')
+    const _ratings = (application.statusHistory || []).filter(h => h.type === 'RATING')
 
     const getStatusColor = (s: string) => {
         switch (s) {

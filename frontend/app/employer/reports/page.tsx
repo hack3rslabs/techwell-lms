@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import api from "@/lib/api"
+import _api from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -22,7 +22,7 @@ import {
 
 export default function EmployerReportsPage() {
     const [reportPeriod, setReportPeriod] = useState("this_month")
-    const router = useRouter()
+    const _router = useRouter()
 
     // Mock data for UI
     const stats = {

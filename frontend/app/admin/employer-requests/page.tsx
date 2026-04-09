@@ -37,7 +37,7 @@ export default function EmployerRequestsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [selectedRequest, setSelectedRequest] = useState<EmployerRequest | null>(null)
+  const [_selectedRequest, setSelectedRequest] = useState<EmployerRequest | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
 
@@ -66,7 +66,7 @@ export default function EmployerRequestsPage() {
   const handleApprove = async (request: EmployerRequest) => {
     setActionLoading(request.id)
     try {
-      const response = await api.put(`/employer-requests/${request.id}/approve`, {
+      const _response = await api.put(`/employer-requests/${request.id}/approve`, {
         adminNotes: adminNotes || null,
       })
 
@@ -102,7 +102,7 @@ export default function EmployerRequestsPage() {
 
     setActionLoading(request.id)
     try {
-      const response = await api.put(`/employer-requests/${request.id}/reject`, {
+      const _response = await api.put(`/employer-requests/${request.id}/reject`, {
         rejectionReason: rejectionReason.trim(),
       })
 

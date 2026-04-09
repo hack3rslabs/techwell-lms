@@ -87,14 +87,30 @@ export const searchApi = {
     global: (query: string) => api.get('/search', { params: { q: query } })
 };
 
+export interface CoursePayload {
+    title: string;
+    description: string;
+    category: string;
+    price: number;
+    discountPrice?: number;
+    difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+    courseCode?: string;
+    bannerUrl?: string;
+    jobRoles?: string[];
+    courseType?: 'RECORDED' | 'LIVE' | 'HYBRID';
+    hasInterviewPrep?: boolean;
+    interviewPrice?: number;
+    [key: string]: unknown;
+}
+
 // Course API
 export const courseApi = {
     getAll: (params?: { category?: string; search?: string; page?: number }) =>
         api.get('/courses', { params }),
     getById: (id: string) => api.get(`/courses/${id}`),
-    create: (data: { title: string; description: string; category: string; price?: number }) =>
+    create: (data: CoursePayload) =>
         api.post('/courses', data),
-    update: (id: string, data: Partial<{ title: string; description: string; category: string; price?: number;[key: string]: unknown }>) =>
+    update: (id: string, data: Partial<CoursePayload>) =>
         api.put(`/courses/${id}`, data),
     enroll: (courseId: string) => api.post(`/courses/${courseId}/enroll`),
     getMyEnrollments: () => api.get('/courses/my/enrolled'),
@@ -115,6 +131,15 @@ export const enrollmentRequestApi = {
     getMyRequest: (courseId: string) => api.get(`/enrollment-requests/my/${courseId}`),
     getAll: () => api.get('/enrollment-requests'),
     updateStatus: (id: string, status: 'APPROVED' | 'REJECTED') => api.put(`/enrollment-requests/${id}/status`, { status }),
+};
+
+// Employer Request API
+export const employerRequestApi = {
+    submit: (data: { name: string; designation: string; email: string; phone?: string }) => api.post('/employer-requests', data),
+    getAll: () => api.get('/employer-requests'),
+    getById: (id: string) => api.get(`/employer-requests/${id}`),
+    approve: (id: string, data?: { adminNotes?: string }) => api.put(`/employer-requests/${id}/approve`, data),
+    reject: (id: string, data: { rejectionReason: string }) => api.put(`/employer-requests/${id}/reject`, data),
 };
 
 // Interview API
@@ -149,8 +174,12 @@ export const interviewApi = {
 
 // Payment API
 export const paymentApi = {
-    createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY') => api.post('/payments/order', { courseId, type }),
-    verifyPayment: (data: unknown) => api.post('/payments/verify', data),
+    // Send amount (in rupees) and optional currency; backend will create order and return orderId, keyId and amount (in paise)
+    createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY', amount?: number, currency = 'INR') =>
+        api.post('/payments/create-order', { courseId, type, amount, currency }),
+    // Backend expects fields: razorpay_order_id, razorpay_payment_id, razorpay_signature
+    verifyPayment: (data: unknown) => api.post('/payments/verify-payment', data),
+    getOrderStatus: (orderId: string) => api.get(`/payments/order-status/${orderId}`),
 };
 
 // Certificate API
@@ -283,7 +312,10 @@ export const ticketApi = {
 // Lead/CRM API
 export const leadApi = {
     getAll: (params?: unknown) => api.get('/leads', { params }),
+    getCounts: () => api.get('/leads/counts'),
     create: (data: unknown) => api.post('/leads', data),
+    capture: (data: unknown) => api.post('/leads/capture', data),
+    markSeen: () => api.post('/leads/mark-seen'),
     update: (id: string, data: unknown) => api.put(`/leads/${id}`, data),
     delete: (id: string) => api.delete(`/leads/${id}`),
     convert: (id: string) => api.post(`/leads/${id}/convert`),
@@ -324,6 +356,12 @@ export const libraryApi = {
     toggleBookmark: (resourceId: string) => api.post('/library/bookmarks', { resourceId }),
     getResources: (params?: { category?: string; domain?: string; search?: string }) => api.get('/library/resources', { params }),
     getCategories: () => api.get('/library/categories'),
+};
+
+// Students API (Admin)
+export const studentsApi = {
+    getAll: (params?: { search?: string; course?: string; page?: number; limit?: number }) =>
+        api.get('/admin/students', { params }),
 };
 
 export const rbacApi = {

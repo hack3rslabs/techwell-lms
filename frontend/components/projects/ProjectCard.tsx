@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Code2, ShoppingCart } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import _Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -20,8 +20,7 @@ interface ProjectCardProps {
     index: number;
 }
 
-export function ProjectCard({
-    id,
+export function ProjectCard({ id: _id,
     title,
     description,
     price,

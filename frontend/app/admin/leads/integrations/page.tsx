@@ -29,7 +29,7 @@ interface Integration {
 
 export default function LeadIntegrationsPage() {
     const [integrations, setIntegrations] = React.useState<Integration[]>([])
-    const [isLoading, setIsLoading] = React.useState(true)
+    const [_isLoading, setIsLoading] = React.useState(true)
     const [showConfig, setShowConfig] = React.useState<string | null>(null) // 'META', 'GOOGLE', 'JUSTDIAL'
 
     // Config Form State

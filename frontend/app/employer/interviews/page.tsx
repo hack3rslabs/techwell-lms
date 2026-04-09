@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import api from "@/lib/api"
+import _api from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -52,7 +52,7 @@ export default function EmployerInterviewsPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [activeTab, setActiveTab] = useState("upcoming")
     const [searchQuery, setSearchQuery] = useState("")
-    const router = useRouter()
+    const _router = useRouter()
 
     const fetchInterviews = useCallback(async () => {
         try {
@@ -101,7 +101,7 @@ export default function EmployerInterviewsPage() {
         }
     }, [])
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     useEffect(() => {
         fetchInterviews()
     }, [])

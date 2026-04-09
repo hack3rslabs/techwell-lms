@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export function FloatingCallButton() {
-    const [isVisible, setIsVisible] = React.useState(true)
+    const [isVisible, _setIsVisible] = React.useState(true)
 
     // Optional: Hide on scroll down, show on scroll up? Or just always visible?
     // User asked for "easyly on webpage", so always visible is best.

@@ -50,7 +50,7 @@ interface Avatar {
     isActive: boolean
 }
 
-const DEFAULT_AVATARS: Avatar[] = [
+const _DEFAULT_AVATARS: Avatar[] = [
     {
         id: '1',
         name: 'Alex Chen',

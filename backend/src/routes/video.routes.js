@@ -178,16 +178,37 @@ router.get('/classes', authenticate, async (req, res, next) => {
  */
 router.post('/classes', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
     try {
-        const { courseId, title, scheduledAt, duration, platform, meetingLink } = req.body;
+        const { courseId, title, scheduledAt, duration, platform, meetingLink, meetingId, password } = req.body;
+        const parsedScheduledAt = new Date(scheduledAt);
+        const parsedDuration = parseInt(duration, 10);
+
+        if (!courseId || !title || !scheduledAt || !platform || Number.isNaN(parsedDuration)) {
+            return res.status(400).json({ error: 'Course, title, schedule, duration, and platform are required.' });
+        }
+
+        if (Number.isNaN(parsedScheduledAt.getTime())) {
+            return res.status(400).json({ error: 'Invalid scheduled date/time.' });
+        }
+
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            select: { id: true }
+        });
+
+        if (!course) {
+            return res.status(400).json({ error: 'Selected course was not found.' });
+        }
 
         const liveClass = await prisma.liveClass.create({
             data: {
                 courseId,
                 title,
-                scheduledAt: new Date(scheduledAt),
-                duration: parseInt(duration),
+                scheduledAt: parsedScheduledAt,
+                duration: parsedDuration,
                 platform,
                 meetingLink,
+                meetingId,
+                password,
                 status: 'SCHEDULED',
                 hostId: req.user.id,
                 hostName: req.user.name

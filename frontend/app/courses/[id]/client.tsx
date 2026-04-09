@@ -2,18 +2,17 @@
 
 import * as React from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { courseApi, paymentApi, enrollmentRequestApi } from '@/lib/api'
+import { courseApi, paymentApi, leadApi } from '@/lib/api'
+import { getFullImageUrl } from '@/lib/image-utils'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
     GraduationCap,
-    Clock,
     Users,
     Star,
     CheckCircle2,
     PlayCircle,
-    BookOpen,
     Loader2,
     ArrowLeft,
     CreditCard,
@@ -22,6 +21,7 @@ import {
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -52,6 +52,14 @@ interface RazorpayOptions {
     }
     modal: {
         ondismiss: () => void
+    }
+}
+
+interface ApiError {
+    response?: {
+        data?: {
+            error?: string
+        }
     }
 }
 
@@ -114,14 +122,6 @@ export default function CourseDetailClient() {
     const [isEnrolling, setIsEnrolling] = React.useState(false)
     const [expandedModules, setExpandedModules] = React.useState<string[]>([])
     const [purchaseType, setPurchaseType] = React.useState<'COURSE_ONLY' | 'BUNDLE'>('COURSE_ONLY');
-
-    interface EnrollmentRequest {
-        id: string
-        courseId: string
-        userId: string
-        status: string
-    }
-    const [enrollmentRequest, setEnrollmentRequest] = React.useState<EnrollmentRequest | null>(null)
     const [isRequesting, setIsRequesting] = React.useState(false)
     const [showRequestDialog, setShowRequestDialog] = React.useState(false)
     const [dialogMessage, setDialogMessage] = React.useState<{ title: string; desc: string; type: 'success' | 'error' } | null>(null)
@@ -134,12 +134,12 @@ export default function CourseDetailClient() {
 
     React.useEffect(() => {
         if (user) {
-            setFormData(prev => ({ 
-                ...prev, 
-                name: user.name || prev.name, 
-                email: user.email || prev.email, 
-                phone: user.phone || prev.phone, 
-                qualification: user.qualification || prev.qualification 
+            setFormData(prev => ({
+                ...prev,
+                name: user.name || prev.name,
+                email: user.email || prev.email,
+                phone: user.phone || prev.phone,
+                qualification: user.qualification || prev.qualification
             }))
         }
     }, [user])
@@ -148,16 +148,10 @@ export default function CourseDetailClient() {
         const fetchCourseData = async () => {
             try {
                 const response = await courseApi.getById(params.id as string)
-                setCourse(response.data.course)
-                
-                if (isAuthenticated) {
-                    try {
-                        const reqResponse = await enrollmentRequestApi.getMyRequest(params.id as string)
-                        setEnrollmentRequest(reqResponse.data.request)
-                    } catch (reqErr) {
-                        console.error('Failed to fetch enrollment request:', reqErr)
-                    }
-                }
+                setCourse({
+                    ...response.data.course,
+                    isEnrolled: response.data.isEnrolled
+                })
             } catch (error) {
                 console.error('Failed to fetch course:', error)
             } finally {
@@ -168,37 +162,30 @@ export default function CourseDetailClient() {
         if (params.id) {
             fetchCourseData()
         }
-    }, [params.id, isAuthenticated])
+    }, [params.id])
 
-    const handleRequestEnrollment = async (e: React.FormEvent) => {
+    const handleEnrollInterest = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!isAuthenticated) {
-            router.push('/login')
-            return
-        }
 
         setIsRequesting(true)
         try {
-            await enrollmentRequestApi.submit({
+            await leadApi.capture({
                 courseId: course!.id,
+                courseTitle: course!.title,
                 ...formData
             })
             setShowRequestDialog(false)
             setDialogMessage({
-                title: 'Request Submitted!',
-                desc: 'Enrolled successfully! TechWell admin will contact you soon regarding the next steps.',
+                title: 'Interest Submitted!',
+                desc: 'Your details have been added to Leads. Our TechWell team will contact you soon.',
                 type: 'success'
             })
-            
-            // Refresh request status
-            const reqResponse = await enrollmentRequestApi.getMyRequest(course!.id)
-            setEnrollmentRequest(reqResponse.data.request)
         } catch (error: unknown) {
             const err = error as { response?: { data?: { error?: string } } };
-            console.error('Failed to submit enrollment request:', error)
+            console.error('Failed to submit enrollment interest:', error)
             setDialogMessage({
                 title: 'Submission Failed',
-                desc: err.response?.data?.error || 'Failed to submit request. Please try again.',
+                desc: err.response?.data?.error || 'Failed to submit details. Please try again or use Buy Now.',
                 type: 'error'
             })
         } finally {
@@ -211,15 +198,29 @@ export default function CourseDetailClient() {
             router.push('/login')
             return
         }
+        // Open Razorpay directly
+        handleRazorpayPayment()
+    }
 
+    const handleRazorpayPayment = async () => {
         setIsEnrolling(true)
         try {
-            // 1. Create Order with Type
-            const { data: order } = await paymentApi.createOrder(course!.id, purchaseType)
+            const currentPrice = purchaseType === 'BUNDLE' 
+                ? (course!.bundlePrice || (course!.price * 1.2)) 
+                : (course!.discountPrice || course!.price);
 
-            // Simulating "Dummy Payment" flow explicitly for User Request
-            if (process.env.NODE_ENV === 'development' || order.status === 'created') {
-                // In a real app, 'created' is standard. 
+            // 1. Create Order with Type (send amount so backend can create razorpay order)
+            const { data: order } = await paymentApi.createOrder(course!.id, purchaseType, currentPrice, 'INR')
+
+            if (order.gateway === 'FREE') {
+                setCourse({ ...course!, isEnrolled: true })
+                setDialogMessage({
+                    title: 'Enrollment Successful!',
+                    desc: order.message || 'You are now officially enrolled and can start learning immediately.',
+                    type: 'success'
+                })
+                setIsEnrolling(false)
+                return
             }
 
             // Load Script
@@ -227,18 +228,18 @@ export default function CourseDetailClient() {
             if (!res) throw new Error('Razorpay SDK failed to load');
 
             const options = {
-                key: 'rzp_test_dummy12345', // This should match backend key if real
+                key: order.keyId || 'rzp_test_dummy12345',
                 amount: order.amount,
-                currency: order.currency,
+                currency: order.currency || 'INR',
                 name: 'TechWell',
                 description: purchaseType === 'BUNDLE' ? `Course + Interview Bundle` : `Enrollment for ${course!.title}`,
-                order_id: order.id,
+                order_id: order.orderId || order.id,
                 handler: async function (response: RazorpayResponse) {
                     try {
                         await paymentApi.verifyPayment({
-                            orderId: order.id,
-                            paymentId: response.razorpay_payment_id,
-                            signature: response.razorpay_signature
+                            razorpay_order_id: order.orderId || order.id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
                         })
                         setCourse({ ...course!, isEnrolled: true })
                         setDialogMessage({
@@ -246,7 +247,7 @@ export default function CourseDetailClient() {
                             desc: 'You are now officially enrolled and can start learning immediately.',
                             type: 'success'
                         })
-                    } catch (err) {
+                    } catch {
                         setDialogMessage({
                             title: 'Verification Failed',
                             desc: 'Payment verification failed. Please contact support.',
@@ -261,7 +262,6 @@ export default function CourseDetailClient() {
                 theme: {
                     color: '#0f172a'
                 },
-                // Handle modal close
                 modal: {
                     ondismiss: function () {
                         setIsEnrolling(false)
@@ -269,42 +269,60 @@ export default function CourseDetailClient() {
                 }
             };
 
-            try {
-                const rzp = new window.Razorpay(options);
-                rzp.open();
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response: { error?: Record<string, unknown> } & Record<string, unknown>) {
+                const gatewayError = response.error || {}
+                const fallbackReason = [
+                    typeof gatewayError['description'] === 'string' ? gatewayError['description'] : '',
+                    typeof gatewayError['reason'] === 'string' ? gatewayError['reason'] : '',
+                    typeof gatewayError['step'] === 'string' ? `Step: ${gatewayError['step']}` : '',
+                    typeof gatewayError['code'] === 'string' ? `Code: ${gatewayError['code']}` : '',
+                ].filter(Boolean).join(' | ')
 
-                rzp.on('payment.failed', function (_response: { error?: Record<string, unknown> } & Record<string, unknown>) {
-                    setDialogMessage({
-                        title: 'Payment Failed',
-                        desc: 'The transaction was declined or cancelled. You have not been charged.',
-                        type: 'error'
+                paymentApi.getOrderStatus(order.orderId || order.id)
+                    .then(({ data }) => {
+                        const payment = data?.payment
+                        const detailedReason = [
+                            payment?.errorDescription,
+                            payment?.errorReason ? `Reason: ${payment.errorReason}` : '',
+                            payment?.errorStep ? `Step: ${payment.errorStep}` : '',
+                            payment?.errorSource ? `Source: ${payment.errorSource}` : '',
+                            payment?.errorCode ? `Code: ${payment.errorCode}` : '',
+                        ].filter(Boolean).join(' | ')
+
+                        setDialogMessage({
+                            title: 'Payment Failed',
+                            desc: detailedReason || fallbackReason || 'The transaction was declined or cancelled. You have not been charged.',
+                            type: 'error'
+                        })
                     })
-                    setIsEnrolling(false);
-                });
-            } catch (e) {
-                // Determine if we should mock success
-                console.warn("Razorpay SDK Error (likely dummy key). Simulating success...");
-                await paymentApi.verifyPayment({
-                    orderId: order.id,
-                    paymentId: 'pay_mock_bypass',
-                    signature: 'dummy_sig'
-                });
-                setCourse({ ...course!, isEnrolled: true });
-                setIsEnrolling(false);
-                setDialogMessage({
-                    title: 'Mock Payment Successful!',
-                    desc: 'Your dummy transaction was completed. You are now enrolled.',
-                    type: 'success'
-                })
-            }
+                    .catch(() => {
+                        setDialogMessage({
+                            title: 'Payment Failed',
+                            desc: fallbackReason || 'The transaction was declined or cancelled. You have not been charged.',
+                            type: 'error'
+                        })
+                    })
+                    .finally(() => {
+                        setIsEnrolling(false);
+                    })
+            });
+            rzp.open();
 
         } catch (error) {
             console.error('Failed to enroll:', error)
-            // Fallback for mock environment if strictly needed
+            const apiError = error as ApiError
+            const message = apiError.response?.data?.error
             if (error instanceof Error && error.message.includes('SDK')) {
                 setDialogMessage({
                     title: 'SDK Error',
                     desc: 'Payment gateway failed to initialize.',
+                    type: 'error'
+                })
+            } else if (message) {
+                setDialogMessage({
+                    title: 'Payment Setup Error',
+                    desc: message,
                     type: 'error'
                 })
             }
@@ -349,36 +367,20 @@ export default function CourseDetailClient() {
         )
     }
 
-    const currentPrice = purchaseType === 'BUNDLE'
-
-        ? Number(course.bundlePrice || course.price * 1.2)
-        : course.price;
+    const currentPrice = purchaseType === 'BUNDLE' 
+        ? (course.bundlePrice || (course.price * 1.2)) 
+        : (course.discountPrice || course.price);
 
     return (
         <div className="container py-8">
-            {/* Back Button */}
-            <Button variant="ghost" className="mb-6" onClick={() => router.push('/courses')}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Courses
-            </Button>
-
-            {/* Banner Image */}
-            {course.bannerUrl && (
-                <div className="mb-8 rounded-xl overflow-hidden h-[300px] relative">
-                    <img src={course.bannerUrl} alt={course.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                </div>
-            )}
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content */}
                 <div className="lg:col-span-2">
-                    {/* Header */}
                     <div className="mb-8">
-                        <div className="flex items-center gap-3 mb-4 flex-wrap">
-                            {course.courseCode && (
-                                <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-mono border border-primary/20">
-                                    {course.courseCode}
+                        <div className="flex items-center gap-3 mb-4">
+                            {course.isEnrolled && (
+                                <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 flex items-center gap-1">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    Enrolled
                                 </span>
                             )}
                             <span className={`text-xs px-3 py-1 rounded-full ${getDifficultyColor(course.difficulty)}`}>
@@ -395,41 +397,44 @@ export default function CourseDetailClient() {
                         </div>
                         <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                             <h1 className="text-3xl font-bold">{course.title}</h1>
-                            {!course.isEnrolled && enrollmentRequest?.status !== 'APPROVED' && enrollmentRequest?.status !== 'PENDING' && (
+                            {!course.isEnrolled && (
                                 <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
                                     <DialogTrigger asChild>
                                         <Button size="lg" className="shadow-lg shadow-primary/20 shrink-0 font-bold rounded-xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white border-0 transition-all duration-300 hover:scale-[1.02] active:scale-95">
-                                            Enroll Now
+                                            Share Interest
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-[425px]">
                                         <DialogHeader>
-                                            <DialogTitle>Request Enrollment</DialogTitle>
+                                            <DialogTitle>Share Course Interest</DialogTitle>
+                                            <DialogDescription>
+                                                Submit your details to Leads and our team will help you with the next steps.
+                                            </DialogDescription>
                                         </DialogHeader>
-                                        <form onSubmit={handleRequestEnrollment} className="space-y-4 pt-4">
+                                        <form onSubmit={handleEnrollInterest} className="space-y-4 pt-4">
                                             <div className="space-y-2">
                                                 <Label>Course</Label>
                                                 <Input value={course.title} disabled className="bg-muted" />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="name">Full Name *</Label>
-                                                <Input id="name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                                                <Input id="name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="email">Email Address *</Label>
-                                                <Input id="email" type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                                                <Input id="email" type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="phone">Phone Number</Label>
-                                                <Input id="phone" type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                                                <Input id="phone" type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="qualification">Highest Qualification</Label>
-                                                <Input id="qualification" value={formData.qualification} onChange={e => setFormData({...formData, qualification: e.target.value})} />
+                                                <Input id="qualification" value={formData.qualification} onChange={e => setFormData({ ...formData, qualification: e.target.value })} />
                                             </div>
                                             <Button type="submit" className="w-full" disabled={isRequesting}>
                                                 {isRequesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                                Submit Request
+                                                Submit Interest
                                             </Button>
                                         </form>
                                     </DialogContent>
@@ -440,22 +445,21 @@ export default function CourseDetailClient() {
 
                         <div className="flex items-center gap-6 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4" />
-                                {course.duration} hours
-                            </div>
-                            <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4" />
-                                {course._count?.enrollments || 0} students
+                                <span>{course._count?.enrollments || 0} students enrolled</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Star className="h-4 w-4 text-yellow-500" />
-                                4.8 rating
+                                <PlayCircle className="h-4 w-4" />
+                                <span>{course.duration} hours content</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4" />
-                                {course.modules?.length || 0} modules
-                            </div>
+                            {course.instructor && (
+                                <div className="flex items-center gap-2">
+                                    <GraduationCap className="h-4 w-4" />
+                                    <span>{course.instructor.name}</span>
+                                </div>
+                            )}
                         </div>
+
                         {course.jobRoles && course.jobRoles.length > 0 && (
                             <div className="mt-6 p-4 bg-muted/30 rounded-lg">
                                 <h4 className="font-semibold text-sm mb-2">Target Job Roles:</h4>
@@ -471,7 +475,6 @@ export default function CourseDetailClient() {
                         )}
                     </div>
 
-                    {/* Course Curriculum */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Course Curriculum</CardTitle>
@@ -505,7 +508,7 @@ export default function CourseDetailClient() {
                                             </button>
                                             {expandedModules.includes(module.id) && module.lessons && (
                                                 <div className="border-t px-4 py-2">
-                                                    {module.lessons.map((lesson, idx) => (
+                                                    {module.lessons.map((lesson) => (
                                                         <div key={lesson.id} className="flex items-center justify-between py-2 text-sm">
                                                             <div className="flex items-center gap-3">
                                                                 <PlayCircle className="h-4 w-4 text-muted-foreground" />
@@ -528,15 +531,26 @@ export default function CourseDetailClient() {
                     </Card>
                 </div>
 
-                {/* Sidebar */}
                 <div className="lg:col-span-1">
                     <Card className="sticky top-24">
-                        <div className="h-40 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-t-lg flex items-center justify-center">
-                            <GraduationCap className="h-16 w-16 text-primary/50" />
+                        <div className="h-40 relative bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-t-lg flex items-center justify-center overflow-hidden">
+                            {course.thumbnail ? (
+                                <img
+                                    src={getFullImageUrl(course.thumbnail)}
+                                    alt={course.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        target.parentElement?.classList.remove('overflow-hidden');
+                                        const icon = target.nextElementSibling as HTMLElement;
+                                        if (icon) icon.style.display = 'block';
+                                    }}
+                                />
+                            ) : null}
+                            <GraduationCap className={`h-16 w-16 text-primary/50 ${course.thumbnail ? 'hidden' : ''}`} />
                         </div>
                         <CardContent className="pt-4">
-                            {/* Pricing Toggle */}
-
                             {course.hasInterviewPrep && !course.isEnrolled && (
                                 <div className="mb-6 p-4 bg-muted/50 rounded-lg space-y-3">
                                     <div
@@ -565,8 +579,7 @@ export default function CourseDetailClient() {
                                                 <span className="text-xs text-green-600 font-medium">Includes AI Interview Prep</span>
                                             </div>
                                         </div>
-
-                                        <span className="font-bold text-purple-700">₹{course.bundlePrice || course.price * 1.2}</span>
+                                        <span className="font-bold text-purple-700">₹{course.bundlePrice || (course.price * 1.2)}</span>
                                     </div>
                                 </div>
                             )}
@@ -596,34 +609,35 @@ export default function CourseDetailClient() {
                                     <PlayCircle className="mr-2 h-5 w-5" />
                                     Start Learning
                                 </Button>
-                            ) : enrollmentRequest?.status === 'APPROVED' ? (
-                                <Button
-                                    className={`w-full mb-4 ${purchaseType === 'BUNDLE' ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
-                                    size="lg"
-                                    onClick={handleBuy}
-                                    disabled={isEnrolling}
-                                >
-                                    {isEnrolling ? (
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                    ) : (
-                                        <CreditCard className="mr-2 h-5 w-5" />
-                                    )}
-                                    {isEnrolling ? 'Processing...' : (currentPrice === 0 ? 'Enroll for Free' : `Buy ${purchaseType === 'BUNDLE' ? 'Bundle' : 'Now'}`)}
-                                </Button>
-                            ) : enrollmentRequest?.status === 'PENDING' ? (
-                                <div className="p-4 mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 rounded-lg text-center">
-                                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-400 mb-1">Request Pending</h4>
-                                    <p className="text-xs text-yellow-700 dark:text-yellow-500">TechWell admin will review your enrollment request soon.</p>
-                                </div>
                             ) : (
-                                <div className="p-4 mb-4 bg-muted/50 border rounded-lg text-center">
-                                    <p className="text-sm text-muted-foreground mb-3">To unlock payment and enroll in this course, please submit an enrollment request first.</p>
-                                    <Button variant="outline" className="w-full" onClick={() => {
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        setShowRequestDialog(true);
-                                    }}>
-                                        Request Enrollment
+                                <div className="space-y-3 mb-4">
+                                    <Button
+                                        className={`w-full ${purchaseType === 'BUNDLE' ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
+                                        size="lg"
+                                        onClick={handleBuy}
+                                        disabled={isEnrolling}
+                                    >
+                                        {isEnrolling ? (
+                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        ) : (
+                                            <CreditCard className="mr-2 h-5 w-5" />
+                                        )}
+                                        {isEnrolling ? 'Processing...' : (currentPrice === 0 ? 'Enroll for Free' : `Buy ${purchaseType === 'BUNDLE' ? 'Bundle' : 'Now'}`)}
                                     </Button>
+                                    
+                                    <Button 
+                                        variant="outline" 
+                                        className="w-full" 
+                                        onClick={() => {
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            setShowRequestDialog(true);
+                                        }}
+                                    >
+                                        Talk to an Advisor
+                                    </Button>
+                                    <p className="text-xs text-center text-muted-foreground mt-1">
+                                        Interested but not ready to pay? We will add you to Leads and call you.
+                                    </p>
                                 </div>
                             )}
 
@@ -644,7 +658,6 @@ export default function CourseDetailClient() {
                                 )}
                             </div>
 
-
                             {course.instructor && (
                                 <div className="mt-6 pt-6 border-t">
                                     <h4 className="font-medium mb-2">Instructor</h4>
@@ -664,7 +677,6 @@ export default function CourseDetailClient() {
                 </div>
             </div>
 
-            {/* Custom Pop-up Dialog replacing standard alerts */}
             <Dialog open={!!dialogMessage} onOpenChange={(open) => !open && setDialogMessage(null)}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -672,12 +684,15 @@ export default function CourseDetailClient() {
                             {dialogMessage?.type === 'error' ? <XCircle className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
                             {dialogMessage?.title}
                         </DialogTitle>
+                        <DialogDescription>
+                            {dialogMessage?.desc || 'Review the latest enrollment or payment status.'}
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
                         <p className="text-muted-foreground">{dialogMessage?.desc}</p>
                     </div>
                     <div className="flex justify-end">
-                        <Button 
+                        <Button
                             variant={dialogMessage?.type === 'error' ? 'destructive' : 'default'}
                             onClick={() => setDialogMessage(null)}
                         >

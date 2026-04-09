@@ -37,7 +37,7 @@ interface Module {
     lessons: Lesson[]
 }
 
-interface Course {
+interface _Course {
     id: string
     title: string
     modules: Module[]
@@ -387,11 +387,6 @@ export default function CourseLearnPage() {
                                 {(activeLesson.type === 'TEXT' || activeLesson.type === 'ASSIGNMENT' || activeLesson.type === 'PDF') && (
                                     <div className="prose dark:prose-invert max-w-none bg-card p-6 rounded-xl border shadow-sm">
                                         <h2 className="text-xl font-bold mb-4 not-prose border-b pb-2">{activeLesson.title}</h2>
-                                        import DOMPurify from 'isomorphic-dompurify';
-
-                                        // ... (rest of imports)
-
-                                        // Inside component
                                         <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(activeLesson.content || '') }} />
 
                                         {activeLesson.type === 'ASSIGNMENT' && (

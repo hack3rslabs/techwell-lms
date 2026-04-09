@@ -55,7 +55,7 @@ export function ClientCarousel() {
           }
         }
         .animate-scroll {
-          animation: scroll 30s linear infinite;
+          animation: scroll 60s linear infinite;
         }
         .animate-scroll:hover {
           animation-play-state: paused;

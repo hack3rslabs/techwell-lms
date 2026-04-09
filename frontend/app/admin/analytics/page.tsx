@@ -34,7 +34,7 @@ interface AnalyticsData {
 export default function AnalyticsPage() {
     const [data, setData] = React.useState<AnalyticsData | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
-    const [dateRange, setDateRange] = React.useState({
+    const [dateRange, _setDateRange] = React.useState({
         from: subDays(new Date(), 30),
         to: new Date()
     })

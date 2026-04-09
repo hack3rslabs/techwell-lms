@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Video, Clock, Users, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,9 +16,11 @@ export default function MeetingsPage() {
                         Schedule and manage video meetings with leads and students
                     </p>
                 </div>
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Schedule Meeting
+                <Button asChild>
+                    <Link href="/admin/video-settings?action=new-meeting">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Schedule Meeting
+                    </Link>
                 </Button>
             </div>
 
@@ -62,13 +65,17 @@ export default function MeetingsPage() {
                             You don&apos;t have any upcoming meetings. Integrate your calendar or schedule one manually to get started.
                         </p>
                         <div className="flex gap-4">
-                            <Button variant="outline">
-                                <Video className="mr-2 h-4 w-4" />
-                                Connect Zoom/Meet
+                            <Button variant="outline" asChild>
+                                <Link href="/admin/video-settings?action=connect-integration">
+                                    <Video className="mr-2 h-4 w-4" />
+                                    Connect Zoom/Meet
+                                </Link>
                             </Button>
-                            <Button>
-                                <Plus className="mr-2 h-4 w-4" />
-                                New Meeting
+                            <Button asChild>
+                                <Link href="/admin/video-settings?action=new-meeting">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    New Meeting
+                                </Link>
                             </Button>
                         </div>
                     </div>

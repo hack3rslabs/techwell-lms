@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { DATABASE_HELP, getDatabaseHealth, isDatabaseOfflineError } = require('./utils/database');
 
 const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
@@ -35,8 +36,10 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: { error: 'Too many requests, please try again later.' }
+    max: 1000, // limit each IP to 1000 requests per 15 minutes (~1 per second)
+    message: { error: 'Too many requests, please try again later.' },
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 app.use('/api', limiter);
 
@@ -53,8 +56,23 @@ const auditMiddleware = require('./middleware/audit');
 app.use(auditMiddleware);
 
 // Health check
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+    const db = await getDatabaseHealth();
+
+    if (!db.ok) {
+        return res.status(503).json({
+            status: 'degraded',
+            database: 'offline',
+            error: db.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    res.json({
+        status: 'ok',
+        database: 'online',
+        timestamp: new Date().toISOString()
+    });
 });
 
 app.get('/api/test-debug', (req, res) => {
@@ -118,7 +136,11 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
+    console.error('[ERROR HANDLER] Request:', req.method, req.url);
+    console.error('[ERROR HANDLER] Error:', err);
+    if (err.stack) {
+        console.error('[ERROR HANDLER] Stack:', err.stack);
+    }
 
     if (err.name === 'ZodError') {
         return res.status(400).json({
@@ -133,6 +155,13 @@ app.use((err, req, res, next) => {
 
     if (err.name === 'TokenExpiredError') {
         return res.status(401).json({ error: 'Token expired' });
+    }
+
+    if (isDatabaseOfflineError(err)) {
+        return res.status(503).json({
+            error: DATABASE_HELP,
+            details: process.env.NODE_ENV === 'production' ? undefined : err.message
+        });
     }
 
     const errorMessage = process.env.NODE_ENV === 'production'

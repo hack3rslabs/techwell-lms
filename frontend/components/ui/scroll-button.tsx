@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 
 export function ScrollButton() {
     const [direction, setDirection] = React.useState<'up' | 'down'>('down')
-    const [isVisible, setIsVisible] = React.useState(true)
+    const [_isVisible, _setIsVisible] = React.useState(true)
 
     React.useEffect(() => {
         const toggleVisibility = () => {

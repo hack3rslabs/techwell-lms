@@ -13,7 +13,7 @@ import api from '@/lib/api'
 import { toast } from 'sonner'
 
 export default function PricingPage() {
-    const [isLoading, setIsLoading] = React.useState(true)
+    const [_isLoading, setIsLoading] = React.useState(true)
     const [isSaving, setIsSaving] = React.useState(false)
     const [config, setConfig] = React.useState({
         razorpayKeyId: '',

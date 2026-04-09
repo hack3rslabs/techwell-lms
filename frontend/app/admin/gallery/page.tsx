@@ -57,7 +57,7 @@ export default function GalleryPage() {
             setImages([...images, newImage])
             setNewUrl("")
             toast({ title: "Success", description: "Image added to gallery" })
-        } catch (error) {
+        } catch (_error) {
             toast({ title: "Error", description: "Failed to add image", variant: "destructive" })
         } finally {
             setSubmitting(false)
@@ -76,7 +76,7 @@ export default function GalleryPage() {
 
             setImages(images.filter(img => img.id !== id))
             toast({ title: "Success", description: "Image deleted" })
-        } catch (error) {
+        } catch (_error) {
             toast({ title: "Error", description: "Failed to delete image", variant: "destructive" })
         }
     }

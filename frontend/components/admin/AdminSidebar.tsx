@@ -10,303 +10,220 @@ import {
     FileText,
     Video,
     Award,
-    CreditCard,
     Settings,
     MessageSquare,
     Calendar,
     Menu,
     X,
     LogOut,
-    BrainCircuit,
-    Sparkles,
     VideoIcon,
-    ChevronDown,
-    ChevronRight,
     Magnet,
-    GraduationCap,
-    Bot,
     Briefcase,
-    Image as ImageIcon
+    GraduationCap,
+    Image as ImageIcon,
+    type LucideIcon
 } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
+import { leadApi } from "@/lib/api"
 import { useState, useEffect } from "react"
 
-interface RouteItem {
-    label: string;
-    href: string;
-    permission?: string;
-}
-
 interface RouteConfig {
-    label: string;
-    icon: any;
-    href?: string;
-    permission?: string;
-    subItems?: RouteItem[];
-    active?: boolean;
+    label: string
+    icon: LucideIcon
+    href: string
+    permission?: string
+    showLeadCounts?: boolean
 }
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-    isCollapsed?: boolean // Added member to avoid empty interface warning
-}
+type SidebarProps = React.HTMLAttributes<HTMLDivElement>
 
 export function AdminSidebar({ className }: SidebarProps) {
+
     const pathname = usePathname()
     const { logout, hasPermission } = useAuth()
     const [isMobileOpen, setIsMobileOpen] = useState(false)
-    const [expandedMenus, setExpandedMenus] = useState<string[]>([])
+    const [leadCounts, setLeadCounts] = useState({ totalCount: 0, unreadCount: 0 })
+    const canViewLeads = hasPermission("VIEW_LEADS")
+    const isViewingLeads =
+        pathname === "/admin/leads" ||
+        pathname.startsWith("/admin/leads/")
 
-    // Unified Routes Configuration
-    const getRoutesConfig = (): RouteConfig[] => [
-        {
-            label: "Dashboard",
-            icon: LayoutDashboard,
-            href: "/admin",
-            active: pathname === "/admin",
-        },
-        {
-            label: "User Management",
-            icon: Users,
-            subItems: [
-                { label: "Users & Roles", href: "/admin/users", permission: 'MANAGE_USERS' },
-                { label: "Courses", href: "/admin/courses", permission: 'MANAGE_COURSES' },
-                { label: "Certificates", href: "/admin/certificates", permission: 'MANAGE_CERTIFICATES' },
-                { label: "Enroll Requests", href: "/admin/enrolls", permission: 'MANAGE_USERS' },
-                { label: "Employer Requests", href: "/admin/employers", permission: 'MANAGE_USERS' },
-            ]
-        },
-        {
-            label: "Leads & CRM",
-            icon: Magnet,
-            permission: 'VIEW_LEADS',
-            subItems: [
-                { label: "All Leads", href: "/admin/leads" },
-                { label: "Meetings", href: "/admin/meetings" },
-                { label: "Tasks", href: "/admin/tasks" },
-            ]
-        },
-        {
-            label: "Learning CMS",
-            icon: GraduationCap,
-            permission: 'MANAGE_CONTENT',
-            subItems: [
-                { label: "Blogs", href: "/admin/blogs" },
-                { label: "Gallery", href: "/admin/gallery" },
-                { label: "Skillcasts", href: "/admin/skillcasts" },
-                { label: "Reviews", href: "/admin/reviews" },
-                { label: "Library", href: "/admin/library" },
-            ]
-        },
-        {
-            label: "AI Subsystems",
-            icon: Bot,
-            permission: 'MANAGE_SETTINGS',
-            subItems: [
-                { label: "AI Configurations", href: "/admin/ai" },
-                { label: "Training Data", href: "/admin/ai/training" },
-                { label: "AI Interviews", href: "/admin/ai-interviews" },
-            ]
-        },
-        {
-            label: "Finance",
-            icon: CreditCard,
-            permission: 'VIEW_FINANCE',
-            subItems: [
-                { label: "Payments", href: "/admin/payments" },
-                { label: "Pricing & Plans", href: "/admin/pricing" },
-            ]
-        },
-        {
-            label: "Operations",
-            icon: Briefcase,
-            subItems: [
-                { label: "Job Board", href: "/admin/jobs" },
-                { label: "Projects Market", href: "/admin/projects" },
-                { label: "Support Tickets", href: "/admin/support", permission: 'VIEW_SUPPORT' },
-            ]
-        },
-        {
-            label: "Technical & Config",
-            icon: Settings,
-            permission: 'MANAGE_SETTINGS',
-            subItems: [
-                { label: "General Settings", href: "/admin/settings" },
-                { label: "Video Integration", href: "/admin/video-settings" },
-                { label: "System Logs", href: "/admin/logs" },
-            ]
-        }
+    const routes: RouteConfig[] = [
+        { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+
+        { label: "Users & Roles", icon: Users, href: "/admin/users", permission: "MANAGE_USERS" },
+        { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "MANAGE_COURSES" },
+        { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "MANAGE_CERTIFICATES" },
+       // { label: "Enroll Requests", icon: FileText, href: "/admin/enrolls", permission: "MANAGE_USERS" },
+        { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "MANAGE_USERS" },
+        { label: "Employer Requests", icon: Briefcase, href: "/admin/employers", permission: "MANAGE_USERS" },
+
+        { label: "All Leads", icon: Magnet, href: "/admin/leads", permission: "VIEW_LEADS", showLeadCounts: true },
+        { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "VIEW_LEADS" },
+        { label: "Tasks", icon: MessageSquare, href: "/admin/tasks", permission: "VIEW_LEADS" },
+
+        { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "MANAGE_CONTENT" },
+        { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "MANAGE_CONTENT" },
+        { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "MANAGE_CONTENT" },
+        { label: "Reviews", icon: MessageSquare, href: "/admin/reviews", permission: "MANAGE_CONTENT" },
+        { label: "Library", icon: BookOpen, href: "/admin/library", permission: "MANAGE_CONTENT" },
+
+      //  { label: "AI Configurations", icon: Bot, href: "/admin/ai", permission: "MANAGE_SETTINGS" },
+    //    { label: "Training Data", icon: BrainCircuit, href: "/admin/ai/training", permission: "MANAGE_SETTINGS" },
+       // { label: "AI Interviews", icon: Sparkles, href: "/admin/ai-interviews", permission: "MANAGE_SETTINGS" },
+
+       // { label: "Payments", icon: CreditCard, href: "/admin/payments", permission: "VIEW_FINANCE" },
+      //  { label: "Pricing & Plans", icon: CreditCard, href: "/admin/pricing", permission: "VIEW_FINANCE" },
+
+        { label: "Job Board", icon: Briefcase, href: "/admin/jobs" },
+        { label: "Projects Market", icon: Briefcase, href: "/admin/projects" },
+        { label: "Support Tickets", icon: MessageSquare, href: "/admin/support", permission: "VIEW_SUPPORT" },
+
+        { label: "General Settings", icon: Settings, href: "/admin/settings", permission: "MANAGE_SETTINGS" },
+        { label: "Video Integration", icon: Video, href: "/admin/video-settings", permission: "MANAGE_SETTINGS" },
+        { label: "System Logs", icon: FileText, href: "/admin/logs", permission: "MANAGE_SETTINGS" },
     ]
 
-    // Close mobile menu on route change
+    const availableRoutes = routes.filter(route => {
+        if (route.permission && !hasPermission(route.permission)) return false
+        return true
+    })
+
     useEffect(() => {
         if (isMobileOpen) {
             setTimeout(() => setIsMobileOpen(false), 0)
         }
-    }, [pathname, isMobileOpen])
+    }, [isMobileOpen, pathname])
 
-    // Auto-expand active parent menu dynamically based on current route
     useEffect(() => {
-        const routes = getRoutesConfig()
-        routes.forEach(route => {
-            if (route.subItems && route.subItems.some(sub => pathname.startsWith(sub.href))) {
-                setExpandedMenus(prev => {
-                    if (!prev.includes(route.label)) {
-                        return [...prev, route.label]
-                    }
-                    return prev
+        if (!canViewLeads) return
+
+        let isMounted = true
+
+        const loadLeadCounts = async () => {
+            try {
+                const res = await leadApi.getCounts()
+
+                if (!isMounted) return
+
+                setLeadCounts({
+                    totalCount: res.data.totalCount ?? 0,
+                    unreadCount: isViewingLeads ? 0 : (res.data.unreadCount ?? 0)
                 })
+            } catch (error) {
+                if (!isMounted) return
+                console.error("Failed to load lead counts:", error)
             }
-        })
-    }, [pathname])
+        }
 
-    const toggleMenu = (label: string) => {
-        setExpandedMenus(prev =>
-            prev.includes(label)
-                ? prev.filter(l => l !== label)
-                : [...prev, label]
-        )
-    }
+        loadLeadCounts()
 
-    // Prepare routes depending on permissions
-    const routesFilter = () => {
-        const rawRoutes = getRoutesConfig()
-        
-        return rawRoutes.map(parent => {
-            // First check if parent has a macro permission requirement
-            if (parent.permission && !hasPermission(parent.permission)) {
-                return null;
-            }
-            
-            // Then filter subItems based on granular permissions if any
-            const finalParent = { ...parent };
-            
-            if (parent.subItems) {
-                const subItems = parent.subItems.filter(sub => {
-                    if (sub.permission && !hasPermission(sub.permission)) return false;
-                    return true;
-                });
-                
-                // If all subItems were filtered out, hide parent
-                if (subItems.length === 0) return null;
-                
-                finalParent.subItems = subItems;
-            }
-            
-            // Inject active states dynamically if not explicitly defined
-            if (finalParent.active === undefined) {
-                if (finalParent.subItems) {
-                    finalParent.active = finalParent.subItems.some(sub => pathname === sub.href || pathname.startsWith(sub.href + '/'));
-                } else if (finalParent.href) {
-                    finalParent.active = pathname === finalParent.href || pathname.startsWith(finalParent.href + '/');
-                }
-            }
-            
-            return finalParent;
-        }).filter(Boolean) as ReturnType<typeof getRoutesConfig>;
-    }
+        const intervalId = window.setInterval(loadLeadCounts, 30000)
+        window.addEventListener("lead-counts:refresh", loadLeadCounts)
 
-    const availableRoutes = routesFilter();
+        return () => {
+            isMounted = false
+            window.clearInterval(intervalId)
+            window.removeEventListener("lead-counts:refresh", loadLeadCounts)
+        }
+    }, [canViewLeads, isViewingLeads])
 
     return (
         <>
-            {/* Mobile Trigger */}
+            {/* Mobile Toggle */}
             <div className="md:hidden fixed top-4 right-4 z-[9999]">
                 <Button
                     variant="outline"
                     size="icon"
                     onClick={() => setIsMobileOpen(!isMobileOpen)}
-                    title={isMobileOpen ? "Close menu" : "Open menu"}
                 >
                     {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
                 </Button>
             </div>
 
-            <div className={cn(
-                "h-screen border-r bg-background fixed left-0 top-0 bottom-0 z-40 w-64 transition-transform duration-300 md:translate-x-0 flex flex-col overflow-hidden",
-                isMobileOpen ? "translate-x-0" : "-translate-x-full",
-                className
-            )}>
-                {/* Header - Fixed */}
-                <div className="px-6 py-4 border-b flex-shrink-0 bg-background z-10">
-                    <h2 className="text-2xl font-bold tracking-tight text-primary">Admin Panel</h2>
-                    <p className="text-xs text-muted-foreground mt-1">Super Admin Console</p>
+            <div
+                className={cn(
+                    "fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background flex flex-col overflow-hidden transition-transform duration-300 md:translate-x-0",
+                    isMobileOpen ? "translate-x-0" : "-translate-x-full",
+                    className
+                )}
+            >
+
+                {/* Sidebar Header (TOP of sidebar) */}
+                <div className="px-6 py-5 border-b flex-shrink-0">
+                    <h2 className="text-xl font-bold text-primary">Admin Panel</h2>
+                    <p className="text-xs text-muted-foreground">
+                        Super Admin Console
+                    </p>
                 </div>
 
-                {/* Scrollable Menu Area - Pure native scrolling */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 relative" style={{ overscrollBehavior: 'contain' }}>
-                    <nav className="space-y-1 pb-6 w-full">
-                        {availableRoutes.map((route) => (
-                            <div key={route.href || route.label} className="w-full">
-                                {route.subItems ? (
-                                    <>
-                                        <button
-                                            onClick={() => toggleMenu(route.label)}
-                                            className={cn(
-                                                "text-sm group flex p-3 w-full justify-between items-center font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition",
-                                                route.active ? "text-primary bg-primary/10" : "text-muted-foreground"
+                {/* Scrollable Menu */}
+                <div className="flex-1 min-h-0 sidebar-scroll p-3">
+                    <nav className="space-y-1 pb-6">
+
+                        {availableRoutes.map((route) => {
+
+                            const isActive =
+                                pathname === route.href ||
+                                pathname.startsWith(route.href + "/")
+
+                            return (
+                                <Link
+                                    key={route.href}
+                                    href={route.href}
+                                    className={cn(
+                                        "text-sm flex items-center justify-between gap-3 p-3 rounded-lg transition",
+                                        isActive
+                                            ? "text-primary bg-primary/10"
+                                            : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                    )}
+                                >
+                                    <span className="flex min-w-0 items-center">
+                                        <route.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+                                        <span className="truncate">{route.label}</span>
+                                    </span>
+
+                                    {route.showLeadCounts && canViewLeads && (
+                                        <span className="ml-auto flex items-center gap-2">
+                                            <span
+                                                className={cn(
+                                                    "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+                                                    isActive
+                                                        ? "bg-primary/15 text-primary"
+                                                        : "bg-muted text-foreground/80"
+                                                )}
+                                            >
+                                                {leadCounts.totalCount}
+                                            </span>
+
+                                            {leadCounts.unreadCount > 0 && (
+                                                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                                                    {leadCounts.unreadCount > 99 ? "99+" : leadCounts.unreadCount}
+                                                </span>
                                             )}
-                                        >
-                                            <div className="flex items-center">
-                                                <route.icon className={cn("h-5 w-5 mr-3", route.active ? "text-primary" : "text-muted-foreground")} />
-                                                {route.label}
-                                            </div>
-                                            {expandedMenus.includes(route.label) ? (
-                                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
-                                            ) : (
-                                                <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                                            )}
-                                        </button>
-                                        {expandedMenus.includes(route.label) && (
-                                            <div className="ml-8 mt-1 space-y-1">
-                                                {route.subItems.map((sub) => {
-                                                    const isSubActive = pathname === sub.href || pathname.startsWith(sub.href + '/');
-                                                    return (
-                                                        <Link
-                                                            key={sub.href}
-                                                            href={sub.href}
-                                                            className={cn(
-                                                                "text-sm flex p-2 rounded-md transition hover:bg-primary/5 break-words whitespace-normal",
-                                                                isSubActive ? "text-primary font-medium bg-primary/5" : "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {sub.label}
-                                                        </Link>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <Link
-                                        href={route.href!}
-                                        className={cn(
-                                            "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition break-words whitespace-normal",
-                                            route.active ? "text-primary bg-primary/10" : "text-muted-foreground"
-                                        )}
-                                    >
-                                        <div className="flex items-center flex-1">
-                                            <route.icon className={cn("h-5 w-5 mr-3 flex-shrink-0", route.active ? "text-primary" : "text-muted-foreground")} />
-                                            {route.label}
-                                        </div>
-                                    </Link>
-                                )}
-                            </div>
-                        ))}
+                                        </span>
+                                    )}
+                                </Link>
+                            )
+                        })}
+
                     </nav>
                 </div>
 
-                {/* Bottom Actions - Fixed */}
-                <div className="border-t p-3 flex-shrink-0 bg-background mt-auto">
+                {/* Logout Bottom */}
+                <div className="border-t p-3 flex-shrink-0">
                     <Button
                         variant="ghost"
                         className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
                         onClick={logout}
                     >
-                        <LogOut className="h-5 w-5 mr-3 flex-shrink-0" />
+                        <LogOut className="h-5 w-5 mr-3" />
                         Sign Out
                     </Button>
                 </div>
+
             </div>
 
             {/* Mobile Overlay */}

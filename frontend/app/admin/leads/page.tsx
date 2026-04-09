@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import EmailComposer from '@/components/admin/EmailComposer'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
@@ -16,19 +16,31 @@ import {
     Loader2,
     Plus,
     Mail,
+    Edit,
     Search,
     Filter,
     Upload,
-    FileSpreadsheet,
     Trash2,
     User,
     MapPin,
-    Calendar,
     School
 } from 'lucide-react'
 import { exportToCSV } from '@/lib/export-utils'
-import api from '@/lib/api'
+import api, { leadApi } from '@/lib/api'
 import { format } from 'date-fns'
+
+const initialLeadForm = {
+    name: '',
+    email: '',
+    phone: '',
+    source: 'Website',
+    status: 'NEW',
+    college: '',
+    location: '',
+    qualification: '',
+    dob: '',
+    notes: ''
+}
 
 export default function LeadsPage() {
     interface Lead {
@@ -41,6 +53,7 @@ export default function LeadsPage() {
         college?: string
         location?: string
         qualification?: string
+        dob?: string
         notes?: string
         createdAt: string
     }
@@ -54,32 +67,25 @@ export default function LeadsPage() {
 
     // Dialogs
     const [isAddOpen, setIsAddOpen] = React.useState(false)
+    const [editingLeadId, setEditingLeadId] = React.useState<string | null>(null)
     const [isImportOpen, setIsImportOpen] = React.useState(false)
     const [importFile, setImportFile] = React.useState<File | null>(null)
     const [isUploading, setIsUploading] = React.useState(false)
+    const [isSavingLead, setIsSavingLead] = React.useState(false)
 
     // Email Dialog
     const [emailLead, setEmailLead] = React.useState<Lead | null>(null)
 
     // Form Data
-    const [newLead, setNewLead] = React.useState({
-        name: '',
-        email: '',
-        phone: '',
-        source: 'Website',
-        status: 'NEW',
-        college: '',
-        location: '',
-        qualification: '',
-        dob: '',
-        notes: ''
-    })
+    const [newLead, setNewLead] = React.useState(initialLeadForm)
 
-    React.useEffect(() => {
-        fetchLeads()
-    }, [statusFilter, sourceFilter])
+    const refreshLeadCounts = React.useCallback(() => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('lead-counts:refresh'))
+        }
+    }, [])
 
-    const fetchLeads = async () => {
+    const fetchLeads = React.useCallback(async () => {
         setIsLoading(true)
         try {
             const params = new URLSearchParams()
@@ -95,20 +101,67 @@ export default function LeadsPage() {
         } finally {
             setIsLoading(false)
         }
+    }, [sourceFilter, statusFilter])
+
+    React.useEffect(() => {
+        fetchLeads()
+    }, [fetchLeads])
+
+    React.useEffect(() => {
+        const markLeadsAsSeen = async () => {
+            try {
+                await leadApi.markSeen()
+                refreshLeadCounts()
+            } catch (error) {
+                console.error('Failed to mark leads as seen:', error)
+            }
+        }
+
+        markLeadsAsSeen()
+    }, [refreshLeadCounts])
+
+    const resetLeadForm = () => {
+        setNewLead(initialLeadForm)
+        setEditingLeadId(null)
     }
 
     const handleAddLead = async () => {
+        setIsSavingLead(true)
         try {
-            await api.post('/leads', newLead)
+            if (editingLeadId) {
+                await api.put(`/leads/${editingLeadId}`, {
+                    ...newLead,
+                    dob: newLead.dob || null
+                })
+            } else {
+                await api.post('/leads', newLead)
+            }
             setIsAddOpen(false)
-            fetchLeads()
-            setNewLead({
-                name: '', email: '', phone: '', source: 'Website', status: 'NEW',
-                college: '', location: '', qualification: '', dob: '', notes: ''
-            })
+            resetLeadForm()
+            await fetchLeads()
+            refreshLeadCounts()
         } catch {
-            alert('Failed to add lead')
+            alert(editingLeadId ? 'Failed to update lead' : 'Failed to add lead')
+        } finally {
+            setIsSavingLead(false)
         }
+    }
+
+    const handleEditLead = (lead: Lead) => {
+        setEditingLeadId(lead.id)
+        setNewLead({
+            name: lead.name || '',
+            email: lead.email || '',
+            phone: lead.phone || '',
+            source: lead.source || 'Website',
+            status: lead.status === 'CONVERTED' ? 'QUALIFIED' : (lead.status || 'NEW'),
+            college: lead.college || '',
+            location: lead.location || '',
+            qualification: lead.qualification || '',
+            dob: lead.dob ? format(new Date(lead.dob), 'yyyy-MM-dd') : '',
+            notes: lead.notes || ''
+        })
+        setIsAddOpen(true)
     }
 
     const handleImportCSV = async () => {
@@ -124,6 +177,7 @@ export default function LeadsPage() {
             })
             setIsImportOpen(false)
             fetchLeads()
+            refreshLeadCounts()
             alert('Leads imported successfully')
         } catch {
             alert('Failed to import leads')
@@ -133,26 +187,29 @@ export default function LeadsPage() {
         }
     }
 
+    const handleConvertToStudent = async (id: string) => {
+        if (!confirm('This will create a new Student account and email login credentials to the user. Continue?')) {
+            return
+        }
+
+        try {
+            // Call convert endpoint
+            await api.post(`/leads/${id}/convert`)
+            alert('Lead converted successfully! Credentials sent to user.')
+
+            // Update local state
+            setLeads(prev => prev.map(l => l.id === id ? { ...l, status: 'CONVERTED' } : l))
+            refreshLeadCounts()
+        } catch (error) {
+            console.error('Conversion failed:', error)
+            alert('Failed to convert lead. Check console for details.')
+        }
+    }
+
     const handleStatusChange = async (id: string, newStatus: string) => {
         // Special handling for CONVERTED status
         if (newStatus === 'CONVERTED') {
-            if (!confirm('This will create a new Student account and email login credentials to the user. Continue?')) {
-                // Revert selection if cancelled (this is tricky with select default behavior, need force update)
-                fetchLeads()
-                return
-            }
-
-            try {
-                // Call convert endpoint
-                await api.post(`/leads/${id}/convert`)
-                alert('Lead converted successfully! Credentials sent to user.')
-
-                // Update local state
-                setLeads(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l))
-            } catch (error) {
-                console.error('Conversion failed:', error)
-                alert('Failed to convert lead. Check console for details.')
-            }
+            await handleConvertToStudent(id)
             return
         }
 
@@ -170,6 +227,7 @@ export default function LeadsPage() {
         try {
             await api.delete(`/leads/${id}`)
             setLeads(prev => prev.filter(l => l.id !== id))
+            refreshLeadCounts()
         } catch {
             alert('Failed to delete lead')
         }
@@ -247,16 +305,25 @@ export default function LeadsPage() {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
-                    <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                    <Dialog
+                        open={isAddOpen}
+                        onOpenChange={(open) => {
+                            setIsAddOpen(open)
+                            if (!open) resetLeadForm()
+                        }}
+                    >
                         <DialogTrigger asChild>
-                            <Button>
+                            <Button onClick={resetLeadForm}>
                                 <Plus className="mr-2 h-4 w-4" />
                                 Add Lead
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                             <DialogHeader>
-                                <DialogTitle>Add New Lead</DialogTitle>
+                                <DialogTitle>{editingLeadId ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
+                                <DialogDescription>
+                                    {editingLeadId ? 'Update the lead details and save your changes.' : 'Create a new lead and add it to your pipeline.'}
+                                </DialogDescription>
                             </DialogHeader>
                             <div className="grid grid-cols-2 gap-4 py-4">
                                 <div className="space-y-2">
@@ -285,6 +352,19 @@ export default function LeadsPage() {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
+                                    <label className="text-sm font-medium">Status</label>
+                                    <Select value={newLead.status} onValueChange={v => setNewLead({ ...newLead, status: v })}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="NEW">New</SelectItem>
+                                            <SelectItem value="CONTACTED">Contacted</SelectItem>
+                                            <SelectItem value="INTERESTED">Interested</SelectItem>
+                                            <SelectItem value="QUALIFIED">Qualified</SelectItem>
+                                            <SelectItem value="LOST">Lost</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
                                     <label className="text-sm font-medium">College/University</label>
                                     <Input value={newLead.college} onChange={e => setNewLead({ ...newLead, college: e.target.value })} placeholder="XYZ University" />
                                 </div>
@@ -306,7 +386,10 @@ export default function LeadsPage() {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button onClick={handleAddLead}>Save Lead</Button>
+                                <Button onClick={handleAddLead} disabled={isSavingLead}>
+                                    {isSavingLead ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                    {editingLeadId ? 'Update Lead' : 'Save Lead'}
+                                </Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -351,6 +434,7 @@ export default function LeadsPage() {
                                 <SelectContent>
                                     <SelectItem value="ALL">All Sources</SelectItem>
                                     <SelectItem value="Website">Website</SelectItem>
+                                    <SelectItem value="Website Interest">Website Interest</SelectItem>
                                     <SelectItem value="Referral">Referral</SelectItem>
                                     <SelectItem value="LinkedIn">LinkedIn</SelectItem>
                                     <SelectItem value="Google Ads">Google Ads</SelectItem>
@@ -373,14 +457,15 @@ export default function LeadsPage() {
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Demographics</TableHead>
-                                        <TableHead>Source</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Added On</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
+                                        <TableRow>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Demographics</TableHead>
+                                            <TableHead>Qualification</TableHead>
+                                            <TableHead>Source</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Added On</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredLeads.map((lead) => (
@@ -399,6 +484,15 @@ export default function LeadsPage() {
                                                 {lead.location && (
                                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                                         <MapPin className="h-3 w-3" /> {lead.location}
+                                                    </div>
+                                                )}
+                                                {!lead.college && !lead.location && <span className="text-muted-foreground">-</span>}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-sm">{lead.qualification || '-'}</div>
+                                                {lead.source === 'Course Enrollment' && lead.notes && (
+                                                    <div className="text-[10px] text-primary font-medium mt-1 uppercase italic">
+                                                        {lead.notes.split(': ')[1] || lead.notes}
                                                     </div>
                                                 )}
                                             </TableCell>
@@ -430,10 +524,28 @@ export default function LeadsPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
+                                                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 mr-1"
+                                                    onClick={() => handleEditLead(lead)}
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50 mr-1"
                                                     onClick={() => setEmailLead(lead)}
                                                 >
                                                     <Mail className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 mr-1"
+                                                    onClick={() => handleConvertToStudent(lead.id)}
+                                                    title="Convert to Student"
+                                                    disabled={lead.status === 'CONVERTED'}
+                                                >
+                                                    <span className="text-base">✅</span>
                                                 </Button>
                                                 <Button
                                                     variant="ghost"

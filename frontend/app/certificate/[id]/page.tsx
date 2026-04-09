@@ -9,9 +9,9 @@ import api from '@/lib/api'
 
 export default function CertificatePage() {
     const params = useParams()
-    const searchParams = useSearchParams()
+    const _searchParams = useSearchParams()
     const router = useRouter()
-    const { user } = useAuth()
+    const { user: _user } = useAuth()
 
     // In a real app, we would fetch enrollment by ID to verify completion
     // For V1, we will mock the "Course Name" and "Completion Date" validation 
@@ -21,7 +21,7 @@ export default function CertificatePage() {
     // Assuming params.id is courseId for simplicity in this flow,
     // or better, fetch 'my enrollment' for this course.
 
-    const courseId = params.id as string
+    const _courseId = params.id as string
 
     interface Certificate {
         id: string

@@ -50,7 +50,7 @@ export default function AdminSupportPage() {
     const [internalNotes, setInternalNotes] = React.useState('')
     const [activeTab, setActiveTab] = React.useState('conversation')
 
-    const { user } = useAuth()
+    const { user: _user } = useAuth()
     const [file, setFile] = React.useState<File | null>(null)
 
     const [tickets, setTickets] = React.useState<Ticket[]>([])
