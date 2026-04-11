@@ -59,9 +59,11 @@ function PartnerLogo({ company }: { company: { name: string; domain: string } })
     }
 
     return (
-        <img
+        <_Image
             src={`https://logo.clearbit.com/${company.domain}?size=120`}
             alt={company.name}
+            width={120}
+            height={48}
             className="h-10 md:h-12 w-auto object-contain"
             onError={() => setError(true)}
         />

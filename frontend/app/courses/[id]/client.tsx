@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
 import { courseApi, paymentApi, leadApi } from '@/lib/api'
 import { getFullImageUrl } from '@/lib/image-utils'
@@ -535,9 +536,11 @@ export default function CourseDetailClient() {
                     <Card className="sticky top-24">
                         <div className="h-40 relative bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-t-lg flex items-center justify-center overflow-hidden">
                             {course.thumbnail ? (
-                                <img
+                                <Image
                                     src={getFullImageUrl(course.thumbnail)}
                                     alt={course.title}
+                                    width={400}
+                                    height={160}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
                                         const target = e.target as HTMLImageElement;

@@ -11,7 +11,17 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  * @desc    Get all available system permissions
  * @access  Private/Admin
  */
-router.get('/permissions', authenticate, checkPermission('MANAGE_ROLES'), async (req, res, next) => {
+router.get('/permissions', authenticate, (req, res, next) => {
+    // Both role managers and user managers should be able to see permissions
+    const hasPermission = req.user.permissions.includes('ALL') ||
+                          req.user.permissions.includes('MANAGE_ROLES') || 
+                          req.user.permissions.includes('MANAGE_USERS');
+                          
+    if (hasPermission) {
+        return next();
+    }
+    return res.status(403).json({ error: 'Missing permission: MANAGE_ROLES or MANAGE_USERS' });
+}, async (req, res, next) => {
     try {
         const permissions = await prisma.systemPermission.findMany({
             orderBy: { module: 'asc' }

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { userApi, uploadApi } from '@/lib/api'
@@ -163,7 +164,7 @@ export default function ProfilePage() {
                             <div className="relative group">
                                 <div className="h-24 w-24 rounded-full border-4 border-white bg-white shadow-md overflow-hidden flex items-center justify-center relative">
                                     {formData.avatar ? (
-                                        <img src={formData.avatar} alt="Profile" className="h-full w-full object-cover" />
+                                        <Image src={formData.avatar} alt="Profile" width={96} height={96} className="h-full w-full object-cover" />
                                     ) : (
                                         <div className="h-full w-full bg-gray-100 flex items-center justify-center">
                                             <UserIcon className="h-10 w-10 text-gray-400" />

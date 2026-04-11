@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -71,11 +71,7 @@ export default function BlogManagerPage() {
         category: ''
     })
 
-    useEffect(() => {
-        fetchBlogs()
-    }, [search])
-
-    const fetchBlogs = async () => {
+    const fetchBlogs = useCallback(async () => {
         setIsLoading(true)
         try {
             const res = await api.get(`/blogs?search=${search}`)
@@ -85,7 +81,11 @@ export default function BlogManagerPage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [search])
+
+    useEffect(() => {
+        fetchBlogs()
+    }, [fetchBlogs])
 
     const handleCreateOpen = () => {
         setFormData({

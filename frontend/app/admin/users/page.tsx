@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from '@/components/ui/use-toast'
+import { useAuth } from '@/lib/auth-context'
 
 interface User {
     id: string
@@ -43,6 +44,7 @@ interface Permission {
 
 export default function AdminUsersPage() {
     const router = useRouter()
+    const { hasPermission, isLoading: authLoading } = useAuth()
     const [users, setUsers] = React.useState<User[]>([])
     const [roles, setRoles] = React.useState<Role[]>([])
     const [permissions, setPermissions] = React.useState<Permission[]>([])
@@ -82,11 +84,21 @@ export default function AdminUsersPage() {
     })
 
     const fetchUsers = async () => {
+        if (!hasPermission('MANAGE_USERS')) {
+            console.error('User does not have MANAGE_USERS permission')
+            setIsLoading(false)
+            return
+        }
+
         try {
             const res = await api.get('/users')
             setUsers(res.data.users || [])
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch users:', error)
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                // Token expired or insufficient permissions, redirect to login
+                router.push('/login')
+            }
         } finally {
             setIsLoading(false)
         }
@@ -96,8 +108,11 @@ export default function AdminUsersPage() {
         try {
             const res = await rbacApi.getRoles()
             setRoles(res.data)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch roles:', error)
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                router.push('/login')
+            }
         }
     }
 
@@ -105,26 +120,21 @@ export default function AdminUsersPage() {
         try {
             const res = await rbacApi.getPermissions()
             setPermissions(res.data)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch permissions:', error)
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                router.push('/login')
+            }
         }
     }
 
     React.useEffect(() => {
-        fetchUsers()
-        fetchRoles()
-        fetchPermissions()
-        
-        // Get current user for permission checks
-        const userStr = localStorage.getItem('user')
-        if (userStr) {
-            try {
-                setCurrentUser(JSON.parse(userStr))
-            } catch (e) {
-                console.error("Failed to parse user from storage", e)
-            }
+        if (!authLoading) {
+            fetchUsers()
+            fetchRoles()
+            fetchPermissions()
         }
-    }, [])
+    }, [authLoading])
 
     const handleApprove = async (userId: string, status: 'APPROVED' | 'REJECTED') => {
         try {
@@ -489,6 +499,21 @@ export default function AdminUsersPage() {
             )}
         </div>
     )
+
+    // Check permissions before rendering
+    if (!hasPermission('MANAGE_USERS')) {
+        return (
+            <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+                    <ShieldAlert className="h-16 w-16 text-muted-foreground mb-4" />
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">Access Denied</h2>
+                    <p className="text-muted-foreground max-w-md">
+                        You don't have permission to manage users. Please contact your administrator if you believe this is an error.
+                    </p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">

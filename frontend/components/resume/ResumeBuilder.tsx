@@ -8,7 +8,42 @@ import MinimalTemplate from './templates/MinimalTemplate';
 
 
 type TemplateType = 'modern' | 'professional' | 'minimal';
-const TEMPLATES: Record<TemplateType, React.FC<any>> = {
+
+interface ResumeData {
+  personalInfo: {
+    name: string;
+    email: string;
+    phone: string;
+    location: string;
+    linkedin?: string;
+    github?: string;
+    website?: string;
+  };
+  summary: string;
+  experience: Array<{
+    company: string;
+    position: string;
+    startDate: string;
+    endDate: string;
+    description: string;
+  }>;
+  education: Array<{
+    institution: string;
+    degree: string;
+    startDate: string;
+    endDate: string;
+    gpa?: string;
+  }>;
+  skills: string[];
+  projects: Array<{
+    name: string;
+    description: string;
+    technologies: string[];
+    link?: string;
+  }>;
+}
+
+const TEMPLATES: Record<TemplateType, React.FC<{ resumeData: ResumeData }>> = {
   modern: ModernTemplate,
   professional: ProfessionalTemplate,
   minimal: MinimalTemplate,
@@ -129,7 +164,7 @@ export default function ResumeBuilder() {
   };
 
   // Type-safe helpers for array fields
-  function handleArrayChange<T extends keyof typeof initialState>(section: T, idx: number, field: string, value: any) {
+  function handleArrayChange<T extends keyof typeof initialState>(section: T, idx: number, field: string, value: string) {
     setForm(prev => ({
       ...prev,
       [section]: (prev[section] as any[]).map((item, i) =>
@@ -138,7 +173,7 @@ export default function ResumeBuilder() {
     }));
   }
 
-  function handleAddItem<T extends keyof typeof initialState>(section: T, emptyObj: any) {
+  function handleAddItem<T extends keyof typeof initialState>(section: T, emptyObj: Record<string, unknown>) {
     setForm(prev => ({
       ...prev,
       [section]: [...(prev[section] as any[]), emptyObj]
@@ -148,7 +183,7 @@ export default function ResumeBuilder() {
   function handleRemoveItem<T extends keyof typeof initialState>(section: T, idx: number) {
     setForm(prev => ({
       ...prev,
-      [section]: (prev[section] as any[]).filter((_, i) => i !== idx)
+      [section]: (prev[section] as unknown[]).filter((_, i) => i !== idx)
     }));
   }
 

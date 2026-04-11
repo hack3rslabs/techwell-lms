@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import Image from 'next/image'
 import {
     FileCheck,
     Search,
@@ -238,7 +239,7 @@ export default function AssessmentsPage() {
                                     <div className="flex items-center gap-3 min-w-[200px]">
                                         <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center">
                                             {submission.user.avatar ? (
-                                                <img src={submission.user.avatar} alt="" className="h-10 w-10 rounded-full object-cover" />
+                                                <Image src={submission.user.avatar} alt="" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
                                             ) : (
                                                 <User className="h-5 w-5 text-slate-500" />
                                             )}

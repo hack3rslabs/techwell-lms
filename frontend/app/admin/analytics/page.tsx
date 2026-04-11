@@ -1,20 +1,18 @@
 "use client"
 
 import * as React from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    PieChart, Pie, Cell, LineChart, Line, AreaChart, Area
+    PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts'
 import {
     Loader2, TrendingUp, Users, DollarSign, Briefcase, GraduationCap, MapPin
 } from 'lucide-react'
 import api from '@/lib/api'
-import { format, subDays } from 'date-fns'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -41,9 +39,9 @@ export default function AnalyticsPage() {
 
     React.useEffect(() => {
         fetchAnalytics()
-    }, [dateRange])
+    }, [fetchAnalytics])
 
-    const fetchAnalytics = async () => {
+    const fetchAnalytics = useCallback(async () => {
         setIsLoading(true)
         try {
             const params = new URLSearchParams({
@@ -91,7 +89,7 @@ export default function AnalyticsPage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [dateRange])
 
     if (isLoading) {
         return (

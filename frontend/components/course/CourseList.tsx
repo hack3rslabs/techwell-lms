@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { courseApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
@@ -179,11 +180,12 @@ export default function CourseList() {
                         >
                             <div className="h-48 relative bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10 flex items-center justify-center overflow-hidden">
                                 {course.bannerUrl || course.thumbnail ? (
-                                    <img
+                                    <Image
                                         src={getFullImageUrl(course.bannerUrl || course.thumbnail)}
                                         alt={course.title}
+                                        width={400}
+                                        height={192}
                                         className="absolute inset-0 w-full h-full object-cover"
-                                        loading="lazy"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.style.display = "none";

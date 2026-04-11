@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import Image from 'next/image'
 import {
     Users,
     Search,
@@ -290,7 +291,7 @@ export default function InstructorStudentsPage() {
                                         <div className="flex items-center gap-4 min-w-[250px]">
                                             <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center">
                                                 {student.avatar ? (
-                                                    <img src={student.avatar} alt="" className="h-12 w-12 rounded-full object-cover" />
+                                                    <Image src={student.avatar} alt="" width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
                                                 ) : (
                                                     <User className="h-6 w-6 text-slate-500" />
                                                 )}

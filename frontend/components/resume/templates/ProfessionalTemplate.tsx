@@ -1,6 +1,32 @@
 import React from 'react';
 
-export default function ProfessionalTemplate(props: any) {
+interface ResumeProps {
+  name?: string;
+  email?: string;
+  phone?: string;
+  summary?: string;
+  skills?: Array<{ name: string; proficiency: string }>;
+  experience?: Array<{
+    jobTitle: string;
+    companyName: string;
+    startDate: string;
+    endDate: string;
+    description: string;
+  }>;
+  education?: Array<{
+    degree: string;
+    institution: string;
+    startYear: string;
+    endYear: string;
+  }>;
+  projects?: Array<{
+    name: string;
+    description: string;
+    technologies: string;
+  }>;
+}
+
+export default function ProfessionalTemplate(props: ResumeProps) {
   return (
     <div className="p-6 bg-gray-100 rounded shadow-md border border-gray-300">
       <h1 className="text-2xl font-bold text-gray-800 uppercase">{props.name}</h1>
@@ -12,7 +38,7 @@ export default function ProfessionalTemplate(props: any) {
       <div className="mb-4">
         <h2 className="text-lg font-semibold border-b pb-1">Skills</h2>
         <ul className="list-disc ml-6">
-          {(Array.isArray(props.skills) ? props.skills : []).map((skill: any, idx: number) => (
+          {(Array.isArray(props.skills) ? props.skills : []).map((skill, idx: number) => (
             <li key={idx}>
               {skill.name}
               {skill.proficiency ? ` (${skill.proficiency})` : ''}
@@ -23,7 +49,7 @@ export default function ProfessionalTemplate(props: any) {
       <div className="mb-4">
         <h2 className="text-lg font-semibold border-b pb-1">Education</h2>
         <ul className="list-disc ml-6">
-          {(Array.isArray(props.education) ? props.education : []).map((edu: any, idx: number) => (
+          {(Array.isArray(props.education) ? props.education : []).map((edu, idx: number) => (
             <li key={idx}>
               <strong>{edu.degree}</strong> in {edu.fieldOfStudy} - {edu.institution} ({edu.startYear} - {edu.endYear})
               {edu.percentage && <span>, {edu.percentage}</span>}
@@ -34,7 +60,7 @@ export default function ProfessionalTemplate(props: any) {
       <div>
         <h2 className="text-lg font-semibold border-b pb-1">Experience</h2>
         <ul className="list-disc ml-6">
-          {(Array.isArray(props.experience) ? props.experience : []).map((exp: any, idx: number) => (
+          {(Array.isArray(props.experience) ? props.experience : []).map((exp, idx: number) => (
             <li key={idx}>
               <strong>{exp.jobTitle}</strong> at {exp.companyName} ({exp.startDate} - {exp.currentlyWorking ? 'Present' : exp.endDate})<br />
               {exp.location && <span>{exp.location}, </span>}{exp.employmentType && <span>{exp.employmentType}</span>}<br />

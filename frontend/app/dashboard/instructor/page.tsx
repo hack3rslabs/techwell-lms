@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
-import { GraduationCap, Users, DollarSign, BookOpen, Plus, TrendingUp, BarChart3 } from 'lucide-react'
+import { Users, DollarSign, BookOpen, Plus, TrendingUp } from 'lucide-react'
 
 // Mock Data for Instructor
 const MOCK_STATS = {

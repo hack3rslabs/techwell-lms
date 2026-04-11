@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Send, Image as ImageIcon, Video, Loader2, Wifi, WifiOff } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Send, Loader2, Wifi, WifiOff } from "lucide-react"
 
 interface Message {
     id: string

@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { useState, useEffect } from 'react'
-import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,7 +30,6 @@ import {
     Trash2,
     ArrowLeft,
     User,
-    Briefcase,
     Smile
 } from 'lucide-react'
 import Link from 'next/link'

@@ -97,6 +97,7 @@ router.get('/me', authenticate, async (req, res, next) => {
         res.json({
             user: {
                 ...user,
+                permissions: req.user.permissions || [],
                 hasUnlimitedInterviews: true // Forced true for testing
             }
         });

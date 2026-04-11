@@ -4,30 +4,19 @@ import * as React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import _api from "@/lib/api"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
 import {
-    Plus, Calendar, Clock, Video, User, CheckCircle2, XCircle, MoreVertical,
-    FileText, Link as LinkIcon, AlertCircle, Search, Filter, Loader2
+    Plus, Calendar, Clock, Video, MoreVertical,
+    Search
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogFooter,
-} from "@/components/ui/dialog"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -104,7 +93,7 @@ export default function EmployerInterviewsPage() {
      
     useEffect(() => {
         fetchInterviews()
-    }, [])
+    }, [fetchInterviews])
 
     const filteredInterviews = interviews.filter(interview => {
         const matchesSearch = interview.candidateName.toLowerCase().includes(searchQuery.toLowerCase()) ||

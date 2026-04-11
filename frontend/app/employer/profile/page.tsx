@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Loader2, Save, Upload, Building2, Globe, MapPin, Briefcase, Camera } from "lucide-react"
+import Image from "next/image"
 import {
     Select,
     SelectContent,
@@ -24,7 +24,15 @@ export default function EmployerProfilePage() {
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Employer Profile Data
-    const [profile, setProfile] = useState({
+    const [profile, setProfile] = useState<{
+        companyName: string
+        website: string
+        description: string
+        location: string
+        industry: string
+        size: string
+        logo?: string
+    }>({
         companyName: '',
         website: '',
         description: '',
@@ -62,7 +70,7 @@ export default function EmployerProfilePage() {
         fetchProfile()
     }, [])
 
-    const handleChange = (field: string, value: string) => {
+    const handleChange = (field: keyof typeof profile, value: string) => {
         setProfile(prev => ({ ...prev, [field]: value }))
     }
 
@@ -143,7 +151,7 @@ export default function EmployerProfilePage() {
                                 <div className="relative group">
                                     <div className="h-32 w-32 rounded-2xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden transition-all group-hover:border-blue-200 group-hover:shadow-md">
                                         {profile.logo ? (
-                                            <img src={profile.logo} alt="Logo" className="w-full h-full object-cover" />
+                                            <Image src={profile.logo || ''} alt="Logo" width={80} height={80} className="w-full h-full object-cover" />
                                         ) : (
                                             <Building2 className="h-10 w-10 text-gray-300" />
                                         )}

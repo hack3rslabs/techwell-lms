@@ -144,9 +144,9 @@ export default function VideoSettingsPage() {
                 platform: 'ZOOM'
             })
             fetchData() // Refresh list
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to schedule class:', error)
-            alert(error?.response?.data?.error || 'Failed to schedule class.')
+            alert((error as any)?.response?.data?.error || 'Failed to schedule class.')
         } finally {
             setIsScheduling(false)
         }

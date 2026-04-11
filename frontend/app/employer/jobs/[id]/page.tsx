@@ -1,15 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import api from "@/lib/api"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Mail, Phone, Calendar, Star, MoreVertical, Download } from "lucide-react"
+import { Loader2, Calendar, MoreVertical, Download } from "lucide-react"
 
 interface ColumnConfig {
     title: string
@@ -56,11 +55,7 @@ export default function ATSPipelinePage() {
     const [job, setJob] = useState<Job | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        fetchData()
-    }, [jobId])
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const [jobRes, appsRes] = await Promise.all([
                 api.get(`/jobs/${jobId}`),
@@ -73,7 +68,11 @@ export default function ATSPipelinePage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [jobId])
+
+    useEffect(() => {
+        fetchData()
+    }, [fetchData])
 
     const handleExport = async () => {
         try {

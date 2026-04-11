@@ -1,11 +1,10 @@
 "use client"
 
 import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -66,9 +65,9 @@ export default function CourseReviewPage() {
 
     useEffect(() => {
         fetchCourses()
-    }, [filter])
+    }, [fetchCourses])
 
-    const fetchCourses = async () => {
+    const fetchCourses = useCallback(async () => {
         setIsLoading(true)
         try {
             const res = await api.get('/admin/courses/pending', {
@@ -109,7 +108,7 @@ export default function CourseReviewPage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [filter])
 
     const handleApprove = async (course: PendingCourse) => {
         setIsProcessing(true)
@@ -343,5 +342,5 @@ export default function CourseReviewPage() {
                 </DialogContent>
             </Dialog>
         </div>
-    )
+    );
 }

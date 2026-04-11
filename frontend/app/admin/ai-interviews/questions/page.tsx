@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,13 +32,11 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import {
-    MessageSquare,
     Plus,
     Edit,
     Trash2,
     ArrowLeft,
     Search,
-    Filter,
     BookOpen,
     BrainCircuit
 } from 'lucide-react'
@@ -105,11 +103,7 @@ export default function QuestionsPage() {
         tags: ''
     })
 
-    useEffect(() => {
-        fetchEntries()
-    }, [filterDomain, filterDifficulty, searchQuery]) // Re-fetch when filters change (or use client-side filtering)
-
-    const fetchEntries = async () => {
+    const fetchEntries = useCallback(async () => {
         try {
             setIsLoading(true)
             const { knowledgeBaseApi } = await import('@/lib/api')
@@ -124,7 +118,11 @@ export default function QuestionsPage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [filterDomain, filterDifficulty, searchQuery])
+
+    useEffect(() => {
+        fetchEntries()
+    }, [fetchEntries]) // Re-fetch when filters change (or use client-side filtering)
 
     const [isGenerating, setIsGenerating] = useState(false)
     const [generatedQuestions, setGeneratedQuestions] = useState<{ topic: string, content: string, answer: string }[]>([])

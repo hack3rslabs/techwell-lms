@@ -22,7 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Loader2, Save, Trash2, Settings2, Briefcase } from "lucide-react"
+import { ArrowLeft, Loader2, Save, Trash2, Settings2 } from "lucide-react"
 
 export default function EditJobPage() {
     const router = useRouter()
