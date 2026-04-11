@@ -1,7 +1,7 @@
 services:
   migrate:
     build: ./backend
-    command: npx prisma migrate deploy
+    command: sh -c "npx prisma db push"
     environment:
       DATABASE_URL: ${DATABASE_URL:?}
       NODE_ENV: ${NODE_ENV:-beta}
