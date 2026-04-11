@@ -122,6 +122,7 @@ app.use('/api/library', require('./routes/library.routes'));
 app.use('/api/chatgpt', require('./routes/chatgpt.routes'));
 app.use('/api/enrollment-requests', require('./routes/enrollment-requests.routes'));
 app.use('/api/employer-requests', require('./routes/employer-requests.routes'));
+app.use('/api/messages', require('./routes/messages.routes'));
 
 
 // Serve Static Uploads
@@ -183,7 +184,7 @@ const io = initializeSocket(server);
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`🚀 TechWell API running on http://localhost:${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
     console.log(`🔌 Socket.io initialized`);
 });
 

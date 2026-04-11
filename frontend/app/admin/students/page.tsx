@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import axios from 'axios'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,6 +37,7 @@ import {
     Calendar,
     Filter,
     RefreshCw,
+    AlertCircle,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
@@ -94,6 +96,38 @@ interface Pagination {
     totalPages: number
 }
 
+function getStudentsErrorMessage(error: unknown) {
+    if (axios.isAxiosError(error)) {
+        if (!error.response) {
+            return 'Could not reach the backend at http://localhost:5000. Start the backend and try again.'
+        }
+
+        const data = error.response.data as { error?: unknown; message?: unknown } | undefined
+        const serverMessage =
+            typeof data?.error === 'string'
+                ? data.error
+                : typeof data?.message === 'string'
+                    ? data.message
+                    : null
+
+        if (error.response.status === 503) {
+            return serverMessage || 'The backend is running, but one of its dependencies is unavailable.'
+        }
+
+        if (error.response.status === 403) {
+            return serverMessage || 'You do not have permission to view students.'
+        }
+
+        return serverMessage || `Failed to load students (status ${error.response.status}).`
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message
+    }
+
+    return 'Something went wrong while loading students.'
+}
+
 export default function StudentsPage() {
     const [students, setStudents] = React.useState<StudentRecord[]>([])
     const [courses, setCourses] = React.useState<CourseOption[]>([])
@@ -107,6 +141,7 @@ export default function StudentsPage() {
     const [searchQuery, setSearchQuery] = React.useState('')
     const [selectedCourse, setSelectedCourse] = React.useState<string>('all')
     const [debouncedSearch, setDebouncedSearch] = React.useState('')
+    const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
     // Debounce search input
     React.useEffect(() => {
@@ -118,6 +153,7 @@ export default function StudentsPage() {
 
     const fetchStudents = React.useCallback(async (page = 1) => {
         setIsLoading(true)
+        setErrorMessage(null)
         try {
             const params: Record<string, string | number> = { page }
             if (debouncedSearch) params.search = debouncedSearch
@@ -129,6 +165,7 @@ export default function StudentsPage() {
             setPagination(res.data.pagination)
         } catch (error) {
             console.error('Failed to fetch students:', error)
+            setErrorMessage(getStudentsErrorMessage(error))
         } finally {
             setIsLoading(false)
         }
@@ -325,6 +362,33 @@ export default function StudentsPage() {
                 </CardContent>
             </Card>
 
+            {errorMessage && (
+                <Card className="border-amber-200 bg-amber-50/70 shadow-sm">
+                    <CardContent className="p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5 rounded-full bg-amber-100 p-2 text-amber-700">
+                                    <AlertCircle className="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-amber-950">Student data is unavailable right now</p>
+                                    <p className="text-sm text-amber-800">{errorMessage}</p>
+                                </div>
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fetchStudents(pagination.page)}
+                                className="gap-2 border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                            >
+                                <RefreshCw className="h-4 w-4" />
+                                Retry
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
             {/* Table */}
             <Card className="border shadow-sm">
                 <CardHeader className="pb-3">
@@ -506,15 +570,30 @@ export default function StudentsPage() {
                         </>
                     ) : (
                         <div className="text-center py-16 border rounded-lg bg-muted/10">
-                            <div className="h-16 w-16 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-4">
-                                <GraduationCap className="h-8 w-8 text-violet-400" />
+                            <div className={`h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4 ${errorMessage ? 'bg-amber-100 text-amber-600' : 'bg-violet-100 dark:bg-violet-900/30 text-violet-400'}`}>
+                                {errorMessage ? <AlertCircle className="h-8 w-8" /> : <GraduationCap className="h-8 w-8" />}
                             </div>
-                            <p className="text-lg font-medium">No students found</p>
-                            <p className="text-muted-foreground text-sm mt-1 max-w-sm mx-auto">
-                                {debouncedSearch || selectedCourse !== 'all'
-                                    ? 'Try adjusting your filters to find more students.'
-                                    : 'When payment succeeds and an enrollment is created, students will appear here.'}
+                            <p className="text-lg font-medium">
+                                {errorMessage ? 'Could not load students' : 'No students found'}
                             </p>
+                            <p className="text-muted-foreground text-sm mt-1 max-w-sm mx-auto">
+                                {errorMessage
+                                    ? errorMessage
+                                    : debouncedSearch || selectedCourse !== 'all'
+                                        ? 'Try adjusting your filters to find more students.'
+                                        : 'When payment succeeds and an enrollment is created, students will appear here.'}
+                            </p>
+                            {errorMessage && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fetchStudents(1)}
+                                    className="mt-4 gap-2"
+                                >
+                                    <RefreshCw className="h-4 w-4" />
+                                    Retry loading
+                                </Button>
+                            )}
                         </div>
                     )}
                 </CardContent>

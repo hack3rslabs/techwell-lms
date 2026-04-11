@@ -3,8 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import api, { courseApi, interviewApi, certificateApi } from '@/lib/api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import api, { courseApi, interviewApi, certificateApi, liveClassApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -22,12 +21,12 @@ import {
     Briefcase,
     ExternalLink,
     FileText,
-    ChevronRight,
     MapPin,
     Building2,
     CheckCircle2
 } from 'lucide-react'
 import { NewInterviewDialog } from '@/components/interviews/NewInterviewDialog'
+import { StudentMessages } from '@/components/messages/StudentMessages'
 
 interface Enrollment {
     id: string
@@ -71,6 +70,17 @@ interface JobInterview {
             }
         }
     }
+}
+
+interface LiveClassMessage {
+    id: string
+    courseId: string
+    title: string
+    platform: string
+    scheduledAt: string
+    duration: number
+    meetingLink?: string
+    hostName?: string
 }
 
 interface Certificate {
@@ -124,6 +134,7 @@ export default function DashboardPage() {
     const [enrollments, setEnrollments] = React.useState<Enrollment[]>([])
     const [interviews, setInterviews] = React.useState<Interview[]>([])
     const [jobInterviews, setJobInterviews] = React.useState<JobInterview[]>([])
+    const [courseMessages, setCourseMessages] = React.useState<Record<string, LiveClassMessage[]>>({})
     const [certificates, setCertificates] = React.useState<Certificate[]>([])
     const [applications, setApplications] = React.useState<Application[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
@@ -148,16 +159,27 @@ export default function DashboardPage() {
             if (!user) return
 
             try {
-                const [enrollmentsRes, interviewStatsRes, interviewsRes, jobInterviewsRes] = await Promise.all([
+                const [enrollmentsRes, interviewStatsRes, interviewsRes, jobInterviewsRes, liveClassesRes] = await Promise.all([
                     courseApi.getMyEnrollments(),
                     interviewApi.getStats(),
                     interviewApi.getAll({ page: 1 }),
-                    interviewApi.getJobInterviews ? interviewApi.getJobInterviews() : Promise.resolve({ data: { interviews: [] } })
+                    interviewApi.getJobInterviews ? interviewApi.getJobInterviews() : Promise.resolve({ data: { interviews: [] } }),
+                    liveClassApi.getAll({ upcoming: true }).catch(() => ({ data: [] as LiveClassMessage[] }))
                 ])
 
                 setEnrollments(enrollmentsRes.data.enrollments || [])
                 setInterviews(interviewsRes.data.interviews || [])
                 setJobInterviews(jobInterviewsRes.data.interviews || [])
+                setCourseMessages(
+                    (liveClassesRes.data || []).reduce((messagesByCourse: Record<string, LiveClassMessage[]>, liveClass: LiveClassMessage) => {
+                        if (!messagesByCourse[liveClass.courseId]) {
+                            messagesByCourse[liveClass.courseId] = []
+                        }
+
+                        messagesByCourse[liveClass.courseId].push(liveClass)
+                        return messagesByCourse
+                    }, {})
+                )
 
                 setStats({
                     enrollments: enrollmentsRes.data.enrollments?.length || 0,
@@ -253,6 +275,7 @@ export default function DashboardPage() {
                     {[
                         { id: 'overview', label: 'Overview', icon: TrendingUp },
                         { id: 'learning', label: 'My Learning', icon: BookOpen },
+                        { id: 'messages', label: 'Messages', icon:BookOpen },
                         { id: 'interviews', label: 'Interviews', icon: Video },
                         { id: 'applications', label: 'Applications', icon: Briefcase, count: applications.length },
                         { id: 'certificates', label: 'Certificates', icon: Award, count: certificates.length },
@@ -301,13 +324,17 @@ export default function DashboardPage() {
                                 const isTomorrow = interviewDate.toDateString() === new Date(Date.now() + 86400000).toDateString();
                                 const isPast = interviewDate < new Date();
                                 const isWithinHour = !isPast && (interviewDate.getTime() - Date.now()) < 3600000;
+                                let borderClass = 'border-border';
+                                if (isWithinHour) {
+                                    borderClass = 'border-green-500 shadow-lg shadow-green-500/10';
+                                } else if (isToday) {
+                                    borderClass = 'border-primary/50';
+                                }
 
                                 return (
                                     <div
                                         key={interview.id}
-                                        className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-background border ${isWithinHour ? 'border-green-500 shadow-lg shadow-green-500/10' :
-                                            isToday ? 'border-primary/50' : 'border-border'
-                                            }`}
+                                        className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-background border ${borderClass}`}
                                     >
                                         <div className="flex items-start gap-4">
                                             <div className={`flex flex-col items-center justify-center p-3 rounded-xl min-w-[70px] ${isWithinHour ? 'bg-green-50 text-green-700' :
@@ -378,17 +405,17 @@ export default function DashboardPage() {
                         <Loader2 className="h-10 w-10 animate-spin text-primary" />
                     </div>
                 ) : (
-                    <>
+                    <div>
                         {/* OVERVIEW TAB */}
                         {activeTab === 'overview' && (
                             <div className="space-y-8">
                                 {/* Stats Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                     {[
-                                        { label: 'Enrolled Courses', value: stats?.enrollments || 0, icon: GraduationCap, color: 'blue' },
-                                        { label: 'Total Interviews', value: stats?.interviews.total || 0, icon: Video, color: 'purple' },
-                                        { label: 'Completed', value: stats?.interviews.completed || 0, icon: CheckCircle2, color: 'teal' },
-                                        { label: 'Avg Score', value: `${Math.round(stats?.interviews.averageScore || 0)}%`, icon: TrendingUp, color: 'green' },
+                                        { label: 'Enrolled Courses', value: stats?.enrollments || 0, icon: GraduationCap, bgClass: 'bg-blue-500/10 text-blue-600', gradientClass: 'via-blue-500' },
+                                        { label: 'Total Interviews', value: stats?.interviews.total || 0, icon: Video, bgClass: 'bg-purple-500/10 text-purple-600', gradientClass: 'via-purple-500' },
+                                        { label: 'Completed', value: stats?.interviews.completed || 0, icon: CheckCircle2, bgClass: 'bg-teal-500/10 text-teal-600', gradientClass: 'via-teal-500' },
+                                        { label: 'Avg Score', value: `${Math.round(stats?.interviews.averageScore || 0)}%`, icon: TrendingUp, bgClass: 'bg-green-500/10 text-green-600', gradientClass: 'via-green-500' },
                                     ].map((stat) => (
                                         <div key={stat.label} className="bg-card border border-border p-6 rounded-2xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-300 hover:shadow-md">
                                             <div className="flex justify-between items-start mb-4">
@@ -396,11 +423,11 @@ export default function DashboardPage() {
                                                     <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
                                                     <h3 className="text-3xl font-bold mt-2 text-foreground">{stat.value}</h3>
                                                 </div>
-                                                <div className={`p-3 bg-${stat.color}-500/10 rounded-xl text-${stat.color}-600`}>
+                                                <div className={`p-3 rounded-xl ${stat.bgClass}`}>
                                                     <stat.icon className="h-6 w-6" />
                                                 </div>
                                             </div>
-                                            <div className={`absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-${stat.color}-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity`} />
+                                            <div className={`absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity ${stat.gradientClass}`} />
                                         </div>
                                     ))}
                                 </div>
@@ -479,14 +506,20 @@ export default function DashboardPage() {
                                         </div>
                                     </div>
                                 </div>
+
+                                <StudentMessages />
                             </div>
                         )}
 
                         {/* MY LEARNING TAB */}
                         {activeTab === 'learning' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {enrollments.map((enrollment) => {
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="md:col-span-2">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {enrollments.map((enrollment) => {
                                     const progress = enrollment.progress || 0
+                                    const courseLiveMessages = courseMessages[enrollment.course.id] || []
                                     return (
                                         <div
                                             key={enrollment.id}
@@ -517,6 +550,85 @@ export default function DashboardPage() {
                                                     <span className={`font-bold ${progress === 100 ? 'text-green-600' : 'text-foreground'}`}>{progress}%</span>
                                                 </div>
 
+                                                {courseLiveMessages.length > 0 && (
+                                                    <div className="mt-4 pt-4 border-t border-border space-y-3">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                                                                <Calendar className="h-4 w-4 text-primary" />
+                                                                <span>Course Meetings</span>
+                                                            </div>
+                                                            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                                                {courseLiveMessages.length}
+                                                            </Badge>
+                                                        </div>
+
+                                                        {courseLiveMessages.slice(0, 2).map((liveClass) => (
+                                                            <div key={liveClass.id} className="rounded-xl border border-primary/15 bg-primary/5 p-3 space-y-3">
+                                                                <div className="flex items-start justify-between gap-3">
+                                                                    <div className="min-w-0">
+                                                                        <p className="font-semibold text-sm text-foreground line-clamp-2">
+                                                                            {liveClass.title}
+                                                                        </p>
+                                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                                            Sent by {liveClass.hostName || 'Super Admin'}
+                                                                        </p>
+                                                                    </div>
+                                                                    <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                                                                        {liveClass.platform.replace(/_/g, ' ')}
+                                                                    </Badge>
+                                                                </div>
+
+                                                                <div className="space-y-1.5 text-xs text-muted-foreground">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Calendar className="h-3.5 w-3.5 text-primary" />
+                                                                        <span>{new Date(liveClass.scheduledAt).toLocaleDateString()}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Clock className="h-3.5 w-3.5 text-primary" />
+                                                                        <span>
+                                                                            {new Date(liveClass.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {liveClass.duration} mins
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex items-center gap-2">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={(event) => {
+                                                                            event.stopPropagation()
+                                                                            router.push(`/courses/${enrollment.course.id}/learn`)
+                                                                        }}
+                                                                    >
+                                                                        <BookOpen className="mr-2 h-3.5 w-3.5" />
+                                                                        Open Course
+                                                                    </Button>
+                                                                    {liveClass.meetingLink ? (
+                                                                        <Button
+                                                                            size="sm"
+                                                                            onClick={(event) => {
+                                                                                event.stopPropagation()
+                                                                                window.open(liveClass.meetingLink, '_blank', 'noopener,noreferrer')
+                                                                            }}
+                                                                        >
+                                                                            <ExternalLink className="mr-2 h-3.5 w-3.5" />
+                                                                            Join
+                                                                        </Button>
+                                                                    ) : (
+                                                                        <span className="text-xs text-muted-foreground">Meeting link will appear soon.</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+
+                                                        {courseLiveMessages.length > 2 && (
+                                                            <p className="text-xs text-muted-foreground">
+                                                                +{courseLiveMessages.length - 2} more scheduled session{courseLiveMessages.length - 2 > 1 ? 's' : ''} for this course.
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+
                                                 {enrollment.hasInterviewAccess && (
                                                     <div className="mt-4 pt-4 border-t border-border">
                                                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -534,9 +646,14 @@ export default function DashboardPage() {
                                         <GraduationCap className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
                                         <h3 className="text-xl font-medium mb-2 text-foreground">No Courses Yet</h3>
                                         <p className="text-muted-foreground mb-6">Start your learning journey today.</p>
-                                        <Button size="lg" onClick={() => router.push('/courses')}>Browse Catalog</Button>
+                                        <Button size="lg" onClick={() => router.push('/courses')}>
+                                            Browse Catalog
+                                        </Button>
                                     </div>
                                 )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -616,9 +733,14 @@ export default function DashboardPage() {
                                                         <span className="text-xs text-muted-foreground">Score</span>
                                                     </div>
                                                 )}
-                                                <Button variant="outline" className="w-full" size="sm" onClick={() => router.push(`/interviews/${interview.id}${interview.status === 'COMPLETED' ? '/report' : ''}`)}>
-                                                    {interview.status === 'COMPLETED' ? 'View Report' : 'Resume'}
-                                                </Button>
+                                                {(() => {
+                                                    const pathSuffix = interview.status === 'COMPLETED' ? '/report' : ''
+                                                    return (
+                                                        <Button variant="outline" className="w-full" size="sm" onClick={() => router.push(`/interviews/${interview.id}${pathSuffix}`)}>
+                                                            {interview.status === 'COMPLETED' ? 'View Report' : 'Resume'}
+                                                        </Button>
+                                                    )
+                                                })()}
                                             </div>
                                         ))}
                                         {interviews.length === 0 && (
@@ -776,7 +898,7 @@ export default function DashboardPage() {
                                 )}
                             </div>
                         )}
-                    </>
+                    </div>
                 )}
             </div>
         </div>

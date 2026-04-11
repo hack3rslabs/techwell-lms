@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import api from '@/lib/api'
+import { liveClassApi } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Video, Calendar, Clock, ExternalLink } from 'lucide-react'
+import { Loader2, Video, Calendar, Clock } from 'lucide-react'
 
 export default function StudentLiveClassesPage() {
     interface LiveClass {
@@ -24,7 +24,7 @@ export default function StudentLiveClassesPage() {
     useEffect(() => {
         const fetchClasses = async () => {
             try {
-                const res = await api.get('/live-classes')
+                const res = await liveClassApi.getAll({ upcoming: true })
                 setClasses(res.data)
             } catch (error) {
                 console.error(error)

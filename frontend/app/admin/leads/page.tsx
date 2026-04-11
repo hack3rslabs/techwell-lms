@@ -537,16 +537,7 @@ export default function LeadsPage() {
                                                 >
                                                     <Mail className="h-4 w-4" />
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 mr-1"
-                                                    onClick={() => handleConvertToStudent(lead.id)}
-                                                    title="Convert to Student"
-                                                    disabled={lead.status === 'CONVERTED'}
-                                                >
-                                                    <span className="text-base">✅</span>
-                                                </Button>
+                                                
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"

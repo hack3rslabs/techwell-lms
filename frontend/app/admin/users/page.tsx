@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import api, { rbacApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, UserCheck, UserX, Loader2, Users, Download, Eye, CheckCircle, Plus, Trash2, Shield, ShieldAlert, AlertCircle } from 'lucide-react'
+import { Search, UserCheck, UserX, Loader2, Users, Download, Eye, CheckCircle, Plus, Trash2, Shield, ShieldAlert, AlertCircle, Edit2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { exportToCSV } from '@/lib/export-utils'
@@ -58,6 +58,8 @@ export default function AdminUsersPage() {
     const [roleToDelete, setRoleToDelete] = React.useState<Role | null>(null)
     const [selectedRoleId, setSelectedRoleId] = React.useState<string>('')
     const [selectedRoleName, setSelectedRoleName] = React.useState<string>('')
+    const [isEditingRole, setIsEditingRole] = React.useState(false)
+    const [roleToEditId, setRoleToEditId] = React.useState<string | null>(null)
 
     // User Deletion State
     const [isDeleteUserOpen, setIsDeleteUserOpen] = React.useState(false)
@@ -170,22 +172,60 @@ export default function AdminUsersPage() {
         }
     }
 
-    const handleCreateRole = async () => {
+    const handleSaveRole = async () => {
         try {
             if (!newRoleData.name) {
                 toast({ title: "Role name is required", variant: "destructive" });
                 return;
             }
-            await rbacApi.createRole(newRoleData);
-            toast({ title: "Role created successfully" });
+
+            if (isEditingRole && roleToEditId) {
+                await rbacApi.updateRole(roleToEditId, newRoleData);
+                toast({ title: "Role updated successfully" });
+            } else {
+                await rbacApi.createRole(newRoleData);
+                toast({ title: "Role created successfully" });
+            }
+
             setIsCreateFormOpen(false);
             setIsCreateRoleOpen(false);
+            setIsEditingRole(false);
+            setRoleToEditId(null);
             fetchRoles();
             setNewRoleData({ name: "", description: "", permissions: [] });
         } catch (error: unknown) {
             const err = error as { response?: { data?: { error?: string } } };
-            toast({ title: "Failed to create role", description: err.response?.data?.error || "Error", variant: "destructive" });
+            toast({ 
+                title: isEditingRole ? "Failed to update role" : "Failed to create role", 
+                description: err.response?.data?.error || "Error", 
+                variant: "destructive" 
+            });
         }
+    }
+
+    const openCreateRoleModal = () => {
+        setIsEditingRole(false);
+        setRoleToEditId(null);
+        setNewRoleData({ name: "", description: "", permissions: [] });
+        setIsCreateFormOpen(true);
+    }
+
+    const openCreateUserModal = () => {
+        setSelectedRoleId('');
+        setSelectedRoleName('');
+        setNewUserData({ name: "", email: "", password: "", phone: "" });
+        setIsCreateRoleOpen(true);
+    }
+
+    const openEditRoleModal = (role: Role) => {
+        setIsEditingRole(true);
+        setRoleToEditId(role.id);
+        setNewRoleData({
+            name: role.name,
+            description: role.description || "",
+            permissions: [...role.permissions]
+        });
+        setIsCreateFormOpen(true);
     }
 
     const handleCreateUser = async () => {
@@ -423,6 +463,14 @@ export default function AdminUsersPage() {
                                 <td className="p-4 text-xs font-semibold">{role._count?.users || 0}</td>
                                 <td className="p-4 text-right">
                                     <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-8 w-8 text-blue-500 hover:bg-blue-500/10" 
+                                            onClick={() => openEditRoleModal(role)}
+                                        >
+                                            <Edit2 className="h-4 w-4" />
+                                        </Button>
                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => { setRoleToDelete(role); setIsDeleteRoleOpen(true); }}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -450,8 +498,11 @@ export default function AdminUsersPage() {
                     <p className="text-muted-foreground mt-1">Audit platform access, verify employers, and manage user lifecycles.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button variant="secondary" className="glass hover:bg-primary/20 border-white/10 shadow-lg text-primary" onClick={() => setIsCreateRoleOpen(true)}>
+                    <Button variant="secondary" className="glass hover:bg-primary/20 border-white/10 shadow-lg text-primary" onClick={openCreateUserModal}>
                         <Plus className="mr-2 h-4 w-4" /> Create User
+                    </Button>
+                    <Button variant="secondary" className="glass hover:bg-primary/20 border-white/10 shadow-lg text-primary" onClick={openCreateRoleModal}>
+                        <Plus className="mr-2 h-4 w-4" /> Create Role
                     </Button>
                     <Button variant="outline" className="glass hover:bg-white/20 border-white/20 shadow-none" onClick={() => exportToCSV(users as unknown as Record<string, unknown>[], { filename: 'users_export', headers: ['name', 'email', 'role', 'isActive'] })}>
                         <Download className="mr-2 h-4 w-4" /> Export Audit
@@ -482,7 +533,7 @@ export default function AdminUsersPage() {
                 <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 gap-4">
                     <TabsList className="bg-white/5 border border-white/10 p-1 h-12 rounded-xl">
                         <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white h-full px-6 text-xs font-bold uppercase tracking-wider">All Access</TabsTrigger>
-                        <TabsTrigger value="roles" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white h-full px-6 text-xs font-bold uppercase tracking-wider">Roles</TabsTrigger>
+                        <TabsTrigger value="roles" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white h-full px-6 text-xs font-bold uppercase tracking-wider">Roles & Permissions</TabsTrigger>
                         <TabsTrigger value="employers" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white h-full px-6 text-xs font-bold uppercase tracking-wider">Employers</TabsTrigger>
                         <TabsTrigger value="staff" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white h-full px-6 text-xs font-bold uppercase tracking-wider">Governance Staff</TabsTrigger>
                         <TabsTrigger value="students" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white h-full px-6 text-xs font-bold uppercase tracking-wider">Learning Bench</TabsTrigger>
@@ -607,8 +658,8 @@ export default function AdminUsersPage() {
             <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
                 <DialogContent className="max-w-3xl bg-[#0a0a0b] border-white/10 max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-black">Configure Role</DialogTitle>
-                        <DialogDescription>Define permissions and role metadata.</DialogDescription>
+                        <DialogTitle className="text-2xl font-black">{isEditingRole ? 'Modify Role & Permissions' : 'Configure New Role'}</DialogTitle>
+                        <DialogDescription>{isEditingRole ? `Updating existing configuration for ${newRoleData.name}` : 'Define permissions and role metadata for a new system role.'}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6 py-4">
                         <div className="space-y-4">
@@ -664,7 +715,9 @@ export default function AdminUsersPage() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" className="border-white/10 glass rounded-xl" onClick={() => setIsCreateFormOpen(false)}>Cancel</Button>
-                        <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)]" onClick={handleCreateRole}>Confirm Create</Button>
+                        <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)]" onClick={handleSaveRole}>
+                            {isEditingRole ? 'Save Changes' : 'Confirm Create'}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

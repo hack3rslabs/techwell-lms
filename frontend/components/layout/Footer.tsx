@@ -6,31 +6,11 @@ import { Mail, Phone, MapPin, Twitter, Linkedin, Youtube, Github, Instagram, Ext
 
 export function Footer() {
     const [_year, setYear] = React.useState(2024)
-    const [images, setImages] = React.useState<any[]>([])
-
-    const fetchGallery = async () => {
-        try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
-            const res = await fetch(`${apiUrl}/admin/gallery`)
-            if (!res.ok) throw new Error('Failed to fetch gallery')
-            const data = await res.json()
-            if (Array.isArray(data)) {
-                setImages(data.slice(0, 6)) // Show top 6
-            }
-        } catch (_error) {
-            console.warn('Gallery feature is not fully implemented on backend yet or unreachable.')
-        }
-    }
-
-    React.useEffect(() => {
-        setYear(new Date().getFullYear())
-        fetchGallery()
-    }, [])
 
     return (
         <footer className="bg-muted/50 border-t mt-auto">
             <div className="container py-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Brand */}
                     <div className="space-y-4">
                         <Link href="/" className="relative flex h-9 w-[140px] items-center">
@@ -140,6 +120,11 @@ export function Footer() {
                                     Blog
                                 </Link>
                             </li>
+                             <li>
+                                <Link href="/gallery" className="text-muted-foreground hover:text-foreground transition-colors">
+                                     Gallery
+                                </Link>
+                            </li>
                             <li>
                                 <a href="https://elearnstack.com/daily_news" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                                     Daily Updates
@@ -188,49 +173,15 @@ export function Footer() {
                             </li>
                         </ul>
                     </div>
-
-                    {/* Gallery */}
-                    <div>
-                        <h4 className="font-semibold mb-4">Gallery</h4>
-                        <div className="grid grid-cols-3 gap-2">
-                            {images.length > 0 ? (
-                                images.map((image, _i) => (
-                                    <div key={image.id} className="aspect-square relative rounded-md overflow-hidden bg-muted/80 hover:opacity-80 transition-opacity cursor-pointer border">
-                                        <Image
-                                            src={image.url}
-                                            alt={image.caption || "Gallery"}
-                                            fill
-                                            sizes="(max-width: 768px) 33vw, 10vw"
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                ))
-                            ) : (
-                                [...Array(6)].map((_, i) => (
-                                    <div key={i} className="aspect-square relative rounded-md overflow-hidden bg-muted/80 border">
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <Image
-                                                src="/logo-dark.png"
-                                                alt="Gallery"
-                                                fill
-                                                sizes="(max-width: 768px) 33vw, 10vw"
-                                                className="object-cover opacity-20"
-                                            />
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2 text-center">
-                            Follow us on <a href="https://www.instagram.com/techwell_official/" className="text-primary hover:underline">Instagram</a>
-                        </p>
                     </div>
                 </div>
 
                 <div className="border-t mt-12 pt-8 flex flex-col items-center gap-4 text-sm text-muted-foreground">
                     <p className="text-center font-medium">&copy; {new Date().getFullYear()} Techwell. All rights reserved.</p>
                 </div>
-            </div>
-        </footer>
+            
+    
+    
+    </footer>
     )
 }

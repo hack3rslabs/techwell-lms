@@ -31,9 +31,11 @@ router.get('/permissions', authenticate, checkPermission('MANAGE_ROLES'), async 
  */
 router.get('/roles', authenticate, (req, res, next) => {
     // Both role managers and user managers should be able to see roles
-    if (req.user.role === 'SUPER_ADMIN' || 
-        req.user.permissions.includes('MANAGE_ROLES') || 
-        req.user.permissions.includes('MANAGE_USERS')) {
+    const hasPermission = req.user.permissions.includes('ALL') ||
+                          req.user.permissions.includes('MANAGE_ROLES') || 
+                          req.user.permissions.includes('MANAGE_USERS');
+                          
+    if (hasPermission) {
         return next();
     }
     return res.status(403).json({ error: 'Missing permission: MANAGE_ROLES or MANAGE_USERS' });
@@ -118,8 +120,8 @@ router.delete('/roles/:id', authenticate, checkPermission('MANAGE_ROLES'), async
         const role = await prisma.systemRole.findUnique({ where: { id } });
         if (!role) return res.status(404).json({ error: 'Role not found' });
 
-        if (role.isSystem && req.user.role !== 'SUPER_ADMIN') {
-            return res.status(400).json({ error: 'Cannot delete system roles' });
+        if (role.isSystem && !req.user.permissions.includes('ALL')) {
+            return res.status(403).json({ error: 'Only users with ALL permission can delete system roles' });
         }
 
         // Check if assigned to users

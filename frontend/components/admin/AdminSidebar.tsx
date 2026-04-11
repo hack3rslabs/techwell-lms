@@ -63,7 +63,7 @@ export function AdminSidebar({ className }: SidebarProps) {
         { label: "All Leads", icon: Magnet, href: "/admin/leads", permission: "VIEW_LEADS", showLeadCounts: true },
         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "VIEW_LEADS" },
         { label: "Tasks", icon: MessageSquare, href: "/admin/tasks", permission: "VIEW_LEADS" },
-
+        { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "VIEW_LEADS" },
         { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "MANAGE_CONTENT" },
         { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "MANAGE_CONTENT" },
         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "MANAGE_CONTENT" },

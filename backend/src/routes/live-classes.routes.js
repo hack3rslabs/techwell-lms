@@ -25,25 +25,39 @@ const createLiveClassSchema = z.object({
  */
 router.get('/', authenticate, async (req, res, next) => {
     try {
-        const { courseId } = req.query;
+        const requestedCourseId = typeof req.query.courseId === 'string' ? req.query.courseId : undefined;
+        const upcomingOnly = req.query.upcoming === 'true';
         const where = {};
 
-        if (courseId) where.courseId = courseId;
+        if (upcomingOnly) {
+            where.scheduledAt = { gte: new Date() };
+        }
+
+        if (requestedCourseId) {
+            where.courseId = requestedCourseId;
+        }
 
         // If user is STUDENT, only show enrolled course classes
         if (req.user.role === 'STUDENT') {
             const enrollments = await prisma.enrollment.findMany({
-                where: { userId: req.user.id },
+                where: {
+                    userId: req.user.id,
+                    status: 'ACTIVE'
+                },
                 select: { courseId: true }
             });
             const enrolledCourseIds = enrollments.map(e => e.courseId);
 
-            if (courseId) {
+            if (enrolledCourseIds.length === 0) {
+                return res.json([]);
+            }
+
+            if (requestedCourseId) {
                 // Determine if student is enrolled in the requested course
-                if (!enrolledCourseIds.includes(courseId)) {
+                if (!enrolledCourseIds.includes(requestedCourseId)) {
                     return res.json([]); // Not enrolled
                 }
-                where.courseId = courseId;
+                where.courseId = requestedCourseId;
             } else {
                 where.courseId = { in: enrolledCourseIds };
             }
@@ -70,7 +84,11 @@ router.get('/', authenticate, async (req, res, next) => {
  * @desc    Schedule a new live class
  * @access  Private (Admin/Instructor)
  */
-router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.post('/', authenticate, async (req, res, next) => {
+    // Permission Check: Needs MANAGE_COURSES, ALL, or strictly INSTRUCTOR role mapping to own courses (handled later)
+    if (!req.user.permissions.includes('MANAGE_COURSES') && !req.user.permissions.includes('ALL') && req.user.role !== 'INSTRUCTOR') {
+        return res.status(403).json({ error: 'Access denied: Requires permission to manage courses or live classes.'});
+    }
     try {
         const validatedData = createLiveClassSchema.parse(req.body);
 
@@ -98,8 +116,11 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), 
  * @desc    Update live class details
  * @access  Private (Admin/Instructor)
  */
-router.patch('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.patch('/:id', authenticate, async (req, res, next) => {
     try {
+        if (!req.user.permissions.includes('MANAGE_COURSES') && !req.user.permissions.includes('ALL') && req.user.role !== 'INSTRUCTOR') {
+            return res.status(403).json({ error: 'Access denied'});
+        }
         const { id } = req.params;
         const data = req.body;
 
@@ -122,8 +143,11 @@ router.patch('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR
  * @desc    Cancel/Delete a live class
  * @access  Private (Admin/Instructor)
  */
-router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.delete('/:id', authenticate, async (req, res, next) => {
     try {
+        if (!req.user.permissions.includes('MANAGE_COURSES') && !req.user.permissions.includes('ALL') && req.user.role !== 'INSTRUCTOR') {
+            return res.status(403).json({ error: 'Access denied'});
+        }
         const { id } = req.params;
         await prisma.liveClass.delete({ where: { id } });
         res.json({ message: 'Live class deleted successfully' });

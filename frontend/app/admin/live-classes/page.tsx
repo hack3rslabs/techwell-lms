@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
@@ -65,13 +63,22 @@ export default function LiveClassesAdminPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!formData.courseId) {
-            alert('Please select a course')
+        if (!formData.courseId || !formData.scheduledAt) {
+            alert('Please select a course and schedule time')
             return
         }
+        const scheduledAt = new Date(formData.scheduledAt)
+        if (Number.isNaN(scheduledAt.getTime())) {
+            alert('Please enter a valid schedule time')
+            return
+        }
+        const scheduledAtIso = scheduledAt.toISOString()
         setIsPostLoading(true)
         try {
-            await api.post('/live-classes', formData)
+            await api.post('/live-classes', {
+                ...formData,
+                scheduledAt: scheduledAtIso
+            })
             // toast.success('Class scheduled successfully')
             setShowModal(false)
             setFormData({

@@ -336,7 +336,7 @@ export const taskApi = {
 
 // Live Class API
 export const liveClassApi = {
-    getAll: (courseId?: string) => api.get('/live-classes', { params: { courseId } }),
+    getAll: (params?: { courseId?: string; upcoming?: boolean }) => api.get('/live-classes', { params }),
     create: (data: unknown) => api.post('/live-classes', data),
     update: (id: string, data: unknown) => api.patch(`/live-classes/${id}`, data),
     delete: (id: string) => api.delete(`/live-classes/${id}`),

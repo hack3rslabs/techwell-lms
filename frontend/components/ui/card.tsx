@@ -48,6 +48,26 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/* ---------- NEW CATEGORY COMPONENT ---------- */
+
+function CardCategory({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-category"
+      className={cn(
+        "inline-flex w-fit items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+/* ---------- ACTION ---------- */
+
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -89,4 +109,5 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+  CardCategory
 }

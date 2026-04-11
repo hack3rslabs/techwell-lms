@@ -1,7 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize, optionalAuth } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
@@ -35,7 +35,7 @@ const createCourseSchema = z.object({
  * @desc    Delete a course
  * @access  Private/Admin/Instructor
  */
-router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.delete('/:id', authenticate, async (req, res, next) => {
     console.log(`[DEBUG] Attempting to delete course: ${req.params.id} by user: ${req.user.id}`);
     try {
         const courseId = req.params.id;
@@ -51,10 +51,11 @@ router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTO
             return res.status(404).json({ error: 'Course not found' });
         }
 
-        // Only allow admins or the creator (instructor) to delete
-        if (!['SUPER_ADMIN', 'ADMIN'].includes(userRole) && course.instructorId !== userId) {
+        // Only allow users with MANAGE_COURSES permission or the creator (instructor) to delete
+        const hasPermission = req.user.permissions.includes('MANAGE_COURSES') || req.user.permissions.includes('ALL');
+        if (!hasPermission && course.instructorId !== userId) {
             console.log(`[DEBUG] Access denied for user: ${userId} role: ${userRole}`);
-            return res.status(403).json({ error: 'Access denied. You can only delete your own courses.' });
+            return res.status(403).json({ error: 'Access denied. You do not have permission to delete this course.' });
         }
 
         await prisma.course.delete({
@@ -166,8 +167,11 @@ router.get('/', optionalAuth, async (req, res, next) => {
  * @desc    Get courses created by the instructor
  * @access  Private/Instructor
  */
-router.get('/my/created', authenticate, authorize('INSTRUCTOR', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.get('/my/created', authenticate, async (req, res, next) => {
     try {
+        if (!['INSTRUCTOR', 'ADMIN', 'SUPER_ADMIN'].includes(req.user.role) && !req.user.permissions.includes('MANAGE_COURSES')) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
         const courses = await prisma.course.findMany({
             where: { instructorId: req.user.id },
             orderBy: { createdAt: 'desc' },
@@ -242,8 +246,21 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
  * @desc    Update course publish status (Draft, Review, Published)
  * @access  Private/Admin
  */
-router.patch('/:id/status', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.patch('/:id/status', authenticate, async (req, res, next) => {
     try {
+        const courseId = req.params.id;
+        const course = await prisma.course.findUnique({ where: { id: courseId } });
+        
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+
+        const hasManagePermission = req.user.permissions.includes('MANAGE_COURSES') || req.user.permissions.includes('ALL');
+        const hasPublishPermission = req.user.permissions.includes('PUBLISH_COURSE') || req.user.permissions.includes('ALL');
+        const isOwner = course.instructorId === req.user.id;
+
+        // Needs Manage or Publish permission, OR be the owner to request review/publish
+        if (!hasManagePermission && !hasPublishPermission && !isOwner) {
+            return res.status(403).json({ error: 'Missing permission to update course status' });
+        }
         const { status } = req.body;
         // status enum: DRAFT, IN_REVIEW, PUBLISHED, ARCHIVED
 
@@ -260,12 +277,12 @@ router.patch('/:id/status', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INS
             updateData.isPublished = false;
         }
 
-        const course = await prisma.course.update({
+        const updatedCourse = await prisma.course.update({
             where: { id: req.params.id },
             data: updateData
         });
 
-        res.json({ message: 'Course status updated', course });
+        res.json({ message: 'Course status updated', course: updatedCourse });
     } catch (error) {
         next(error);
     }
@@ -276,7 +293,11 @@ router.patch('/:id/status', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INS
  * @desc    Create a new course (Admin/Instructor only)
  * @access  Private/Admin
  */
-router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.post('/', authenticate, async (req, res, next) => {
+    const canCreate = req.user.role === 'INSTRUCTOR' || req.user.permissions.includes('MANAGE_COURSES') || req.user.permissions.includes('ALL');
+    if (!canCreate) {
+        return res.status(403).json({ error: 'Missing permission: MANAGE_COURSES' });
+    }
     try {
         // Pre-process empty strings to null/undefined
         const body = { ...req.body };
@@ -316,8 +337,18 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), 
  * @desc    Update course basic details
  * @access  Private/Admin/Instructor
  */
-router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.put('/:id', authenticate, async (req, res, next) => {
     try {
+        const course = await prisma.course.findUnique({ where: { id: req.params.id } });
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+
+        const canUpdate = req.user.permissions.includes('MANAGE_COURSES') || 
+                          req.user.permissions.includes('ALL') ||
+                          course.instructorId === req.user.id;
+        
+        if (!canUpdate) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
         const body = { ...req.body };
         ['courseCode', 'bannerUrl', 'thumbnail'].forEach(field => {
             if (body[field] === '') body[field] = undefined;
@@ -327,7 +358,7 @@ router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR')
         const updateSchema = createCourseSchema.partial();
         const validatedData = updateSchema.parse(body);
 
-        const course = await prisma.course.update({
+        const updatedCourse = await prisma.course.update({
             where: { id: req.params.id },
             data: {
                 ...validatedData,
@@ -336,7 +367,7 @@ router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR')
             }
         });
 
-        res.json({ message: 'Course updated', course });
+        res.json({ message: 'Course updated', course: updatedCourse });
     } catch (error) {
         next(error);
     }
@@ -473,7 +504,7 @@ const { generateCourseStructure } = require('../services/ai-course.service');
  * @desc    Generate a course structure using JSON-based Gemini AI
  * @access  Private/Admin
  */
-router.post('/generate', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.post('/generate', authenticate, checkPermission('MANAGE_COURSES'), async (req, res, next) => {
     try {
         const { topic, difficulty } = req.body;
         if (!topic) return res.status(400).json({ error: 'Topic is required' });
@@ -490,8 +521,18 @@ router.post('/generate', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRU
  * @desc    Update/Replace entire course curriculum (Modules + Lessons)
  * @access  Private/Admin
  */
-router.put('/:id/curriculum', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.put('/:id/curriculum', authenticate, async (req, res, next) => {
     try {
+        const course = await prisma.course.findUnique({ where: { id: req.params.id } });
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+
+        const canUpdate = req.user.permissions.includes('MANAGE_COURSES') || 
+                          req.user.permissions.includes('ALL') ||
+                          course.instructorId === req.user.id;
+        
+        if (!canUpdate) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
         const { modules } = req.body;
         const courseId = req.params.id;
 
@@ -648,8 +689,16 @@ router.post('/:courseId/lessons/:lessonId/complete', authenticate, async (req, r
  * @desc    Add a module to a course
  * @access  Private/Instructor
  */
-router.post('/:id/modules', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.post('/:id/modules', authenticate, async (req, res, next) => {
     try {
+        const course = await prisma.course.findUnique({ where: { id: req.params.id } });
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+
+        const canUpdate = req.user.permissions.includes('MANAGE_COURSES') || 
+                          req.user.permissions.includes('ALL') ||
+                          course.instructorId === req.user.id;
+        
+        if (!canUpdate) return res.status(403).json({ error: 'Access denied' });
         const { title, description, orderIndex } = req.body;
         const module = await prisma.module.create({
             data: {
@@ -671,14 +720,25 @@ router.post('/:id/modules', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INS
  * @desc    Update a module
  * @access  Private/Instructor
  */
-router.put('/modules/:moduleId', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.put('/modules/:moduleId', authenticate, async (req, res, next) => {
     try {
+        const module = await prisma.module.findUnique({ 
+            where: { id: req.params.moduleId },
+            include: { course: true }
+        });
+        if (!module) return res.status(404).json({ error: 'Module not found' });
+
+        const canUpdate = req.user.permissions.includes('MANAGE_COURSES') || 
+                          req.user.permissions.includes('ALL') ||
+                          module.course.instructorId === req.user.id;
+        
+        if (!canUpdate) return res.status(403).json({ error: 'Access denied' });
         const { title, description, orderIndex, isPublished } = req.body;
-        const module = await prisma.module.update({
+        const updatedModule = await prisma.module.update({
             where: { id: req.params.moduleId },
             data: { title, description, orderIndex, isPublished }
         });
-        res.json(module);
+        res.json(updatedModule);
     } catch (error) {
         next(error);
     }
@@ -689,8 +749,19 @@ router.put('/modules/:moduleId', authenticate, authorize('SUPER_ADMIN', 'ADMIN',
  * @desc    Add a lesson to a module
  * @access  Private/Instructor
  */
-router.post('/modules/:moduleId/lessons', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.post('/modules/:moduleId/lessons', authenticate, async (req, res, next) => {
     try {
+        const module = await prisma.module.findUnique({ 
+            where: { id: req.params.moduleId },
+            include: { course: true }
+        });
+        if (!module) return res.status(404).json({ error: 'Module not found' });
+
+        const canUpdate = req.user.permissions.includes('MANAGE_COURSES') || 
+                          req.user.permissions.includes('ALL') ||
+                          module.course.instructorId === req.user.id;
+        
+        if (!canUpdate) return res.status(403).json({ error: 'Access denied' });
         const { title, type, order } = req.body;
         const lesson = await prisma.lesson.create({
             data: {
@@ -712,17 +783,28 @@ router.post('/modules/:moduleId/lessons', authenticate, authorize('SUPER_ADMIN',
  * @desc    Update a lesson (Content, Settings, Publish)
  * @access  Private/Instructor
  */
-router.put('/lessons/:lessonId', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
+router.put('/lessons/:lessonId', authenticate, async (req, res, next) => {
     try {
+        const lesson = await prisma.lesson.findUnique({ 
+            where: { id: req.params.lessonId },
+            include: { module: { include: { course: true } } }
+        });
+        if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
+
+        const canUpdate = req.user.permissions.includes('MANAGE_COURSES') || 
+                          req.user.permissions.includes('ALL') ||
+                          lesson.module.course.instructorId === req.user.id;
+        
+        if (!canUpdate) return res.status(403).json({ error: 'Access denied' });
         const { title, content, videoUrl, duration, type, isPublished, isPreview, settings, resources } = req.body;
-        const lesson = await prisma.lesson.update({
+        const updatedLesson = await prisma.lesson.update({
             where: { id: req.params.lessonId },
             data: {
                 title, content, videoUrl, duration, type, isPublished, isPreview,
                 settings, resources
             }
         });
-        res.json(lesson);
+        res.json(updatedLesson);
     } catch (error) {
         next(error);
     }

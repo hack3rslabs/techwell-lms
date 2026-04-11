@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
@@ -39,7 +39,12 @@ router.get('/public', async (req, res, next) => {
  * @desc    Get all settings
  * @access  Private (Admin/Staff)
  */
-router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF', 'INSTITUTE_ADMIN'), async (req, res, next) => {
+router.get('/', authenticate, (req, res, next) => {
+    if (req.user.permissions.includes('MANAGE_SETTINGS') || req.user.permissions.includes('ALL')) {
+        return next();
+    }
+    return res.status(403).json({ error: 'Permission denied: MANAGE_SETTINGS required' });
+}, async (req, res, next) => {
     try {
         const settings = await prisma.systemSettings.upsert({
             where: { id: 'default' },
@@ -62,8 +67,7 @@ router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF', 'INSTIT
 router.put('/', authenticate, async (req, res, next) => {
     try {
         // Permission check
-        const canManage = req.user.role === 'SUPER_ADMIN' ||
-            (req.user.permissions && req.user.permissions.includes('MANAGE_SETTINGS'));
+        const canManage = req.user.permissions.includes('MANAGE_SETTINGS') || req.user.permissions.includes('ALL');
 
         if (!canManage) {
             return res.status(403).json({ error: 'Permission denied: MANAGE_SETTINGS required' });

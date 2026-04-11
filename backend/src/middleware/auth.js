@@ -54,10 +54,8 @@ const authenticate = async (req, res, next) => {
             }
         }
 
-        // Backwards compatibility for Super Admin
-        if (user.role === 'SUPER_ADMIN') {
-            permissions.add('ALL');
-        }
+        // Note: SUPER_ADMIN permissions are now governed by their SystemRole assignment.
+        // No hardcoded 'ALL' bypass — edit the role's permissions in Admin > Roles & Permissions.
 
         req.user = {
             ...user,
@@ -99,8 +97,8 @@ const checkPermission = (requiredPermission) => {
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        // Super Admins have all permissions
-        if (req.user.role === 'SUPER_ADMIN' || (req.user.permissions && req.user.permissions.includes('ALL'))) {
+        // Check for wildcard 'ALL' permission (assigned via SystemRole, not hardcoded)
+        if (req.user.permissions && req.user.permissions.includes('ALL')) {
             return next();
         }
 

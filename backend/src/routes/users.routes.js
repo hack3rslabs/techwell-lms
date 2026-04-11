@@ -1,7 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth');
 
 const multer = require('multer');
 const path = require('path');
@@ -129,7 +129,7 @@ router.put('/me', authenticate, async (req, res, next) => {
  * @desc    Get all users (Admin only)
  * @access  Private/Admin
  */
-router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
     try {
         const { page = 1, limit = 20, role, search } = req.query;
         const where = {};
@@ -181,7 +181,7 @@ router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res
  * @desc    Get user activity logs (Admin only)
  * @access  Private/Admin
  */
-router.get('/:id/activity', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/:id/activity', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
     try {
         const activity = await prisma.auditLog.findMany({
             where: { performedBy: req.params.id },
@@ -199,7 +199,7 @@ router.get('/:id/activity', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
  * @desc    Activate/Deactivate user (Admin only)
  * @access  Private/Admin
  */
-router.patch('/:id/status', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.patch('/:id/status', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
     try {
         const { isActive } = req.body;
         if (req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot change your own status' });
@@ -219,7 +219,7 @@ router.patch('/:id/status', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
  * @desc    Approve/Reject Employer (Admin)
  * @access  Private/Admin
  */
-router.patch('/:id/approve', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.patch('/:id/approve', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
     try {
         const { status, notes } = req.body;
         const employerProfile = await prisma.employerProfile.update({
@@ -237,7 +237,7 @@ router.patch('/:id/approve', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), as
  * @desc    Permanently delete user (Super Admin only)
  * @access  Private/SuperAdmin
  */
-router.delete('/:id', authenticate, authorize('SUPER_ADMIN'), async (req, res, next) => {
+router.delete('/:id', authenticate, checkPermission('ALL'), async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -326,7 +326,7 @@ router.delete('/:id', authenticate, authorize('SUPER_ADMIN'), async (req, res, n
  * @desc    Directly create a user (Admin only)
  * @access  Private/Admin
  */
-router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
     try {
         const validatedData = createUserSchema.parse(req.body);
         const bcrypt = require('bcryptjs');

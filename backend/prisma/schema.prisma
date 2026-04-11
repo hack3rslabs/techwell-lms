@@ -45,6 +45,8 @@ model User {
   lessonProgress         LessonProgress[]
   libraryBookmarks       LibraryBookmark[]
   sentMessages           Message[]
+  adminMessages          AdminMessage[]
+  receivedMessages       AdminMessageRecipient[]
   payments               Payment[]
   reviews                Review[]
   assignedTasks          Task[]                 @relation("AssignedTo")
@@ -486,6 +488,32 @@ model Conversation {
   participants User[]    @relation("UserConversations")
 }
 
+model AdminMessage {
+  id         String                   @id @default(cuid())
+  title      String
+  content    String
+  senderId   String
+  priority   String                   @default("NORMAL")
+  isPublished Boolean                @default(true)
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+  sender     User                     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  recipients AdminMessageRecipient[]
+}
+
+model AdminMessageRecipient {
+  id        String       @id @default(cuid())
+  messageId String
+  userId    String
+  isRead    Boolean      @default(false)
+  readAt    DateTime?
+  createdAt DateTime     @default(now())
+  message   AdminMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+}
+
 model Message {
   id             String       @id @default(cuid())
   conversationId String
@@ -721,6 +749,7 @@ model BlogPost {
   content     String
   summary     String?
   coverImage  String?
+  category    String?    // ✅ ADD THIS
   status      BlogStatus @default(DRAFT)
   tags        Json?
   authorId    String

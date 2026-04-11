@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
@@ -10,8 +10,12 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  * @desc    Get all tasks
  * @access  Private/Admin
  */
-router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/', authenticate, async (req, res, next) => {
     try {
+        const canManage = req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
+        if (!canManage && req.query.assignedTo !== 'ME') {
+            return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks or view all tasks.' });
+        }
         const { status, priority, assignedTo } = req.query;
 
         const where = {};
@@ -74,8 +78,12 @@ router.post('/:id/comments', authenticate, async (req, res, next) => {
  * @desc    Create a new task
  * @access  Private/Admin
  */
-router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/', authenticate, async (req, res, next) => {
     try {
+        const canManage = req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
+        if (!canManage) {
+            return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks.' });
+        }
         const { title, description, priority, dueDate, leadId, assignedTo } = req.body;
 
         const task = await prisma.task.create({
@@ -105,8 +113,13 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, re
  * @desc    Update task status or details
  * @access  Private/Admin
  */
-router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.put('/:id', authenticate, async (req, res, next) => {
     try {
+        const canManage = req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
+        // Let them update if they are the assignee, but we aren't doing strict assignee check here for now, restricting to managers.
+        if (!canManage) {
+            return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks.' });
+        }
         const { status, priority, dueDate, assignedTo, description } = req.body;
 
         const task = await prisma.task.update({
@@ -134,8 +147,12 @@ router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, 
  * @desc    Delete a task
  * @access  Private/Admin
  */
-router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.delete('/:id', authenticate, async (req, res, next) => {
     try {
+        const canManage = req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
+        if (!canManage) {
+            return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks.' });
+        }
         await prisma.task.delete({
             where: { id: req.params.id }
         });

@@ -161,8 +161,43 @@ router.post('/integrations/:id/test', authenticate, authorize('SUPER_ADMIN', 'AD
  */
 router.get('/classes', authenticate, async (req, res, next) => {
     try {
+        const requestedCourseId = typeof req.query.courseId === 'string' ? req.query.courseId : undefined;
+        const upcomingOnly = req.query.upcoming === 'true';
+        const where = {};
+
+        if (upcomingOnly) {
+            where.scheduledAt = { gte: new Date() };
+        }
+
+        if (requestedCourseId) {
+            where.courseId = requestedCourseId;
+        }
+
+        if (req.user.role === 'STUDENT') {
+            const enrollments = await prisma.enrollment.findMany({
+                where: {
+                    userId: req.user.id,
+                    status: 'ACTIVE'
+                },
+                select: { courseId: true }
+            });
+
+            const enrolledCourseIds = enrollments.map((enrollment) => enrollment.courseId);
+
+            if (enrolledCourseIds.length === 0) {
+                return res.json([]);
+            }
+
+            if (requestedCourseId && !enrolledCourseIds.includes(requestedCourseId)) {
+                return res.json([]);
+            }
+
+            where.courseId = requestedCourseId || { in: enrolledCourseIds };
+        }
+
         const classes = await prisma.liveClass.findMany({
-            include: { course: { select: { title: true } } },
+            where,
+            include: { course: { select: { id: true, title: true } } },
             orderBy: { scheduledAt: 'asc' }
         });
         res.json(classes);

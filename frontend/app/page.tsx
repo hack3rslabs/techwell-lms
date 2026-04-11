@@ -13,7 +13,7 @@ export default function Home() {
       <div className="mt-8 relative z-20">
         <StudentJourney />
       </div>
-      <PricingSection />
+      
       <WhyTrust />
       <Testimonials />
       <PlacementPartners />
