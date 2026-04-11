@@ -1,12 +1,12 @@
 // Request deduplication utility - prevents duplicate simultaneous requests
 // If the same request is made before the first one completes, reuse its response
 
-interface CacheEntry {
-    promise: Promise<unknown>
+interface CacheEntry<T> {
+    promise: Promise<T>
     timestamp: number
 }
 
-const requestCache = new Map<string, CacheEntry>()
+const requestCache = new Map<string, CacheEntry<unknown>>()
 const CACHE_TTL = 5000 // 5 seconds - prevent immediate duplicate requests
 
 export function getCacheKey(url: string, params?: Record<string, unknown>): string {
@@ -23,7 +23,7 @@ export function getDedupedRequest<T>(
 
     // Return existing promise if still fresh
     if (cached && now - cached.timestamp < CACHE_TTL) {
-        return cached.promise
+        return cached.promise as Promise<T>
     }
 
     // Clean up expired entries
