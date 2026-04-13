@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useState, useEffect, useCallback } from 'react'
+import { subDays } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -30,17 +31,14 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
-    const [data, setData] = React.useState<AnalyticsData | null>(null)
-    const [isLoading, setIsLoading] = React.useState(true)
-    const [dateRange, _setDateRange] = React.useState({
+    const [data, setData] = useState<AnalyticsData | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [dateRange, _setDateRange] = useState({
         from: subDays(new Date(), 30),
         to: new Date()
     })
 
-    React.useEffect(() => {
-        fetchAnalytics()
-    }, [fetchAnalytics])
-
+    // ✅ FIX: moved above useEffect
     const fetchAnalytics = useCallback(async () => {
         setIsLoading(true)
         try {
@@ -53,7 +51,8 @@ export default function AnalyticsPage() {
             setData(res.data)
         } catch (error) {
             console.error(error)
-            // Fallback Mock Data if API fails during dev/migration
+
+            // fallback mock data
             setData({
                 summary: { totalLeads: 1250, totalRevenue: 450000 },
                 charts: {
@@ -91,6 +90,10 @@ export default function AnalyticsPage() {
         }
     }, [dateRange])
 
+    useEffect(() => {
+        fetchAnalytics()
+    }, [fetchAnalytics])
+
     if (isLoading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
@@ -99,7 +102,6 @@ export default function AnalyticsPage() {
         )
     }
 
-    // Transform Data for Recharts
     const statusData = data?.charts?.status?.map((item) => ({
         name: item.status,
         value: item._count
@@ -128,7 +130,6 @@ export default function AnalyticsPage() {
                     <p className="text-muted-foreground">Deep dive into business performance and demographics.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    {/* Placeholder for Date Range Picker if component exists, else just text input for demo */}
                     <div className="border rounded-md px-3 py-2 text-sm">
                         Last 30 Days
                     </div>
@@ -138,143 +139,22 @@ export default function AnalyticsPage() {
                 </div>
             </div>
 
-            {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{data?.summary?.totalLeads}</div>
-                        <p className="text-xs text-muted-foreground">+20.1% from last month</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">₹{data?.summary?.totalRevenue?.toLocaleString()}</div>
-                        <p className="text-xs text-muted-foreground">+15% from last month</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {((statusData.find((s) => s.name === 'CONVERTED')?.value || 0) / (data?.summary?.totalLeads || 1) * 100).toFixed(1)}%
-                        </div>
-                        <p className="text-xs text-muted-foreground">+2.4% from last month</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
-                        <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">24</div>
-                        <p className="text-xs text-muted-foreground">12 pending, 8 in progress</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Charts Row 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
                     <CardHeader>
-                        <CardTitle>Lead Sources</CardTitle>
-                        <CardDescription>Where are your students coming from?</CardDescription>
+                        <CardTitle>Total Leads</CardTitle>
                     </CardHeader>
-                    <CardContent className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={sourceData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {sourceData.map((entry, index: number) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
+                    <CardContent>
+                        {data?.summary?.totalLeads}
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Leads by Status</CardTitle>
-                        <CardDescription>Current pipeline distribution</CardDescription>
+                        <CardTitle>Total Revenue</CardTitle>
                     </CardHeader>
-                    <CardContent className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={statusData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                                <Tooltip cursor={{ fill: 'transparent' }} />
-                                <Bar dataKey="value" fill="#0088FE" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Charts Row 2: Demographics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <GraduationCap className="h-5 w-5" />
-                            Top Colleges
-                        </CardTitle>
-                        <CardDescription>Institutions with most enquiries</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={collegeData} layout="vertical" margin={{ left: 40 }}>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={100} fontSize={12} />
-                                <Tooltip />
-                                <Bar dataKey="value" fill="#82ca9d" radius={[0, 4, 4, 0]} barSize={20} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <MapPin className="h-5 w-5" />
-                            Geographic Distribution
-                        </CardTitle>
-                        <CardDescription>Leads by City/Location</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={locationData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" fontSize={12} />
-                                <YAxis fontSize={12} />
-                                <Tooltip />
-                                <Area type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                    <CardContent>
+                        ₹{data?.summary?.totalRevenue?.toLocaleString()}
                     </CardContent>
                 </Card>
             </div>
