@@ -118,9 +118,9 @@ const features = [
 
 export function WhyTrust() {
     return (
-        <section className="py-24 bg-muted/30">
+        <section className="py-12 bg-muted/30">
             <div className="container px-4">
-                <div className="max-w-3xl mx-auto text-center mb-20">
+                <div className="max-w-3xl mx-auto text-center mb-10">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}

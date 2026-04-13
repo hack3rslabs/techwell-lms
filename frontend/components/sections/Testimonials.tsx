@@ -70,7 +70,7 @@ export function Testimonials() {
     }
 
     return (
-        <section className="py-20 bg-muted/30">
+        <section className="py-5 bg-muted/30">
             <div className="container">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4">

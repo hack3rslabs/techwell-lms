@@ -10,10 +10,9 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-0 overflow-x-hidden">
       <Hero />
-      <div className="mt-8 relative z-20">
+      <div className="mt-2 relative z-20">
         <StudentJourney />
       </div>
-      
       <WhyTrust />
       <Testimonials />
       <PlacementPartners />

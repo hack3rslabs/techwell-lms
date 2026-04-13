@@ -320,7 +320,6 @@ export const leadApi = {
     delete: (id: string) => api.delete(`/leads/${id}`),
     convert: (id: string) => api.post(`/leads/${id}/convert`),
     getAnalytics: (params?: unknown) => api.get('/leads/analytics', { params }),
-    import: (formData: FormData) => api.post('/leads/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     getIntegrations: () => api.get('/leads/integrations'),
     configureIntegration: (data: unknown) => api.post('/leads/integrations', data),
 };
@@ -350,7 +349,7 @@ export const analyticsApi = {
 
 // Library API
 export const libraryApi = {
-    trackView: (resourceId: string) => api.patch(`/library/resources/${resourceId}/view`),
+    trackView: (resourceId: string) => api.patch(`/library/resources/${resourceId}/increment-views`),
     download: (resourceId: string) => api.get(`/library/resources/${resourceId}/download`, { responseType: 'blob' }),
     getBookmarks: () => api.get('/library/bookmarks'),
     toggleBookmark: (resourceId: string) => api.post('/library/bookmarks', { resourceId }),
