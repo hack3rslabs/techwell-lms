@@ -9,6 +9,7 @@ import { ScrollButton } from "@/components/ui/scroll-button";
 import { FloatingCallButton } from "@/components/ui/floating-call-button";
 import ChatWidget from "@/components/ai/ChatWidget";
 import { BehaviorTrackingProvider } from "@/components/BehaviorTrackingProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,9 +97,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
-      >
+  suppressHydrationWarning
+  className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col no-scrollbar`}
+>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <BehaviorTrackingProvider>
@@ -126,6 +127,7 @@ export default function RootLayout({
             </BehaviorTrackingProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );

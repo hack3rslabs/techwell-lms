@@ -11,6 +11,7 @@ const createBlogSchema = z.object({
     content: z.string().min(20),
     summary: z.string().optional(),
     tags: z.array(z.string()).optional(),
+    category: z.string().optional(),
     status: z.enum(['DRAFT', 'IN_REVIEW', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
     coverImage: z.string().url().optional().or(z.literal('')),
 });

@@ -40,19 +40,14 @@ export default function AdminLayout({
     }
 
     return (
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen no-scrollbar">
 
             {/* Sidebar */}
-            <AdminSidebar className="w-64 fixed left-0 top-0 h-screen hidden md:block" />
+            <AdminSidebar />
 
             {/* Main Content */}
-            <div className="flex flex-col flex-1 md:ml-64 min-h-screen">
-
-                {/* Page Content */}
-                <main className="flex-1 p-8 bg-muted/10">
-                    {children}
-                </main>
-
+            <div className="flex-1 md:ml-64 p-8 bg-muted/10">
+                {children}
             </div>
 
         </div>

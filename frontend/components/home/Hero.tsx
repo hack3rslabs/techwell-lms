@@ -114,7 +114,7 @@ export function Hero() {
     ]
 
     return (
-        <div className="relative overflow-x-hidden bg-background min-h-screen flex flex-col justify-start pt-12">
+        <div className="relative  bg-background min-h-screen flex flex-col justify-start pt-6">
             {/* Rich Ambient Background */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute top-[-10%] right-[-5%] w-[1000px] h-[1000px] bg-primary/5 rounded-full blur-[120px] animate-pulse-slow" />
@@ -251,7 +251,7 @@ export function Hero() {
                 </div>
 
                 {/* Premium Feature Boxes - Redesigned */}
-                <div className="mt-16">
+                <div className="mt-6">
                     <h2 className="text-2xl font-bold text-center mb-10 text-muted-foreground/60 tracking-widest uppercase">Explore Our Ecosystem</h2>
 
                     {/* Grid updated to max-3 columns as requested */}

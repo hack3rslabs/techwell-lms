@@ -166,7 +166,7 @@ export function useBehaviorTracker(userId?: string) {
                 }
             }
         };
-    }, [pathname, userId]);
+    }, [pathname, userId, tracker]);
 
     // Track scroll depth (debounced)
     useEffect(() => {
@@ -200,7 +200,7 @@ export function useBehaviorTracker(userId?: string) {
                 clearTimeout(scrollTimeout.current);
             }
         };
-    }, [pathname, userId]);
+    }, [pathname, userId, tracker]);
 
     // Return tracking functions
     const trackCTA = useCallback((ctaId: string, ctaText?: string) => {
@@ -211,8 +211,8 @@ export function useBehaviorTracker(userId?: string) {
             ctaId,
             ctaText,
             timestamp: new Date().toISOString()
-        }, userId);
-    }, [pathname, userId]);
+        }, [pathname, userId, tracker]);
+    }, [pathname, userId, tracker]);
 
     const trackCustomEvent = useCallback((eventType: string, eventData: Record<string, unknown>) => {
         if (!FEATURE_ENABLED) return;
@@ -221,7 +221,7 @@ export function useBehaviorTracker(userId?: string) {
             page: pathname,
             ...eventData
         }, userId);
-    }, [pathname, userId]);
+    }, [pathname, userId, tracker]);
 
     return {
         trackCTA,

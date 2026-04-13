@@ -45,6 +45,7 @@ export function AdminSidebar({ className }: SidebarProps) {
     const { logout, hasPermission } = useAuth()
     const [isMobileOpen, setIsMobileOpen] = useState(false)
     const [leadCounts, setLeadCounts] = useState({ totalCount: 0, unreadCount: 0 })
+
     const canViewLeads = hasPermission("VIEW_LEADS")
     const isViewingLeads =
         pathname === "/admin/leads" ||
@@ -52,14 +53,11 @@ export function AdminSidebar({ className }: SidebarProps) {
 
     const routes: RouteConfig[] = [
         { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
-
         { label: "Users & Roles", icon: Users, href: "/admin/users", permission: "MANAGE_USERS" },
         { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "MANAGE_COURSES" },
         { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "MANAGE_CERTIFICATES" },
-       // { label: "Enroll Requests", icon: FileText, href: "/admin/enrolls", permission: "MANAGE_USERS" },
         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "MANAGE_USERS" },
         { label: "Employer Requests", icon: Briefcase, href: "/admin/employers", permission: "MANAGE_USERS" },
-
         { label: "All Leads", icon: Magnet, href: "/admin/leads", permission: "VIEW_LEADS", showLeadCounts: true },
         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "VIEW_LEADS" },
         { label: "Tasks", icon: MessageSquare, href: "/admin/tasks", permission: "VIEW_LEADS" },
@@ -69,18 +67,9 @@ export function AdminSidebar({ className }: SidebarProps) {
         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "MANAGE_CONTENT" },
         { label: "Reviews", icon: MessageSquare, href: "/admin/reviews", permission: "MANAGE_CONTENT" },
         { label: "Library", icon: BookOpen, href: "/admin/library", permission: "MANAGE_CONTENT" },
-
-      //  { label: "AI Configurations", icon: Bot, href: "/admin/ai", permission: "MANAGE_SETTINGS" },
-    //    { label: "Training Data", icon: BrainCircuit, href: "/admin/ai/training", permission: "MANAGE_SETTINGS" },
-       // { label: "AI Interviews", icon: Sparkles, href: "/admin/ai-interviews", permission: "MANAGE_SETTINGS" },
-
-       // { label: "Payments", icon: CreditCard, href: "/admin/payments", permission: "VIEW_FINANCE" },
-      //  { label: "Pricing & Plans", icon: CreditCard, href: "/admin/pricing", permission: "VIEW_FINANCE" },
-
         { label: "Job Board", icon: Briefcase, href: "/admin/jobs" },
         { label: "Projects Market", icon: Briefcase, href: "/admin/projects" },
         { label: "Support Tickets", icon: MessageSquare, href: "/admin/support", permission: "VIEW_SUPPORT" },
-
         { label: "General Settings", icon: Settings, href: "/admin/settings", permission: "MANAGE_SETTINGS" },
         { label: "Video Integration", icon: Video, href: "/admin/video-settings", permission: "MANAGE_SETTINGS" },
         { label: "System Logs", icon: FileText, href: "/admin/logs", permission: "MANAGE_SETTINGS" },
@@ -143,15 +132,16 @@ export function AdminSidebar({ className }: SidebarProps) {
                 </Button>
             </div>
 
+            {/* Sidebar */}
             <div
                 className={cn(
-                    "fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background flex flex-col overflow-hidden transition-transform duration-300 md:translate-x-0",
+                    "fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background overflow-y-auto transition-transform duration-300 md:translate-x-0",
                     isMobileOpen ? "translate-x-0" : "-translate-x-full",
                     className
                 )}
             >
 
-                {/* Sidebar Header (TOP of sidebar) */}
+                {/* Header */}
                 <div className="px-6 py-5 border-b flex-shrink-0">
                     <h2 className="text-xl font-bold text-primary">Admin Panel</h2>
                     <p className="text-xs text-muted-foreground">
@@ -159,10 +149,9 @@ export function AdminSidebar({ className }: SidebarProps) {
                     </p>
                 </div>
 
-                {/* Scrollable Menu */}
-                <div className="flex-1 min-h-0 sidebar-scroll p-3">
+                {/* Scrollable Menu ✅ */}
+                <div className="p-3">
                     <nav className="space-y-1 pb-6">
-
                         {availableRoutes.map((route) => {
 
                             const isActive =
@@ -187,14 +176,7 @@ export function AdminSidebar({ className }: SidebarProps) {
 
                                     {route.showLeadCounts && canViewLeads && (
                                         <span className="ml-auto flex items-center gap-2">
-                                            <span
-                                                className={cn(
-                                                    "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
-                                                    isActive
-                                                        ? "bg-primary/15 text-primary"
-                                                        : "bg-muted text-foreground/80"
-                                                )}
-                                            >
+                                            <span className="inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold bg-muted">
                                                 {leadCounts.totalCount}
                                             </span>
 
@@ -208,11 +190,10 @@ export function AdminSidebar({ className }: SidebarProps) {
                                 </Link>
                             )
                         })}
-
                     </nav>
                 </div>
 
-                {/* Logout Bottom */}
+                {/* Footer */}
                 <div className="border-t p-3 flex-shrink-0">
                     <Button
                         variant="ghost"

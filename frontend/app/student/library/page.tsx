@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BookOpen, Search, Bookmark, Eye, Download } from "lucide-react";
+import { BookOpen, Search, Bookmark, Eye, Download, FileText, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,36 +34,60 @@ interface Resource {
     views: number;
     downloads: number;
     domain?: Domain;
+    domainId: string;
+    isPaid: boolean;
     fileUrl?: string;
     content?: any;
 }
 
 export default function StudentLibraryPage() {
-    const { user } = useAuth();
-    const [categories, _setCategories] = useState<Category[]>([]);
-    const [selectedCategory, _setSelectedCategory] = useState<Category | null>(null);
-    const [selectedDomain, _setSelectedDomain] = useState<Domain | null>(null);
-    const [resources, _setResources] = useState<Resource[]>([]);
+    const { user: _user } = useAuth();
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+    const [selectedDomainId, setSelectedDomainId] = useState<string | null>(null);
+    const [resources, setResources] = useState<Resource[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [_loading, _setLoading] = useState(true);
-    const [bookmarks, _setBookmarks] = useState<Set<string>>(new Set());
-    const [showBookmarksOnly, _setShowBookmarksOnly] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // View Modal State
     const [viewResource, setViewResource] = useState<Resource | null>(null);
 
-    const handleShowBookmarks = () => {};
-    const handleSearch = () => {};
-    const handleCategoryClick = (_category: Category) => {};
-    const handleDomainClick = (_domain: Domain) => {};
-    const handleToggleBookmark = (_resource: Resource) => {};
-    const handleDownload = (_resourceId: string) => {};
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [catsRes, resRes] = await Promise.all([
+                libraryApi.getCategories(),
+                libraryApi.getResources()
+            ]);
+            setCategories(catsRes.data);
+            setResources(resRes.data);
+        } catch (error) {
+            console.error('Error fetching library data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        // The filtering is done client-side below, but we could also call API with search param
+    };
+
+    const handleCategoryClick = (categoryId: string) => {
+        setSelectedCategoryId(selectedCategoryId === categoryId ? null : categoryId);
+        setSelectedDomainId(null);
+    };
+
+    const handleDomainIdClick = (domainId: string) => {
+        setSelectedDomainId(selectedDomainId === domainId ? null : domainId);
+    };
 
     const handleView = async (resource: Resource) => {
-        // Optimistically set resource for immediate feedback
         setViewResource(resource);
-
-        // Track view count
         try {
             await libraryApi.trackView(resource.id);
         } catch (error) {
@@ -71,217 +95,191 @@ export default function StudentLibraryPage() {
         }
     };
 
-    // ... existing handlers
+    const filteredResources = resources.filter(res => {
+        const matchesSearch = res.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            res.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = !selectedCategoryId || res.domain?.category?.id === selectedCategoryId;
+        const matchesDomain = !selectedDomainId || res.domainId === selectedDomainId;
+        return matchesSearch && matchesCategory && matchesDomain;
+    });
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
     return (
-        <div className="p-6 space-y-6">
-            {/* ... existing UI ... */}
+        <div className="p-6 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-10">
+                <h1 className="text-3xl font-bold flex items-center justify-center gap-2">
+                    <BookOpen className="h-8 w-8 text-primary" />
+                    Library
+                </h1>
+                <p className="text-muted-foreground mt-2">Access hundreds of premium study materials and interview guides</p>
+            </div>
 
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-2">
-                        <BookOpen className="h-8 w-8 text-primary" />
-                        Library
-                    </h1>
-                    <p className="text-muted-foreground mt-2">
-                        Browse educational resources and study materials
-                    </p>
+            {/* Filters & Search */}
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search resources..." 
+                        className="pl-10"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
-                {user && (
-                    <Button variant={showBookmarksOnly ? "default" : "outline"} onClick={handleShowBookmarks}>
-                        <Bookmark className="h-4 w-4 mr-2" />
-                        My Bookmarks
+                <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                    <Button 
+                        variant={!selectedCategoryId ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => { setSelectedCategoryId(null); setSelectedDomainId(null); }}
+                    >
+                        All
                     </Button>
-                )}
+                    {categories.map(cat => (
+                        <Button
+                            key={cat.id}
+                            variant={selectedCategoryId === cat.id ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleCategoryClick(cat.id)}
+                        >
+                            {cat.name}
+                        </Button>
+                    ))}
+                </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="flex gap-2">
-                <Input
-                    placeholder="Search resources..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                    className="max-w-md"
-                />
-                <Button onClick={handleSearch}>
-                    <Search className="h-4 w-4 mr-2" />
-                    Search
-                </Button>
-            </div>
+            {/* Domains Filter (if Category selected) */}
+            {selectedCategoryId && (
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+                    {categories.find(c => c.id === selectedCategoryId)?.domains?.map(dom => (
+                        <Button
+                            key={dom.id}
+                            variant={selectedDomainId === dom.id ? "secondary" : "ghost"}
+                            size="sm"
+                            className="rounded-full"
+                            onClick={() => handleDomainIdClick(dom.id)}
+                        >
+                            {dom.name}
+                        </Button>
+                    ))}
+                </div>
+            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                {/* Sidebar - Categories */}
-                <div className="lg:col-span-1 space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Categories</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            {categories.map((category) => (
-                                <button
-                                    key={category.id}
-                                    onClick={() => handleCategoryClick(category)}
-                                    className={`w-full text-left p-3 rounded-lg transition ${selectedCategory?.id === category.id
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'hover:bg-muted'
-                                        }`}
-                                >
-                                    <div className="font-medium">{category.name}</div>
-                                    <div className="text-xs opacity-80">
-                                        {category.domains?.length || 0} domains
-                                    </div>
-                                </button>
-                            ))}
-                        </CardContent>
-                    </Card>
-
-                    {selectedCategory && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg">Domains</CardTitle>
+            {/* Resources Grid */}
+            {filteredResources.length === 0 ? (
+                <Card className="p-12 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                        <Search className="h-10 w-10 text-muted-foreground opacity-20" />
+                        <h3 className="text-lg font-semibold">No resources found</h3>
+                        <p className="text-muted-foreground">Try adjusting your filters or search query</p>
+                    </div>
+                </Card>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filteredResources.map((resource) => (
+                        <Card key={resource.id} className="group relative flex flex-col h-full hover:shadow-xl transition-all duration-300 border-primary/10">
+                            {resource.isPaid && (
+                                <div className="absolute top-3 right-3 z-10 bg-yellow-400 text-yellow-950 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm uppercase tracking-wider">
+                                    PRO
+                                </div>
+                            )}
+                            <CardHeader className="pb-2">
+                                <div className="text-xs font-medium text-primary mb-1 uppercase tracking-tighter opacity-70">
+                                    {resource.domain?.name}
+                                </div>
+                                <CardTitle className="text-lg line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                                    {resource.title}
+                                </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-2">
-                                {selectedCategory.domains?.map((domain) => (
-                                    <button
-                                        key={domain.id}
-                                        onClick={() => handleDomainClick(domain)}
-                                        className={`w-full text-left p-2 rounded transition text-sm ${selectedDomain?.id === domain.id
-                                            ? 'bg-primary/20 text-primary font-medium'
-                                            : 'hover:bg-muted'
-                                            }`}
-                                    >
-                                        {domain.name}
-                                    </button>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-
-                {/* Main Content - Resources */}
-                <div className="lg:col-span-3">
-                    {resources.length === 0 ? (
-                        <Card>
-                            <CardContent className="p-12 text-center">
-                                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                                <h3 className="text-lg font-medium mb-2">No resources found</h3>
-                                <p className="text-muted-foreground">
-                                    {showBookmarksOnly
-                                        ? "You haven't bookmarked any resources yet."
-                                        : "Select a category and domain to view resources"}
+                            <CardContent className="flex-1">
+                                <p className="text-xs text-muted-foreground line-clamp-3 mb-4 min-h-[3rem]">
+                                    {resource.description || "No description provided."}
                                 </p>
+                                <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-medium">
+                                    <span className="flex items-center gap-1">
+                                        <Eye className="h-3 w-3" /> {resource.views}
+                                    </span>
+                                    {resource.type === 'PDF' && (
+                                        <span className="flex items-center gap-1">
+                                            <Download className="h-3 w-3" /> {resource.downloads}
+                                        </span>
+                                    )}
+                                    <span className="ml-auto px-2 py-0.5 bg-muted rounded">
+                                        {resource.type}
+                                    </span>
+                                </div>
                             </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="space-y-4">
-                            {resources.map((resource) => (
-                                <Card key={resource.id} className="hover:shadow-lg transition">
-                                    <CardHeader>
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <CardTitle className="text-xl flex items-center justify-between">
-                                                    {resource.title}
-                                                    {user && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleToggleBookmark(resource)}
-                                                            className={bookmarks.has(resource.id) ? "text-yellow-500" : "text-muted-foreground"}
-                                                            title={bookmarks.has(resource.id) ? "Remove Bookmark" : "Bookmark this resource"}
-                                                        >
-                                                            <Bookmark className={`h-5 w-5 ${bookmarks.has(resource.id) ? "fill-current" : ""}`} />
-                                                        </Button>
-                                                    )}
-                                                </CardTitle>
-                                                <p className="text-sm text-muted-foreground mt-1">
-                                                    {resource.domain?.category?.name} → {resource.domain?.name}
-                                                </p>
-                                            </div>
-                                            <span className={`px-3 py-1 text-xs rounded-full ml-2 ${resource.type === 'PDF'
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'bg-green-100 text-green-700'
-                                                }`}>
-                                                {resource.type}
-                                            </span>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-muted-foreground mb-4">{resource.description}</p>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex gap-4 text-sm text-muted-foreground">
-                                                <span className="flex items-center gap-1">
-                                                    <Eye className="h-4 w-4" />
-                                                    {resource.views} views
-                                                </span>
-                                                {resource.type === 'PDF' && (
-                                                    <span className="flex items-center gap-1">
-                                                        <Download className="h-4 w-4" />
-                                                        {resource.downloads} downloads
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleView(resource)}
-                                                >
-                                                    <Eye className="h-4 w-4 mr-2" />
-                                                    View
-                                                </Button>
-                                                {resource.type === 'PDF' && (
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleDownload(resource.id)}
-                                                    >
-                                                        <Download className="h-4 w-4 mr-2" />
-                                                        Download
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Resource Viewer Modal */}
-            <Dialog open={!!viewResource} onOpenChange={(open) => !open && setViewResource(null)}>
-                <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-                    <DialogHeader>
-                        <DialogTitle>{viewResource?.title}</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-auto p-1">
-                        {viewResource?.type === 'PDF' && viewResource.fileUrl ? (
-                            <iframe
-                                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}${viewResource.fileUrl}`}
-                                className="w-full h-full border rounded-md"
-                                title={viewResource.title}
-                            />
-                        ) : viewResource?.type === 'QA' && viewResource.content ? (
-                            <div className="space-y-6">
-                                {viewResource.content.questions?.map((qa: any, index: number) => (
-                                    <Card key={index}>
-                                        <CardHeader>
-                                            <CardTitle className="text-base font-semibold">
-                                                Q{index + 1}: {qa.q}
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-muted-foreground whitespace-pre-wrap">{qa.a}</p>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                            <div className="p-4 pt-0">
+                                {resource.isPaid ? (
+                                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 font-bold" size="sm">
+                                        Unlock Full Access 🔓
+                                    </Button>
+                                ) : (
+                                    <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all" size="sm" onClick={() => handleView(resource)}>
+                                        Open Resource
+                                    </Button>
+                                )}
                             </div>
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground">
-                                Content not available or invalid format.
+                        </Card>
+                    ))}
+                </div>
+            )}
+
+            {/* View Modal */}
+            <Dialog open={!!viewResource} onOpenChange={() => setViewResource(null)}>
+                <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+                    <DialogHeader className="p-6 pb-2">
+                        <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                                {viewResource?.type === 'PDF' ? <FileText className="h-4 w-4 text-red-500" /> : <BookOpen className="h-4 w-4 text-blue-500" />}
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{viewResource?.type} Resource</span>
+                            </div>
+                            
+                            {viewResource?.type === 'PDF' && (
+                                <a 
+                                    href={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${viewResource.fileUrl}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-[10px] flex items-center gap-1 text-primary hover:underline font-bold"
+                                >
+                                    Open in new tab <Plus className="h-3 w-3 rotate-45" />
+                                </a>
+                            )}
+                        </div>
+                        <DialogTitle className="text-2xl leading-tight">{viewResource?.title}</DialogTitle>
+                        <p className="text-sm text-muted-foreground mt-1">{viewResource?.description}</p>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-y-auto p-6 pt-2 bg-muted/50">
+                        {viewResource?.type === 'PDF' && (
+                            <div className="aspect-[4/5] w-full bg-white rounded-lg shadow-inner overflow-hidden border">
+                                <iframe 
+                                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${viewResource.fileUrl}`} 
+                                    className="w-full h-full border-none"
+                                    title={viewResource.title}
+                                />
+                            </div>
+                        )}
+                        {viewResource?.type === 'QA' && (
+                            <div className="space-y-6">
+                                {(viewResource.content as any)?.questions?.map((qa: any, i: number) => (
+                                    <div key={i} className="bg-background p-5 rounded-xl border border-primary/10 shadow-sm relative overflow-hidden group">
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary transition-colors"></div>
+                                        <h4 className="font-bold text-lg mb-3 flex gap-3">
+                                            <span className="text-primary opacity-30">Q{i+1}</span>
+                                            {qa.q}
+                                        </h4>
+                                        <div className="p-4 bg-muted/50 rounded-lg text-sm leading-relaxed whitespace-pre-wrap">
+                                            {qa.a}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
