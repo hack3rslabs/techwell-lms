@@ -2,10 +2,16 @@
 import * as React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { Mail, Phone, MapPin, Twitter, Linkedin, Youtube, Github, Instagram, ExternalLink } from 'lucide-react'
 
 export function Footer() {
+    const pathname = usePathname()
     const [_year, setYear] = React.useState(2024)
+
+    if (pathname?.startsWith('/admin')) {
+        return null
+    }
 
     return (
         <footer className="bg-muted/50 border-t mt-auto">

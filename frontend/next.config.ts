@@ -48,6 +48,11 @@ const nextConfig: NextConfig = {
         hostname: "**.googleusercontent.com",
         pathname: "**",
       },
+      {
+        protocol: "https",
+        hostname: "logo.clearbit.com",
+        pathname: "**",
+      },
     ],
   },
 };
