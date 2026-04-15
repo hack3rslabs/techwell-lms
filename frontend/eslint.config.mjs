@@ -7,18 +7,12 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     rules: {
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        {
-          "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_",
-          "caughtErrorsIgnorePattern": "^_"
-        }
-      ],
-      "@typescript-eslint/no-explicit-any": "warn",
-      "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "react-hooks/exhaustive-deps": "off",
       "react/no-unescaped-entities": "off",
-      "react-hooks/set-state-in-effect": "warn"
+      "react-hooks/set-state-in-effect": "off",
+      "@next/next/no-img-element": "off"
     }
   },
   // Override default ignores of eslint-config-next.

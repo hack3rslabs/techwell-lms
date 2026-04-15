@@ -67,12 +67,12 @@ export function AdminSidebar({ className }: SidebarProps) {
         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "MANAGE_CONTENT" },
         { label: "Reviews", icon: MessageSquare, href: "/admin/reviews", permission: "MANAGE_CONTENT" },
         { label: "Library", icon: BookOpen, href: "/admin/library", permission: "MANAGE_CONTENT" },
-        { label: "Job Board", icon: Briefcase, href: "/admin/jobs" },
-        { label: "Projects Market", icon: Briefcase, href: "/admin/projects" },
-        { label: "Support Tickets", icon: MessageSquare, href: "/admin/support", permission: "VIEW_SUPPORT" },
-        { label: "General Settings", icon: Settings, href: "/admin/settings", permission: "MANAGE_SETTINGS" },
-        { label: "Video Integration", icon: Video, href: "/admin/video-settings", permission: "MANAGE_SETTINGS" },
-        { label: "System Logs", icon: FileText, href: "/admin/logs", permission: "MANAGE_SETTINGS" },
+        //  { label: "Job Board", icon: Briefcase, href: "/admin/jobs" },
+        // { label: "Projects Market", icon: Briefcase, href: "/admin/projects" },
+        //   { label: "Support Tickets", icon: MessageSquare, href: "/admin/support", permission: "VIEW_SUPPORT" },
+        // { label: "General Settings", icon: Settings, href: "/admin/settings", permission: "MANAGE_SETTINGS" },
+        //  { label: "Video Integration", icon: Video, href: "/admin/video-settings", permission: "MANAGE_SETTINGS" },
+        //  { label: "System Logs", icon: FileText, href: "/admin/logs", permission: "MANAGE_SETTINGS" },
     ]
 
     const availableRoutes = routes.filter(route => {

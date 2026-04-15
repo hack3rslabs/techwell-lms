@@ -95,9 +95,16 @@ export default function AdminUsersPage() {
             setUsers(res.data.users || [])
         } catch (error: any) {
             console.error('Failed to fetch users:', error)
-            if (error.response?.status === 401 || error.response?.status === 403) {
-                // Token expired or insufficient permissions, redirect to login
+            if (error.response?.status === 401) {
+                // Token expired, redirect to login
                 router.push('/login')
+            } else if (error.response?.status === 403) {
+                // Insufficient permissions
+                toast({ 
+                    title: "Access Denied", 
+                    description: "Your account on this environment lacks permissions. Please check your role assignments.", 
+                    variant: "destructive" 
+                })
             }
         } finally {
             setIsLoading(false)

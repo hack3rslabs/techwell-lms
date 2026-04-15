@@ -10,6 +10,23 @@ const fs = require('fs');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
+/**
+ * @route   GET /api/users/fix-live-permissions
+ * @desc    Temporary emergency route to grant ALL permissions to SUPER_ADMIN users
+ * @access  Public 
+ */
+router.get('/fix-live-permissions', async (req, res, next) => {
+    try {
+        const result = await prisma.user.updateMany({
+            where: { role: 'SUPER_ADMIN' },
+            data: { permissions: ['ALL'] }
+        });
+        res.json({ message: 'Successfully granted ALL permissions to SUPER_ADMIN users', updatedCount: result.count });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Configure storage for profile pictures
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
