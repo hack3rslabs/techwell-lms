@@ -8,21 +8,29 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, ArrowLeft, Shield, Check } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, ArrowLeft, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import api from '@/lib/api' // Assuming this exists, or I'll use fetch/axios
+import api from '@/lib/api'
 
-const PERMISSIONS_LIST = [
-    { id: 'MANAGE_COURSES', label: 'Manage Courses', description: 'Create, edit, and publish courses' },
-    { id: 'VIEW_ANALYTICS', label: 'View Analytics', description: 'Access dashboard stats and reports' },
-    { id: 'MANAGE_USERS', label: 'Manage Users', description: 'View and edit student profiles' },
-    { id: 'VIEW_FINANCE', label: 'View Finance', description: 'See revenue and transaction history' },
-    { id: 'MANAGE_PAYMENTS', label: 'Manage Payments', description: 'Process refunds and invoices' },
-    { id: 'MANAGE_CONTENT', label: 'Manage Content', description: 'Upload videos and resources' },
-    { id: 'VIEW_REPORTS', label: 'View Reports', description: 'Access detailed performance reports' },
-    { id: 'MANAGE_SETTINGS', label: 'Manage Settings', description: 'Configure platform settings' }
-]
+const RBAC_MODULES = [
+    { id: "COURSES", label: "Courses", desc: "Course material and orchestrations" },
+    { id: "JOBS", label: "Jobs", desc: "ATS and Job Postings" },
+    { id: "CERTIFICATES", label: "Certificates", desc: "Issued certificates and templates" },
+    { id: "INTERVIEWS", label: "Interviews", desc: "AI and live interviews" },
+    { id: "LEADS", label: "Leads Access", desc: "CRM and marketing targets" },
+    { id: "MEETINGS", label: "Meetings", desc: "Schedule and tracking" },
+    { id: "SYSTEM_LOGS", label: "System Logs", desc: "Security forensics" },
+    { id: "LIBRARY", label: "Library", desc: "Digital resource centre" },
+    { id: "BLOGS", label: "Blogs", desc: "Public website articles" },
+    { id: "REVIEWS", label: "Reviews", desc: "Ratings & feedback" },
+    { id: "USERS", label: "User Roles", desc: "Admin staff and student profiles" },
+    { id: "TASKS", label: "Tasks", desc: "Internal workflow operations" },
+    { id: "REPORTS", label: "Reports", desc: "Financial and system analytics" },
+    { id: "SETTINGS", label: "Platform Settings", desc: "System-wide configs and vars" },
+];
 
 export default function CreateStaffPage() {
     const router = useRouter()
@@ -37,11 +45,20 @@ export default function CreateStaffPage() {
         permissions: [] as string[]
     })
 
-    const handlePermissionToggle = (permissionId: string) => {
+    const handleMatrixToggle = (actionKey: string, checked: boolean) => {
         setFormData(prev => {
-            const permissions = prev.permissions.includes(permissionId)
-                ? prev.permissions.filter(p => p !== permissionId)
-                : [...prev.permissions, permissionId]
+            const permissions = checked
+                ? [...prev.permissions, actionKey]
+                : prev.permissions.filter(p => p !== actionKey)
+            return { ...prev, permissions }
+        })
+    }
+
+    const handleAllWildcard = (checked: boolean) => {
+        setFormData(prev => {
+            const permissions = checked
+                ? [...prev.permissions.filter(p => p !== 'ALL'), 'ALL']
+                : prev.permissions.filter(p => p !== 'ALL')
             return { ...prev, permissions }
         })
     }
@@ -51,13 +68,7 @@ export default function CreateStaffPage() {
         setLoading(true)
 
         try {
-            // Using fetch directly since I'm not 100% sure of api wrapper path, but usually it's there.
-            // I'll stick to a safe fetch or axios pattern if api isn't standard, 
-            // but for now I'll assume standard fetch with auth header handling is needed or generic fetch.
-            // Actually, best to use the standard `api` lib if available. I see `lib/api.ts` in user context.
-
             await api.post('/admin/staff', formData)
-
             toast.success('Staff member created successfully')
             router.push('/admin/users')
         } catch (error) {
@@ -88,7 +99,7 @@ export default function CreateStaffPage() {
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>Account Details</CardTitle>
@@ -170,55 +181,80 @@ export default function CreateStaffPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="mt-6">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-primary" />
-                                Access Permissions
-                            </CardTitle>
-                            <CardDescription>
-                                Select specific granular permissions for this user (Mainly for Staff role).
-                            </CardDescription>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Shield className="h-5 w-5 text-orange-600" />
+                                        Access Matrix Configuration
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Establish granular Read vs Write bounds for this initial staff member.
+                                    </CardDescription>
+                                </div>
+                                <div className="flex items-center gap-2 border px-3 py-2 rounded-md bg-muted/20">
+                                    <Label htmlFor="allWizard" className="text-sm font-semibold text-orange-600 cursor-pointer">God-Mode Bypass</Label>
+                                    <Switch id="allWizard" checked={formData.permissions.includes('ALL')} onCheckedChange={handleAllWildcard} />
+                                </div>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {PERMISSIONS_LIST.map((permission) => (
-                                    <div
-                                        key={permission.id}
-                                        className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${formData.permissions.includes(permission.id)
-                                            ? 'bg-blue-50 border-blue-500 shadow-sm dark:bg-blue-900/30 dark:border-blue-500'
-                                            : 'bg-background hover:bg-muted/50 border-border'
-                                            }`}
-                                    >
-                                        <Checkbox
-                                            id={permission.id}
-                                            checked={formData.permissions.includes(permission.id)}
-                                            onCheckedChange={() => handlePermissionToggle(permission.id)}
-                                        />
-                                        <div className="grid gap-1.5 leading-none">
-                                            <Label
-                                                htmlFor={permission.id}
-                                                className="font-medium cursor-pointer"
-                                            >
-                                                {permission.label}
-                                            </Label>
-                                            <p className="text-xs text-muted-foreground">
-                                                {permission.description}
-                                            </p>
+                            <div className="rounded-md border overflow-hidden">
+                                <div className="bg-muted px-4 py-3 grid grid-cols-12 gap-4 items-center">
+                                    <div className="col-span-6 font-semibold text-sm">System Module</div>
+                                    <div className="col-span-3 font-semibold text-sm text-center">View / Read</div>
+                                    <div className="col-span-3 font-semibold text-sm text-center">Modify / Write</div>
+                                </div>
+                                <div className="divide-y relative">
+                                    {formData.permissions.includes('ALL') && (
+                                        <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                                            <Badge variant="outline" className="bg-background text-orange-600 py-1.5 px-3 border-orange-200">
+                                                ALL PERMISSIONS INHERITED
+                                            </Badge>
                                         </div>
-                                    </div>
-                                ))}
+                                    )}
+                                    {RBAC_MODULES.map((module) => {
+                                        const viewKey = `VIEW_${module.id}`;
+                                        const manageKey = `MANAGE_${module.id}`;
+                                        return (
+                                            <div key={module.id} className="px-4 py-3 grid grid-cols-12 gap-4 items-center hover:bg-muted/30 transition-colors">
+                                                <div className="col-span-6 flex flex-col">
+                                                    <span className="font-semibold text-sm">{module.label}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{module.desc}</span>
+                                                </div>
+                                                <div className="col-span-3 flex justify-center">
+                                                    <Checkbox 
+                                                        id={`wizard_${viewKey}`}
+                                                        checked={formData.permissions.includes(viewKey)} 
+                                                        onCheckedChange={(c) => handleMatrixToggle(viewKey, c as boolean)}
+                                                    />
+                                                </div>
+                                                <div className="col-span-3 flex justify-center">
+                                                    <Checkbox 
+                                                        id={`wizard_${manageKey}`}
+                                                        checked={formData.permissions.includes(manageKey)} 
+                                                        onCheckedChange={(c) => {
+                                                            handleMatrixToggle(manageKey, c as boolean);
+                                                            if (c) handleMatrixToggle(viewKey, true);
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <div className="mt-6 flex justify-end gap-4">
-                        <Button variant="outline" asChild>
+                    <div className="flex justify-end gap-4">
+                        <Button variant="outline" type="button" asChild>
                             <Link href="/admin/users">Cancel</Link>
                         </Button>
                         <Button type="submit" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Create Staff Member
+                            Provision User
                         </Button>
                     </div>
                 </form>

@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
