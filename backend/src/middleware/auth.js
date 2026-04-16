@@ -97,8 +97,8 @@ const checkPermission = (requiredPermission) => {
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        // Check for wildcard 'ALL' permission (assigned via SystemRole, not hardcoded)
-        if (req.user.permissions && req.user.permissions.includes('ALL')) {
+        // Check for wildcard 'ALL' permission or SUPER_ADMIN base role
+        if (req.user.role === 'SUPER_ADMIN' || (req.user.permissions && req.user.permissions.includes('ALL'))) {
             return next();
         }
 

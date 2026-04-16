@@ -186,8 +186,8 @@ export default function CreateStaffPage() {
                                     <div
                                         key={permission.id}
                                         className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${formData.permissions.includes(permission.id)
-                                            ? 'bg-primary/5 border-primary/50'
-                                            : 'bg-card hover:bg-muted/50'
+                                            ? 'bg-blue-50 border-blue-500 shadow-sm dark:bg-blue-900/30 dark:border-blue-500'
+                                            : 'bg-background hover:bg-muted/50 border-border'
                                             }`}
                                     >
                                         <Checkbox

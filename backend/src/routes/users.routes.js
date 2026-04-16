@@ -420,4 +420,35 @@ router.post('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res,
     }
 });
 
+/**
+ * @route   PUT /api/users/:id/permissions
+ * @desc    Update a user's role and explicit permissions mapping (Admin only)
+ * @access  Private/Admin
+ */
+router.put('/:id/permissions', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { role, isActive, permissions } = req.body;
+        
+        // Ensure user is not disabling themselves
+        if (id === req.user.id && (isActive === false || role !== 'SUPER_ADMIN')) {
+           return res.status(400).json({ error: 'You cannot downgrade or deactivate your own account.' });
+        }
+
+        const user = await prisma.user.update({
+            where: { id },
+            data: {
+                role: role,
+                isActive: isActive !== undefined ? Boolean(isActive) : undefined,
+                permissions: permissions // json array
+            },
+            select: { id: true, email: true, name: true, role: true, isActive: true, permissions: true }
+        });
+
+        res.json({ message: 'User permissions updated successfully', user });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

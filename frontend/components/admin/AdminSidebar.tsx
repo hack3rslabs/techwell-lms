@@ -72,7 +72,7 @@ export function AdminSidebar({ className }: SidebarProps) {
         //   { label: "Support Tickets", icon: MessageSquare, href: "/admin/support", permission: "VIEW_SUPPORT" },
         // { label: "General Settings", icon: Settings, href: "/admin/settings", permission: "MANAGE_SETTINGS" },
         //  { label: "Video Integration", icon: Video, href: "/admin/video-settings", permission: "MANAGE_SETTINGS" },
-        //  { label: "System Logs", icon: FileText, href: "/admin/logs", permission: "MANAGE_SETTINGS" },
+        { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "MANAGE_USERS" },
     ]
 
     const availableRoutes = routes.filter(route => {
