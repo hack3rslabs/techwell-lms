@@ -15,7 +15,7 @@ async function _getDynamicRoutes(_endpoint: string, _routePrefix: string) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techwell.com'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techwell.co.in'
 
     // Static Routes
     const routes = [

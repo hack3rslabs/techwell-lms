@@ -135,6 +135,8 @@ app.use('/api/chatgpt', require('./routes/chatgpt.routes'));
 app.use('/api/enrollment-requests', require('./routes/enrollment-requests.routes'));
 app.use('/api/employer-requests', require('./routes/employer-requests.routes'));
 app.use('/api/messages', require('./routes/messages.routes'));
+app.use('/api/course-categories', require('./routes/course-categories.routes'));
+
 
 
 // Serve Static Uploads
