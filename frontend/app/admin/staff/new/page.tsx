@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Loader2, ArrowLeft, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -45,13 +46,29 @@ export default function CreateStaffPage() {
         permissions: [] as string[]
     })
 
-    const handleMatrixToggle = (actionKey: string, checked: boolean) => {
+    const handleRadioChange = (moduleId: string, value: string) => {
+        const viewKey = `VIEW_${moduleId}`;
+        const manageKey = `MANAGE_${moduleId}`;
+        
         setFormData(prev => {
-            const permissions = checked
-                ? [...prev.permissions, actionKey]
-                : prev.permissions.filter(p => p !== actionKey)
-            return { ...prev, permissions }
-        })
+            let nextPermissions = prev.permissions.filter(p => p !== viewKey && p !== manageKey);
+            
+            if (value === "allow") {
+                nextPermissions.push(viewKey, manageKey);
+            } else if (value === "view") {
+                nextPermissions.push(viewKey);
+            }
+            return { ...prev, permissions: nextPermissions };
+        });
+    }
+
+    const getModuleRadioValue = (moduleId: string) => {
+        const hasManage = formData.permissions.includes(`MANAGE_${moduleId}`);
+        const hasView = formData.permissions.includes(`VIEW_${moduleId}`);
+        
+        if (hasManage) return "allow";
+        if (hasView) return "view";
+        return "deny";
     }
 
     const handleAllWildcard = (checked: boolean) => {
@@ -202,9 +219,8 @@ export default function CreateStaffPage() {
                         <CardContent>
                             <div className="rounded-md border overflow-hidden">
                                 <div className="bg-muted px-4 py-3 grid grid-cols-12 gap-4 items-center">
-                                    <div className="col-span-6 font-semibold text-sm">System Module</div>
-                                    <div className="col-span-3 font-semibold text-sm text-center">View / Read</div>
-                                    <div className="col-span-3 font-semibold text-sm text-center">Modify / Write</div>
+                                    <div className="col-span-5 font-semibold text-sm">System Module</div>
+                                    <div className="col-span-7 font-semibold text-sm">Access Designation</div>
                                 </div>
                                 <div className="divide-y relative">
                                     {formData.permissions.includes('ALL') && (
@@ -215,30 +231,31 @@ export default function CreateStaffPage() {
                                         </div>
                                     )}
                                     {RBAC_MODULES.map((module) => {
-                                        const viewKey = `VIEW_${module.id}`;
-                                        const manageKey = `MANAGE_${module.id}`;
                                         return (
-                                            <div key={module.id} className="px-4 py-3 grid grid-cols-12 gap-4 items-center hover:bg-muted/30 transition-colors">
-                                                <div className="col-span-6 flex flex-col">
+                                            <div key={module.id} className="px-4 py-4 grid grid-cols-12 gap-4 items-center hover:bg-muted/30 transition-colors">
+                                                <div className="col-span-4 flex flex-col">
                                                     <span className="font-semibold text-sm">{module.label}</span>
-                                                    <span className="text-[10px] text-muted-foreground">{module.desc}</span>
+                                                    <span className="text-[10px] text-muted-foreground hidden lg:block">{module.desc}</span>
                                                 </div>
-                                                <div className="col-span-3 flex justify-center">
-                                                    <Checkbox 
-                                                        id={`wizard_${viewKey}`}
-                                                        checked={formData.permissions.includes(viewKey)} 
-                                                        onCheckedChange={(c) => handleMatrixToggle(viewKey, c as boolean)}
-                                                    />
-                                                </div>
-                                                <div className="col-span-3 flex justify-center">
-                                                    <Checkbox 
-                                                        id={`wizard_${manageKey}`}
-                                                        checked={formData.permissions.includes(manageKey)} 
-                                                        onCheckedChange={(c) => {
-                                                            handleMatrixToggle(manageKey, c as boolean);
-                                                            if (c) handleMatrixToggle(viewKey, true);
-                                                        }}
-                                                    />
+                                                <div className="col-span-8">
+                                                    <RadioGroup 
+                                                        className="flex flex-col sm:flex-row gap-4 sm:gap-6" 
+                                                        value={getModuleRadioValue(module.id)}
+                                                        onValueChange={(v) => handleRadioChange(module.id, v)}
+                                                    >
+                                                        <div className="flex items-center space-x-2">
+                                                            <RadioGroupItem value="allow" id={`allow-${module.id}`} />
+                                                            <Label htmlFor={`allow-${module.id}`} className="cursor-pointer text-sm font-medium">Allow (Full)</Label>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <RadioGroupItem value="view" id={`view-${module.id}`} />
+                                                            <Label htmlFor={`view-${module.id}`} className="cursor-pointer text-sm">View Only</Label>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <RadioGroupItem value="deny" id={`deny-${module.id}`} />
+                                                            <Label htmlFor={`deny-${module.id}`} className="cursor-pointer text-sm text-destructive">Deny / Hidden</Label>
+                                                        </div>
+                                                    </RadioGroup>
                                                 </div>
                                             </div>
                                         )
