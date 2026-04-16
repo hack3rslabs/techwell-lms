@@ -3,16 +3,17 @@
 import * as React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, AlertTriangle, X } from 'lucide-react'
 import { LoginCharacter } from '@/components/auth/LoginCharacter'
 
 export default function LoginPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const { login, isAuthenticated } = useAuth()
 
     const [email, setEmail] = React.useState('')
@@ -21,12 +22,19 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = React.useState(false)
     const [error, setError] = React.useState('')
     const [charState, setCharState] = React.useState<"normal" | "shy" | "peeking">("normal")
+    const [showIdleBanner, setShowIdleBanner] = React.useState(false)
 
     React.useEffect(() => {
         if (isAuthenticated) {
             router.push('/dashboard')
         }
     }, [isAuthenticated, router])
+
+    React.useEffect(() => {
+        if (searchParams.get('reason') === 'idle') {
+            setShowIdleBanner(true)
+        }
+    }, [searchParams])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -107,7 +115,28 @@ export default function LoginPage() {
                             </CardHeader>
                             <CardContent className="px-8 pb-10">
                                 <form onSubmit={handleSubmit} className="space-y-5">
-                                    {error && (
+                                    {/* Idle session expired banner */}
+                                {showIdleBanner && (
+                                    <div
+                                        role="alert"
+                                        className="flex items-start gap-3 p-4 text-sm font-medium text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/40 animate-in fade-in slide-in-from-top-2 duration-300"
+                                    >
+                                        <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
+                                        <span className="flex-1">
+                                            You were automatically logged out due to inactivity.
+                                            Please sign in again to continue.
+                                        </span>
+                                        <button
+                                            aria-label="Dismiss"
+                                            onClick={() => setShowIdleBanner(false)}
+                                            className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 transition-colors flex-shrink-0"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                )}
+
+                                {error && (
                                         <div className="p-4 text-sm font-medium text-red-500 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/30 animate-in fade-in zoom-in duration-300">
                                             {error}
                                         </div>

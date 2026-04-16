@@ -372,4 +372,18 @@ export const rbacApi = {
     assignRole: (userId: string, roleId: string) => api.post('/rbac/assign', { userId, roleId }),
 };
 
+// Course Category API
+export const courseCategoryApi = {
+    // Public
+    getAll: () => api.get('/course-categories'),
+    // Admin-only
+    getAllAdmin: () => api.get('/course-categories/admin'),
+    create: (data: { name: string; slug: string; description?: string; icon?: string; color?: string; isActive?: boolean; orderIndex?: number }) =>
+        api.post('/course-categories', data),
+    update: (id: string, data: Partial<{ name: string; slug: string; description: string; icon: string; color: string; isActive: boolean; orderIndex: number }>) =>
+        api.put(`/course-categories/${id}`, data),
+    delete: (id: string) => api.delete(`/course-categories/${id}`),
+};
+
 export default api;
+

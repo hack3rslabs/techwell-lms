@@ -12,7 +12,7 @@ async function createTestStudent() {
 
         // Check if user already exists
         const existingUser = await prisma.user.findUnique({
-            where: { email: 'student@techwell.com' }
+            where: { email: 'student@techwell.co.in' }
         });
 
         if (existingUser) {
@@ -20,7 +20,7 @@ async function createTestStudent() {
 
             // Update existing user
             const user = await prisma.user.update({
-                where: { email: 'student@techwell.com' },
+                where: { email: 'student@techwell.co.in' },
                 data: {
                     password: hashedPassword,
                     role: 'STUDENT',
@@ -38,7 +38,7 @@ async function createTestStudent() {
             // Create new user
             const user = await prisma.user.create({
                 data: {
-                    email: 'student@techwell.com',
+                    email: 'student@techwell.co.in',
                     password: hashedPassword,
                     name: 'Test Student',
                     role: 'STUDENT',

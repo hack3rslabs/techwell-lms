@@ -1,7 +1,10 @@
 "use client"
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { authApi, userApi } from '@/lib/api';
+import { useIdleTimeout } from '@/hooks/useIdleTimeout';
+import { IdleWarningModal } from '@/components/auth/IdleWarningModal';
 
 interface User {
     id: string;
@@ -97,11 +100,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return response.data;
     };
 
-    const logout = () => {
+    const router = useRouter();
+
+    const logout = React.useCallback(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
-    };
+    }, []);
+
+    // ── Idle timeout (10 min) ──────────────────────────────────────────────────
+    const { isWarning, remainingSeconds, resetTimer } = useIdleTimeout({
+        isAuthenticated,
+        onLogout: logout,
+    });
+
+    const handleLogoutNow = React.useCallback(() => {
+        logout();
+        router.push('/login');
+    }, [logout, router]);
+    // ──────────────────────────────────────────────────────────────────────────
 
     const refreshUser = async () => {
         try {
@@ -134,6 +151,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }}
         >
             {children}
+            {isWarning && isAuthenticated && (
+                <IdleWarningModal
+                    remainingSeconds={remainingSeconds}
+                    onStayLoggedIn={resetTimer}
+                    onLogoutNow={handleLogoutNow}
+                />
+            )}
         </AuthContext.Provider>
     );
 }

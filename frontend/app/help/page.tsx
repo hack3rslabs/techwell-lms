@@ -27,7 +27,7 @@ const faqs = [
     { q: 'Is TechWell free to use?', a: 'Yes! TechWell offers a free tier with access to 3 courses and 2 AI mock interviews per month. Premium plans unlock unlimited access.' },
     { q: 'How realistic are the AI interviews?', a: 'Our AI interviews simulate real interview scenarios with industry-specific questions. Many users report the experience is very close to actual tech interviews.' },
     { q: 'Can I get a refund?', a: 'Yes, we offer a 7-day money-back guarantee on all paid plans. Contact support for assistance.' },
-    { q: 'How do I contact support?', a: 'You can reach us via email at support@techwell.com or through the contact form on our website. We typically respond within 24 hours.' },
+    { q: 'How do I contact support?', a: 'You can reach us via email at support@techwell.co.in or through the contact form on our website. We typically respond within 24 hours.' },
 ]
 
 export default function HelpPage() {
