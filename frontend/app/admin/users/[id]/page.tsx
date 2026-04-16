@@ -52,14 +52,21 @@ export default function User360Page() {
     const [editedIsActive, setEditedIsActive] = useState<boolean>(true)
     const [editedPermissions, setEditedPermissions] = useState<string[]>([])
 
-    const PERMISSION_DEFINITIONS = [
-        { id: "MANAGE_COURSES", label: "Manage Courses", description: "Create, edit, and orchestrate all courses." },
-        { id: "PUBLISH_COURSE", label: "Publish Courses", description: "Bypass draft review and publish courses directly." },
-        { id: "MANAGE_USERS", label: "Manage Users", description: "View and edit other users' profiles, statuses, and roles." },
-        { id: "MANAGE_FINANCE", label: "Manage Finance", description: "View payments, initiate refunds, handle payouts." },
-        { id: "VIEW_REPORTS", label: "View Reports", description: "Access platform-wide analytics, dashboards, and reporting." },
-        { id: "MANAGE_SETTINGS", label: "Manage Settings", description: "System configuration, AI setup, and application variables." },
-        { id: "ALL", label: "Full System Bypass (ALL)", description: "God mode. Overrides everything. Grants all permissions universally." }
+    const RBAC_MODULES = [
+        { id: "COURSES", label: "Courses", desc: "Course material and orchestrations" },
+        { id: "JOBS", label: "Jobs", desc: "ATS and Job Postings" },
+        { id: "CERTIFICATES", label: "Certificates", desc: "Issued certificates and templates" },
+        { id: "INTERVIEWS", label: "Interviews", desc: "AI and live interviews" },
+        { id: "LEADS", label: "Leads Access", desc: "CRM and marketing targets" },
+        { id: "MEETINGS", label: "Meetings", desc: "Schedule and tracking" },
+        { id: "SYSTEM_LOGS", label: "System Logs", desc: "Security forensics" },
+        { id: "LIBRARY", label: "Library", desc: "Digital resource centre" },
+        { id: "BLOGS", label: "Blogs", desc: "Public website articles" },
+        { id: "REVIEWS", label: "Reviews", desc: "Ratings & feedback" },
+        { id: "USERS", label: "User Roles", desc: "Admin staff and student profiles" },
+        { id: "TASKS", label: "Tasks", desc: "Internal workflow operations" },
+        { id: "REPORTS", label: "Reports", desc: "Financial and system analytics" },
+        { id: "SETTINGS", label: "Platform Settings", desc: "System-wide configs and vars" },
     ];
 
     const ROLES_LIST = ["STUDENT", "INSTRUCTOR", "EMPLOYER", "ADMIN", "SUPER_ADMIN", "STAFF", "INSTITUTE_ADMIN"];
@@ -77,13 +84,8 @@ export default function User360Page() {
 
             setAuditLogs(activityRes.data)
 
-            // Current backend route doesn't return exactly one user by id with full permissions unless we use a custom fetch,
-            // For now we get from list. But wait, the list doesn't include 'permissions' array. 
-            // We'll init with empty if missing. Realistically, we need GET /users/:id 
             const foundUser = usersRes.data.users.find((u: UserProfile) => u.id === id)
             if (foundUser) {
-                // If the user's permissions weren't returned in the list array, we'll try to default to none, 
-                // but SUPER_ADMIN defaults to ALL
                 const perms = foundUser.permissions || (foundUser.role === 'SUPER_ADMIN' ? ["ALL"] : []);
                 foundUser.permissions = perms;
                 setUser(foundUser);
@@ -98,11 +100,19 @@ export default function User360Page() {
         }
     }
 
-    const handlePermissionToggle = (permId: string, checked: boolean) => {
+    const handleMatrixToggle = (actionKey: string, checked: boolean) => {
         if (checked) {
-            setEditedPermissions(prev => [...prev, permId])
+            setEditedPermissions(prev => [...prev, actionKey])
         } else {
-            setEditedPermissions(prev => prev.filter(p => p !== permId))
+            setEditedPermissions(prev => prev.filter(p => p !== actionKey))
+        }
+    }
+
+    const handleAllWildcard = (checked: boolean) => {
+        if(checked) {
+            setEditedPermissions(prev => [...prev.filter(p => p !== 'ALL'), 'ALL']);
+        } else {
+            setEditedPermissions(prev => prev.filter(p => p !== 'ALL'));
         }
     }
 
@@ -114,7 +124,6 @@ export default function User360Page() {
                 isActive: editedIsActive,
                 permissions: editedPermissions
             });
-            // Update local state reflection
             if (user) {
                 setUser({
                     ...user,
@@ -140,7 +149,6 @@ export default function User360Page() {
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Users
             </Button>
 
-            {/* Profile Header */}
             <div className="grid gap-6 md:grid-cols-3">
                 <Card className="md:col-span-1">
                     <CardContent className="pt-6 flex flex-col items-center text-center">
@@ -161,28 +169,24 @@ export default function User360Page() {
                                 <Calendar className="h-4 w-4" /> Joined {new Date(user.createdAt).toLocaleDateString()}
                             </div>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Shield className="h-4 w-4" /> {user.isActive ? 'Active Account' : 'Deactivated Account'}
+                                <Shield className="h-4 w-4" /> {user.isActive ? 'Active Account' : 'Deactivated'}
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* TABS (Activity vs Access) */}
                 <div className="md:col-span-2">
                     <Tabs defaultValue="access" className="w-full">
                         <TabsList className="mb-4 w-full grid grid-cols-2">
-                            <TabsTrigger value="activity">Audit Trail & Activity</TabsTrigger>
+                            <TabsTrigger value="activity">Audit Trail</TabsTrigger>
                             <TabsTrigger value="access">Access & Permissions</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="activity">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Activity className="h-5 w-5 text-blue-600" />
-                                        Activity Log
-                                    </CardTitle>
-                                    <CardDescription>Monitor accountability: Track every action performed by this user.</CardDescription>
+                                    <CardTitle>Activity Log</CardTitle>
+                                    <CardDescription>Track every action performed by this user.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <ScrollArea className="h-[400px] pr-4">
@@ -192,17 +196,13 @@ export default function User360Page() {
                                             )}
                                             {auditLogs.map((log) => (
                                                 <div key={log.id} className="relative">
-                                                    <div className={`absolute -left-[31px] top-1 h-3 w-3 rounded-full border-2 border-white ${log.action === 'LOGIN' ? 'bg-green-500' : log.action === 'DELETE' ? 'bg-red-500' : 'bg-blue-500'}`} />
+                                                    <div className={`absolute -left-[31px] top-1 h-3 w-3 rounded-full border-2 border-white bg-blue-500`} />
                                                     <div className="flex flex-col gap-1">
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-semibold text-sm">{log.action}</span>
                                                             <Badge variant="secondary" className="text-[10px]">{log.entityType}</Badge>
                                                             <span className="text-xs text-muted-foreground ml-auto">{new Date(log.timestamp).toLocaleString()}</span>
                                                         </div>
-                                                        <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded font-mono">{log.method} {log.path}</p>
-                                                        {log.ipAddress && (
-                                                            <div className="text-[10px] text-muted-foreground mt-1">IP: {log.ipAddress} | UA: {log.userAgent?.substring(0, 50)}...</div>
-                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
@@ -219,25 +219,22 @@ export default function User360Page() {
                                         <div>
                                             <CardTitle className="flex items-center gap-2">
                                                 <Shield className="h-5 w-5 text-orange-600" />
-                                                RBAC Configuration
+                                                RBAC Security Matrix
                                             </CardTitle>
-                                            <CardDescription>Granular control over what this user can view and execute.</CardDescription>
+                                            <CardDescription>Granular Read/Write overrides.</CardDescription>
                                         </div>
                                         <Button onClick={saveRBAC} disabled={isSavingObject} className="gap-2">
                                             {isSavingObject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                            Save Settings
+                                            Save 
                                         </Button>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="space-y-8">
-                                    
-                                    {/* Account Level */}
+                                <CardContent className="space-y-8 pb-10">
                                     <div className="space-y-4">
                                         <h3 className="text-md font-semibold border-b pb-2">Account Level</h3>
                                         <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border">
                                             <div className="space-y-0.5">
                                                 <Label className="text-base font-semibold">Account Status</Label>
-                                                <p className="text-sm text-muted-foreground">Instantly freeze account access.</p>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-sm font-medium">{editedIsActive ? "Active" : "Disabled"}</span>
@@ -249,44 +246,70 @@ export default function User360Page() {
                                             <div className="space-y-2">
                                                 <Label>Primary Role</Label>
                                                 <Select value={editedRole} onValueChange={setEditedRole}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select a role" />
-                                                    </SelectTrigger>
+                                                    <SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger>
                                                     <SelectContent>
-                                                        {ROLES_LIST.map(r => (
-                                                            <SelectItem key={r} value={r}>{r}</SelectItem>
-                                                        ))}
+                                                        {ROLES_LIST.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Feature Toggles */}
                                     <div className="space-y-4">
-                                        <h3 className="text-md font-semibold border-b pb-2">Granular Features</h3>
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            {PERMISSION_DEFINITIONS.map((perm) => (
-                                                <div key={perm.id} className={`flex items-start space-x-3 p-4 rounded-lg border transition-colors ${editedPermissions.includes(perm.id) ? 'bg-orange-50 border-orange-500 shadow-sm dark:bg-orange-900/20 dark:border-orange-500' : 'bg-card hover:bg-muted/20'}`}>
-                                                    <Checkbox 
-                                                        id={perm.id} 
-                                                        checked={editedPermissions.includes(perm.id)}
-                                                        onCheckedChange={(checked) => handlePermissionToggle(perm.id, checked as boolean)}
-                                                    />
-                                                    <div className="space-y-1 leading-none">
-                                                        <Label 
-                                                            htmlFor={perm.id} 
-                                                            className="text-sm font-semibold cursor-pointer"
-                                                        >
-                                                            {perm.label}
-                                                        </Label>
-                                                        <p className="text-xs text-muted-foreground">{perm.description}</p>
+                                        <div className="flex items-center justify-between border-b pb-2">
+                                            <h3 className="text-md font-semibold">Granular Module Matrix</h3>
+                                            <div className="flex items-center gap-2">
+                                                <Label htmlFor="allAccess" className="text-sm font-semibold text-orange-600 cursor-pointer">OVERRIDE (ALL)</Label>
+                                                <Switch id="allAccess" checked={editedPermissions.includes('ALL')} onCheckedChange={handleAllWildcard} />
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="rounded-md border overflow-hidden">
+                                            <div className="bg-muted px-4 py-3 grid grid-cols-12 gap-4 items-center">
+                                                <div className="col-span-6 font-semibold text-sm">System Module</div>
+                                                <div className="col-span-3 font-semibold text-sm text-center">View / Read</div>
+                                                <div className="col-span-3 font-semibold text-sm text-center">Modify / Write</div>
+                                            </div>
+                                            <div className="divide-y relative">
+                                                {editedPermissions.includes('ALL') && (
+                                                    <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                                                        <Badge variant="outline" className="bg-background text-orange-600 py-1.5 px-3 border-orange-200">
+                                                            ALL PERMISSIONS INHERITED
+                                                        </Badge>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                )}
+                                                {RBAC_MODULES.map((module) => {
+                                                    const viewKey = `VIEW_${module.id}`;
+                                                    const manageKey = `MANAGE_${module.id}`;
+                                                    return (
+                                                        <div key={module.id} className="px-4 py-3 grid grid-cols-12 gap-4 items-center hover:bg-muted/30 transition-colors">
+                                                            <div className="col-span-6 flex flex-col">
+                                                                <span className="font-semibold text-sm">{module.label}</span>
+                                                                <span className="text-[10px] text-muted-foreground">{module.desc}</span>
+                                                            </div>
+                                                            <div className="col-span-3 flex justify-center">
+                                                                <Checkbox 
+                                                                    id={viewKey}
+                                                                    checked={editedPermissions.includes(viewKey)} 
+                                                                    onCheckedChange={(c) => handleMatrixToggle(viewKey, c as boolean)}
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-3 flex justify-center">
+                                                                <Checkbox 
+                                                                    id={manageKey}
+                                                                    checked={editedPermissions.includes(manageKey)} 
+                                                                    onCheckedChange={(c) => {
+                                                                        handleMatrixToggle(manageKey, c as boolean);
+                                                                        if (c) handleMatrixToggle(viewKey, true); // Auto-enable view if modifying
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
-
                                 </CardContent>
                             </Card>
                         </TabsContent>

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
@@ -67,7 +67,7 @@ router.get('/categories', async (req, res) => {
 
 // Create category
 // Create category
-router.post('/categories', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.post('/categories', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { name, description, icon, order } = req.body;
 
@@ -84,7 +84,7 @@ router.post('/categories', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asyn
 
 // Update category
 // Update category
-router.put('/categories/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.put('/categories/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, icon, order } = req.body;
@@ -103,7 +103,7 @@ router.put('/categories/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), a
 
 // Delete category
 // Delete category
-router.delete('/categories/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.delete('/categories/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.libraryCategory.delete({ where: { id } });
@@ -140,7 +140,7 @@ router.get('/domains', async (req, res) => {
 
 // Create domain
 // Create domain
-router.post('/domains', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.post('/domains', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { name, description, categoryId } = req.body;
 
@@ -158,7 +158,7 @@ router.post('/domains', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (
 
 // Update domain
 // Update domain
-router.put('/domains/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.put('/domains/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description } = req.body;
@@ -177,7 +177,7 @@ router.put('/domains/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asyn
 
 // Delete domain
 // Delete domain
-router.delete('/domains/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.delete('/domains/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.libraryDomain.delete({ where: { id } });
@@ -438,7 +438,7 @@ router.put(
 
 // Delete resource
 // Delete resource
-router.delete('/resources/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.delete('/resources/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
 

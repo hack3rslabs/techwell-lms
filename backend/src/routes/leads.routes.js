@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth');
 const csv = require('csv-parser');
 const fs = require('fs');
 const multer = require('multer');
@@ -16,7 +16,7 @@ const upload = multer({ dest: 'uploads/temp/' });
  * @desc    Get all leads with filtering
  * @access  Private/Admin
  */
-router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/', authenticate, checkPermission('VIEW_LEADS'), async (req, res, next) => {
     try {
         const { status, source, startDate, endDate, college, location } = req.query;
 
@@ -54,7 +54,7 @@ router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res
  * @desc    Get lead counts for sidebar badges
  * @access  Private/Admin
  */
-router.get('/counts', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/counts', authenticate, checkPermission('VIEW_LEADS'), async (req, res, next) => {
     try {
         const currentUser = await prisma.user.findUnique({
             where: { id: req.user.id },
@@ -86,7 +86,7 @@ router.get('/counts', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (re
  * @desc    Mark leads as seen for the current admin
  * @access  Private/Admin
  */
-router.post('/mark-seen', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/mark-seen', authenticate, checkPermission('MANAGE_LEADS'), async (req, res, next) => {
     try {
         const seenAt = new Date();
 
@@ -202,7 +202,7 @@ router.post('/capture', async (req, res, next) => {
  * @desc    Create a new lead
  * @access  Private/Admin
  */
-router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/', authenticate, checkPermission('MANAGE_LEADS'), async (req, res, next) => {
     try {
         const { name, email, phone, source, college, qualification, location, dob, notes } = req.body;
 
@@ -257,7 +257,7 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, re
  * @desc    Update lead status or details
  * @access  Private/Admin
  */
-router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.put('/:id', authenticate, checkPermission('MANAGE_LEADS'), async (req, res, next) => {
     try {
         const { status, assignedTo, notes, ...updateData } = req.body;
 
@@ -282,7 +282,7 @@ router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, 
  * @desc    Import leads from CSV
  * @access  Private/Admin
  */
-router.post('/import', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), upload.single('file'), async (req, res, next) => {
+router.post('/import', authenticate, checkPermission('MANAGE_LEADS'), upload.single('file'), async (req, res, next) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No CSV file uploaded' });
     }
@@ -325,7 +325,7 @@ router.post('/import', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), upload.s
  * @desc    Get advanced analytics for dashboard
  * @access  Private/Admin
  */
-router.get('/analytics', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/analytics', authenticate, checkPermission('VIEW_LEADS'), async (req, res, next) => {
     try {
         const { startDate, endDate } = req.query;
 
@@ -399,7 +399,7 @@ router.get('/analytics', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async 
  * @desc    Delete a lead
  * @access  Private/Admin
  */
-router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.delete('/:id', authenticate, checkPermission('MANAGE_LEADS'), async (req, res, next) => {
     try {
         await prisma.lead.delete({
             where: { id: req.params.id }
@@ -417,7 +417,7 @@ router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (re
  * @desc    Get configured lead sources
  * @access  Private/Admin
  */
-router.get('/integrations', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/integrations', authenticate, checkPermission('VIEW_LEADS'), async (req, res, next) => {
     try {
         // Mask secrets
         const integrations = await prisma.marketingIntegration.findMany({
@@ -441,7 +441,7 @@ router.get('/integrations', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
  * @desc    Configure a lead source (Meta, Google, JustDial)
  * @access  Private/Admin
  */
-router.post('/integrations', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/integrations', authenticate, checkPermission('MANAGE_LEADS'), async (req, res, next) => {
     try {
         const { platform, name, accessToken, pageId, accountId, webhookSecret } = req.body;
 
@@ -582,7 +582,7 @@ router.post('/webhook/generic', async (req, res) => {
  * @desc    Convert Lead to Student (Create User Account)
  * @access  Private/Admin
  */
-router.post('/:id/convert', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/:id/convert', authenticate, checkPermission('MANAGE_LEADS'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const lead = await prisma.lead.findUnique({ where: { id } });
