@@ -54,20 +54,21 @@ export default function User360Page() {
     const [editedPermissions, setEditedPermissions] = useState<string[]>([])
 
     const RBAC_MODULES = [
+        { id: "USERS", label: "Users & Roles", desc: "Admin staff and internal profiles" },
         { id: "COURSES", label: "Courses", desc: "Course material and orchestrations" },
-        { id: "JOBS", label: "Jobs", desc: "ATS and Job Postings" },
         { id: "CERTIFICATES", label: "Certificates", desc: "Issued certificates and templates" },
-        { id: "INTERVIEWS", label: "Interviews", desc: "AI and live interviews" },
-        { id: "LEADS", label: "Leads Access", desc: "CRM and marketing targets" },
+        { id: "STUDENTS", label: "Students", desc: "Student platform profiles" },
+        { id: "EMPLOYERS", label: "Employer Requests", desc: "Enterprise partnership requests" },
+        { id: "LEADS", label: "All Leads", desc: "CRM and marketing targets" },
         { id: "MEETINGS", label: "Meetings", desc: "Schedule and tracking" },
-        { id: "SYSTEM_LOGS", label: "System Logs", desc: "Security forensics" },
-        { id: "LIBRARY", label: "Library", desc: "Digital resource centre" },
-        { id: "BLOGS", label: "Blogs", desc: "Public website articles" },
-        { id: "REVIEWS", label: "Reviews", desc: "Ratings & feedback" },
-        { id: "USERS", label: "User Roles", desc: "Admin staff and student profiles" },
         { id: "TASKS", label: "Tasks", desc: "Internal workflow operations" },
-        { id: "REPORTS", label: "Reports", desc: "Financial and system analytics" },
-        { id: "SETTINGS", label: "Platform Settings", desc: "System-wide configs and vars" },
+        { id: "MESSAGES", label: "Messages", desc: "Direct communications & chat" },
+        { id: "BLOGS", label: "Blogs", desc: "Public website articles" },
+        { id: "GALLERY", label: "Gallery", desc: "Media library assets" },
+        { id: "SKILLCASTS", label: "Skillcasts", desc: "Live streaming & webinars" },
+        { id: "REVIEWS", label: "Reviews", desc: "Ratings & feedback moderation" },
+        { id: "LIBRARY", label: "Library", desc: "Digital resource centre" },
+        { id: "SYSTEM_LOGS", label: "System Logs", desc: "Security forensics" },
     ];
 
     const ROLES_LIST = ["STUDENT", "INSTRUCTOR", "EMPLOYER", "ADMIN", "SUPER_ADMIN", "STAFF", "INSTITUTE_ADMIN"];
