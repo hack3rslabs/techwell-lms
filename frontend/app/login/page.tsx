@@ -14,7 +14,7 @@ import { LoginCharacter } from '@/components/auth/LoginCharacter'
 export default function LoginPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const { login, isAuthenticated } = useAuth()
+    const { login, isAuthenticated, user } = useAuth()
 
     const [email, setEmail] = React.useState('')
     const [password, setPassword] = React.useState('')
@@ -25,10 +25,18 @@ export default function LoginPage() {
     const [showIdleBanner, setShowIdleBanner] = React.useState(false)
 
     React.useEffect(() => {
-        if (isAuthenticated) {
-            router.push('/dashboard')
+        if (isAuthenticated && user) {
+            if (['SUPER_ADMIN', 'ADMIN', 'STAFF', 'INSTITUTE_ADMIN'].includes(user.role)) {
+                router.push('/admin')
+            } else if (user.role === 'EMPLOYER') {
+                router.push('/employer/dashboard')
+            } else if (user.role === 'INSTRUCTOR') {
+                router.push('/instructor')
+            } else {
+                router.push('/dashboard')
+            }
         }
-    }, [isAuthenticated, router])
+    }, [isAuthenticated, user, router])
 
     React.useEffect(() => {
         if (searchParams.get('reason') === 'idle') {
@@ -43,7 +51,7 @@ export default function LoginPage() {
 
         try {
             await login(email, password)
-            router.push('/dashboard')
+            // Relies on useEffect to handle role-based redirection
         } catch (err: unknown) {
             const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Login failed. Please try again.'
             setError(errorMessage)

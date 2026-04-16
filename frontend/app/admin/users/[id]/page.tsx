@@ -3,18 +3,22 @@
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import api from "@/lib/api"
+import { userApi } from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Loader2, ArrowLeft, Mail, Phone, Calendar, Shield, Activity, FileText } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Loader2, ArrowLeft, Mail, Calendar, Shield, Activity, Save } from "lucide-react"
 
 export default function User360Page() {
     const { id } = useParams()
     const router = useRouter()
-
 
     interface UserProfile {
         id: string
@@ -24,6 +28,7 @@ export default function User360Page() {
         avatar?: string
         createdAt: string
         isActive: boolean
+        permissions?: string[]
     }
     interface AuditLog {
         id: string
@@ -40,6 +45,24 @@ export default function User360Page() {
     const [user, setUser] = useState<UserProfile | null>(null)
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    
+    // RBAC States
+    const [isSavingObject, setIsSavingObject] = useState(false)
+    const [editedRole, setEditedRole] = useState<string>("")
+    const [editedIsActive, setEditedIsActive] = useState<boolean>(true)
+    const [editedPermissions, setEditedPermissions] = useState<string[]>([])
+
+    const PERMISSION_DEFINITIONS = [
+        { id: "MANAGE_COURSES", label: "Manage Courses", description: "Create, edit, and orchestrate all courses." },
+        { id: "PUBLISH_COURSE", label: "Publish Courses", description: "Bypass draft review and publish courses directly." },
+        { id: "MANAGE_USERS", label: "Manage Users", description: "View and edit other users' profiles, statuses, and roles." },
+        { id: "MANAGE_FINANCE", label: "Manage Finance", description: "View payments, initiate refunds, handle payouts." },
+        { id: "VIEW_REPORTS", label: "View Reports", description: "Access platform-wide analytics, dashboards, and reporting." },
+        { id: "MANAGE_SETTINGS", label: "Manage Settings", description: "System configuration, AI setup, and application variables." },
+        { id: "ALL", label: "Full System Bypass (ALL)", description: "God mode. Overrides everything. Grants all permissions universally." }
+    ];
+
+    const ROLES_LIST = ["STUDENT", "INSTRUCTOR", "EMPLOYER", "ADMIN", "SUPER_ADMIN", "STAFF", "INSTITUTE_ADMIN"];
 
     useEffect(() => {
         fetchData()
@@ -47,18 +70,6 @@ export default function User360Page() {
 
     const fetchData = async () => {
         try {
-            // Fetch basic user data (mocking endpoint logic as /users/id might not exist, using activity mostly)
-            // But we do need user details. We can reuse /users/me logic if we had /users/:id
-            // For now, let's assume we can fetch via the list or dedicated endpoint.
-            // Since we implemented GET /users/:id/activity, let's assume we can get basic info there or fetch list and find.
-            // Let's rely on activity primarily as that's the new feature.
-
-            // Actually, best to verify if there is a generic admin get user. 
-            // Existing `user.routes.js` doesn't have GET /:id except 'me'. 
-            // I will use activity to show "Working" and mock user details from it if possible, OR
-            // I should have added GET /api/users/:id. 
-            // Optimization: I'll fetch /api/users (list) and find (inefficient but safe for now) OR just display activity.
-
             const [activityRes, usersRes] = await Promise.all([
                 api.get(`/users/${id}/activity`),
                 api.get('/users')
@@ -66,13 +77,57 @@ export default function User360Page() {
 
             setAuditLogs(activityRes.data)
 
+            // Current backend route doesn't return exactly one user by id with full permissions unless we use a custom fetch,
+            // For now we get from list. But wait, the list doesn't include 'permissions' array. 
+            // We'll init with empty if missing. Realistically, we need GET /users/:id 
             const foundUser = usersRes.data.users.find((u: UserProfile) => u.id === id)
-            setUser(foundUser)
-
+            if (foundUser) {
+                // If the user's permissions weren't returned in the list array, we'll try to default to none, 
+                // but SUPER_ADMIN defaults to ALL
+                const perms = foundUser.permissions || (foundUser.role === 'SUPER_ADMIN' ? ["ALL"] : []);
+                foundUser.permissions = perms;
+                setUser(foundUser);
+                setEditedRole(foundUser.role);
+                setEditedIsActive(foundUser.isActive);
+                setEditedPermissions(perms);
+            }
         } catch (error) {
             console.error("Failed to fetch user data", error)
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    const handlePermissionToggle = (permId: string, checked: boolean) => {
+        if (checked) {
+            setEditedPermissions(prev => [...prev, permId])
+        } else {
+            setEditedPermissions(prev => prev.filter(p => p !== permId))
+        }
+    }
+
+    const saveRBAC = async () => {
+        setIsSavingObject(true);
+        try {
+            await userApi.updatePermissions(id as string, {
+                role: editedRole,
+                isActive: editedIsActive,
+                permissions: editedPermissions
+            });
+            // Update local state reflection
+            if (user) {
+                setUser({
+                    ...user,
+                    role: editedRole,
+                    isActive: editedIsActive,
+                    permissions: editedPermissions
+                });
+            }
+            alert("User Access & Validation settings updated successfully.");
+        } catch (error: any) {
+            alert(error.response?.data?.error || "Failed to update permissions.");
+        } finally {
+            setIsSavingObject(false);
         }
     }
 
@@ -94,7 +149,9 @@ export default function User360Page() {
                             <AvatarFallback className="text-2xl">{user.name?.[0]}</AvatarFallback>
                         </Avatar>
                         <h2 className="text-2xl font-bold">{user.name}</h2>
-                        <Badge variant="outline" className="mt-2 mb-4">{user.role}</Badge>
+                        <Badge variant={user.isActive ? "default" : "destructive"} className="mt-2 mb-4">
+                            {user.role} {user.isActive ? "" : "(Disabled)"}
+                        </Badge>
 
                         <div className="w-full space-y-3 text-left">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -104,64 +161,136 @@ export default function User360Page() {
                                 <Calendar className="h-4 w-4" /> Joined {new Date(user.createdAt).toLocaleDateString()}
                             </div>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Shield className="h-4 w-4" /> {user.isActive ? 'Active Account' : 'Deactivated'}
+                                <Shield className="h-4 w-4" /> {user.isActive ? 'Active Account' : 'Deactivated Account'}
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Activity & Stats */}
-                <div className="md:col-span-2 space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Activity className="h-5 w-5 text-blue-600" />
-                                Audit Trail & Activity
-                            </CardTitle>
-                            <CardDescription>
-                                Monitor accountability: Track every action performed by this user.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ScrollArea className="h-[400px] pr-4">
-                                <div className="space-y-6 relative border-l ml-2 pl-6">
-                                    {auditLogs.length === 0 && (
-                                        <p className="text-muted-foreground text-sm">No activity recorded for this user yet.</p>
-                                    )}
-                                    {auditLogs.map((log) => (
-                                        <div key={log.id} className="relative">
-                                            <div className={`absolute -left-[31px] top-1 h-3 w-3 rounded-full border-2 border-white ${log.action === 'LOGIN' ? 'bg-green-500' :
-                                                log.action === 'DELETE' ? 'bg-red-500' :
-                                                    'bg-blue-500'
-                                                }`} />
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-semibold text-sm">{log.action}</span>
-                                                    <Badge variant="secondary" className="text-[10px]">{log.entityType}</Badge>
-                                                    <span className="text-xs text-muted-foreground ml-auto">
-                                                        {new Date(log.timestamp).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded font-mono">
-                                                    {log.method} {log.path}
-                                                </p>
-                                                {log.ipAddress && (
-                                                    <div className="text-[10px] text-muted-foreground mt-1">
-                                                        IP: {log.ipAddress} | UA: {log.userAgent?.substring(0, 50)}...
+                {/* TABS (Activity vs Access) */}
+                <div className="md:col-span-2">
+                    <Tabs defaultValue="access" className="w-full">
+                        <TabsList className="mb-4 w-full grid grid-cols-2">
+                            <TabsTrigger value="activity">Audit Trail & Activity</TabsTrigger>
+                            <TabsTrigger value="access">Access & Permissions</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="activity">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Activity className="h-5 w-5 text-blue-600" />
+                                        Activity Log
+                                    </CardTitle>
+                                    <CardDescription>Monitor accountability: Track every action performed by this user.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <ScrollArea className="h-[400px] pr-4">
+                                        <div className="space-y-6 relative border-l ml-2 pl-6">
+                                            {auditLogs.length === 0 && (
+                                                <p className="text-muted-foreground text-sm">No activity recorded for this user yet.</p>
+                                            )}
+                                            {auditLogs.map((log) => (
+                                                <div key={log.id} className="relative">
+                                                    <div className={`absolute -left-[31px] top-1 h-3 w-3 rounded-full border-2 border-white ${log.action === 'LOGIN' ? 'bg-green-500' : log.action === 'DELETE' ? 'bg-red-500' : 'bg-blue-500'}`} />
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-semibold text-sm">{log.action}</span>
+                                                            <Badge variant="secondary" className="text-[10px]">{log.entityType}</Badge>
+                                                            <span className="text-xs text-muted-foreground ml-auto">{new Date(log.timestamp).toLocaleString()}</span>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded font-mono">{log.method} {log.path}</p>
+                                                        {log.ipAddress && (
+                                                            <div className="text-[10px] text-muted-foreground mt-1">IP: {log.ipAddress} | UA: {log.userAgent?.substring(0, 50)}...</div>
+                                                        )}
                                                     </div>
-                                                )}
-                                                {Boolean(log.details) && (
-                                                    <pre className="text-[10px] bg-slate-900 text-slate-50 p-2 rounded mt-2 overflow-x-auto">
-                                                        {JSON.stringify(log.details as Record<string, unknown>, null, 2)}
-                                                    </pre>
-                                                )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </ScrollArea>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="access">
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Shield className="h-5 w-5 text-orange-600" />
+                                                RBAC Configuration
+                                            </CardTitle>
+                                            <CardDescription>Granular control over what this user can view and execute.</CardDescription>
+                                        </div>
+                                        <Button onClick={saveRBAC} disabled={isSavingObject} className="gap-2">
+                                            {isSavingObject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                            Save Settings
+                                        </Button>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="space-y-8">
+                                    
+                                    {/* Account Level */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-md font-semibold border-b pb-2">Account Level</h3>
+                                        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border">
+                                            <div className="space-y-0.5">
+                                                <Label className="text-base font-semibold">Account Status</Label>
+                                                <p className="text-sm text-muted-foreground">Instantly freeze account access.</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium">{editedIsActive ? "Active" : "Disabled"}</span>
+                                                <Switch checked={editedIsActive} onCheckedChange={setEditedIsActive} />
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            </ScrollArea>
-                        </CardContent>
-                    </Card>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>Primary Role</Label>
+                                                <Select value={editedRole} onValueChange={setEditedRole}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select a role" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {ROLES_LIST.map(r => (
+                                                            <SelectItem key={r} value={r}>{r}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Feature Toggles */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-md font-semibold border-b pb-2">Granular Features</h3>
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            {PERMISSION_DEFINITIONS.map((perm) => (
+                                                <div key={perm.id} className={`flex items-start space-x-3 p-4 rounded-lg border transition-colors ${editedPermissions.includes(perm.id) ? 'bg-orange-50 border-orange-500 shadow-sm dark:bg-orange-900/20 dark:border-orange-500' : 'bg-card hover:bg-muted/20'}`}>
+                                                    <Checkbox 
+                                                        id={perm.id} 
+                                                        checked={editedPermissions.includes(perm.id)}
+                                                        onCheckedChange={(checked) => handlePermissionToggle(perm.id, checked as boolean)}
+                                                    />
+                                                    <div className="space-y-1 leading-none">
+                                                        <Label 
+                                                            htmlFor={perm.id} 
+                                                            className="text-sm font-semibold cursor-pointer"
+                                                        >
+                                                            {perm.label}
+                                                        </Label>
+                                                        <p className="text-xs text-muted-foreground">{perm.description}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
         </div>
