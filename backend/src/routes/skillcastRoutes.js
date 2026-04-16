@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const skillcastController = require('../controllers/skillcastController');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
 // Public routes
 router.get('/', skillcastController.getAllSkillcasts);

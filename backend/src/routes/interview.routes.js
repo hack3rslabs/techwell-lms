@@ -1,7 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize, checkPermission } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 const aiService = require('../services/ai.service');
 
 const router = express.Router();

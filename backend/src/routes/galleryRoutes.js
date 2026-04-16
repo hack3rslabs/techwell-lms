@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const galleryController = require('../controllers/galleryController');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
 // Public access for footer
 router.get('/', galleryController.getGalleryImages);
