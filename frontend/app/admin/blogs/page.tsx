@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -71,11 +71,7 @@ export default function BlogManagerPage() {
         category: ''
     })
 
-    useEffect(() => {
-        fetchBlogs()
-    }, [search])
-
-    const fetchBlogs = async () => {
+    const fetchBlogs = useCallback(async () => {
         setIsLoading(true)
         try {
             const res = await api.get(`/blogs?search=${search}`)
@@ -85,7 +81,11 @@ export default function BlogManagerPage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [search])
+
+    useEffect(() => {
+        fetchBlogs()
+    }, [fetchBlogs])
 
     const handleCreateOpen = () => {
         setFormData({
@@ -350,134 +350,94 @@ export default function BlogManagerPage() {
             </Card>
 
             <Dialog open={showModal} onOpenChange={setShowModal}>
-
-                <DialogContent className="max-w-3xl">
-
+                <DialogContent className="sm:max-w-3xl max-w-[95vw] max-h-[90vh] flex flex-col p-6">
                     <DialogHeader>
-
                         <DialogTitle>
                             {formData.id ? 'Edit Post' : 'New Blog Post'}
                         </DialogTitle>
-
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-
-                        <div className="grid grid-cols-2 gap-4">
-
-                            <div className="space-y-2 col-span-2">
-
+                    <form onSubmit={handleSubmit} className="flex flex-col space-y-4 overflow-hidden mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-2 pb-2">
+                            <div className="space-y-2 md:col-span-2">
                                 <label className="text-sm font-medium">Title</label>
-
                                 <Input
                                     value={formData.title}
                                     onChange={e => setFormData({ ...formData, title: e.target.value })}
                                     required
                                 />
-
                             </div>
 
                             <div className="space-y-2">
-
                                 <label className="text-sm font-medium">Category</label>
-
                                 <Select
                                     value={formData.category}
                                     onValueChange={(v) => setFormData({ ...formData, category: v })}
                                 >
-
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
-
                                     <SelectContent>
-
                                         {BLOG_CATEGORIES.map(cat => (
-
                                             <SelectItem key={cat} value={cat}>
                                                 {cat}
                                             </SelectItem>
-
                                         ))}
-
                                     </SelectContent>
-
                                 </Select>
-
                             </div>
 
                             <div className="space-y-2">
-
                                 <label className="text-sm font-medium">Status</label>
-
                                 <Select
                                     value={formData.status}
                                     onValueChange={v => setFormData({ ...formData, status: v })}
                                 >
-
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
-
                                     <SelectContent>
-
                                         <SelectItem value="DRAFT">Draft</SelectItem>
                                         <SelectItem value="PUBLISHED">Published</SelectItem>
                                         <SelectItem value="ARCHIVED">Archived</SelectItem>
-
                                     </SelectContent>
-
                                 </Select>
-
                             </div>
 
-                            <div className="space-y-2 col-span-2">
-
+                            <div className="space-y-2 md:col-span-2">
                                 <label className="text-sm font-medium">Overview / Excerpt</label>
-
                                 <Input
                                     value={formData.excerpt}
                                     onChange={e => setFormData({ ...formData, excerpt: e.target.value })}
                                 />
-
                             </div>
 
-                            <div className="space-y-2 col-span-2">
-
+                            <div className="space-y-2 md:col-span-2">
                                 <label className="text-sm font-medium">Content</label>
-
                                 <Textarea
                                     value={formData.content}
                                     onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                    className="min-h-[200px]"
+                                    className="min-h-[250px] resize-y"
                                     required
                                 />
-
                             </div>
 
-                            <div className="space-y-2 col-span-2">
-
+                            <div className="space-y-2 md:col-span-2">
                                 <label className="text-sm font-medium">Cover Image URL</label>
-
                                 <Input
                                     value={formData.coverImage}
                                     onChange={e => setFormData({ ...formData, coverImage: e.target.value })}
                                 />
-
                             </div>
 
-                            <div className="space-y-2 col-span-2">
-
-                                <label className="text-sm font-medium">Tags</label>
-
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="text-sm font-medium">Tags (comma separated)</label>
                                 <Input
                                     value={formData.tags}
                                     onChange={e => setFormData({ ...formData, tags: e.target.value })}
                                     placeholder="Tech, Career, Interview"
                                 />
-
                             </div>
-
                         </div>
 
                         <DialogFooter>

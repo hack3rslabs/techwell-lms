@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import api, { courseApi, uploadApi, type CoursePayload } from '@/lib/api'
+import api, { courseApi, uploadApi, courseCategoryApi, type CoursePayload } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -98,6 +98,14 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
     const [modules, setModules] = React.useState<Module[]>([])
     const [aiTopic, setAiTopic] = React.useState('')
     const [isGenerating, setIsGenerating] = React.useState(false)
+
+    // Load categories from API
+    const [dbCategories, setDbCategories] = React.useState<{ id: string; name: string; icon: string | null }[]>([])
+    React.useEffect(() => {
+        courseCategoryApi.getAll()
+            .then(res => setDbCategories(res.data.categories || []))
+            .catch(() => setDbCategories([]))
+    }, [])
 
     // Handlers
     const handleBasicSubmit = async (e: React.FormEvent) => {
@@ -354,10 +362,26 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                         value={basicData.category}
                                         onChange={e => setBasicData({ ...basicData, category: e.target.value })}
                                     >
-                                        <option value="Development">Development</option>
-                                        <option value="Business">Business</option>
-                                        <option value="Design">Design</option>
-                                        <option value="Marketing">Marketing</option>
+                                        {dbCategories.length > 0 ? (
+                                            dbCategories.map(cat => (
+                                                <option key={cat.id} value={cat.name}>
+                                                    {cat.icon ? `${cat.icon} ` : ''}{cat.name}
+                                                </option>
+                                            ))
+                                        ) : (
+                                            // Fallback hardcoded options
+                                            <>
+                                                <option value="Cloud & DevOps Engineering">☁️ Cloud &amp; DevOps Engineering</option>
+                                                <option value="Software Development">💻 Software Development</option>
+                                                <option value="Data Science & Artificial Intelligence">🤖 Data Science &amp; AI</option>
+                                                <option value="Cyber Security">🔐 Cyber Security</option>
+                                                <option value="Networking & System Administration">🌐 Networking &amp; System Admin</option>
+                                                <option value="ERP & SAP">🏭 ERP &amp; SAP</option>
+                                                <option value="ITSM & CRM Platforms">🛠️ ITSM &amp; CRM Platforms</option>
+                                                <option value="HR Management">👥 HR Management</option>
+                                                <option value="Finance & Marketing">📊 Finance &amp; Marketing</option>
+                                            </>
+                                        )}
                                     </select>
                                 </div>
                                 <div className="space-y-2">

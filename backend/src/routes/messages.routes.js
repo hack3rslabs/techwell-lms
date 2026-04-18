@@ -9,7 +9,7 @@ const {
   getAllMessages,
   deleteMessage
 } = require('../controllers/messages.controller');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 

@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
-    Plus, Users, Briefcase, Video, Check, MoreHorizontal,
+    Plus, Users, Briefcase, Video, Check,
     Clock, ArrowRight, TrendingUp, Target, Activity,
-    Calendar, BarChart3, Loader2, UserCheck, Zap, ChevronRight
+    BarChart3, Loader2, UserCheck, Zap, ChevronRight
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"

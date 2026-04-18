@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,7 +29,6 @@ import {
     Award,
     Download,
     Search,
-    Upload,
     Eye,
     Plus,
     FileImage,
@@ -455,9 +455,11 @@ export default function CertificatesPage() {
                                 <CardContent>
                                     <div className="aspect-[4/3] bg-muted rounded-lg flex items-center justify-center mb-4">
                                         {template.previewUrl || template.designUrl ? (
-                                            <img
+                                            <Image
                                                 src={template.previewUrl || template.designUrl}
                                                 alt={template.name}
+                                                width={200}
+                                                height={150}
                                                 className="max-h-full object-contain"
                                             />
                                         ) : (

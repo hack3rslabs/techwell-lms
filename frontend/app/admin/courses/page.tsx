@@ -3,12 +3,11 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/api'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { GraduationCap, Loader2, Plus, BookOpen, Clock, Trash2 } from 'lucide-react'
+import { Loader2, Plus, BookOpen, Clock, Trash2 } from 'lucide-react'
 import { courseApi } from '@/lib/api'
-import { toast } from 'sonner' // Assuming sonner or similar is available based on modern trends, if not I'll use window.confirm
 
 interface Course {
     id: string

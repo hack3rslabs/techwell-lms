@@ -1,7 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize, optionalAuth } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
@@ -11,6 +11,7 @@ const createBlogSchema = z.object({
     content: z.string().min(20),
     summary: z.string().optional(),
     tags: z.array(z.string()).optional(),
+    category: z.string().optional(),
     status: z.enum(['DRAFT', 'IN_REVIEW', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
     coverImage: z.string().url().optional().or(z.literal('')),
 });
@@ -97,7 +98,7 @@ router.get('/:slugOrId', optionalAuth, async (req, res, next) => {
  * @desc    Create blog post
  * @access  Private/Admin
  */
-router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/', authenticate, checkPermission('MANAGE_BLOGS'), async (req, res, next) => {
     try {
         const body = { ...req.body };
         if (body.coverImage === '') body.coverImage = undefined;
@@ -130,7 +131,7 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, re
  * @desc    Update blog post
  * @access  Private/Admin
  */
-router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.put('/:id', authenticate, checkPermission('MANAGE_BLOGS'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const body = { ...req.body };
@@ -160,7 +161,7 @@ router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, 
  * @desc    Delete blog post
  * @access  Private/Admin
  */
-router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.delete('/:id', authenticate, checkPermission('MANAGE_BLOGS'), async (req, res, next) => {
     try {
         await prisma.blogPost.delete({ where: { id: req.params.id } });
         res.json({ message: 'Blog post deleted' });

@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { courseApi } from '@/lib/api'
+import { courseApi, courseCategoryApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,15 +26,6 @@ interface Course {
     isEnrolled?: boolean
 }
 
-const categories = [
-    { value: '', label: 'All Categories' },
-    { value: 'WEB_DEV', label: 'Web Development' },
-    { value: 'DATA_SCIENCE', label: 'Data Science' },
-    { value: 'MOBILE', label: 'Mobile Development' },
-    { value: 'CLOUD', label: 'Cloud Computing' },
-    { value: 'AI_ML', label: 'AI & Machine Learning' },
-]
-
 const difficulties = [
     { value: '', label: 'All Levels' },
     { value: 'BEGINNER', label: 'Beginner' },
@@ -51,6 +43,13 @@ export default function CourseList() {
     const [category, setCategory] = React.useState('')
     const [difficulty, setDifficulty] = React.useState('')
     const [_enrollingId, setEnrollingId] = React.useState<string | null>(null)
+    const [dbCategories, setDbCategories] = React.useState<{ name: string; icon: string | null }[]>([])
+
+    React.useEffect(() => {
+        courseCategoryApi.getAll()
+            .then(res => setDbCategories(res.data.categories || []))
+            .catch(() => setDbCategories([]))
+    }, [])
 
     React.useEffect(() => {
         const abortController = new AbortController()
@@ -142,9 +141,20 @@ export default function CourseList() {
                     onChange={(e) => setCategory(e.target.value)}
                     className="h-10 px-3 rounded-md border border-input bg-background text-sm min-w-[150px]"
                 >
-                    {categories.map(cat => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                    ))}
+                    <option value="">All Categories</option>
+                    {dbCategories.length > 0
+                        ? dbCategories.map(cat => (
+                            <option key={cat.name} value={cat.name}>
+                                {cat.icon ? `${cat.icon} ` : ''}{cat.name}
+                            </option>
+                          ))
+                        : [
+                            'Cloud & DevOps Engineering', 'Software Development',
+                            'Data Science & Artificial Intelligence', 'Cyber Security',
+                            'Networking & System Administration', 'ERP & SAP',
+                            'ITSM & CRM Platforms', 'HR Management', 'Finance & Marketing'
+                          ].map(name => <option key={name} value={name}>{name}</option>)
+                    }
                 </select>
                 <select
                     title="Filter by Difficulty"
@@ -179,11 +189,12 @@ export default function CourseList() {
                         >
                             <div className="h-48 relative bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10 flex items-center justify-center overflow-hidden">
                                 {course.bannerUrl || course.thumbnail ? (
-                                    <img
+                                    <Image
                                         src={getFullImageUrl(course.bannerUrl || course.thumbnail)}
                                         alt={course.title}
+                                        width={400}
+                                        height={192}
                                         className="absolute inset-0 w-full h-full object-cover"
-                                        loading="lazy"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.style.display = "none";

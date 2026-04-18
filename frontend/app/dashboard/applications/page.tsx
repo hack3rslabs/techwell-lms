@@ -14,7 +14,6 @@ import {
     ExternalLink,
     ArrowLeft,
     FileText,
-    Filter,
     Search
 } from 'lucide-react'
 

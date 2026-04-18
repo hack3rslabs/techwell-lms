@@ -70,6 +70,9 @@ export const userApi = {
     getAdminStats: () => api.get('/admin/stats'),
     getEnrollments: () => api.get('/admin/enrollments'),
     deleteUser: (id: string) => api.delete(`/users/${id}`),
+    updatePermissions: (id: string, data: { role: string; isActive: boolean; permissions: string[] }) => api.put(`/users/${id}/permissions`, data),
+    updateStatus: (id: string, isActive: boolean) => api.patch(`/users/${id}/status`, { isActive }),
+    getAuditLogs: (params?: { page?: number; limit?: number; action?: string; entityType?: string; search?: string }) => api.get('/admin/audit-logs', { params }),
 };
 
 export const employerApi = {
@@ -320,7 +323,6 @@ export const leadApi = {
     delete: (id: string) => api.delete(`/leads/${id}`),
     convert: (id: string) => api.post(`/leads/${id}/convert`),
     getAnalytics: (params?: unknown) => api.get('/leads/analytics', { params }),
-    import: (formData: FormData) => api.post('/leads/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     getIntegrations: () => api.get('/leads/integrations'),
     configureIntegration: (data: unknown) => api.post('/leads/integrations', data),
 };
@@ -350,7 +352,7 @@ export const analyticsApi = {
 
 // Library API
 export const libraryApi = {
-    trackView: (resourceId: string) => api.patch(`/library/resources/${resourceId}/view`),
+    trackView: (resourceId: string) => api.patch(`/library/resources/${resourceId}/increment-views`),
     download: (resourceId: string) => api.get(`/library/resources/${resourceId}/download`, { responseType: 'blob' }),
     getBookmarks: () => api.get('/library/bookmarks'),
     toggleBookmark: (resourceId: string) => api.post('/library/bookmarks', { resourceId }),
@@ -373,4 +375,18 @@ export const rbacApi = {
     assignRole: (userId: string, roleId: string) => api.post('/rbac/assign', { userId, roleId }),
 };
 
+// Course Category API
+export const courseCategoryApi = {
+    // Public
+    getAll: () => api.get('/course-categories'),
+    // Admin-only
+    getAllAdmin: () => api.get('/course-categories/admin'),
+    create: (data: { name: string; slug: string; description?: string; icon?: string; color?: string; isActive?: boolean; orderIndex?: number }) =>
+        api.post('/course-categories', data),
+    update: (id: string, data: Partial<{ name: string; slug: string; description: string; icon: string; color: string; isActive: boolean; orderIndex: number }>) =>
+        api.put(`/course-categories/${id}`, data),
+    delete: (id: string) => api.delete(`/course-categories/${id}`),
+};
+
 export default api;
+

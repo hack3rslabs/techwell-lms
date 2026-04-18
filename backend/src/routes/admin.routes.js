@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const { z } = require('zod');
 const router = express.Router();
@@ -78,7 +78,7 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
  * @desc    Get courses pending review or in specific status
  * @access  Private/Admin
  */
-router.get('/courses/pending', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/courses/pending', authenticate, checkPermission('VIEW_SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { status = 'IN_REVIEW' } = req.query;
 
@@ -107,7 +107,7 @@ router.get('/courses/pending', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), 
  * @desc    Approve a course and set to PUBLISHED
  * @access  Private/Admin
  */
-router.patch('/courses/:id/approve', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.patch('/courses/:id/approve', authenticate, checkPermission('MANAGE_SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
@@ -133,7 +133,7 @@ router.patch('/courses/:id/approve', authenticate, authorize('SUPER_ADMIN', 'ADM
  * @desc    Reject a course and send it back to DRAFT
  * @access  Private/Admin
  */
-router.patch('/courses/:id/reject', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.patch('/courses/:id/reject', authenticate, checkPermission('MANAGE_SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
@@ -161,7 +161,7 @@ router.patch('/courses/:id/reject', authenticate, authorize('SUPER_ADMIN', 'ADMI
  * @desc    Archive a published course
  * @access  Private/Admin
  */
-router.patch('/courses/:id/archive', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.patch('/courses/:id/archive', authenticate, checkPermission('MANAGE_SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -184,7 +184,7 @@ router.patch('/courses/:id/archive', authenticate, authorize('SUPER_ADMIN', 'ADM
  * @desc    Create a Staff or Institute Admin user with specific permissions
  * @access  Private/Admin
  */
-router.post('/staff', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/staff', authenticate, checkPermission('MANAGE_SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { name, email, password, role, permissions, phone } = req.body;
 
@@ -368,6 +368,79 @@ router.get('/students', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF')
         res.json({
             students,
             courses,
+            pagination: {
+                total,
+                page: Number(page),
+                limit: Number(limit),
+                totalPages: Math.ceil(total / Number(limit))
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/admin/audit-logs
+ * @desc    Get all system audit logs across the entire platform
+ * @access  Private/Admin
+ */
+router.get('/audit-logs', authenticate, checkPermission('VIEW_SYSTEM_LOGS'), async (req, res, next) => {
+    try {
+        const { search, action, entityType, page = 1, limit = 50 } = req.query;
+        const skip = (Number(page) - 1) * Number(limit);
+
+        const where = {};
+        
+        if (action) {
+            where.action = action;
+        }
+
+        if (entityType) {
+            where.entityType = entityType;
+        }
+
+        if (search) {
+            where.OR = [
+                { performedBy: { contains: search, mode: 'insensitive' } },
+                { method: { contains: search, mode: 'insensitive' } },
+                { path: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        const [logs, total] = await Promise.all([
+            prisma.auditLog.findMany({
+                where,
+                orderBy: { timestamp: 'desc' },
+                skip,
+                take: Number(limit)
+            }),
+            prisma.auditLog.count({ where })
+        ]);
+        
+        // We need to resolve the user names for 'performedBy' since performedBy is a string ID
+        // Often 'performedBy' could be 'SYSTEM' or an arbitrary ID
+        const userIds = [...new Set(logs.map(log => log.performedBy).filter(id => id && id !== 'SYSTEM'))];
+        let users = [];
+        if (userIds.length > 0) {
+            users = await prisma.user.findMany({
+                where: { id: { in: userIds } },
+                select: { id: true, name: true, email: true, role: true }
+            });
+        }
+        
+        const userMap = users.reduce((acc, user) => {
+            acc[user.id] = user;
+            return acc;
+        }, {});
+
+        const mappedLogs = logs.map(log => ({
+            ...log,
+            user: userMap[log.performedBy] || { name: log.performedBy, email: 'SYSTEM' } // fallback mapping
+        }));
+
+        res.json({
+            logs: mappedLogs,
             pagination: {
                 total,
                 page: Number(page),

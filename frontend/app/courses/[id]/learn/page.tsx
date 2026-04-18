@@ -9,7 +9,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import {
     Loader2,
-    PlayCircle,
     CheckCircle2,
     Lock,
     Menu,

@@ -101,6 +101,7 @@ model Course {
   description          String
   thumbnail            String?
   category             String
+  categoryId           String?
   difficulty           Difficulty          @default(BEGINNER)
   duration             Int                 @default(0)
   price                Decimal             @default(0)
@@ -127,6 +128,7 @@ model Course {
   announcements        Announcement[]
   batches              Batch[]
   institute            Institute?          @relation(fields: [instituteId], references: [id])
+  courseCategory       CourseCategory?     @relation(fields: [categoryId], references: [id])
   enrollments          Enrollment[]
   enrollmentRequests   EnrollmentRequest[]
   liveClasses          LiveClass[]
@@ -137,6 +139,21 @@ model Course {
 
   @@unique([title, instructorId])
 }
+
+model CourseCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?
+  color       String?   @default("#6366f1")
+  isActive    Boolean   @default(true)
+  orderIndex  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  courses     Course[]
+}
+
 
 model Batch {
   id            String         @id @default(cuid())
@@ -749,7 +766,7 @@ model BlogPost {
   content     String
   summary     String?
   coverImage  String?
-  category    String?    // ✅ ADD THIS
+  category    String?    
   status      BlogStatus @default(DRAFT)
   tags        Json?
   authorId    String
@@ -814,7 +831,7 @@ model Expense {
 model SystemSettings {
   id                String   @id @default("default")
   platformName      String   @default("TechWell Academy")
-  supportEmail      String   @default("support@techwell.com")
+  supportEmail      String   @default("support@techwell.co.in")
   logoUrl           String?
   faviconUrl        String?
   primaryColor      String   @default("#2563eb")
@@ -1090,14 +1107,18 @@ model LibraryResource {
   views       Int               @default(0)
   downloads   Int               @default(0)
   createdBy   String
+
+  
+  isPaid      Boolean           @default(false)
+  publishedAt DateTime?
+
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
+
   bookmarks   LibraryBookmark[]
   domain      LibraryDomain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
 
   @@index([domainId])
-  @@index([type])
-  @@index([createdAt])
 }
 
 model LibraryBookmark {

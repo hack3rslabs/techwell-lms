@@ -67,7 +67,7 @@ export function StudentJourney() {
     }
 
     return (
-        <section className="py-16 bg-background relative overflow-hidden">
+        <section className="py-3 bg-background relative overflow-hidden">
             <div className="container px-4 text-center">
                 <div className="max-w-3xl mx-auto mb-20 pointer-events-none">
                     <h2 className="text-4xl font-bold tracking-tight mb-6">
@@ -101,7 +101,7 @@ export function StudentJourney() {
                                 )}
                                 onClick={() => handleStepClick(index, step.href, step.protected)}
                             >
-                                <CardContent className="pt-10 pb-10 px-6 flex flex-col items-center text-center">
+                                <CardContent className="pt-0 pb-0 px-6 flex flex-col items-center text-center">
                                     {/* Step Number Badge */}
                                     <div className={cn(
                                         "absolute -top-6 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-sm border-2 border-background",

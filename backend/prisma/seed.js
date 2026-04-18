@@ -9,11 +9,11 @@ async function main() {
     const hashedPassword = await bcrypt.hash('password123', 12);
 
     // Create Users (skip if exists)
-    let superAdmin = await prisma.user.findUnique({ where: { email: 'admin@techwell.com' } });
+    let superAdmin = await prisma.user.findUnique({ where: { email: 'admin@techwell.co.in' } });
     if (!superAdmin) {
         superAdmin = await prisma.user.create({
             data: {
-                email: 'admin@techwell.com',
+                email: 'admin@techwell.co.in',
                 password: hashedPassword,
                 name: 'Super Admin',
                 role: 'SUPER_ADMIN',
@@ -26,11 +26,11 @@ async function main() {
         console.log('⏭️  Super Admin exists');
     }
 
-    let instructor = await prisma.user.findUnique({ where: { email: 'instructor@techwell.com' } });
+    let instructor = await prisma.user.findUnique({ where: { email: 'instructor@techwell.co.in' } });
     if (!instructor) {
         instructor = await prisma.user.create({
             data: {
-                email: 'instructor@techwell.com',
+                email: 'instructor@techwell.co.in',
                 password: hashedPassword,
                 name: 'John Instructor',
                 role: 'INSTRUCTOR',
@@ -43,11 +43,11 @@ async function main() {
         console.log('⏭️  Instructor exists');
     }
 
-    let student = await prisma.user.findUnique({ where: { email: 'student@techwell.com' } });
+    let student = await prisma.user.findUnique({ where: { email: 'student@techwell.co.in' } });
     if (!student) {
         student = await prisma.user.create({
             data: {
-                email: 'student@techwell.com',
+                email: 'student@techwell.co.in',
                 password: hashedPassword,
                 name: 'Jane Student',
                 role: 'STUDENT',
@@ -68,8 +68,18 @@ async function main() {
         // Find any course to enroll in
         const anyCourse = await prisma.course.findFirst();
         if (anyCourse) {
-            await prisma.enrollment.create({
-                data: {
+            await prisma.enrollment.upsert({
+                where: {
+                    userId_courseId: {
+                        userId: student.id,
+                        courseId: anyCourse.id
+                    }
+                },
+                update: {
+                    hasInterviewAccess: true,
+                    status: 'ACTIVE'
+                },
+                create: {
                     userId: student.id,
                     courseId: anyCourse.id,
                     hasInterviewAccess: true,
@@ -120,6 +130,30 @@ async function main() {
             console.log('⏭️  Course exists:', data.title);
         }
     }
+
+    // Seed Course Categories
+    console.log('\n📚 Seeding Course Categories...');
+    const courseCategories = [
+        { name: 'Cloud & DevOps Engineering',         slug: 'cloud-devops-engineering',         icon: '☁️',  color: '#0ea5e9', description: 'AWS, Azure, GCP, Docker, Kubernetes, CI/CD pipelines',         orderIndex: 0 },
+        { name: 'Software Development',               slug: 'software-development',             icon: '💻',  color: '#6366f1', description: 'Full-stack, backend, frontend, mobile app development',           orderIndex: 1 },
+        { name: 'Data Science & Artificial Intelligence', slug: 'data-science-ai',              icon: '🤖',  color: '#8b5cf6', description: 'ML, Deep Learning, NLP, Computer Vision, Data Analytics',         orderIndex: 2 },
+        { name: 'Cyber Security',                     slug: 'cyber-security',                   icon: '🔐',  color: '#ef4444', description: 'Ethical hacking, network security, CEH, CISSP, penetration testing', orderIndex: 3 },
+        { name: 'Networking & System Administration', slug: 'networking-system-admin',           icon: '🌐',  color: '#10b981', description: 'CCNA, CCNP, Linux admin, Windows Server, routing & switching', orderIndex: 4 },
+        { name: 'ERP & SAP',                          slug: 'erp-sap',                          icon: '🏭',  color: '#f59e0b', description: 'SAP S/4HANA, SAP FICO, SAP MM, SAP SD, Oracle ERP',              orderIndex: 5 },
+        { name: 'ITSM & CRM Platforms',               slug: 'itsm-crm-platforms',               icon: '🛠️',  color: '#f97316', description: 'ServiceNow, Salesforce, Zendesk, ITIL, Jira Service Management', orderIndex: 6 },
+        { name: 'HR Management',                      slug: 'hr-management',                    icon: '👥',  color: '#ec4899', description: 'Talent acquisition, payroll, HRMS, SAP HCM, workforce planning',  orderIndex: 7 },
+        { name: 'Finance & Marketing',                slug: 'finance-marketing',                icon: '📊',  color: '#14b8a6', description: 'Digital marketing, financial analysis, CFA, Google Analytics',     orderIndex: 8 },
+    ];
+
+    for (const cat of courseCategories) {
+        await prisma.courseCategory.upsert({
+            where: { slug: cat.slug },
+            update: { name: cat.name, icon: cat.icon, color: cat.color, description: cat.description, orderIndex: cat.orderIndex },
+            create: { ...cat, isActive: true }
+        });
+        console.log('  ✅ Category:', cat.name);
+    }
+
 
     // Create sample interview
     const existingInterview = await prisma.interview.findFirst({ where: { userId: student.id } });
@@ -225,9 +259,9 @@ async function main() {
 
     console.log('\n🎉 Seed completed!\n');
     console.log('📋 Test Credentials:');
-    console.log('   admin@techwell.com / password123');
-    console.log('   instructor@techwell.com / password123');
-    console.log('   student@techwell.com / password123');
+    console.log('   admin@techwell.co.in / password123');
+    console.log('   instructor@techwell.co.in / password123');
+    console.log('   student@techwell.co.in / password123');
 }
 
 main()

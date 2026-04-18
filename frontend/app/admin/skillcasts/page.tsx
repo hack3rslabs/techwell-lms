@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { motion } from "framer-motion"
 import { Plus, Search, Edit, Trash2, Video, User, Briefcase, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -314,7 +315,7 @@ export default function AdminSkillcastPage() {
                             <CardHeader className="p-0">
                                 <div className="aspect-video relative bg-muted">
                                     {item.thumbnail ? (
-                                        <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                                        <Image src={item.thumbnail} alt={item.title} width={400} height={225} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                             <Video className="w-10 h-10 opacity-20" />

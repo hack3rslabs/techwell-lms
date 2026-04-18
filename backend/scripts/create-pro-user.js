@@ -17,7 +17,7 @@ async function createProUser() {
         // Check if user exists
         const checkResult = await client.query(
             'SELECT id FROM "User" WHERE email = $1',
-            ['student@techwell.com']
+            ['student@techwell.co.in']
         );
 
         if (checkResult.rows.length > 0) {
@@ -41,7 +41,7 @@ async function createProUser() {
                     '2000-01-01',
                     'B.Tech Computer Science',
                     'Test University',
-                    'student@techwell.com'
+                    'student@techwell.co.in'
                 ]
             );
             console.log('✅ User updated successfully!');
@@ -55,7 +55,7 @@ async function createProUser() {
           gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()
          )`,
                 [
-                    'student@techwell.com',
+                    'student@techwell.co.in',
                     hashedPassword,
                     'Test Student',
                     'STUDENT',
@@ -71,7 +71,7 @@ async function createProUser() {
         // Verify
         const result = await client.query(
             'SELECT id, email, name, role, "hasUnlimitedInterviews" FROM "User" WHERE email = $1',
-            ['student@techwell.com']
+            ['student@techwell.co.in']
         );
 
         console.log('\n📋 User Details:');

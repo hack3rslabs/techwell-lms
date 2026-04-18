@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { courseApi } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -70,7 +71,7 @@ export default function InstructorCourses() {
                         <Card key={course.id} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow group">
                             <div className="aspect-video bg-muted relative">
                                 {course.thumbnail ? (
-                                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                                    <Image src={course.thumbnail} alt={course.title} width={400} height={225} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center opacity-20 bg-primary/10">
                                         <BookOpen className="h-12 w-12" />

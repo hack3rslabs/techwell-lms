@@ -2,11 +2,10 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { MessageSquare, Users, MessagesSquare } from "lucide-react"
+import { MessageSquare, MessagesSquare } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
     items: {

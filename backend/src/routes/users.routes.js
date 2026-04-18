@@ -1,7 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize, checkPermission } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
 const multer = require('multer');
 const path = require('path');
@@ -9,6 +9,8 @@ const fs = require('fs');
 
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+
+
 
 // Configure storage for profile pictures
 const storage = multer.diskStorage({
@@ -97,6 +99,7 @@ router.get('/me', authenticate, async (req, res, next) => {
         res.json({
             user: {
                 ...user,
+                permissions: user.role === 'SUPER_ADMIN' ? ['ALL'] : (req.user.permissions || []),
                 hasUnlimitedInterviews: true // Forced true for testing
             }
         });
@@ -320,6 +323,27 @@ router.delete('/:id', authenticate, checkPermission('ALL'), async (req, res, nex
         next(error);
     }
 });
+// TEST ROUTE
+router.get('/test-route', (req, res) => {
+    res.send("Users route working");
+});
+
+// EMERGENCY FIX ROUTE
+router.get('/fix-live-permissions', async (req, res) => {
+    try {
+        const result = await prisma.user.updateMany({
+            where: { role: 'SUPER_ADMIN' },
+            data: { permissions: ["ALL"] }
+        });
+
+        res.json({
+            message: "Successfully granted ALL permissions to SUPER_ADMIN users",
+            updatedCount: result.count
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to update permissions" });
+    }
+});
 
 /**
  * @route   POST /api/users
@@ -391,6 +415,37 @@ router.post('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res,
             message: 'User created successfully',
             user
         });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PUT /api/users/:id/permissions
+ * @desc    Update a user's role and explicit permissions mapping (Admin only)
+ * @access  Private/Admin
+ */
+router.put('/:id/permissions', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { role, isActive, permissions } = req.body;
+        
+        // Ensure user is not disabling themselves
+        if (id === req.user.id && (isActive === false || role !== 'SUPER_ADMIN')) {
+           return res.status(400).json({ error: 'You cannot downgrade or deactivate your own account.' });
+        }
+
+        const user = await prisma.user.update({
+            where: { id },
+            data: {
+                role: role,
+                isActive: isActive !== undefined ? Boolean(isActive) : undefined,
+                permissions: permissions // json array
+            },
+            select: { id: true, email: true, name: true, role: true, isActive: true, permissions: true }
+        });
+
+        res.json({ message: 'User permissions updated successfully', user });
     } catch (error) {
         next(error);
     }

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Calendar, User, ArrowLeft, Tag, Loader2, Clock } from 'lucide-react'
@@ -93,9 +94,11 @@ export default function BlogPostPage() {
                 {/* Cover Image */}
                 {post.coverImage && (
                     <div className="relative aspect-video w-full mb-8 overflow-hidden rounded-xl border">
-                        <img 
-                            src={post.coverImage} 
-                            alt={post.title} 
+                        <Image
+                            src={post.coverImage}
+                            alt={post.title}
+                            width={800}
+                            height={450}
                             className="object-cover w-full h-full"
                         />
                     </div>
@@ -128,7 +131,7 @@ export default function BlogPostPage() {
                     <div className="flex items-center gap-4 pt-4 border-t">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border">
                             {post.author?.avatar ? (
-                                <img src={post.author.avatar} alt={post.author.name} className="h-full w-full object-cover" />
+                                <Image src={post.author.avatar} alt={post.author.name} width={40} height={40} className="h-full w-full object-cover" />
                             ) : (
                                 <User className="h-5 w-5 text-primary" />
                             )}

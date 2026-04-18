@@ -14,7 +14,19 @@ const settingsRoutes = require('./routes/settings.routes');
 const app = express();
 
 // Security Middleware
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "frame-ancestors": ["'self'", "http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.29.183:3000", process.env.FRONTEND_URL],
+            "img-src": ["'self'", "data:", "blob:", "http:", "https:"],
+        },
+    },
+    frameguard: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+}));
 app.use(cors({
     origin: function (origin, callback) {
         const allowedOrigins = [
@@ -123,6 +135,8 @@ app.use('/api/chatgpt', require('./routes/chatgpt.routes'));
 app.use('/api/enrollment-requests', require('./routes/enrollment-requests.routes'));
 app.use('/api/employer-requests', require('./routes/employer-requests.routes'));
 app.use('/api/messages', require('./routes/messages.routes'));
+app.use('/api/course-categories', require('./routes/course-categories.routes'));
+
 
 
 // Serve Static Uploads

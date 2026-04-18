@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, BookOpen, FolderTree, FileText, Upload, Trash2, Edit, Save, X } from 'lucide-react';
 
 import api from '@/lib/api';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Category {
     id: string;
@@ -38,6 +39,7 @@ interface Resource {
     downloads: number;
     url?: string;
     content?: Record<string, unknown>;
+    isPaid?: boolean;
 }
 
 interface QAItem {
@@ -52,8 +54,20 @@ interface ResourceFormState {
     file: File | null;
     qaContent: QAItem[];
     syncToAI: boolean;
+    isPaid: boolean;
+    publishedAt: string;
 }
 
+const initialResourceForm: ResourceFormState = {
+    title: '',
+    description: '',
+    domainId: '',
+    file: null,
+    qaContent: [{ q: '', a: '' }],
+    syncToAI: false,
+    isPaid: false,
+    publishedAt: ''
+};
 
 export default function LibraryManagementPage() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -69,14 +83,9 @@ export default function LibraryManagementPage() {
 
     const [categoryForm, setCategoryForm] = useState({ name: '', description: '', icon: '' });
     const [domainForm, setDomainForm] = useState({ name: '', description: '', categoryId: '' });
-    const [resourceForm, setResourceForm] = useState<ResourceFormState>({
-        title: '',
-        description: '',
-        domainId: '',
-        file: null,
-        qaContent: [{ q: '', a: '' }],
-        syncToAI: false
-    });
+    const [resourceForm, setResourceForm] = useState<ResourceFormState>({ ...initialResourceForm });
+
+    const { toast } = useToast();
 
     useEffect(() => {
         fetchData();
@@ -94,52 +103,99 @@ export default function LibraryManagementPage() {
             setResources(res);
         } catch (error) {
             console.error('Error fetching data:', error);
+            toast({
+                title: "Error",
+                description: "Failed to fetch library data",
+                variant: "destructive"
+            });
         } finally {
             setLoading(false);
         }
     };
 
     const handleCreateCategory = async () => {
+        if (!categoryForm.name) return;
         try {
             await api.post('/library/categories', categoryForm);
             setCategoryForm({ name: '', description: '', icon: '' });
             setShowCategoryForm(false);
             fetchData();
+            toast({
+                title: "Success",
+                description: "Category created successfully",
+            });
         } catch (error) {
             console.error('Error creating category:', error);
+            toast({
+                title: "Error",
+                description: "Failed to create category",
+                variant: "destructive"
+            });
         }
     };
 
     const handleCreateDomain = async () => {
+        if (!domainForm.name || !domainForm.categoryId) return;
         try {
             await api.post('/library/domains', domainForm);
             setDomainForm({ name: '', description: '', categoryId: '' });
             setShowDomainForm(false);
             fetchData();
+            toast({
+                title: "Success",
+                description: "Domain created successfully",
+            });
         } catch (error) {
             console.error('Error creating domain:', error);
+            toast({
+                title: "Error",
+                description: "Failed to create domain",
+                variant: "destructive"
+            });
         }
     };
 
     const handleCreateResource = async () => {
         try {
+            // Validation
+            if (!resourceForm.title) {
+                toast({ title: "Validation Error", description: "Please enter a title", variant: "destructive" });
+                return;
+            }
+            if (!resourceForm.domainId) {
+                toast({ title: "Validation Error", description: "Please select a category/domain", variant: "destructive" });
+                return;
+            }
+
             if (resourceType === 'PDF') {
-                const formData = new FormData();
-                if (resourceForm.file) {
-                    formData.append('file', resourceForm.file);
+                if (!resourceForm.file) {
+                    toast({ title: "Validation Error", description: "Please select a PDF file", variant: "destructive" });
+                    return;
                 }
+                const formData = new FormData();
+                formData.append('file', resourceForm.file);
                 formData.append('title', resourceForm.title);
                 formData.append('description', resourceForm.description);
                 formData.append('domainId', resourceForm.domainId);
-                formData.append('createdBy', 'admin'); // TODO: Get from auth
+                formData.append('createdBy', 'admin'); 
+                formData.append('isPaid', String(resourceForm.isPaid));
+                if (resourceForm.publishedAt) {
+                    formData.append('publishedAt', resourceForm.publishedAt);
+                }
 
                 await api.post('/library/resources/pdf', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             } else {
                 // Q&A type
+                const validQuestions = resourceForm.qaContent.filter(qa => qa.q && qa.a);
+                if (validQuestions.length === 0) {
+                    toast({ title: "Validation Error", description: "Please add at least one valid Q&A pair", variant: "destructive" });
+                    return;
+                }
+
                 const content = {
-                    questions: resourceForm.qaContent.filter(qa => qa.q && qa.a)
+                    questions: validQuestions
                 };
 
                 await api.post('/library/resources/qa', {
@@ -148,22 +204,27 @@ export default function LibraryManagementPage() {
                     domainId: resourceForm.domainId,
                     createdBy: 'admin',
                     content,
-                    syncToAI: resourceForm.syncToAI
+                    syncToAI: resourceForm.syncToAI,
+                    isPaid: resourceForm.isPaid,
+                    publishedAt: resourceForm.publishedAt || null
                 });
             }
 
-            setResourceForm({
-                title: '',
-                description: '',
-                domainId: '',
-                file: null,
-                qaContent: [{ q: '', a: '' }],
-                syncToAI: false
+            toast({
+                title: "Success",
+                description: `Library ${resourceType === 'PDF' ? 'PDF' : 'Q&A'} resource created successfully`,
             });
+
+            setResourceForm({ ...initialResourceForm });
             setShowResourceForm(false);
             fetchData();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating resource:', error);
+            toast({
+                title: "Error",
+                description: error.response?.data?.error || "Failed to create resource",
+                variant: "destructive"
+            });
         }
     };
 
@@ -190,378 +251,313 @@ export default function LibraryManagementPage() {
     }
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-2">
-                        <BookOpen className="h-8 w-8 text-primary" />
-                        Library Management
-                    </h1>
-                    <p className="text-muted-foreground mt-2">
-                        Manage categories, domains, and educational resources
-                    </p>
-                </div>
+  <div className="p-6 space-y-6">
+
+    {/* 🔥 TOP CARDS */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <Card>
+        <CardContent className="p-4">
+          <p className="text-sm text-muted-foreground">All Library</p>
+          <h2 className="text-2xl font-bold">{resources.length}</h2>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4">
+          <p className="text-sm text-muted-foreground">Paid</p>
+          <h2 className="text-2xl font-bold">
+            {resources.filter(r => r.isPaid).length}
+          </h2>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4">
+          <p className="text-sm text-muted-foreground">Free</p>
+          <h2 className="text-2xl font-bold">
+            {resources.filter(r => !r.isPaid).length}
+          </h2>
+        </CardContent>
+      </Card>
+
+    </div>
+
+    {/* 🔥 QUICK ACTIONS */}
+    <div className="flex flex-wrap gap-4 justify-between items-center bg-muted/20 p-4 rounded-lg border border-dashed">
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => setShowCategoryForm(!showCategoryForm)}>
+          <BookOpen className="h-4 w-4 mr-2" />
+          {showCategoryForm ? "Cancel Category" : "New Category"}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setShowDomainForm(!showDomainForm)}>
+          <FolderTree className="h-4 w-4 mr-2" />
+          {showDomainForm ? "Cancel Domain" : "New Domain"}
+        </Button>
+      </div>
+      
+      <Button onClick={() => setShowResourceForm(!showResourceForm)} className="shadow-lg">
+        <Plus className="h-4 w-4 mr-2" />
+        {showResourceForm ? "Close Form" : "Add Library Post"}
+      </Button>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* 🔥 CATEGORY FORM */}
+        {showCategoryForm && (
+            <Card className="border-primary/30">
+                <CardHeader>
+                    <CardTitle className="text-lg">Create New Category</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Category Name</Label>
+                        <Input 
+                            value={categoryForm.name}
+                            onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
+                            placeholder="e.g. Artificial Intelligence"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea 
+                            value={categoryForm.description}
+                            onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
+                            placeholder="Brief overview..."
+                        />
+                    </div>
+                    <Button onClick={handleCreateCategory} className="w-full">Save Category</Button>
+                </CardContent>
+            </Card>
+        )}
+
+        {/* 🔥 DOMAIN FORM */}
+        {showDomainForm && (
+            <Card className="border-primary/30">
+                <CardHeader>
+                    <CardTitle className="text-lg">Create New Domain</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Parent Category</Label>
+                        <select
+                            className="w-full p-2 border rounded bg-background"
+                            value={domainForm.categoryId}
+                            onChange={(e) => setDomainForm({...domainForm, categoryId: e.target.value})}
+                        >
+                            <option value="">Select Category</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Domain Name</Label>
+                        <Input 
+                            value={domainForm.name}
+                            onChange={(e) => setDomainForm({...domainForm, name: e.target.value})}
+                            placeholder="e.g. Prompt Engineering"
+                        />
+                    </div>
+                    <Button onClick={handleCreateDomain} className="w-full">Save Domain</Button>
+                </CardContent>
+            </Card>
+        )}
+    </div>
+
+    {/* 🔥 FORM */}
+    {showResourceForm && (
+      <Card>
+        <CardHeader>
+          <CardTitle>Add Library</CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Resource Type Tabs */}
+          <Tabs defaultValue="PDF" onValueChange={(v) => setResourceType(v)}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="PDF">PDF Document</TabsTrigger>
+              <TabsTrigger value="QA">Q&A / Interview</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Name */}
+          <div className="pt-4">
+            <Label>Resource Title</Label>
+            <Input
+              placeholder="e.g. Frontend Interview Preparation Guide"
+              value={resourceForm.title}
+              onChange={(e) =>
+                setResourceForm({ ...resourceForm, title: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <Label>Domain / Category</Label>
+            <select
+              className="w-full p-2 border rounded bg-background"
+              value={resourceForm.domainId}
+              onChange={(e) =>
+                setResourceForm({ ...resourceForm, domainId: e.target.value })
+              }
+            >
+              <option value="">Select Domain</option>
+              {domains.map((domain) => (
+                <option key={domain.id} value={domain.id}>
+                  {domain.category ? `${domain.category.name} - ${domain.name}` : domain.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* PDF Specific Fields */}
+          {resourceType === 'PDF' && (
+            <div className="space-y-4 border p-4 rounded-lg bg-muted/30">
+              <div>
+                <Label>PDF File</Label>
+                <Input
+                  type="file"
+                  accept=".pdf"
+                  className="bg-background"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      setResourceForm({
+                        ...resourceForm,
+                        file: e.target.files[0],
+                      });
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* QA Specific Fields */}
+          {resourceType === 'QA' && (
+            <div className="space-y-4 border p-4 rounded-lg bg-muted/30">
+              <div className="flex items-center justify-between">
+                <Label>Questions & Answers</Label>
+                <Button variant="outline" size="sm" onClick={addQAPair}>
+                  <Plus className="h-4 w-4 mr-1" /> Add QA
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                {resourceForm.qaContent.map((qa, index) => (
+                  <div key={index} className="space-y-2 p-3 border rounded bg-background relative">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute top-1 right-1 h-6 w-6 text-red-500"
+                      onClick={() => removeQAPair(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Input 
+                      placeholder="Question" 
+                      value={qa.q} 
+                      onChange={(e) => updateQAPair(index, 'q', e.target.value)}
+                    />
+                    <Textarea 
+                      placeholder="Answer" 
+                      value={qa.a} 
+                      onChange={(e) => updateQAPair(index, 'a', e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <input 
+                  type="checkbox" 
+                  id="syncToAI" 
+                  checked={resourceForm.syncToAI}
+                  onChange={(e) => setResourceForm({...resourceForm, syncToAI: e.target.checked})}
+                />
+                <Label htmlFor="syncToAI" className="cursor-pointer">Sync to AI Interview Database</Label>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Access */}
+            <div>
+              <Label>Access Type</Label>
+              <div className="flex gap-4 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="isPaid"
+                    checked={!resourceForm.isPaid}
+                    onChange={() => setResourceForm({ ...resourceForm, isPaid: false })}
+                  />
+                  <span className="text-sm">Free</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="isPaid"
+                    checked={resourceForm.isPaid}
+                    onChange={() => setResourceForm({ ...resourceForm, isPaid: true })}
+                  />
+                  <span className="text-sm">Paid</span>
+                </label>
+              </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Categories</CardTitle>
-                        <FolderTree className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{categories.length}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Domains</CardTitle>
-                        <FolderTree className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{domains.length}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Resources</CardTitle>
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{resources.length}</div>
-                    </CardContent>
-                </Card>
+            {/* Published Date */}
+            <div>
+              <Label>Published Date</Label>
+              <Input
+                type="date"
+                value={resourceForm.publishedAt}
+                onChange={(e) => setResourceForm({ ...resourceForm, publishedAt: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label>Description (Optional)</Label>
+            <Textarea
+              placeholder="Provide a brief overview of this resource..."
+              value={resourceForm.description}
+              onChange={(e) =>
+                setResourceForm({ ...resourceForm, description: e.target.value })
+              }
+            />
+          </div>
+
+          <Button className="w-full" onClick={handleCreateResource}>
+            Add {resourceType === 'PDF' ? 'Document' : 'Interview Q&A'}
+          </Button>
+
+        </CardContent>
+      </Card>
+    )}
+
+    {/* 🔥 LIST */}
+    <div className="space-y-4">
+      {resources.map((r) => (
+        <Card key={r.id}>
+          <CardContent className="p-4 flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold">{r.title}</h3>
+              <p className="text-sm text-muted-foreground">{r.description}</p>
             </div>
 
-            {/* Management Tabs */}
-            <Tabs defaultValue="categories" className="w-full">
-                <TabsList>
-                    <TabsTrigger value="categories">Categories</TabsTrigger>
-                    <TabsTrigger value="domains">Domains</TabsTrigger>
-                    <TabsTrigger value="resources">Resources</TabsTrigger>
-                </TabsList>
+            <div className="flex gap-2">
+              <span className={`text-xs px-2 py-1 rounded ${r.isPaid ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}>
+                {r.isPaid ? "Paid" : "Free"}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
 
-                {/* Categories Tab */}
-                <TabsContent value="categories" className="space-y-4">
-                    <div className="flex justify-end">
-                        <Button onClick={() => setShowCategoryForm(!showCategoryForm)}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Category
-                        </Button>
-                    </div>
-
-                    {showCategoryForm && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>New Category</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <Label>Name</Label>
-                                    <Input
-                                        value={categoryForm.name}
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                                        placeholder="e.g., Interview Prep"
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Description</Label>
-                                    <Textarea
-                                        value={categoryForm.description}
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                                        placeholder="Brief description"
-                                    />
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button onClick={handleCreateCategory}>
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Save
-                                    </Button>
-                                    <Button variant="outline" onClick={() => setShowCategoryForm(false)}>
-                                        <X className="h-4 w-4 mr-2" />
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {categories.map((cat) => (
-                            <Card key={cat.id}>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">{cat.name}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground mb-2">{cat.description}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {cat.domains?.length || 0} domains
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </TabsContent>
-
-                {/* Domains Tab */}
-                <TabsContent value="domains" className="space-y-4">
-                    <div className="flex justify-end">
-                        <Button onClick={() => setShowDomainForm(!showDomainForm)}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Domain
-                        </Button>
-                    </div>
-
-                    {showDomainForm && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>New Domain</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <Label>Category</Label>
-                                    <select
-                                        className="w-full p-2 border rounded"
-                                        value={domainForm.categoryId}
-                                        onChange={(e) => setDomainForm({ ...domainForm, categoryId: e.target.value })}
-                                        aria-label="Select Category"
-                                    >
-                                        <option value="">Select category</option>
-                                        {categories.map((cat) => (
-                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <Label>Name</Label>
-                                    <Input
-                                        value={domainForm.name}
-                                        onChange={(e) => setDomainForm({ ...domainForm, name: e.target.value })}
-                                        placeholder="e.g., JavaScript"
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Description</Label>
-                                    <Textarea
-                                        value={domainForm.description}
-                                        onChange={(e) => setDomainForm({ ...domainForm, description: e.target.value })}
-                                    />
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button onClick={handleCreateDomain}>
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Save
-                                    </Button>
-                                    <Button variant="outline" onClick={() => setShowDomainForm(false)}>
-                                        <X className="h-4 w-4 mr-2" />
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {domains.map((domain) => (
-                            <Card key={domain.id}>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">{domain.name}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground mb-2">{domain.description}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        Category: {domain.category?.name}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {domain._count?.resources || 0} resources
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </TabsContent>
-
-                {/* Resources Tab */}
-                <TabsContent value="resources" className="space-y-4">
-                    <div className="flex justify-end">
-                        <Button onClick={() => setShowResourceForm(!showResourceForm)}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Resource
-                        </Button>
-                    </div>
-
-                    {showResourceForm && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>New Resource</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <Label>Type</Label>
-                                    <div className="flex gap-4 mt-2">
-                                        <label className="flex items-center gap-2">
-                                            <input
-                                                type="radio"
-                                                checked={resourceType === 'PDF'}
-                                                onChange={() => setResourceType('PDF')}
-                                                aria-label="Select PDF Upload Type"
-                                            />
-                                            PDF Upload
-                                        </label>
-                                        <label className="flex items-center gap-2">
-                                            <input
-                                                type="radio"
-                                                checked={resourceType === 'QA'}
-                                                onChange={() => setResourceType('QA')}
-                                                aria-label="Select Q&A Content Type"
-                                            />
-                                            Q&A Content
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <Label>Domain</Label>
-                                    <select
-                                        className="w-full p-2 border rounded"
-                                        value={resourceForm.domainId}
-                                        onChange={(e) => setResourceForm({ ...resourceForm, domainId: e.target.value })}
-                                        aria-label="Select Domain"
-                                    >
-                                        <option value="">Select domain</option>
-                                        {domains.map((domain) => (
-                                            <option key={domain.id} value={domain.id}>
-                                                {domain.category?.name} → {domain.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <Label>Title</Label>
-                                    <Input
-                                        value={resourceForm.title}
-                                        onChange={(e) => setResourceForm({ ...resourceForm, title: e.target.value })}
-                                        placeholder="Resource title"
-                                    />
-                                </div>
-
-                                <div>
-                                    <Label>Description</Label>
-                                    <Textarea
-                                        value={resourceForm.description}
-                                        onChange={(e) => setResourceForm({ ...resourceForm, description: e.target.value })}
-                                    />
-                                </div>
-
-                                {resourceType === 'PDF' ? (
-                                    <div>
-                                        <Label>PDF File</Label>
-                                        <Input
-                                            type="file"
-                                            accept=".pdf"
-                                            title="Upload PDF Resource"
-                                            aria-label="Upload PDF Resource"
-                                            onChange={(e) => {
-                                                if (e.target.files && e.target.files[0]) {
-                                                    setResourceForm({ ...resourceForm, file: e.target.files[0] });
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={resourceForm.syncToAI}
-                                                onChange={(e) => setResourceForm({ ...resourceForm, syncToAI: e.target.checked })}
-                                            />
-                                            <Label>Sync to AI Training Data</Label>
-                                        </div>
-
-                                        {resourceForm.qaContent.map((qa, index) => (
-                                            <Card key={index} className="p-4">
-                                                <div className="space-y-2">
-                                                    <div>
-                                                        <Label>Question {index + 1}</Label>
-                                                        <Textarea
-                                                            value={qa.q}
-                                                            onChange={(e) => updateQAPair(index, 'q', e.target.value)}
-                                                            placeholder="Enter question"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label>Answer</Label>
-                                                        <Textarea
-                                                            value={qa.a}
-                                                            onChange={(e) => updateQAPair(index, 'a', e.target.value)}
-                                                            placeholder="Enter answer"
-                                                            rows={4}
-                                                        />
-                                                    </div>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => removeQAPair(index)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4 mr-2" />
-                                                        Remove
-                                                    </Button>
-                                                </div>
-                                            </Card>
-                                        ))}
-
-                                        <Button variant="outline" onClick={addQAPair}>
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Add Q&A Pair
-                                        </Button>
-                                    </div>
-                                )}
-
-                                <div className="flex gap-2">
-                                    <Button onClick={handleCreateResource}>
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Save
-                                    </Button>
-                                    <Button variant="outline" onClick={() => setShowResourceForm(false)}>
-                                        <X className="h-4 w-4 mr-2" />
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    <div className="space-y-4">
-                        {resources.map((resource) => (
-                            <Card key={resource.id}>
-                                <CardHeader>
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <CardTitle className="text-lg">{resource.title}</CardTitle>
-                                            <p className="text-sm text-muted-foreground mt-1">
-                                                {resource.domain?.category?.name} → {resource.domain?.name}
-                                            </p>
-                                        </div>
-                                        <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary">
-                                            {resource.type}
-                                        </span>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground mb-2">{resource.description}</p>
-                                    <div className="flex gap-4 text-xs text-muted-foreground">
-                                        <span>Views: {resource.views}</span>
-                                        {resource.type === 'PDF' && <span>Downloads: {resource.downloads}</span>}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </TabsContent>
-            </Tabs>
-        </div>
-    );
+  </div>
+)
 }

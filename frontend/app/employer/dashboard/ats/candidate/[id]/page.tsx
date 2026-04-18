@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
     Loader2, Mail, Phone, Calendar, Download, Send, Star, MessageSquare,
-    Tag, Clock, Zap, CheckCircle2, XCircle, AlertTriangle, ArrowLeft,
-    BookOpen, Award
+    Tag, Zap, CheckCircle2, XCircle, AlertTriangle, ArrowLeft,
+    BookOpen
 } from "lucide-react"
 
 interface HistoryEntry {

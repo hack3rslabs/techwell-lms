@@ -225,7 +225,7 @@ export default function EmailSettingsPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label>From Email</Label>
-                                        <Input placeholder="noreply@techwell.com" value={formData.fromEmail} onChange={e => setFormData({ ...formData, fromEmail: e.target.value })} />
+                                        <Input placeholder="noreply@techwell.co.in" value={formData.fromEmail} onChange={e => setFormData({ ...formData, fromEmail: e.target.value })} />
                                     </div>
                                 </>
                             ) : formData.provider === 'EMAILJS' ? (

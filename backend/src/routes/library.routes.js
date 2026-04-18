@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
@@ -33,6 +33,14 @@ const upload = multer({
     }
 });
 
+// ============= DIAGNOSTICS =============
+router.use((req, res, next) => {
+    console.log(`[Library Router] ${req.method} ${req.path}`);
+    next();
+});
+
+router.get('/ping', (req, res) => res.json({ message: 'Library router is alive', path: req.originalUrl }));
+
 // ============= CATEGORY ROUTES =============
 
 // Get all categories
@@ -59,7 +67,7 @@ router.get('/categories', async (req, res) => {
 
 // Create category
 // Create category
-router.post('/categories', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.post('/categories', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { name, description, icon, order } = req.body;
 
@@ -76,7 +84,7 @@ router.post('/categories', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asyn
 
 // Update category
 // Update category
-router.put('/categories/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.put('/categories/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, icon, order } = req.body;
@@ -95,7 +103,7 @@ router.put('/categories/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), a
 
 // Delete category
 // Delete category
-router.delete('/categories/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.delete('/categories/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.libraryCategory.delete({ where: { id } });
@@ -132,7 +140,7 @@ router.get('/domains', async (req, res) => {
 
 // Create domain
 // Create domain
-router.post('/domains', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.post('/domains', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { name, description, categoryId } = req.body;
 
@@ -150,7 +158,7 @@ router.post('/domains', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (
 
 // Update domain
 // Update domain
-router.put('/domains/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.put('/domains/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description } = req.body;
@@ -169,7 +177,7 @@ router.put('/domains/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asyn
 
 // Delete domain
 // Delete domain
-router.delete('/domains/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.delete('/domains/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.libraryDomain.delete({ where: { id } });
@@ -182,14 +190,24 @@ router.delete('/domains/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), a
 
 // ============= RESOURCE ROUTES =============
 
+// ============= RESOURCE ROUTES =============
+
 // Get resources (with filters)
 router.get('/resources', async (req, res) => {
     try {
-        const { domainId, type, search } = req.query;
+        const { domainId, type, search, isPaid } = req.query;
 
         const where = {};
+
         if (domainId) where.domainId = domainId;
         if (type) where.type = type;
+
+        // ✅ Paid / Free filter
+        if (isPaid !== undefined) {
+            where.isPaid = isPaid === 'true';
+        }
+
+        // ✅ Search
         if (search) {
             where.OR = [
                 { title: { contains: search, mode: 'insensitive' } },
@@ -214,7 +232,24 @@ router.get('/resources', async (req, res) => {
     }
 });
 
-// Get single resource
+
+// Track view count
+router.patch('/resources/:id/increment-views', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const resource = await prisma.libraryResource.update({
+            where: { id },
+            data: { views: { increment: 1 } }
+        });
+        res.json({ success: true, views: resource.views });
+    } catch (error) {
+        console.error('[Library] Error tracking view:', error);
+        res.status(500).json({ error: 'Failed to track view' });
+    }
+});
+
+
+// Get single resource (increment views)
 router.get('/resources/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -236,112 +271,174 @@ router.get('/resources/:id', async (req, res) => {
     }
 });
 
-// Create resource (PDF upload)
-// Create resource (PDF upload)
-router.post('/resources/pdf', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), upload.single('file'), async (req, res) => {
-    try {
-        const { title, description, domainId, createdBy } = req.body;
 
-        if (!req.file) {
-            return res.status(400).json({ error: 'PDF file is required' });
-        }
-
-        const resource = await prisma.libraryResource.create({
-            data: {
+// Create resource (PDF upload)
+router.post(
+    '/resources/pdf',
+    authenticate,
+    authorize('SUPER_ADMIN', 'ADMIN'),
+    upload.single('file'),
+    async (req, res) => {
+        try {
+            const {
                 title,
                 description,
-                type: 'PDF',
-                fileUrl: `/uploads/library/${req.file.filename}`,
-                fileName: req.file.originalname,
-                fileSize: req.file.size,
                 domainId,
-                createdBy
-            },
-            include: {
-                domain: {
-                    include: { category: true }
-                }
+                isPaid,
+                publishedAt
+            } = req.body;
+
+            // Use provided createdBy or fall back to authenticated user ID
+            const createdBy = req.body.createdBy || req.user?.id || 'system';
+
+            if (!title || !domainId) {
+                return res.status(400).json({ error: 'Title and Domain are required' });
             }
-        });
 
-        res.json(resource);
-    } catch (error) {
-        console.error('[Library] Error creating PDF resource:', error);
-        res.status(500).json({ error: 'Failed to create PDF resource' });
+            if (!req.file) {
+                return res.status(400).json({ error: 'PDF file is required' });
+            }
+
+            const resource = await prisma.libraryResource.create({
+                data: {
+                    title,
+                    description,
+                    type: 'PDF',
+                    fileUrl: `/uploads/library/${req.file.filename}`,
+                    fileName: req.file.originalname,
+                    fileSize: req.file.size || 0,
+                    domainId,
+                    createdBy,
+                    isPaid: isPaid === 'true' || isPaid === true,
+                    publishedAt: publishedAt ? new Date(publishedAt) : null
+                },
+                include: {
+                    domain: {
+                        include: { category: true }
+                    }
+                }
+            });
+
+            res.json(resource);
+        } catch (error) {
+            console.error('[Library] Error creating PDF resource:', error);
+            res.status(500).json({ 
+                error: 'Failed to create PDF resource',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
     }
-});
+);
 
-// Create resource (Q&A content) - WITH AI INTEGRATION
-// Create resource (Q&A content) - WITH AI INTEGRATION
-router.post('/resources/qa', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
-    try {
-        const { title, description, domainId, createdBy, content, syncToAI } = req.body;
 
-        const resource = await prisma.libraryResource.create({
-            data: {
+// Create resource (Q&A)
+router.post(
+    '/resources/qa',
+    authenticate,
+    authorize('SUPER_ADMIN', 'ADMIN'),
+    async (req, res) => {
+        try {
+            const {
                 title,
                 description,
-                type: 'QA',
+                domainId,
                 content,
-                domainId,
-                createdBy
-            },
-            include: {
-                domain: {
-                    include: { category: true }
-                }
-            }
-        });
+                syncToAI,
+                isPaid,
+                publishedAt
+            } = req.body;
 
-        // If syncToAI is true, add Q&A pairs to AI training data
-        if (syncToAI && content && content.questions) {
-            for (const qa of content.questions) {
-                try {
-                    await prisma.aIInterviewQA.create({
-                        data: {
-                            question: qa.q,
-                            answer: qa.a,
-                            domain: resource.domain.name,
-                            difficulty: 'MEDIUM', // Default
-                            source: `Library: ${title}`
-                        }
-                    });
-                } catch (error) {
-                    console.error('[Library] Error syncing Q&A to AI:', error);
-                    // Continue even if sync fails
+            const createdBy = req.body.createdBy || req.user?.id || 'system';
+
+            if (!title || !domainId) {
+                return res.status(400).json({ error: 'Title and Domain are required' });
+            }
+
+            const resource = await prisma.libraryResource.create({
+                data: {
+                    title,
+                    description,
+                    type: 'QA',
+                    content: content || {},
+                    domainId,
+                    createdBy,
+                    isPaid: isPaid === true || isPaid === 'true',
+                    publishedAt: publishedAt ? new Date(publishedAt) : null
+                },
+                include: {
+                    domain: {
+                        include: { category: true }
+                    }
+                }
+            });
+
+            // ✅ AI Sync to KnowledgeBase (replacing missing AIInterviewQA)
+            if (syncToAI && content && Array.isArray(content.questions)) {
+                for (const qa of content.questions) {
+                    if (!qa.q || !qa.a) continue;
+                    try {
+                        await prisma.knowledgeBase.create({
+                            data: {
+                                domain: resource.domain.name,
+                                topic: title,
+                                content: qa.q,
+                                answer: qa.a,
+                                difficulty: 'INTERMEDIATE',
+                                status: 'PUBLISHED'
+                            }
+                        });
+                    } catch (syncError) {
+                        console.error('[Library] AI sync failed for a QA pair:', syncError.message);
+                    }
                 }
             }
+
+            res.json(resource);
+        } catch (error) {
+            console.error('[Library] Error creating Q&A resource:', error);
+            res.status(500).json({ 
+                error: 'Failed to create Q&A resource',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
         }
-
-        res.json(resource);
-    } catch (error) {
-        console.error('[Library] Error creating Q&A resource:', error);
-        res.status(500).json({ error: 'Failed to create Q&A resource' });
     }
-});
+);
 
-// Update resource
-// Update resource
-router.put('/resources/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { title, description, content } = req.body;
 
-        const resource = await prisma.libraryResource.update({
-            where: { id },
-            data: { title, description, content }
-        });
+// Update resource (add support for new fields)
+router.put(
+    '/resources/:id',
+    authenticate,
+    authorize('SUPER_ADMIN', 'ADMIN'),
+    async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { title, description, content, isPaid, publishedAt } = req.body;
 
-        res.json(resource);
-    } catch (error) {
-        console.error('[Library] Error updating resource:', error);
-        res.status(500).json({ error: 'Failed to update resource' });
+            const resource = await prisma.libraryResource.update({
+                where: { id },
+                data: {
+                    title,
+                    description,
+                    content,
+
+                    // ✅ NEW
+                    isPaid: isPaid !== undefined ? isPaid : undefined,
+                    publishedAt: publishedAt ? new Date(publishedAt) : undefined
+                }
+            });
+
+            res.json(resource);
+        } catch (error) {
+            console.error('[Library] Error updating resource:', error);
+            res.status(500).json({ error: 'Failed to update resource' });
+        }
     }
-});
+);
 
 // Delete resource
 // Delete resource
-router.delete('/resources/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.delete('/resources/:id', authenticate, checkPermission('MANAGE_LIBRARY'), async (req, res) => {
     try {
         const { id } = req.params;
 

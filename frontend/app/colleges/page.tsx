@@ -3,7 +3,7 @@
 import * as React from "react"
 import _Link from "next/link"
 import {
-    Cpu, Building, TrendingUp, XCircle, AlertTriangle,
+    Building, TrendingUp, XCircle, AlertTriangle,
     MessageCircle, Brain, Code2, Mic, Target, Terminal,
     BarChart3, Share2, Copy, Mail, Linkedin, Twitter, Check
 } from "lucide-react"

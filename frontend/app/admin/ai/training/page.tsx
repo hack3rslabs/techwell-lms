@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
     Sparkles,
-    Plus,
     Save,
     Trash2,
     Edit,
@@ -20,7 +19,6 @@ import {
     GraduationCap,
     Rocket,
     BookOpen,
-    CheckCircle,
     RefreshCw
 } from 'lucide-react'
 import api from '@/lib/api'
