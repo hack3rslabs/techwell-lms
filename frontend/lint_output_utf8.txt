@@ -1,0 +1,17 @@
+﻿
+> frontend@0.1.0 lint
+> eslint
+
+
+E:\FinalProjects\techwell-lms\frontend\app\admin\staff\new\page.tsx
+  55:17  error  'nextPermissions' is never reassigned. Use 'const' instead  prefer-const
+
+E:\FinalProjects\techwell-lms\frontend\app\admin\users\[id]\page.tsx
+  110:17  error  'next' is never reassigned. Use 'const' instead  prefer-const
+
+E:\FinalProjects\techwell-lms\frontend\hooks\useIdleTimeout.ts
+  128:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+Γ£û 3 problems (2 errors, 1 warning)
+  2 errors and 1 warning potentially fixable with the `--fix` option.
+

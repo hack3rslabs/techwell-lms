@@ -107,7 +107,7 @@ export default function User360Page() {
         const manageKey = `MANAGE_${moduleId}`;
         
         setEditedPermissions(prev => {
-            let next = prev.filter(p => p !== viewKey && p !== manageKey);
+            const next = prev.filter(p => p !== viewKey && p !== manageKey);
             
             if (value === "allow") {
                 next.push(viewKey, manageKey);
