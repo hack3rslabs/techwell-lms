@@ -167,7 +167,7 @@ export default function CreativeTemplate(props: ResumeProps) {
                                         {exp.jobTitle}
                                     </h3>
                                     <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mt-1">
-                                        {exp.companyName} // {exp.location}
+                                        {exp.companyName}{" // "}{exp.location}
                                     </p>
                                 </div>
                                 <div className="text-[10px] font-black text-white uppercase bg-slate-900 px-4 py-2 rounded-full tracking-widest">
@@ -262,7 +262,7 @@ export default function CreativeTemplate(props: ResumeProps) {
                                      <div className="h-1 w-8 bg-slate-900 group-hover:w-full transition-all duration-500 mb-4"></div>
                                      <h3 className="font-black text-slate-900 text-lg tracking-tighter uppercase leading-none mb-1">{edu.degree}</h3>
                                      <p className="text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-2 leading-none">{edu.fieldOfStudy}</p>
-                                     <p className="text-slate-400 text-xs font-bold leading-none italic">{edu.institution} // {edu.endYear}</p>
+                                     <p className="text-slate-400 text-xs font-bold leading-none italic">{edu.institution}{" // "}{edu.endYear}</p>
                                      {edu.percentage && <span className="inline-block mt-3 px-3 py-1 bg-amber-50 text-amber-700 text-[9px] font-black rounded-lg uppercase tracking-tighter">{edu.percentage} Excellence</span>}
                                  </div>
                              ))}
@@ -274,19 +274,19 @@ export default function CreativeTemplate(props: ResumeProps) {
                 <section>
                     <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 mb-6">Stack Log</h2>
                     <div className="space-y-6">
-                        {props.techLanguages && props.techLanguages.length > 0 && (
+                        {props.technicalSkills && props.technicalSkills.length > 0 && (
                             <div>
                                 <span className="text-[9px] font-black uppercase text-indigo-400 block mb-2">Systems & Syntax</span>
                                 <div className="text-[11px] font-bold text-slate-800 flex flex-wrap gap-x-3 gap-y-1">
-                                    {props.techLanguages.map((s, i) => <span key={i} className="after:content-['/'] last:after:content-[''] after:ml-2 after:text-slate-100">{s}</span>)}
+                                    {props.technicalSkills.map((s, i) => <span key={i} className="after:content-['/'] last:after:content-[''] after:ml-2 after:text-slate-100">{s}</span>)}
                                 </div>
                             </div>
                         )}
-                        {props.techTools && props.techTools.length > 0 && (
+                        {props.toolsPlatforms && props.toolsPlatforms.length > 0 && (
                             <div>
                                 <span className="text-[9px] font-black uppercase text-purple-400 block mb-2">Engines & Ops</span>
                                 <div className="text-[11px] font-bold text-slate-800 flex flex-wrap gap-x-3 gap-y-1">
-                                    {props.techTools.map((s, i) => <span key={i} className="after:content-['/'] last:after:content-[''] after:ml-2 after:text-slate-100">{s}</span>)}
+                                    {props.toolsPlatforms.map((s, i) => <span key={i} className="after:content-['/'] last:after:content-[''] after:ml-2 after:text-slate-100">{s}</span>)}
                                 </div>
                             </div>
                         )}
@@ -303,7 +303,7 @@ export default function CreativeTemplate(props: ResumeProps) {
                                     <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between group overflow-hidden">
                                         <div className="relative z-10">
                                             <p className="font-black text-slate-900 text-[10px] uppercase leading-tight group-hover:text-indigo-600 transition-colors tracking-tighter">{cert.name}</p>
-                                            <p className="text-slate-400 text-[8px] font-bold uppercase mt-1 tracking-tighter italic">{cert.organization} // {cert.issueDate}</p>
+                                            <p className="text-slate-400 text-[8px] font-bold uppercase mt-1 tracking-tighter italic">{cert.organization}{" // "}{cert.issueDate}</p>
                                         </div>
                                         <div className="absolute right-0 bottom-0 text-slate-100 text-4xl font-black translate-x-4 translate-y-4 group-hover:scale-150 transition-transform">✓</div>
                                     </div>
