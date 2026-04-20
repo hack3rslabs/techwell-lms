@@ -399,41 +399,51 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Banner Image</label>
-                                <Input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp,image/jpg"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0] || null
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-semibold">Course Banner Image</label>
+                                    <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium">Recommended: 1200x400 (3:1)</span>
+                                </div>
+                                <div className="group relative">
+                                    <Input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp,image/jpg"
+                                        className="cursor-pointer bg-muted/20 hover:bg-muted/40 transition-colors border-dashed"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0] || null
 
-                                        if (!file) return
+                                            if (!file) return
 
-                                        const allowedTypes = [
-                                            "image/jpeg",
-                                            "image/png",
-                                            "image/webp",
-                                            "image/jpg"
-                                        ]
+                                            const allowedTypes = [
+                                                "image/jpeg",
+                                                "image/png",
+                                                "image/webp",
+                                                "image/jpg"
+                                            ]
 
-                                        if (!allowedTypes.includes(file.type)) {
-                                            alert("Only JPG, PNG, WEBP allowed")
-                                            return
-                                        }
+                                            if (!allowedTypes.includes(file.type)) {
+                                                alert("Only JPG, PNG, WEBP allowed")
+                                                return
+                                            }
 
-                                        const maxSize = 2 * 1024 * 1024
+                                            const maxSize = 2 * 1024 * 1024
 
-                                        if (file.size > maxSize) {
-                                            alert("Image must be under 2MB")
-                                            return
-                                        }
+                                            if (file.size > maxSize) {
+                                                alert("Image must be under 2MB")
+                                                return
+                                            }
 
-                                        setBannerFile(file)
-                                        setBannerPreview(URL.createObjectURL(file))
-                                    }}
-                                />
+                                            setBannerFile(file)
+                                            setBannerPreview(URL.createObjectURL(file))
+                                        }}
+                                    />
+                                    <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
+                                        This image will be displayed at the top of the course page. Use high-quality visuals to attract students.
+                                    </p>
+                                </div>
+                                
                                 {(bannerPreview || basicData.bannerUrl) && (
-                                    <div className="mt-2 rounded-lg overflow-hidden border max-w-xs">
+                                    <div className="mt-4 relative rounded-xl overflow-hidden border shadow-sm group">
                                         <Image
                                             src={
                                                 bannerPreview
@@ -443,10 +453,13 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                                         : "/placeholder.jpg"
                                             }
                                             alt="Banner preview"
-                                            width={400}
-                                            height={200}
-                                            className="w-full h-32 object-cover"
+                                            width={1200}
+                                            height={400}
+                                            className="w-full aspect-[3/1] object-cover"
                                         />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <p className="text-white text-xs font-medium">Click "Choose File" to replace</p>
+                                        </div>
                                     </div>
                                 )}
                             </div>

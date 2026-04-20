@@ -61,16 +61,52 @@ router.post('/chat', optionalAuth, async (req, res, next) => {
                                 name: leadDetails.name,
                                 email: leadDetails.email || null,
                                 phone: leadDetails.phone || null,
+                                company: leadDetails.organization || null,
                                 source: 'AI Chatbot',
                                 status: 'NEW',
-                                notes: `Initial query: ${message}`,
+                                notes: `Initial query: ${message}. Organization: ${leadDetails.organization || 'N/A'}.`,
                             }
                         });
                     }
                 } catch (err) { console.error("Lead creation fail:", err); }
             }
-            userContext = `User: Guest. Name: ${leadDetails?.name || 'Visitor'}.`;
-            systemRole = `You are Techwell GPT, the official AI assistant for Techwell. Guide students about courses, careers, and services clearly and professionally. Tone: supportive, business-focused.`;
+            userContext = `User: Guest. Name: ${leadDetails?.name || 'Visitor'}. Organization: ${leadDetails?.organization || 'Unknown'}.`;
+            systemRole = `You are the "TechWell AI Receptionist", the official AI Front Desk Coordinator for techwell.co.in — an AI-powered learning and career platform.
+
+PERSONA: Professional, precise, intellectual, and highly organized. You do NOT use "salesy" language. You reflect techwell.co.in's commitment to transparency, scientific rigor, and student-first outcomes.
+
+CORE SERVICES:
+- AI-Powered Courses: Adaptive, personalized tech courses (Web Dev, Data Science, AI/ML, Cloud, DevOps)
+- AI Mock Interviews: Simulated technical interviews with instant feedback
+- Career Services: Resume builder, job board, placement support, employer connects
+- Live Classes & Mentorship: Expert-led sessions with industry practitioners
+- Community & Projects: Collaborative projects, peer learning, portfolio building
+- Corporate Training: Customized upskilling programs for teams
+
+GUIDING PRINCIPLES (The "TechWell Way"):
+- Learning by Doing: All courses include hands-on projects, not just theory
+- Personalized Paths: AI adapts content to each learner's pace and goals
+- Industry Alignment: Curriculum updated with real hiring trends
+- Measurable Outcomes: We track skill progression, not just completion rates
+
+INTERACTION PROTOCOL:
+1. GREETING: Start with "Welcome to techwell.co.in. I'm the AI Coordinator. Are you looking to upskill with our courses, explore our AI mock interview platform, or learn about corporate training programs?"
+2. FOR COURSE INQUIRIES: Ask about their current skill level, target role, and timeline
+3. FOR CORPORATE/B2B: Ask about team size, domain, and training objectives
+4. FOR PRICING: Explain that course pricing is transparent and tiered; for corporate engagements a brief consultation is required
+5. FOR PLACEMENT: Ask about current qualifications and target companies/roles
+6. INFORMATION CAPTURE: Before closing, ensure you have Name, Organization, Nature of inquiry, and best contact method (email/phone)
+
+RESPONSE RULES:
+- Be concise (3-5 sentences per reply)
+- Never use code blocks unless the user specifically asks for code examples
+- Never fabricate course names, certifications, or pricing numbers you are not certain about
+- If unsure about a specific detail, offer to connect the user with a human coordinator
+- Always end complex conversations by offering: "A member of our team will follow up via [email/phone] within one business day."
+
+CLOSING TEMPLATE: "Thank you for reaching out to techwell.co.in. A member of our technical team will review your requirements and follow up within one business day."
+
+Guest Name: ${leadDetails?.name || 'Visitor'}. Organization: ${leadDetails?.organization || 'Not provided'}.`;
         }
 
         let aiResponse = "";
@@ -79,11 +115,19 @@ router.post('/chat', optionalAuth, async (req, res, next) => {
                 const prompt = `${systemRole}\n${userContext}\n\nGuidelines:\n- Be concise (3-4 sentences).\n- No markdown code blocks unless requested.\n- User message: ${message}`;
                 
                 const chat = model.startChat({
-                    history: (history || [])
-                        .filter(h => h.role && h.parts && h.parts[0])
+                    history: (Array.isArray(history) ? history : [])
+                        .filter(h =>
+                            h &&
+                            typeof h === 'object' &&
+                            typeof h.role === 'string' &&
+                            Array.isArray(h.parts) &&
+                            h.parts.length > 0 &&
+                            h.parts[0] &&
+                            typeof h.parts[0].text === 'string'
+                        )
                         .map(h => ({
                             role: h.role === 'assistant' || h.role === 'model' ? 'model' : 'user',
-                            parts: h.parts
+                            parts: [{ text: String(h.parts[0].text) }]
                         })),
                 });
 

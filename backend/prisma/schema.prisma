@@ -57,6 +57,7 @@ model User {
   institute              Institute?             @relation(fields: [instituteId], references: [id])
   systemRole             SystemRole?            @relation(fields: [systemRoleId], references: [id])
   conversations          Conversation[]         @relation("UserConversations")
+  resume                 Resume?
 }
 
 model SystemRole {
@@ -1343,4 +1344,13 @@ enum EmailStatus {
   SENT
   FAILED
   QUEUED
+}
+
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
