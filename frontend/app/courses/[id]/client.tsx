@@ -373,8 +373,22 @@ export default function CourseDetailClient() {
         : (course.discountPrice || course.price);
 
     return (
-        <div className="container py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="container py-6">
+            {/* Course Banner */}
+            {course.bannerUrl && (
+                <div className="relative w-full aspect-[12/4] mb-10 rounded-3xl overflow-hidden shadow-2xl shadow-primary/10 group">
+                    <Image
+                        src={getFullImageUrl(course.bannerUrl)}
+                        alt={`${course.title} Banner`}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 <div className="lg:col-span-2">
                     <div className="mb-8">
                         <div className="flex items-center gap-3 mb-4">

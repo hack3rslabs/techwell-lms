@@ -118,8 +118,8 @@ export default function DashboardPage() {
     const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
     const initialTabParam = searchParams?.get('tab')
 
-    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates'
-    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates']
+    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume'
+    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume']
 
     const [activeTab, setActiveTab] = React.useState<TabType>(
         (initialTabParam && (validTabs as string[]).includes(initialTabParam))
@@ -279,6 +279,7 @@ export default function DashboardPage() {
                         { id: 'interviews', label: 'Interviews', icon: Video },
                         { id: 'applications', label: 'Applications', icon: Briefcase, count: applications.length },
                         { id: 'certificates', label: 'Certificates', icon: Award, count: certificates.length },
+                        { id: 'resume', label: 'AI Resume', icon: FileText },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -896,6 +897,21 @@ export default function DashboardPage() {
                                         </Button>
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* RESUME TAB */}
+                        {activeTab === 'resume' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
+                                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-50 pointer-events-none"></div>
+                                     <FileText className="h-16 w-16 text-primary mx-auto mb-6 relative z-10" />
+                                     <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">AI Resume Expert</h2>
+                                     <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Create a professional, ATS-optimized resume. Our AI expert will analyze your content for clarity, use industry-relevant keywords, and transform your responsibilities into impactful bullet points.</p>
+                                     <Button size="lg" className="relative z-10" onClick={() => router.push('/resume-builder')}>
+                                        <FileText className="mr-2 h-4 w-4" /> Edit & Enhance Resume
+                                     </Button>
+                                </div>
                             </div>
                         )}
                     </div>
