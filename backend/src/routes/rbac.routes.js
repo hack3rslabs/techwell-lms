@@ -13,7 +13,8 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  */
 router.get('/permissions', authenticate, (req, res, next) => {
     // Both role managers and user managers should be able to see permissions
-    const hasPermission = req.user.permissions.includes('ALL') ||
+    const hasPermission = req.user.role === 'SUPER_ADMIN' ||
+                          req.user.permissions.includes('ALL') ||
                           req.user.permissions.includes('MANAGE_ROLES') || 
                           req.user.permissions.includes('MANAGE_USERS');
                           
@@ -41,7 +42,8 @@ router.get('/permissions', authenticate, (req, res, next) => {
  */
 router.get('/roles', authenticate, (req, res, next) => {
     // Both role managers and user managers should be able to see roles
-    const hasPermission = req.user.permissions.includes('ALL') ||
+    const hasPermission = req.user.role === 'SUPER_ADMIN' ||
+                          req.user.permissions.includes('ALL') ||
                           req.user.permissions.includes('MANAGE_ROLES') || 
                           req.user.permissions.includes('MANAGE_USERS');
                           

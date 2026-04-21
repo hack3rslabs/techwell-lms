@@ -12,7 +12,7 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  */
 router.get('/', authenticate, async (req, res, next) => {
     try {
-        const canManage = req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
+        const canManage = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
         if (!canManage && req.query.assignedTo !== 'ME') {
             return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks or view all tasks.' });
         }
@@ -80,7 +80,7 @@ router.post('/:id/comments', authenticate, async (req, res, next) => {
  */
 router.post('/', authenticate, async (req, res, next) => {
     try {
-        const canManage = req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
+        const canManage = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
         if (!canManage) {
             return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks.' });
         }
@@ -115,7 +115,7 @@ router.post('/', authenticate, async (req, res, next) => {
  */
 router.put('/:id', authenticate, async (req, res, next) => {
     try {
-        const canManage = req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
+        const canManage = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
         // Let them update if they are the assignee, but we aren't doing strict assignee check here for now, restricting to managers.
         if (!canManage) {
             return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks.' });
@@ -149,7 +149,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
  */
 router.delete('/:id', authenticate, async (req, res, next) => {
     try {
-        const canManage = req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
+        const canManage = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('ALL') || req.user.permissions.includes('MANAGE_USERS') || req.user.permissions.includes('MANAGE_TICKETS');
         if (!canManage) {
             return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks.' });
         }

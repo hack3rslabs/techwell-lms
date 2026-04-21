@@ -83,12 +83,13 @@ interface AvatarConfig {
     role: string
     color: string
     icon: React.ElementType
+    imageUrl?: string // Optional real image URL
 }
 
 const AVATARS: Record<string, AvatarConfig> = {
-    'tech-1': { name: "Alex Chen", role: "Technical Lead", color: "from-blue-500/20 to-cyan-500/20", icon: Bot },
-    'tech-2': { name: "Sarah Johnson", role: "Senior Engineer", color: "from-indigo-500/20 to-blue-500/20", icon: Bot },
-    'hr-1': { name: "Emma Williams", role: "HR Manager", color: "from-purple-500/20 to-pink-500/20", icon: Briefcase },
+    'tech-1': { name: "Alex Chen", role: "Technical Lead", color: "from-blue-500/20 to-cyan-500/20", icon: Bot, imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop" },
+    'tech-2': { name: "Sarah Johnson", role: "Senior Engineer", color: "from-indigo-500/20 to-blue-500/20", icon: Bot, imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" },
+    'hr-1': { name: "Emma Williams", role: "HR Manager", color: "from-purple-500/20 to-pink-500/20", icon: Briefcase, imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop" },
     'hr-2': { name: "David Smith", role: "Talent Acquisition", color: "from-slate-500/20 to-gray-500/20", icon: Briefcase },
     // Fallbacks
     'Technical': { name: "AI Interviewer", role: "Technical", color: "from-blue-500/20 to-cyan-500/20", icon: Bot },
@@ -152,6 +153,8 @@ export default function InterviewRoomPage() {
     const [stream, setStream] = React.useState<MediaStream | null>(null)
     const [isVideoOn, setIsVideoOn] = React.useState(true)
     const [isMicOn, setIsMicOn] = React.useState(true)
+    const [isVoiceEnabled, setIsVoiceEnabled] = React.useState(true)
+    const [isAudioMonitoring, setIsAudioMonitoring] = React.useState(false)
 
     // AI State
     const [currentQuestion, setCurrentQuestion] = React.useState<Question | null>(null)
@@ -171,7 +174,6 @@ export default function InterviewRoomPage() {
     const [isTabActive, setIsTabActive] = React.useState(true)
     const [isStarted, setIsStarted] = React.useState(false)
     const [isFullscreen, setIsFullscreen] = React.useState(false)
-    const [isVoiceEnabled, setIsVoiceEnabled] = React.useState(true)
 
     // Fullscreen Toggle
     const toggleFullscreen = React.useCallback(() => {
@@ -635,14 +637,32 @@ export default function InterviewRoomPage() {
 
         // Submit to AI
         try {
-            await interviewApi.submitResponse(params.id as string, {
+            const res = await interviewApi.submitResponse(params.id as string, {
                 questionId: currentQuestion.id,
                 answer: finalResponse,
                 code: currentQuestion.type === 'CODING' ? codeResponse : undefined
             });
 
-            // Always wait for next question (backend decides if it's the last one)
-            setNextQuestionTimer(5) // Short gap before next question
+            const briefFeedback = res.data.response?.briefFeedback;
+            
+            if (briefFeedback) {
+                // Add feedback message
+                setMessages(prev => [...prev, {
+                    id: 'fb-' + Date.now(),
+                    role: 'interviewer',
+                    content: briefFeedback,
+                    timestamp: new Date()
+                }]);
+                
+                // Speak the feedback
+                speakText(briefFeedback);
+                
+                // Wait slightly longer since we're speaking feedback
+                setNextQuestionTimer(8) 
+            } else {
+                setNextQuestionTimer(5)
+            }
+
             setIsWaitingNext(true)
 
         } catch (error) {
@@ -848,144 +868,90 @@ export default function InterviewRoomPage() {
                             </div>
                         </div>
                     ) : (
-                        /* STANDARD MODE LAYOUT */
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 h-full min-h-0">
-                            {/* AI Interviewer - Dynamic Avatar */}
-                            <Card className={`relative overflow-hidden border-2 transition-all duration-500 flex flex-col ${isAIProcessing ? 'border-primary/50' : 'border-transparent shadow-xl'}`}>
-                                <CardContent className={`h-full flex flex-col items-center justify-center p-8 bg-gradient-to-br ${activeAvatar.color} relative`}>
-                                    <div className="absolute top-4 left-4 bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full border border-primary/20 z-20">
-                                        <div className="flex items-center gap-2">
-                                            <Bot className="h-3 w-3 text-primary" />
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Interviewer</span>
+                        /* STANDARD MODE LAYOUT - Updated to Side-by-Side Round Circles */
+                        <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-24 h-full min-h-0 relative">
+                            
+                            {/* AI Interviewer Circle */}
+                            <div className="relative group">
+                                <div className={`h-64 w-64 md:h-[400px] md:w-[400px] rounded-full overflow-hidden border-4 transition-all duration-700 shadow-2xl ${isAIProcessing ? 'border-primary animate-pulse scale-105' : 'border-background/20 scale-100 hover:scale-105'}`}>
+                                    <div className={`h-full w-full flex flex-col items-center justify-center bg-gradient-to-br ${activeAvatar.color} relative`}>
+                                        <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full border border-primary/20 z-20">
+                                            <div className="flex items-center gap-2">
+                                                <Bot className="h-3 w-3 text-primary" />
+                                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Interviewer</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-center space-y-4">
+                                            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center mx-auto shadow-2xl overflow-hidden">
+                                                {activeAvatar.imageUrl ? (
+                                                    <img src={activeAvatar.imageUrl} alt={activeAvatar.name} className="h-full w-full object-cover" />
+                                                ) : (
+                                                    <AvatarIcon className="h-12 w-12 md:h-16 md:w-16 text-primary" />
+                                                )}
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h2 className="font-bold text-xl md:text-2xl tracking-tight">{activeAvatar.name}</h2>
+                                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{activeAvatar.role}</p>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
+                                {isAIProcessing && (
+                                    <div className="absolute -inset-2 bg-primary/20 rounded-full animate-ping -z-10" />
+                                )}
+                            </div>
 
-                                    <div className="text-center space-y-6 mb-12">
-                                        <div className="h-32 w-32 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center mx-auto shadow-2xl animate-in zoom-in duration-500">
-                                            {activeAvatar && <AvatarIcon className="h-16 w-16 text-primary" />}
-                                        </div>
-                                        <div className="space-y-1">
-                                            <h2 className="font-bold text-2xl tracking-tight">{activeAvatar.name}</h2>
-                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">{activeAvatar.role}</p>
-                                        </div>
+                            {/* Center Question Display (Floating) */}
+                            {currentQuestion && (
+                                <div className="absolute bottom-24 md:bottom-32 left-1/2 -translate-x-1/2 z-30 w-full max-w-2xl px-4 pointer-events-none">
+                                    <div className="bg-background/95 backdrop-blur-xl p-8 rounded-[40px] border-2 border-primary/30 shadow-2xl animate-in slide-in-from-bottom-12 duration-700 pointer-events-auto">
+                                        <p className="text-xl md:text-2xl font-black leading-tight text-foreground text-center">
+                                            &quot;{currentQuestion.question}&quot;
+                                        </p>
                                     </div>
+                                </div>
+                            )}
 
-                                    {/* Prominent Question Overlay */}
-                                    <div className="absolute bottom-8 left-4 right-4 z-10">
-                                        {currentQuestion ? (
-                                            <div className="bg-background/90 backdrop-blur-md p-6 rounded-2xl border-2 border-primary/20 shadow-2xl animate-in slide-in-from-bottom-5 duration-500">
-                                                <p className="text-xl font-black leading-relaxed text-foreground text-center">
-                                                    &quot;{currentQuestion.question}&quot;
-                                                </p>
-                                            </div>
-                                        ) : isAIProcessing ? (
-                                            <div className="flex flex-col items-center gap-4 text-center">
-                                                <div className="flex gap-1 items-end h-8">
-                                                    {[1, 2, 3, 4, 5].map(i => (
-                                                        <div key={i} className="w-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i * 100}ms` }} />
-                                                    ))}
-                                                </div>
-                                                <p className="font-bold text-sm text-primary uppercase tracking-widest animate-pulse">AI is thinking...</p>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center gap-4">
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="lg" 
-                                                    className="bg-primary/10 border-primary/20 text-primary font-bold rounded-2xl px-8 h-12 hover:scale-105 transition-all"
-                                                    onClick={fetchNextQuestion}
-                                                >
-                                                    <Bot className="h-4 w-4 mr-2" />
-                                                    Start Asking Questions
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            {/* ... (rest of standard layout) */}
-
-
-                            {/* User Video */}
-                            <Card className="relative overflow-hidden bg-muted/50 border-transparent shadow-lg">
-                                <CardContent className="h-full flex items-center justify-center p-0">
+                            {/* User Video Circle */}
+                            <div className="relative group">
+                                <div className="h-64 w-64 md:h-[400px] md:w-[400px] rounded-full overflow-hidden border-4 border-background/20 shadow-2xl transition-all duration-700 hover:scale-105 bg-muted/30">
                                     {isVideoOn && stream ? (
                                         <video
                                             ref={videoRef}
                                             autoPlay
-                                            muted
+                                            muted={!isAudioMonitoring}
                                             playsInline
                                             className="w-full h-full object-cover scale-x-[-1]"
                                         />
                                     ) : (
-                                        <div className="text-center p-8">
-                                            <div className="h-28 w-28 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-muted">
+                                        <div className="h-full w-full flex flex-col items-center justify-center p-8 text-center bg-muted/40">
+                                            <div className="h-20 w-20 rounded-full bg-background/50 flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-muted">
                                                 {isVideoOn ? <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /> : <VideoOff className="h-8 w-8 text-muted-foreground" />}
                                             </div>
                                             <p className="font-bold">You</p>
-                                            <p className="text-xs text-muted-foreground">{isVideoOn ? 'Camera loading...' : 'Camera is disabled'}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{isVideoOn ? 'Loading...' : 'Camera Disabled'}</p>
                                         </div>
                                     )}
 
-                                    {/* AI Coach Widget */}
+                                    {/* Recording Overlay */}
                                     {isRecording && (
-                                        <div className="absolute top-4 left-4 flex flex-col gap-2">
-                                            <div className="bg-black/60 backdrop-blur-md px-3 py-2 rounded-xl text-white text-xs border border-white/10 shadow-xl">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className={`h-2 w-2 rounded-full ${wpm > 160 ? 'bg-red-500' : wpm < 100 ? 'bg-yellow-500' : 'bg-green-500'}`} />
-                                                    <span className="font-bold uppercase tracking-wider">Live Coach</span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between gap-4">
-                                                        <span className="text-white/70">Pace:</span>
-                                                        <span className={`font-mono font-bold ${wpm > 160 || wpm < 100 ? 'text-yellow-400' : 'text-green-400'}`}>
-                                                            {wpm} WPM
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex justify-between gap-4">
-                                                        <span className="text-white/70">Fillers:</span>
-                                                        <span className={`font-mono font-bold ${fillerCount > 3 ? 'text-red-400' : 'text-green-400'}`}>
-                                                            {fillerCount}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                        <div className="absolute inset-0 bg-red-500/10 pointer-events-none border-4 border-red-500/20 rounded-full" />
+                                    )}
+                                </div>
+
+                                {/* Live Metrics (Floating near User) */}
+                                {isRecording && (
+                                    <div className="absolute -top-4 -right-4 z-20">
+                                        <div className="bg-background/90 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 shadow-2xl flex flex-col gap-1">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`h-2 w-2 rounded-full ${wpm > 160 ? 'bg-red-500' : 'bg-green-500'}`} />
+                                                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Pace: {wpm} WPM</span>
                                             </div>
                                         </div>
-                                    )}
-
-                                    {/* Anti-Cheat Warning */}
-                                    {!isTabActive && (
-                                        <div className="absolute inset-0 bg-red-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-8 text-center animate-in fade-in">
-                                            <div>
-                                                <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                                                <h3 className="text-xl font-bold text-white mb-2">Tab Switch Detected!</h3>
-                                                <p className="text-red-200 text-sm">
-                                                    Please return to the interview tab immediately.<br />
-                                                    This incident has been flagged.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="absolute bottom-4 left-4 flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl text-white">
-                                        {isMicOn ? (
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex gap-0.5 items-end h-3">
-                                                    <div className="w-0.5 h-1 bg-green-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                                                    <div className="w-0.5 h-2 bg-green-400 animate-bounce" style={{ animationDelay: '100ms' }} />
-                                                    <div className="w-0.5 h-3 bg-green-400 animate-bounce" style={{ animationDelay: '200ms' }} />
-                                                </div>
-                                                <span className="text-[10px] font-bold uppercase tracking-wider">Audio Active</span>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-2">
-                                                <MicOff className="h-3 w-3 text-red-400" />
-                                                <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Microphone Muted</span>
-                                            </div>
-                                        )}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                )}
+                            </div>
                         </div>
                     )}
                     {/* Transcription/Answer Box */}
@@ -1018,6 +984,29 @@ export default function InterviewRoomPage() {
                     <div className={`transition-all duration-500 ${isFullscreen ? 'opacity-0 hover:opacity-100 fixed bottom-8 transform -translate-x-1/2 left-1/2 z-50' : 'bg-background/80 backdrop-blur-md p-4 rounded-3xl border shadow-xl flex items-center justify-center gap-6 max-w-md mx-auto w-full'}`}>
                         <div className="flex flex-col items-center gap-1">
                             <Button
+                                variant={isAudioMonitoring ? "default" : "outline"}
+                                size="icon"
+                                className={`h-12 w-12 rounded-2xl transition-all ${isAudioMonitoring ? 'ring-2 ring-primary/50' : ''} ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
+                                onClick={() => {
+                                    const newState = !isAudioMonitoring;
+                                    setIsAudioMonitoring(newState);
+                                    if (newState) {
+                                        toast({
+                                            title: "Monitoring Enabled",
+                                            description: "Use headphones to avoid echo/feedback.",
+                                            duration: 5000,
+                                        });
+                                    }
+                                }}
+                                title={isAudioMonitoring ? "Turn off Monitoring" : "Monitor your voice (use headphones)"}
+                            >
+                                {isAudioMonitoring ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+                            </Button>
+                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">{isAudioMonitoring ? 'Monitor On' : 'Monitor Off'}</span>}
+                        </div>
+
+                        <div className="flex flex-col items-center gap-1">
+                            <Button
                                 variant={isMicOn ? "outline" : "destructive"}
                                 size="icon"
                                 className={`h-12 w-12 rounded-2xl transition-all ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
@@ -1047,7 +1036,17 @@ export default function InterviewRoomPage() {
                                 variant={isVideoOn ? "outline" : "destructive"}
                                 size="icon"
                                 className={`h-12 w-12 rounded-2xl transition-all ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
-                                onClick={() => setIsVideoOn(!isVideoOn)}
+                                onClick={() => {
+                                    if (currentQuestion) {
+                                        toast({
+                                            variant: "destructive",
+                                            title: "Video is Mandatory",
+                                            description: "You cannot disable your video during the interview session.",
+                                        });
+                                        return;
+                                    }
+                                    setIsVideoOn(!isVideoOn);
+                                }}
                             >
                                 {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
                             </Button>

@@ -4,6 +4,8 @@ import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import api, { courseApi, interviewApi, certificateApi, liveClassApi } from '@/lib/api'
+import Image from 'next/image'
+import { getFullImageUrl } from '@/lib/image-utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -34,6 +36,7 @@ interface Enrollment {
         id: string
         title: string
         thumbnail?: string
+        bannerUrl?: string
         category: string
         difficulty: string
     }
@@ -529,8 +532,22 @@ export default function DashboardPage() {
                                         >
                                             <div className="p-6 pb-2">
                                                 <div className="flex justify-between items-start">
-                                                    <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                                                        <GraduationCap className="h-5 w-5 text-primary" />
+                                                    <div className="h-12 w-full relative mb-4 rounded-lg overflow-hidden bg-primary/10 flex items-center justify-center">
+                                                        {(enrollment.course.bannerUrl || enrollment.course.thumbnail) ? (
+                                                            <Image
+                                                                src={getFullImageUrl(enrollment.course.bannerUrl || enrollment.course.thumbnail)}
+                                                                alt={enrollment.course.title}
+                                                                fill
+                                                                className="object-cover"
+                                                                onError={(e) => {
+                                                                    // Fallback if image fails to load
+                                                                    const target = e.target as HTMLImageElement;
+                                                                    target.style.display = "none";
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <GraduationCap className="h-5 w-5 text-primary" />
+                                                        )}
                                                     </div>
                                                     <span className="text-xs px-2 py-1 bg-muted rounded-full border border-border font-medium text-muted-foreground">
                                                         {enrollment.course.difficulty}
