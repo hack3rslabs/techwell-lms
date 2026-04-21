@@ -6,8 +6,10 @@ import api from '@/lib/api'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Plus, BookOpen, Clock, Trash2 } from 'lucide-react'
+import { Loader2, Plus, BookOpen, Clock, Trash2, GraduationCap } from 'lucide-react'
 import { courseApi } from '@/lib/api'
+import Image from 'next/image'
+import { getFullImageUrl } from '@/lib/image-utils'
 
 interface Course {
     id: string
@@ -16,6 +18,8 @@ interface Course {
     isPublished: boolean
     difficulty: string
     price: number
+    bannerUrl?: string
+    thumbnail?: string
     _count?: { enrollments: number; modules: number }
 }
 
@@ -82,8 +86,24 @@ export default function AdminCoursesPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {courses.map((course) => (
-                        <Card key={course.id} className="hover:shadow-lg transition-all group overflow-hidden">
-                            <div className="h-2 bg-primary/10 group-hover:bg-primary transition-colors" />
+                        <Card key={course.id} className="hover:shadow-lg transition-all group overflow-hidden flex flex-col">
+                            <div className="h-32 bg-primary/10 relative overflow-hidden flex items-center justify-center">
+                                {(course.bannerUrl || course.thumbnail) ? (
+                                    <Image
+                                        src={getFullImageUrl(course.bannerUrl)}
+                                        alt={course.title}
+                                        fill
+                                        className="object-cover transition-transform group-hover:scale-105"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = "none";
+                                        }}
+                                    />
+                                ) : (
+                                    <GraduationCap className="h-8 w-8 text-primary/30" />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                            </div>
                             <CardContent className="p-6">
                                 <div className="flex justify-between items-start mb-4">
                                     <Badge variant="outline" className="mb-2">

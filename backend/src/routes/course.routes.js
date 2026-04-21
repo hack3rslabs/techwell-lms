@@ -299,6 +299,8 @@ router.post('/', authenticate, async (req, res, next) => {
         return res.status(403).json({ error: 'Missing permission: MANAGE_COURSES' });
     }
     try {
+        console.log('[DEBUG] POST /api/courses - Body received:', JSON.stringify(req.body, null, 2));
+
         // Pre-process empty strings to null/undefined
         const body = { ...req.body };
         ['courseCode', 'bannerUrl', 'thumbnail'].forEach(field => {
@@ -322,12 +324,16 @@ router.post('/', authenticate, async (req, res, next) => {
             }
         });
 
+        console.log('[DEBUG] Prisma create data:', JSON.stringify(dataToCreate, null, 2));
+
         const course = await prisma.course.create({
             data: dataToCreate
         });
 
+        console.log('[DEBUG] Course created with ID:', course.id);
         res.status(201).json({ message: 'Course created', course });
     } catch (error) {
+        console.error('[DEBUG] Course creation failed:', error.message);
         next(error);
     }
 });
@@ -339,6 +345,8 @@ router.post('/', authenticate, async (req, res, next) => {
  */
 router.put('/:id', authenticate, async (req, res, next) => {
     try {
+        console.log(`[DEBUG] PUT /api/courses/${req.params.id} - Body received:`, JSON.stringify(req.body, null, 2));
+
         const course = await prisma.course.findUnique({ where: { id: req.params.id } });
         if (!course) return res.status(404).json({ error: 'Course not found' });
 
@@ -359,6 +367,8 @@ router.put('/:id', authenticate, async (req, res, next) => {
         const updateSchema = createCourseSchema.partial();
         const validatedData = updateSchema.parse(body);
 
+        console.log(`[DEBUG] Prisma update data:`, JSON.stringify(validatedData, null, 2));
+
         const updatedCourse = await prisma.course.update({
             where: { id: req.params.id },
             data: {
@@ -368,8 +378,10 @@ router.put('/:id', authenticate, async (req, res, next) => {
             }
         });
 
+        console.log('[DEBUG] Course updated with ID:', updatedCourse.id);
         res.json({ message: 'Course updated', course: updatedCourse });
     } catch (error) {
+        console.error('[DEBUG] Course update failed:', error.message);
         next(error);
     }
 });

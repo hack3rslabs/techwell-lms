@@ -85,8 +85,12 @@ router.get('/', authenticate, async (req, res, next) => {
  * @access  Private (Admin/Instructor)
  */
 router.post('/', authenticate, async (req, res, next) => {
-    // Permission Check: Needs MANAGE_COURSES, ALL, or strictly INSTRUCTOR role mapping to own courses (handled later)
-    if (!req.user.permissions.includes('MANAGE_COURSES') && !req.user.permissions.includes('ALL') && req.user.role !== 'INSTRUCTOR') {
+    const hasPermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
+                          req.user.permissions.includes('MANAGE_COURSES') || 
+                          req.user.permissions.includes('ALL') || 
+                          req.user.role === 'INSTRUCTOR';
+
+    if (!hasPermission) {
         return res.status(403).json({ error: 'Access denied: Requires permission to manage courses or live classes.'});
     }
     try {
@@ -118,7 +122,12 @@ router.post('/', authenticate, async (req, res, next) => {
  */
 router.patch('/:id', authenticate, async (req, res, next) => {
     try {
-        if (!req.user.permissions.includes('MANAGE_COURSES') && !req.user.permissions.includes('ALL') && req.user.role !== 'INSTRUCTOR') {
+        const hasPermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
+                              req.user.permissions.includes('MANAGE_COURSES') || 
+                              req.user.permissions.includes('ALL') || 
+                              req.user.role === 'INSTRUCTOR';
+
+        if (!hasPermission) {
             return res.status(403).json({ error: 'Access denied'});
         }
         const { id } = req.params;
@@ -145,7 +154,12 @@ router.patch('/:id', authenticate, async (req, res, next) => {
  */
 router.delete('/:id', authenticate, async (req, res, next) => {
     try {
-        if (!req.user.permissions.includes('MANAGE_COURSES') && !req.user.permissions.includes('ALL') && req.user.role !== 'INSTRUCTOR') {
+        const hasPermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
+                              req.user.permissions.includes('MANAGE_COURSES') || 
+                              req.user.permissions.includes('ALL') || 
+                              req.user.role === 'INSTRUCTOR';
+
+        if (!hasPermission) {
             return res.status(403).json({ error: 'Access denied'});
         }
         const { id } = req.params;

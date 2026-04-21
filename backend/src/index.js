@@ -19,7 +19,8 @@ app.use(helmet({
         directives: {
             ...helmet.contentSecurityPolicy.getDefaultDirectives(),
             "frame-ancestors": ["'self'", "http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.29.183:3000", process.env.FRONTEND_URL],
-            "img-src": ["'self'", "data:", "blob:", "http:", "https:"],
+            "img-src": ["'self'", "data:", "blob:", "http:", "https:", "http://localhost:5000", "http://127.0.0.1:5000"],
+            "connect-src": ["'self'", "http://localhost:5000", "http://127.0.0.1:5000", "ws:", "wss:"],
         },
     },
     frameguard: false,
@@ -27,6 +28,30 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false,
 }));
+
+// Serve Static Uploads - Priority Placement
+const path = require('path');
+const uploadsPath = path.join(__dirname, '../uploads');
+app.use('/uploads', express.static(uploadsPath, {
+    setHeaders: (res) => {
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
+
+// Fallback manual serving for /uploads
+app.get('/uploads/:filename', (req, res) => {
+    const filePath = path.join(uploadsPath, req.params.filename);
+    console.log(`[DEBUG] Manual serving request for: ${req.params.filename}`);
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error(`[ERROR] Failed to serve file ${req.params.filename}:`, err.message);
+            if (!res.headersSent) {
+                res.status(404).json({ error: 'File not found' });
+            }
+        }
+    });
+});
 app.use(cors({
     origin: function (origin, callback) {
         const allowedOrigins = [
@@ -140,9 +165,7 @@ app.use('/api/resume', require('./routes/resume.routes'));
 
 
 
-// Serve Static Uploads
-const path = require('path'); // Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Static uploads moved to top for priority serving
 
 // 404 handler
 app.use((req, res) => {
@@ -153,9 +176,9 @@ app.use((req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
     console.error('[ERROR HANDLER] Request:', req.method, req.url);
-    console.error('[ERROR HANDLER] Error:', err);
+    console.error('[ERROR HANDLER] Message:', err.message);
     if (err.stack) {
-        console.error('[ERROR HANDLER] Stack:', err.stack);
+        console.error('[ERROR HANDLER] Stack trace:', err.stack);
     }
 
     if (err.name === 'ZodError') {
@@ -180,13 +203,16 @@ app.use((err, req, res, next) => {
         });
     }
 
-    const errorMessage = process.env.NODE_ENV === 'production'
-        ? 'Internal server error'
-        : err.message || 'Internal server error';
+    // Include the actual error message in the response for better debugging
+    const errorResponse = {
+        error: err.message || 'Internal server error'
+    };
 
-    res.status(err.status || 500).json({
-        error: errorMessage
-    });
+    if (process.env.NODE_ENV !== 'production') {
+        errorResponse.stack = err.stack;
+    }
+
+    res.status(err.status || 500).json(errorResponse);
 });
 
 // Start server

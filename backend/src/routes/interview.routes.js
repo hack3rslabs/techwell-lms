@@ -474,12 +474,17 @@ router.post('/:id/response', authenticate, async (req, res, next) => {
                 transcript: answer,
                 code, // Save the code!
                 score: evaluation.score,
-                feedback: evaluation.feedback
+                feedback: evaluation.feedback,
+                // We'll store briefFeedback in a temporary way or just pass it back
+                // For now, let's just pass it back in the response
             }
         });
 
         res.json({
-            response,
+            response: {
+                ...response,
+                briefFeedback: evaluation.briefFeedback
+            },
             evaluation
         });
     } catch (error) {

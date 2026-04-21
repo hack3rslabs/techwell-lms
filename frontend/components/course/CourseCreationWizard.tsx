@@ -30,6 +30,14 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
 
     // Fetch initial data if editing
     React.useEffect(() => {
+        return () => {
+            if (bannerPreview) {
+                URL.revokeObjectURL(bannerPreview)
+            }
+        }
+    }, [bannerPreview])
+
+    React.useEffect(() => {
         if (initialCourseId) {
             const fetchCourse = async () => {
                 try {
@@ -149,64 +157,80 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
 
         setIsLoading(true)
         try {
+            console.log('[DEBUG] Starting course save process...');
+            
             // Upload banner file first if selected
-            let uploadedBannerUrl = basicData.bannerUrl;
+            let finalImageUrl = basicData.bannerUrl;
             if (bannerFile) {
+                console.log('[DEBUG] Uploading new image file:', bannerFile.name);
                 const formData = new FormData();
                 formData.append('file', bannerFile);
+                
+                // Debug FormData
+                for (const [key, value] of formData.entries()) {
+                    console.log(`[DEBUG] FormData entry: ${key}=${value instanceof File ? value.name : value}`);
+                }
+
                 const uploadRes = await uploadApi.upload(formData);
-                uploadedBannerUrl = uploadRes.data.url;
+                console.log('[DEBUG] Upload successful, received URL:', uploadRes.data.url);
+                finalImageUrl = uploadRes.data.url;
             }
 
             // Clean jobRoles: remove empty strings
             const cleanJobRoles = Array.isArray(basicData.jobRoles) ? basicData.jobRoles.filter(Boolean) : [];
 
-            // Build payload without bannerUrl first, then add it only if it has a value
-            const { bannerUrl: _ignoreBanner, ...basicDataWithoutBanner } = basicData;
-
-            // Ensure all numeric fields are actually numbers (not strings)
+            // Explicitly build payload with EXACT fields expected by backend
             const payload: CoursePayload = {
-                ...basicDataWithoutBanner,
+                title: basicData.title,
+                description: basicData.description,
+                category: basicData.category,
                 difficulty: basicData.difficulty as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED',
-                jobRoles: cleanJobRoles,
                 price: Number(basicData.price) || 0,
                 discountPrice: Number(basicData.discountPrice) || 0,
+                courseCode: basicData.courseCode || undefined,
+                bannerUrl: finalImageUrl || undefined,
+                thumbnail: finalImageUrl || undefined,
+                jobRoles: cleanJobRoles,
+                courseType: basicData.courseType as 'RECORDED' | 'LIVE' | 'HYBRID',
+                hasInterviewPrep: basicData.hasInterviewPrep,
                 interviewPrice: Number(basicData.interviewPrice) || 0,
             };
 
-            // Only include bannerUrl if we have a real value
-            if (uploadedBannerUrl && uploadedBannerUrl.length > 0) {
-                payload.bannerUrl = uploadedBannerUrl;
-            }
+            console.log('[DEBUG] Final payload being sent to backend:', JSON.stringify(payload, null, 2));
+
             if (courseId) {
-                // Update existing
-                await courseApi.update(courseId, payload)
+                console.log('[DEBUG] Calling courseApi.update with ID:', courseId);
+                const updateRes = await courseApi.update(courseId, payload);
+                console.log('[DEBUG] Update response:', updateRes.data);
             } else {
-                // Create new
-                const res = await courseApi.create(payload)
-                setCourseId(res.data.course.id)
-                // Pre-fill AI topic with title
-                setAiTopic(basicData.title)
+                console.log('[DEBUG] Calling courseApi.create');
+                const createRes = await courseApi.create(payload);
+                console.log('[DEBUG] Create response:', createRes.data);
+                setCourseId(createRes.data.course.id);
+                setAiTopic(basicData.title);
             }
-            setStep(2)
+            console.log('[DEBUG] Step 1 completed successfully, moving to Step 2');
+            setStep(2);
         } catch (error: any) {
-            console.error('Failed to save course:', error)
-            console.error('Response data:', error.response?.data)
-            // Show backend validation errors with details
-            if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
-                const validationErrors = error.response.data.details
+            console.error('[DEBUG] handleBasicSubmit caught error:', error);
+            const errorMsg = error.response?.data?.error || error.message || 'Unknown error occurred';
+            const errorDetails = error.response?.data?.details || null;
+            const errorStack = error.response?.data?.stack || null;
+
+            console.error('[DEBUG] Error Message:', errorMsg);
+            if (errorDetails) console.error('[DEBUG] Error Details:', errorDetails);
+            if (errorStack) console.error('[DEBUG] Server Stack Trace:', errorStack);
+
+            let alertMsg = `Error: ${errorMsg}`;
+            if (errorDetails && Array.isArray(errorDetails)) {
+                const validationErrors = errorDetails
                     .map((err: any) => `${err.path?.join('.')} - ${err.message}`)
-                    .join('\n')
-                alert(`Validation Error:\n${validationErrors}`)
-            } else if (error.response?.data?.error) {
-                alert(`Error: ${error.response.data.error}`)
-            } else if (error.response?.status === 400) {
-                alert(`Error: Invalid data. Check console for details.\n${JSON.stringify(error.response.data)}`)
-            } else {
-                alert(`Error: ${error.message || 'Failed to save course details'}`)
+                    .join('\n');
+                alertMsg += `\n\nValidation Details:\n${validationErrors}`;
             }
+            alert(alertMsg);
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
     }
 

@@ -228,19 +228,86 @@ export default function ResumeBuilder() {
     const element = document.getElementById("resume-preview-export");
     if (!element) return;
     setIsDownloading(true);
+
     const opt = {
-      margin: 0.2,
+      margin: [0, 0] as [number, number],
       filename: `${form.fullName || "Resume"}.pdf`,
       image: { type: "jpeg" as const, quality: 0.98 },
       html2canvas: { 
         scale: 2, 
-        useCORS: true,
+        useCORS: true, 
         letterRendering: true,
-        logging: false
+        allowTaint: true,
+        logging: true,
+        onclone: (clonedDoc: Document) => {
+          // FORCE all modern colors to fallback hex in the cloned document
+          // html2canvas fails because it tries to parse all CSS rules, even if not used.
+          // By sanitizing the cloned document's styles, we avoid the parser crash.
+          const elements = clonedDoc.querySelectorAll('*');
+          elements.forEach((el: any) => {
+            const style = window.getComputedStyle(el);
+            
+            ["color", "backgroundColor", "borderColor", "fill", "stroke"].forEach(prop => {
+              const val = (style as any)[prop];
+              if (typeof val === 'string' && (val.includes('lab(') || val.includes('oklch(') || val.includes('oklab('))) {
+                // Fallback to primary blue for interactive items or black for text
+                if (prop === 'color' && !el.closest('header')) {
+                  el.style[prop] = '#111827'; 
+                } else if (prop === 'backgroundColor' && (val.includes('indigo') || val.includes('blue'))) {
+                  el.style[prop] = '#1469E2';
+                } else {
+                  el.style[prop] = '#334155';
+                }
+              }
+            });
+          });
+
+          // Sanitize all style tags to remove modern color functions that crash the parser
+          const styleTags = clonedDoc.getElementsByTagName('style');
+          for (let i = 0; i < styleTags.length; i++) {
+            const css = styleTags[i].innerHTML;
+            if (css.includes('lab(') || css.includes('oklch(') || css.includes('oklab(')) {
+              styleTags[i].innerHTML = css
+                .replace(/lab\([^)]+\)/g, '#334155')
+                .replace(/oklch\([^)]+\)/g, '#1469E2')
+                .replace(/oklab\([^)]+\)/g, '#334155');
+            }
+          }
+        }
       },
-      jsPDF: { unit: "in" as const, format: "a4" as const, orientation: "portrait" as const },
+      jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
     };
-    html2pdf().from(element).set(opt).save().then(() => setIsDownloading(false));
+
+    // Keep the getComputedStyle patch as well for extra safety, but prioritize Proxy
+    const originalGetComputedStyle = window.getComputedStyle;
+    window.getComputedStyle = (el, pseudo) => {
+        const style = originalGetComputedStyle(el, pseudo);
+        return new Proxy(style, {
+            get(target, prop) {
+                const val = (target as any)[prop];
+                if (typeof prop === 'string' && typeof val === 'string') {
+                    if (val.includes('lab(') || val.includes('oklch(') || val.includes('oklab(')) {
+                        return '#1469E2';
+                    }
+                }
+                return typeof val === 'function' ? val.bind(target) : val;
+            }
+        });
+    };
+
+    html2pdf()
+      .from(element)
+      .set(opt)
+      .save()
+      .then(() => {
+        window.getComputedStyle = originalGetComputedStyle;
+        setIsDownloading(false);
+      })
+      .catch(err => {
+        window.getComputedStyle = originalGetComputedStyle;
+        console.error("PDF Error:", err);
+        setIsDownloading(false);
+      });
   };
 
   if (authLoading || fetching) {
@@ -353,14 +420,10 @@ export default function ResumeBuilder() {
               </div>
               {renderTextInput("Target Job Role", "targetRole", "e.g. DevOps Engineer")}
               <div className="flex flex-col gap-1 w-full">
-                  <label className="text-sm font-medium text-gray-700">Experience Level</label>
-                  <select name="experienceLevel" value={form.experienceLevel} onChange={handleChange} className="border border-gray-300 p-2.5 rounded-md outline-none">
-                      <option value="">Select Level</option>
-                      <option value="Fresher / Entry Level">Fresher / Entry Level</option>
-                      <option value="0-2 Years (Junior)">0-2 Years (Junior)</option>
-                      <option value="3-5 Years (Mid-Level)">3-5 Years (Mid-Level)</option>
-                      <option value="5+ Years (Senior)">5+ Years (Senior)</option>
-                  </select>
+                  <label className="text-sm font-medium text-gray-700">Experience </label>
+                  <input name="experienceLevel" value={form.experienceLevel} onChange={handleChange} className="border border-gray-300 p-2.5 rounded-md outline-none">
+                      </input>
+                  
               </div>
           </div>
         </section>
@@ -623,7 +686,7 @@ export default function ResumeBuilder() {
       )}
 
       <div style={{ position: 'absolute', left: '-10000px', top: '0', pointerEvents: 'none', color: '#000000' }}>
-        <div id="resume-preview-export" className="bg-white text-black w-[794px]" style={{ color: '#000000', backgroundColor: '#ffffff' }}>
+        <div id="resume-preview-export" className="bg-white text-black w-[794px] pdf-safe-colors" style={{ color: '#000000', backgroundColor: '#ffffff' }}>
             <TemplateComponent {...form} name={form.fullName} />
         </div>
       </div>

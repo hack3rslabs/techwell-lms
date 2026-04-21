@@ -52,10 +52,13 @@ router.post('/', authenticate, upload.single('file'), (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
+        console.log('[DEBUG] File uploaded:', req.file);
 
-        // Return relative path for frontend to access
-        // Ensure static serve is set up in index.js for '/uploads'
-        const fileUrl = `/uploads/${req.file.filename}`;
+        // Return full URL for frontend
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+
+        console.log('[DEBUG] Generated file URL:', fileUrl);
 
         res.json({
             message: 'File uploaded successfully',

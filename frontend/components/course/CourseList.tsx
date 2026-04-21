@@ -187,22 +187,28 @@ export default function CourseList() {
                             className="flex flex-col group hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden border-border/50 cursor-pointer"
                             onClick={() => router.push(`/courses/${course.id}`)}
                         >
-                            <div className="h-48 relative bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10 flex items-center justify-center overflow-hidden">
-                                {course.bannerUrl || course.thumbnail ? (
-                                    <Image
-                                        src={getFullImageUrl(course.bannerUrl || course.thumbnail)}
-                                        alt={course.title}
-                                        width={400}
-                                        height={192}
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.style.display = "none";
-                                        }}
-                                    />
-                                ) : null}
-                                <GraduationCap className={`h-20 w-20 text-primary/30 ${(course.bannerUrl || course.thumbnail) ? 'hidden' : ''}`} />
-                            </div>
+                                <div className="h-48 relative bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 flex items-center justify-center overflow-hidden">
+                                    <GraduationCap className="h-16 w-16 text-primary/20 absolute z-0" />
+                                    {(course.bannerUrl || course.thumbnail) && (
+                                        <Image
+                                            src={getFullImageUrl(course.bannerUrl || course.thumbnail)}
+                                            alt={course.title}
+                                            fill
+                                            unoptimized
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            className="absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-300"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                console.error(`[IMAGE ERROR] Failed to load: ${target.src}`);
+                                                target.style.opacity = '0';
+                                            }}
+                                            onLoad={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.opacity = '1';
+                                            }}
+                                        />
+                                    )}
+                                </div>
                             <CardHeader className="pb-2">
                                 <div className="flex items-center justify-between mb-3">
                                     <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md ${getDifficultyColor(course.difficulty)}`}>

@@ -99,6 +99,7 @@ export interface CoursePayload {
     difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
     courseCode?: string;
     bannerUrl?: string;
+    thumbnail?: string;
     jobRoles?: string[];
     courseType?: 'RECORDED' | 'LIVE' | 'HYBRID';
     hasInterviewPrep?: boolean;

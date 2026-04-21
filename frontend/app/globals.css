@@ -598,3 +598,39 @@
 .prose pre { @apply bg-muted p-4 rounded-lg overflow-x-auto my-4; }
 .prose img { @apply rounded-lg my-6 max-w-full; }
 .prose a { @apply text-primary underline; }
+
+/* PDF Capture Fix - Overrides modern OKLCH/LAB colors with safe HEX/RGB for html2canvas compatibility */
+.pdf-safe-colors {
+  --background: #ffffff !important;
+  --foreground: #0f172a !important;
+  --primary: #1469E2 !important;
+  --secondary: #78c1b5 !important;
+  --muted: #f1f5f9 !important;
+  --accent: #414488 !important;
+  --border: #e2e8f0 !important;
+  --input: #e2e8f0 !important;
+  --ring: #1469E2 !important;
+  
+  /* Override common Tailwind 4 internal color variables if they exist */
+  --color-blue-50: #eff6ff !important;
+  --color-blue-100: #dbeafe !important;
+  --color-blue-200: #bfdbfe !important;
+  --color-blue-300: #93c5fd !important;
+  --color-blue-400: #60a5fa !important;
+  --color-blue-500: #3b82f6 !important;
+  --color-blue-600: #2563eb !important;
+  --color-blue-700: #1d4ed8 !important;
+  
+  --color-gray-50: #f9fafb !important;
+  --color-gray-100: #f3f4f6 !important;
+  --color-gray-200: #e5e7eb !important;
+  --color-gray-300: #d1d5db !important;
+  --color-gray-400: #9ca3af !important;
+  --color-gray-500: #6b7280 !important;
+  --color-gray-600: #4b5563 !important;
+  --color-gray-700: #374151 !important;
+
+  /* Force color spaces */
+  color-scheme: light !important;
+}
+
