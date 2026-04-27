@@ -19,7 +19,7 @@ export default function ProjectDetailsPage() {
 
     useEffect(() => {
         if (params.id) {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
             fetch(`${API_URL}/projects/${params.id}`)
                 .then(res => res.json())
                 .then(data => {

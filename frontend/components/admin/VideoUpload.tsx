@@ -68,7 +68,7 @@ export function VideoUpload({ onUploadComplete, initialUrl, label = "Upload Vide
             clearInterval(interval)
             setProgress(100)
 
-            const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'
+            const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
             // Ensure we handle URL construction correctly
             const baseUrl = apiBaseUrl.endsWith('/api')
                 ? apiBaseUrl.slice(0, -4)

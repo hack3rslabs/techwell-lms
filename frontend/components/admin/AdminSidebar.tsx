@@ -20,6 +20,7 @@ import {
     Magnet,
     Briefcase,
     GraduationCap,
+    Star,
     Image as ImageIcon,
     type LucideIcon
 } from "lucide-react"
@@ -52,27 +53,32 @@ export function AdminSidebar({ className }: SidebarProps) {
         pathname.startsWith("/admin/leads/")
 
     const routes: RouteConfig[] = [
-        { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
-        { label: "Users & Roles", icon: Users, href: "/admin/users", permission: "VIEW_USERS" },
-        { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "VIEW_COURSES" },
-        { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "VIEW_CERTIFICATES" },
-        { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "VIEW_STUDENTS" },
-        { label: "Employer Requests", icon: Briefcase, href: "/admin/employers", permission: "VIEW_EMPLOYERS" },
-        { label: "All Leads", icon: Magnet, href: "/admin/leads", permission: "VIEW_LEADS", showLeadCounts: true },
-        { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "VIEW_MEETINGS" },
-        { label: "Tasks", icon: MessageSquare, href: "/admin/tasks", permission: "VIEW_TASKS" },
-        { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "VIEW_MESSAGES" },
-        { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "VIEW_BLOGS" },
-        { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "VIEW_GALLERY" },
-        { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "VIEW_SKILLCASTS" },
-        { label: "Reviews", icon: MessageSquare, href: "/admin/reviews", permission: "VIEW_REVIEWS" },
-        { label: "Library", icon: BookOpen, href: "/admin/library", permission: "VIEW_LIBRARY" },
-        { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "VIEW_SYSTEM_LOGS" },
+        { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD" },
+        { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS" },
+        { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES" },
+        { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES" },
+        { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "USERS" },
+        { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "USERS" },
+        { label: "All Leads", icon: Magnet, href: "/admin/leads", permission: "LEADS", showLeadCounts: true },
+        { label: "Finance", icon: FileText, href: "/admin/finance", permission: "FINANCE" },
+        { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS" },
+        { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "COURSES" },
+        { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "COURSES" },
+        { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "USERS" },
+        { label: "Tasks", icon: MessageSquare, href: "/admin/tasks", permission: "USERS" },
+        { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "USERS" },
+        { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "BLOGS" },
+        { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "COURSES" },
+        { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "COURSES" },
+        { label: "Reviews", icon: MessageSquare, href: "/admin/reviews", permission: "COURSES" },
+        { label: "Library", icon: BookOpen, href: "/admin/library", permission: "COURSES" },
+        { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS" },
+        { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS" },
     ]
 
     const availableRoutes = routes.filter(route => {
-        if (route.permission && !hasPermission(route.permission)) return false
-        return true
+        if (!route.permission) return true
+        return hasPermission(route.permission)
     })
 
     useEffect(() => {

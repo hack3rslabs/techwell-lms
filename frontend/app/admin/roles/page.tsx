@@ -24,7 +24,6 @@ interface User {
     isActive: boolean
     createdAt: string
     employerProfile?: { status: string }
-    systemRole?: { name: string }
     totalPaid?: number
 }
 
@@ -49,9 +48,9 @@ interface Permission {
     module: string
 }
 
-export default function AdminUsersPage() {
+export default function RolesAndUsersPage() {
     const router = useRouter()
-    const { user: currentUser, hasPermission, isLoading: authLoading } = useAuth()
+    const { user: currentUser, hasPermission, canWrite, isLoading: authLoading } = useAuth()
     const [users, setUsers] = React.useState<User[]>([])
     const [roles, setRoles] = React.useState<Role[]>([])
     const [permissions, setPermissions] = React.useState<Permission[]>([])
@@ -260,9 +259,7 @@ export default function AdminUsersPage() {
                                         </div>
                                     </td>
                                     <td className="p-4">
-                                        <Badge variant="outline" className={`${getRoleBadgeColor(user.role)} text-[10px] uppercase font-bold`}>
-                                            {user.systemRole?.name || user.role}
-                                        </Badge>
+                                        <Badge variant="outline" className={`${getRoleBadgeColor(user.role)} text-[10px] uppercase font-bold`}>{user.role}</Badge>
                                     </td>
                                     <td className="p-4">
                                         {user.isActive ? <Badge className="bg-green-500/10 text-green-500 border-none text-[9px]">ACTIVE</Badge> : <Badge className="bg-red-500/10 text-red-500 border-none text-[9px]">LOCKED</Badge>}
@@ -273,7 +270,7 @@ export default function AdminUsersPage() {
                                             <Button variant="ghost" size="icon" className={`h-8 w-8 ${user.isActive ? 'text-red-500' : 'text-green-500'}`} onClick={() => toggleUserStatus(user.id, user.isActive)}>
                                                 {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                                             </Button>
-                                            {currentUser?.role === 'SUPER_ADMIN' && user.id !== currentUser.id && (
+                                            {canWrite('USERS') && user.id !== currentUser?.id && (
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:bg-red-500/10" onClick={() => { setUserToDelete(user); setIsDeleteUserOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
                                             )}
                                         </div>
@@ -310,10 +307,9 @@ export default function AdminUsersPage() {
                                 <td className="p-4 text-xs text-muted-foreground">{role.description || "Custom role"}</td>
                                 <td className="p-4 text-right">
                                     <div className="flex justify-end gap-1">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditRoleModal(role)}><Edit2 className="h-4 w-4" /></Button>
-                                        {!role.isSystem && (
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => { setRoleToDelete(role); setIsDeleteRoleOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
-                                        )}
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditRoleModal(role)}>
+                                            <Edit2 className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 </td>
                             </tr>
@@ -335,8 +331,11 @@ export default function AdminUsersPage() {
                     <p className="text-muted-foreground text-sm">Manage platform accounts and access hierarchies.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg rounded-xl h-11 px-6" onClick={() => setIsUserModalOpen(true)}><Plus className="mr-2 h-4 w-4" /> Create User</Button>
-                    <Button variant="secondary" className="glass border-white/10 rounded-xl h-11 px-6" onClick={openCreateRoleModal}><Shield className="mr-2 h-4 w-4" /> Create Role</Button>
+                    {canWrite('USERS') && (
+                        <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg rounded-xl h-11 px-6" onClick={() => setIsUserModalOpen(true)}>
+                            <Plus className="mr-2 h-4 w-4" /> Create User
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -359,10 +358,10 @@ export default function AdminUsersPage() {
 
             <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
                 <DialogContent className="max-w-4xl bg-[#0a0a0b] border-white/10 max-h-[90vh] overflow-y-auto">
-                    <DialogHeader><DialogTitle className="text-2xl font-black italic uppercase text-primary">{isEditingRole ? 'Update Role' : 'New System Role'}</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle className="text-2xl font-black italic uppercase text-primary">Configure Permissions</DialogTitle></DialogHeader>
                     <div className="space-y-6 py-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Internal Name</Label><Input className="glass-input h-11 border-white/10 rounded-xl" value={newRoleData.name} onChange={e => setNewRoleData(prev => ({ ...prev, name: e.target.value }))} /></div>
+                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Internal Name</Label><Input className="glass-input h-11 border-white/10 rounded-xl bg-muted/50" value={newRoleData.name} disabled /></div>
                             <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Input className="glass-input h-11 border-white/10 rounded-xl" value={newRoleData.description} onChange={e => setNewRoleData(prev => ({ ...prev, description: e.target.value }))} /></div>
                         </div>
                         <div className="border rounded-xl border-white/10 overflow-hidden">

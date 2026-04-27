@@ -15,7 +15,7 @@ interface BehaviorEvent {
 }
 
 const FEATURE_ENABLED = process.env.NEXT_PUBLIC_ENABLE_BEHAVIOR_AI === "true";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const BATCH_SIZE = 10;
 const BATCH_INTERVAL = 5000;
 

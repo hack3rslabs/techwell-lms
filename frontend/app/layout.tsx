@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { ScrollButton } from "@/components/ui/scroll-button";
 import { FloatingCallButton } from "@/components/ui/floating-call-button";
-import ChatWidget from "@/components/ai/ChatWidget";
 import { BehaviorTrackingProvider } from "@/components/BehaviorTrackingProvider";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -121,9 +120,7 @@ export default function RootLayout({
               <div className="print:hidden">
                 <FloatingCallButton />
               </div>
-              <div className="print:hidden fixed bottom-6 right-6 z-[9999]">
-                <ChatWidget />
-              </div>
+
             </BehaviorTrackingProvider>
           </AuthProvider>
         </ThemeProvider>

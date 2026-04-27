@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Brain, TrendingUp, MousePointer, Clock, BarChart3 } from 'lucide-react';
 
 // Fix: Ensure we don't have double /api
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const _API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
 // Note: The fetches below use /api prefix, so we need to be careful. 
 // Actually, looking at the fetches: `${API_URL}/api/behavior...`
