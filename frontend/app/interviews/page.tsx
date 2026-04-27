@@ -308,6 +308,6 @@ export default function InterviewsPage() {
                 </div>
             )
             }
-        </div >
+        </div>
     )
 }

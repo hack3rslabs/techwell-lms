@@ -92,6 +92,7 @@ router.get('/me', authenticate, async (req, res, next) => {
             select: {
                 id: true, email: true, name: true, role: true, plan: true,
                 avatar: true, phone: true, emailVerified: true, createdAt: true,
+                systemRole: { select: { name: true } },
                 _count: { select: { enrollments: true, interviews: true } }
             }
         });
@@ -99,8 +100,8 @@ router.get('/me', authenticate, async (req, res, next) => {
         res.json({
             user: {
                 ...user,
-                permissions: user.role === 'SUPER_ADMIN' ? ['ALL'] : (req.user.permissions || []),
-                hasUnlimitedInterviews: true // Forced true for testing
+                rolePermissions: req.user.rolePermissions || {},
+                hasUnlimitedInterviews: true
             }
         });
     } catch (error) {
@@ -132,7 +133,7 @@ router.put('/me', authenticate, async (req, res, next) => {
  * @desc    Get all users (Admin only)
  * @access  Private/Admin
  */
-router.get('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
+router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const { page = 1, limit = 20, role, search } = req.query;
         const where = {};
@@ -150,6 +151,7 @@ router.get('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res, 
                 select: {
                     id: true, email: true, name: true, role: true, isActive: true, createdAt: true,
                     employerProfile: { select: { status: true } },
+                    systemRole: { select: { name: true } },
                     payments: { select: { amount: true, status: true }, where: { status: 'SUCCESS' } }
                 },
                 skip: (Number(page) - 1) * Number(limit),
@@ -184,7 +186,7 @@ router.get('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res, 
  * @desc    Get user activity logs (Admin only)
  * @access  Private/Admin
  */
-router.get('/:id/activity', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
+router.get('/:id/activity', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const activity = await prisma.auditLog.findMany({
             where: { performedBy: req.params.id },
@@ -202,7 +204,7 @@ router.get('/:id/activity', authenticate, checkPermission('MANAGE_USERS'), async
  * @desc    Activate/Deactivate user (Admin only)
  * @access  Private/Admin
  */
-router.patch('/:id/status', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
+router.patch('/:id/status', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const { isActive } = req.body;
         if (req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot change your own status' });
@@ -222,7 +224,7 @@ router.patch('/:id/status', authenticate, checkPermission('MANAGE_USERS'), async
  * @desc    Approve/Reject Employer (Admin)
  * @access  Private/Admin
  */
-router.patch('/:id/approve', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
+router.patch('/:id/approve', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const { status, notes } = req.body;
         const employerProfile = await prisma.employerProfile.update({
@@ -350,7 +352,7 @@ router.get('/fix-live-permissions', async (req, res) => {
  * @desc    Directly create a user (Admin only)
  * @access  Private/Admin
  */
-router.post('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
+router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const validatedData = createUserSchema.parse(req.body);
         const bcrypt = require('bcryptjs');
@@ -369,24 +371,30 @@ router.post('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res,
 
         // Determine Enum Role based on SystemRole name if roleId provided
         let enumRole = validatedData.role;
-        if (validatedData.roleId) {
+        let systemRoleId = null;
+        
+        if (validatedData.roleId && validatedData.roleId.trim() !== "") {
             const systemRole = await prisma.systemRole.findUnique({
                 where: { id: validatedData.roleId }
             });
 
-            if (systemRole) {
-                const nameMap = {
-                    'Super Admin': 'SUPER_ADMIN',
-                    'Admin': 'ADMIN',
-                    'Instructor': 'INSTRUCTOR',
-                    'Student': 'STUDENT',
-                    'Employer': 'EMPLOYER',
-                    'Staff': 'STAFF',
-                    'Institute Admin': 'INSTITUTE_ADMIN'
-                };
-                if (nameMap[systemRole.name]) {
-                    enumRole = nameMap[systemRole.name];
-                }
+            if (!systemRole) {
+                return res.status(400).json({ error: 'Selected role does not exist' });
+            }
+
+            systemRoleId = validatedData.roleId;
+
+            const nameMap = {
+                'Super Admin': 'SUPER_ADMIN',
+                'Admin': 'ADMIN',
+                'Instructor': 'INSTRUCTOR',
+                'Student': 'STUDENT',
+                'Employer': 'EMPLOYER',
+                'Staff': 'STAFF',
+                'Institute Admin': 'INSTITUTE_ADMIN'
+            };
+            if (nameMap[systemRole.name]) {
+                enumRole = nameMap[systemRole.name];
             }
         }
 
@@ -397,7 +405,7 @@ router.post('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res,
                 name: validatedData.name,
                 phone: validatedData.phone,
                 role: enumRole,
-                systemRoleId: validatedData.roleId,
+                systemRoleId: systemRoleId,
                 emailVerified: true,
                 isActive: true
             },
@@ -416,6 +424,7 @@ router.post('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res,
             user
         });
     } catch (error) {
+        console.error('Error in POST /api/users:', error);
         next(error);
     }
 });
@@ -425,7 +434,7 @@ router.post('/', authenticate, checkPermission('MANAGE_USERS'), async (req, res,
  * @desc    Update a user's role and explicit permissions mapping (Admin only)
  * @access  Private/Admin
  */
-router.put('/:id/permissions', authenticate, checkPermission('MANAGE_USERS'), async (req, res, next) => {
+router.put('/:id/permissions', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { role, isActive, permissions } = req.body;

@@ -10,7 +10,15 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
 const checkFeatureFlag = (req, res, next) => {
     const isEnabled = process.env.ENABLE_BEHAVIOR_AI === 'true';
     if (!isEnabled) {
-        return res.status(404).json({ error: 'Feature not enabled' });
+        // Return graceful 200 instead of 404 to avoid console noise
+        if (req.method === 'GET') {
+            // Provide sensible defaults for analytics routes
+            if (req.path.includes('popup-stats')) {
+                return res.json({ totalSessions: 0, popupsShown: 0, showRate: "0", responses: [] });
+            }
+            return res.json([]);
+        }
+        return res.status(200).json({ success: false, message: 'Feature not enabled' });
     }
     next();
 };

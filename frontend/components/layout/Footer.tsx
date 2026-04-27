@@ -117,7 +117,7 @@ export function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/for-colleges" className="text-primary hover:text-primary/80 transition-colors font-medium">
+                                <Link href="/for-colleges" className="text-muted-foreground hover:text-foreground transition-colors">
                                     For Colleges
                                 </Link>
                             </li>

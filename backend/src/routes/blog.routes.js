@@ -98,7 +98,7 @@ router.get('/:slugOrId', optionalAuth, async (req, res, next) => {
  * @desc    Create blog post
  * @access  Private/Admin
  */
-router.post('/', authenticate, checkPermission('MANAGE_BLOGS'), async (req, res, next) => {
+router.post('/', authenticate, checkPermission('BLOGS'), async (req, res, next) => {
     try {
         const body = { ...req.body };
         if (body.coverImage === '') body.coverImage = undefined;
@@ -131,7 +131,7 @@ router.post('/', authenticate, checkPermission('MANAGE_BLOGS'), async (req, res,
  * @desc    Update blog post
  * @access  Private/Admin
  */
-router.put('/:id', authenticate, checkPermission('MANAGE_BLOGS'), async (req, res, next) => {
+router.put('/:id', authenticate, checkPermission('BLOGS'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const body = { ...req.body };
@@ -161,7 +161,7 @@ router.put('/:id', authenticate, checkPermission('MANAGE_BLOGS'), async (req, re
  * @desc    Delete blog post
  * @access  Private/Admin
  */
-router.delete('/:id', authenticate, checkPermission('MANAGE_BLOGS'), async (req, res, next) => {
+router.delete('/:id', authenticate, checkPermission('BLOGS'), async (req, res, next) => {
     try {
         await prisma.blogPost.delete({ where: { id: req.params.id } });
         res.json({ message: 'Blog post deleted' });

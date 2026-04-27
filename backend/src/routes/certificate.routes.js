@@ -231,7 +231,7 @@ router.post('/generate', authenticate, async (req, res, next) => {
  * @desc    Invalidate a certificate
  * @access  Private/Admin
  */
-router.put('/:id/invalidate', authenticate, checkPermission('MANAGE_CERTIFICATES'), async (req, res, next) => {
+router.put('/:id/invalidate', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const certificate = await prisma.certificate.update({
             where: { id: req.params.id },
@@ -251,7 +251,7 @@ router.put('/:id/invalidate', authenticate, checkPermission('MANAGE_CERTIFICATES
  * @desc    Get certificate settings
  * @access  Private/Admin
  */
-router.get('/admin/settings', authenticate, checkPermission('VIEW_CERTIFICATES'), async (req, res, next) => {
+router.get('/admin/settings', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         let settings = await prisma.certificateSettings.findFirst({
             where: { instituteId: 'default' }
@@ -275,7 +275,7 @@ router.get('/admin/settings', authenticate, checkPermission('VIEW_CERTIFICATES')
  * @desc    Update certificate settings
  * @access  Private/Admin
  */
-router.put('/admin/settings', authenticate, checkPermission('MANAGE_CERTIFICATES'), async (req, res, next) => {
+router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const {
             prefix,
@@ -338,7 +338,7 @@ router.put('/admin/settings', authenticate, checkPermission('MANAGE_CERTIFICATES
  * @desc    Get all certificate templates
  * @access  Private/Admin
  */
-router.get('/admin/templates', authenticate, checkPermission('VIEW_CERTIFICATES'), async (req, res, next) => {
+router.get('/admin/templates', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const templates = await prisma.certificateTemplate.findMany({
             orderBy: { createdAt: 'desc' }
@@ -355,7 +355,7 @@ router.get('/admin/templates', authenticate, checkPermission('VIEW_CERTIFICATES'
  * @desc    Create a new certificate template
  * @access  Private/Admin
  */
-router.post('/admin/templates', authenticate, checkPermission('MANAGE_CERTIFICATES'), async (req, res, next) => {
+router.post('/admin/templates', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const { name, description, designUrl, previewUrl, layout, isDefault } = req.body;
 
@@ -389,7 +389,7 @@ router.post('/admin/templates', authenticate, checkPermission('MANAGE_CERTIFICAT
  * @desc    Update a certificate template
  * @access  Private/Admin
  */
-router.put('/admin/templates/:id', authenticate, checkPermission('MANAGE_CERTIFICATES'), async (req, res, next) => {
+router.put('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const { name, description, designUrl, previewUrl, layout, isDefault, isActive } = req.body;
 
@@ -417,7 +417,7 @@ router.put('/admin/templates/:id', authenticate, checkPermission('MANAGE_CERTIFI
  * @desc    Delete a certificate template
  * @access  Private/Admin
  */
-router.delete('/admin/templates/:id', authenticate, checkPermission('MANAGE_CERTIFICATES'), async (req, res, next) => {
+router.delete('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         await prisma.certificateTemplate.delete({
             where: { id: req.params.id }

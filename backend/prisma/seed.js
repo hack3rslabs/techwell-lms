@@ -176,16 +176,18 @@ async function main() {
     // RBAC System Seeding
     console.log('\n🔐 Seeding RBAC Permissions...');
     const permissions = [
-        { code: 'MANAGE_USERS', name: 'Manage Users', module: 'USERS' },
-        { code: 'VIEW_USERS', name: 'View Users', module: 'USERS' },
-        { code: 'MANAGE_COURSES', name: 'Manage Courses', module: 'COURSES' },
-        { code: 'VIEW_COURSES', name: 'View Courses', module: 'COURSES' },
-        { code: 'PUBLISH_COURSE', name: 'Publish Course', module: 'COURSES' },
-        { code: 'VIEW_FINANCE', name: 'View Finance', module: 'FINANCE' },
-        { code: 'MANAGE_TICKETS', name: 'Manage Tickets', module: 'TICKETS' },
-        { code: 'VIEW_TICKETS', name: 'View Tickets', module: 'TICKETS' },
-        { code: 'MANAGE_ROLES', name: 'Manage Roles', module: 'SETTINGS' },
-        { code: 'MANAGE_SETTINGS', name: 'Manage Settings', module: 'SETTINGS' },
+        { name: 'Dashboard Access', code: 'DASHBOARD', module: 'General' },
+        { name: 'Welcome Page', code: 'WELCOME', module: 'General' },
+        { name: 'User Management', code: 'USERS', module: 'General' },
+        { code: 'COURSES', name: 'Course Management', module: 'ADMIN' },
+        { code: 'FINANCE', name: 'Financial Management', module: 'ADMIN' },
+        { code: 'TICKETS', name: 'Support Tickets', module: 'ADMIN' },
+        { code: 'SETTINGS', name: 'System Settings', module: 'ADMIN' },
+        { code: 'LEADS', name: 'Leads & CRM', module: 'ADMIN' },
+        { code: 'BLOGS', name: 'Blog Management', module: 'ADMIN' },
+        { code: 'CERTIFICATES', name: 'Certificates', module: 'ADMIN' },
+        { code: 'REPORTS', name: 'Reports & Analytics', module: 'ADMIN' },
+        { code: 'SYSTEM_LOGS', name: 'System Logs', module: 'ADMIN' },
     ];
 
     for (const p of permissions) {
@@ -193,6 +195,19 @@ async function main() {
             where: { code: p.code },
             update: p,
             create: p
+        });
+    }
+
+    // Features for UI table
+    for (const p of permissions) {
+        await prisma.systemFeature.upsert({
+            where: { code: p.code },
+            update: { name: p.name, module: p.module },
+            create: {
+                name: p.name,
+                code: p.code,
+                module: p.module
+            }
         });
     }
 
@@ -206,45 +221,72 @@ async function main() {
         {
             name: 'Admin',
             isSystem: true,
-            permissions: permissions.map(p => p.code).filter(p => p !== 'MANAGE_ROLES')
+            permissions: permissions.map(p => p.code)
         },
         {
             name: 'Institute Admin',
             isSystem: true,
-            permissions: ['MANAGE_USERS', 'VIEW_USERS', 'MANAGE_COURSES', 'VIEW_COURSES', 'VIEW_FINANCE', 'MANAGE_TICKETS', 'VIEW_TICKETS']
+            permissions: ['WELCOME', 'DASHBOARD', 'USERS', 'COURSES', 'FINANCE', 'TICKETS', 'LEADS']
         },
         {
             name: 'Instructor',
             isSystem: true,
-            permissions: ['VIEW_COURSES', 'MANAGE_COURSES', 'VIEW_TICKETS']
+            permissions: ['WELCOME', 'DASHBOARD', 'COURSES', 'TICKETS']
         },
         {
             name: 'Student',
             isSystem: true,
-            permissions: ['VIEW_COURSES', 'VIEW_TICKETS']
+            permissions: ['WELCOME', 'COURSES', 'TICKETS']
         },
         {
             name: 'Staff',
             isSystem: true,
-            permissions: ['VIEW_USERS', 'VIEW_COURSES', 'VIEW_TICKETS', 'MANAGE_TICKETS']
+            permissions: ['WELCOME', 'DASHBOARD', 'USERS', 'COURSES', 'TICKETS']
         },
         {
             name: 'Employer',
             isSystem: true,
-            permissions: ['VIEW_USERS', 'VIEW_COURSES']
+            permissions: ['WELCOME', 'DASHBOARD', 'USERS', 'COURSES']
         }
     ];
 
     for (const r of roles) {
-        await prisma.systemRole.upsert({
+        const dbRole = await prisma.systemRole.upsert({
             where: { name: r.name },
-            update: { permissions: r.permissions },
+            update: { isSystem: true }, // Ensure all seeded roles are system roles
             create: {
                 name: r.name,
-                isSystem: r.isSystem,
-                permissions: r.permissions
+                isSystem: true,
+                description: `${r.name} system role`
             }
         });
+
+        // Setup RolePermissions for the role
+        for (const p of permissions) {
+            const hasPermission = r.permissions.includes(p.code);
+            const feature = await prisma.systemFeature.findUnique({ where: { code: p.code } });
+            
+            await prisma.rolePermission.upsert({
+                where: {
+                    roleId_featureId: {
+                        roleId: dbRole.id,
+                        featureId: feature.id
+                    }
+                },
+                update: {
+                    canRead: hasPermission,
+                    canWrite: hasPermission,
+                    isDisabled: !hasPermission
+                },
+                create: {
+                    roleId: dbRole.id,
+                    featureId: feature.id,
+                    canRead: hasPermission,
+                    canWrite: hasPermission,
+                    isDisabled: !hasPermission
+                }
+            });
+        }
     }
 
     // Link Super Admin to System Role

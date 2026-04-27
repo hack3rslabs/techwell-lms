@@ -19,6 +19,7 @@ interface ExtendedUser {
     role: string
     phone?: string
     avatar?: string
+    systemRole?: { name: string }
     plan?: string // Added plan
 }
 
@@ -202,7 +203,7 @@ export default function ProfilePage() {
                                 </div>
                                 <div className="flex items-center justify-center md:justify-start gap-2 text-gray-500 mt-1">
                                     <span className={`inline-flex items-center gap-1 text-[10px] uppercase font-bold px-2 py-0.5 rounded-md ${getRoleBadgeColor(currentUser.role)}`}>
-                                        {currentUser.role}
+                                        {currentUser.systemRole?.name || currentUser.role}
                                     </span>
                                     <span>•</span>
                                     <span>{currentUser.email}</span>

@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Loader2, Camera, Upload, User } from 'lucide-react'
 import api from '@/lib/api'
+import { useAuth } from '@/lib/auth-context'
 
 export default function SettingsPage() {
+    const { hasPermission, canWrite } = useAuth()
     interface UserProfile {
         name: string
         email: string
@@ -52,7 +54,7 @@ export default function SettingsPage() {
                 name: userRes.data.name || '',
                 phone: userRes.data.phone || ''
             })
-            setAvatarPreview(userRes.data.avatar ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001'}${userRes.data.avatar}` : null)
+            setAvatarPreview(userRes.data.avatar ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${userRes.data.avatar}` : null)
 
             if (settingsRes.data) {
                 setSystemSettings(settingsRes.data)
@@ -188,7 +190,7 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* Platform Settings */}
-                {user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' ? (
+                {hasPermission('SETTINGS') ? (
                     <Card>
                         <CardHeader>
                             <CardTitle>Platform Configuration</CardTitle>
@@ -200,6 +202,7 @@ export default function SettingsPage() {
                                 <Input
                                     value={systemSettings.platformName}
                                     onChange={e => setSystemSettings({ ...systemSettings, platformName: e.target.value })}
+                                    disabled={!canWrite('SETTINGS')}
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -207,14 +210,17 @@ export default function SettingsPage() {
                                 <Input
                                     value={systemSettings.supportEmail}
                                     onChange={e => setSystemSettings({ ...systemSettings, supportEmail: e.target.value })}
+                                    disabled={!canWrite('SETTINGS')}
                                 />
                             </div>
-                            <Button variant="outline" onClick={async () => {
-                                try {
-                                    await api.put('/settings', systemSettings)
-                                    alert('Settings updated!')
-                                } catch (e) { console.error(e); alert('Update failed') }
-                            }}>Update Config</Button>
+                            {canWrite('SETTINGS') && (
+                                <Button variant="outline" onClick={async () => {
+                                    try {
+                                        await api.put('/settings', systemSettings)
+                                        alert('Settings updated!')
+                                    } catch (e) { console.error(e); alert('Update failed') }
+                                }}>Update Config</Button>
+                            )}
                         </CardContent>
                     </Card>
                 ) : null}

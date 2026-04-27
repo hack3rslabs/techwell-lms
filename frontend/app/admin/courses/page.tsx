@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Plus, BookOpen, Clock, Trash2, GraduationCap } from 'lucide-react'
 import { courseApi } from '@/lib/api'
+import { useAuth } from '@/lib/auth-context'
 import Image from 'next/image'
 import { getFullImageUrl } from '@/lib/image-utils'
 
@@ -25,6 +26,7 @@ interface Course {
 
 export default function AdminCoursesPage() {
     const router = useRouter()
+    const { canWrite } = useAuth()
     const [courses, setCourses] = React.useState<Course[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [isDeleting, setIsDeleting] = React.useState<string | null>(null)
@@ -133,21 +135,23 @@ export default function AdminCoursesPage() {
                                         {course.price === 0 ? 'Free' : `₹${course.price}`}
                                     </span>
                                     <div className="flex gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8"
-                                            onClick={() => handleDelete(course.id, course.title)}
-                                            disabled={isDeleting === course.id}
-                                        >
-                                            {isDeleting === course.id ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                <Trash2 className="h-4 w-4" />
-                                            )}
-                                        </Button>
+                                        {canWrite('COURSES') && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8"
+                                                onClick={() => handleDelete(course.id, course.title)}
+                                                disabled={isDeleting === course.id}
+                                            >
+                                                {isDeleting === course.id ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                        )}
                                         <Button variant="secondary" size="sm" onClick={() => router.push(`/admin/courses/${course.id}/edit`)}>
-                                            Manage
+                                            {canWrite('COURSES') ? 'Manage' : 'View Details'}
                                         </Button>
                                     </div>
                                 </div>

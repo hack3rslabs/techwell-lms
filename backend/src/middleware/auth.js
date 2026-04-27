@@ -26,12 +26,20 @@ const authenticate = async (req, res, next) => {
                 name: true,
                 role: true,
                 permissions: true,
-                instituteId: true, // Support for institute Scoping
+                instituteId: true,
                 isActive: true,
                 systemRole: {
                     select: {
-                        permissions: true,
-                        name: true
+                        name: true,
+                        rolePermissions: {
+                            include: {
+                                feature: {
+                                    select: {
+                                        code: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -45,21 +53,21 @@ const authenticate = async (req, res, next) => {
             return res.status(403).json({ error: 'Account is deactivated' });
         }
 
-        // Merge permissions from SystemRole if exists
-        let permissions = new Set(user.permissions || []);
-        if (user.systemRole && user.systemRole.permissions) {
-            const rolePermissions = user.systemRole.permissions;
-            if (Array.isArray(rolePermissions)) {
-                rolePermissions.forEach(p => permissions.add(p));
-            }
+        // Format permissions for easier lookup
+        const rolePermissions = {};
+        if (user.systemRole && user.systemRole.rolePermissions) {
+            user.systemRole.rolePermissions.forEach(rp => {
+                rolePermissions[rp.feature.code] = {
+                    canRead: rp.canRead,
+                    canWrite: rp.canWrite,
+                    isDisabled: rp.isDisabled
+                };
+            });
         }
-
-        // Note: SUPER_ADMIN permissions are now governed by their SystemRole assignment.
-        // No hardcoded 'ALL' bypass — edit the role's permissions in Admin > Roles & Permissions.
 
         req.user = {
             ...user,
-            permissions: Array.from(permissions)
+            rolePermissions
         };
         next();
     } catch (error) {
@@ -89,28 +97,53 @@ const authorize = (...roles) => {
 
 /**
  * Permission-Based Access Control
- * @param {string} requiredPermission - The permission string required
+ * @param {string} featureCode - The feature code to check (e.g., 'USERS', 'COURSES')
+ * @param {string} accessType - Optional explicit check for 'read' or 'write'
  */
-const checkPermission = (requiredPermission) => {
+const checkPermission = (featureCode, accessType = null) => {
     return (req, res, next) => {
         if (!req.user) {
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        // Check for wildcard 'ALL' permission or SUPER_ADMIN base role
-        if (req.user.role === 'SUPER_ADMIN' || (req.user.permissions && req.user.permissions.includes('ALL'))) {
+        // 1. Bypass check for Super Admins and Admins
+        if (['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
             return next();
         }
 
-        const userPermissions = req.user.permissions || [];
+        const permissions = req.user.rolePermissions?.[featureCode];
 
-        if (!userPermissions.includes(requiredPermission)) {
+        // 1. If no permissions defined for this feature, or it's explicitly disabled
+        if (!permissions || permissions.isDisabled) {
             return res.status(403).json({
-                error: `Missing permission: ${requiredPermission}`
+                error: `Access Denied: You do not have permission for the ${featureCode} module.`,
+                code: 'FORBIDDEN'
             });
         }
 
-        next();
+        // 2. Determine if we are checking for Read or Write
+        // If accessType is not provided, we infer it from the HTTP method
+        const requiredAccess = accessType || (req.method === 'GET' ? 'read' : 'write');
+
+        if (requiredAccess === 'write') {
+            if (permissions.canWrite) {
+                return next();
+            }
+            return res.status(403).json({
+                error: `Permission Denied: You do not have Write access to the ${featureCode} module.`,
+                code: 'FORBIDDEN'
+            });
+        }
+
+        // Default to Read check
+        if (permissions.canRead || permissions.canWrite) {
+            return next();
+        }
+
+        return res.status(403).json({
+            error: `Permission Denied: You do not have Read access to the ${featureCode} module.`,
+            code: 'FORBIDDEN'
+        });
     };
 };
 

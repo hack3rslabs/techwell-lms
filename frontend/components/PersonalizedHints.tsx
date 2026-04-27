@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
 const FEATURE_ENABLED = process.env.NEXT_PUBLIC_ENABLE_BEHAVIOR_AI === 'true';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 interface PersonalizedHintsProps {
     sessionId: string;

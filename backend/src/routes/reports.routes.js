@@ -10,7 +10,7 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  * @desc    Get aggregated yearly/monthly business summary (CEO View)
  * @access  Private/Admin
  */
-router.get('/business-summary', authenticate, checkPermission('VIEW_REPORTS'), async (req, res, next) => {
+router.get('/business-summary', authenticate, checkPermission('REPORTS'), async (req, res, next) => {
     try {
         const { year } = req.query;
         const targetYear = year ? parseInt(year) : new Date().getFullYear();

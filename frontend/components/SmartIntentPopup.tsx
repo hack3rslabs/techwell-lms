@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 const FEATURE_ENABLED = process.env.NEXT_PUBLIC_ENABLE_BEHAVIOR_AI === 'true';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const TRIGGER_DELAY = 100000; // 100 seconds
 const STORAGE_KEY = 'intent_popup_shown';
 
