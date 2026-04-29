@@ -40,6 +40,7 @@ interface Resource {
     url?: string;
     content?: Record<string, unknown>;
     isPaid?: boolean;
+    publishedAt?: string;
 }
 
 interface QAItem {
@@ -79,6 +80,7 @@ export default function LibraryManagementPage() {
     const [showCategoryForm, setShowCategoryForm] = useState(false);
     const [showDomainForm, setShowDomainForm] = useState(false);
     const [showResourceForm, setShowResourceForm] = useState(false);
+    const [editingResourceId, setEditingResourceId] = useState<string | null>(null);
     const [resourceType, setResourceType] = useState('PDF');
 
     const [categoryForm, setCategoryForm] = useState({ name: '', description: '', icon: '' });
@@ -155,7 +157,7 @@ export default function LibraryManagementPage() {
         }
     };
 
-    const handleCreateResource = async () => {
+    const handleSaveResource = async () => {
         try {
             // Validation
             if (!resourceForm.title) {
@@ -167,64 +169,114 @@ export default function LibraryManagementPage() {
                 return;
             }
 
-            if (resourceType === 'PDF') {
-                if (!resourceForm.file) {
-                    toast({ title: "Validation Error", description: "Please select a PDF file", variant: "destructive" });
-                    return;
-                }
-                const formData = new FormData();
-                formData.append('file', resourceForm.file);
-                formData.append('title', resourceForm.title);
-                formData.append('description', resourceForm.description);
-                formData.append('domainId', resourceForm.domainId);
-                formData.append('createdBy', 'admin'); 
-                formData.append('isPaid', String(resourceForm.isPaid));
-                if (resourceForm.publishedAt) {
-                    formData.append('publishedAt', resourceForm.publishedAt);
-                }
-
-                await api.post('/library/resources/pdf', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-            } else {
-                // Q&A type
-                const validQuestions = resourceForm.qaContent.filter(qa => qa.q && qa.a);
-                if (validQuestions.length === 0) {
-                    toast({ title: "Validation Error", description: "Please add at least one valid Q&A pair", variant: "destructive" });
-                    return;
-                }
-
-                const content = {
-                    questions: validQuestions
-                };
-
-                await api.post('/library/resources/qa', {
+            if (editingResourceId) {
+                // Update logic
+                const updateData: any = {
                     title: resourceForm.title,
                     description: resourceForm.description,
-                    domainId: resourceForm.domainId,
-                    createdBy: 'admin',
-                    content,
-                    syncToAI: resourceForm.syncToAI,
                     isPaid: resourceForm.isPaid,
-                    publishedAt: resourceForm.publishedAt || null
+                    publishedAt: resourceForm.publishedAt || null,
+                };
+
+                if (resourceType === 'QA') {
+                    const validQuestions = resourceForm.qaContent.filter(qa => qa.q && qa.a);
+                    updateData.content = { questions: validQuestions };
+                }
+
+                await api.put(`/library/resources/${editingResourceId}`, updateData);
+                toast({ title: "Success", description: "Resource updated successfully" });
+            } else {
+                // Create logic
+                if (resourceType === 'PDF') {
+                    if (!resourceForm.file) {
+                        toast({ title: "Validation Error", description: "Please select a PDF file", variant: "destructive" });
+                        return;
+                    }
+                    const formData = new FormData();
+                    formData.append('file', resourceForm.file);
+                    formData.append('title', resourceForm.title);
+                    formData.append('description', resourceForm.description);
+                    formData.append('domainId', resourceForm.domainId);
+                    formData.append('createdBy', 'admin'); 
+                    formData.append('isPaid', String(resourceForm.isPaid));
+                    if (resourceForm.publishedAt) {
+                        formData.append('publishedAt', resourceForm.publishedAt);
+                    }
+
+                    await api.post('/library/resources/pdf', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                } else {
+                    // Q&A type
+                    const validQuestions = resourceForm.qaContent.filter(qa => qa.q && qa.a);
+                    if (validQuestions.length === 0) {
+                        toast({ title: "Validation Error", description: "Please add at least one valid Q&A pair", variant: "destructive" });
+                        return;
+                    }
+
+                    const content = {
+                        questions: validQuestions
+                    };
+
+                    await api.post('/library/resources/qa', {
+                        title: resourceForm.title,
+                        description: resourceForm.description,
+                        domainId: resourceForm.domainId,
+                        createdBy: 'admin',
+                        content,
+                        syncToAI: resourceForm.syncToAI,
+                        isPaid: resourceForm.isPaid,
+                        publishedAt: resourceForm.publishedAt || null
+                    });
+                }
+                toast({
+                    title: "Success",
+                    description: `Library ${resourceType === 'PDF' ? 'PDF' : 'Q&A'} resource created successfully`,
                 });
             }
 
-            toast({
-                title: "Success",
-                description: `Library ${resourceType === 'PDF' ? 'PDF' : 'Q&A'} resource created successfully`,
-            });
-
             setResourceForm({ ...initialResourceForm });
             setShowResourceForm(false);
+            setEditingResourceId(null);
             fetchData();
         } catch (error: any) {
-            console.error('Error creating resource:', error);
+            console.error('Error saving resource:', error);
             toast({
                 title: "Error",
-                description: error.response?.data?.error || "Failed to create resource",
+                description: error.response?.data?.error || "Failed to save resource",
                 variant: "destructive"
             });
+        }
+    };
+
+    const handleEditResource = (resource: Resource) => {
+        setEditingResourceId(resource.id);
+        setResourceType(resource.type);
+        setResourceForm({
+            title: resource.title,
+            description: resource.description || '',
+            domainId: resource.domainId,
+            file: null, // Files can't be easily pre-populated for edit in this flow
+            qaContent: resource.type === 'QA' && resource.content && Array.isArray((resource.content as any).questions) 
+                ? (resource.content as any).questions 
+                : [{ q: '', a: '' }],
+            syncToAI: false, // Don't re-sync by default
+            isPaid: resource.isPaid || false,
+            publishedAt: resource.publishedAt ? new Date(resource.publishedAt).toISOString().split('T')[0] : ''
+        });
+        setShowResourceForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleDeleteResource = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this resource?")) return;
+        try {
+            await api.delete(`/library/resources/${id}`);
+            toast({ title: "Success", description: "Resource deleted successfully" });
+            fetchData();
+        } catch (error) {
+            console.error('Error deleting resource:', error);
+            toast({ title: "Error", description: "Failed to delete resource", variant: "destructive" });
         }
     };
 
@@ -296,7 +348,10 @@ export default function LibraryManagementPage() {
         </Button>
       </div>
       
-      <Button onClick={() => setShowResourceForm(!showResourceForm)} className="shadow-lg">
+      <Button onClick={() => {
+          setShowResourceForm(!showResourceForm);
+          if (showResourceForm) setEditingResourceId(null);
+        }} className="shadow-lg">
         <Plus className="h-4 w-4 mr-2" />
         {showResourceForm ? "Close Form" : "Add Library Post"}
       </Button>
@@ -370,15 +425,15 @@ export default function LibraryManagementPage() {
     {showResourceForm && (
       <Card>
         <CardHeader>
-          <CardTitle>Add Library</CardTitle>
+          <CardTitle>{editingResourceId ? "Edit Library Resource" : "Add Library"}</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {/* Resource Type Tabs */}
           <Tabs defaultValue="PDF" onValueChange={(v) => setResourceType(v)}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="PDF">PDF Document</TabsTrigger>
-              <TabsTrigger value="QA">Q&A / Interview</TabsTrigger>
+              <TabsTrigger value="PDF" disabled={!!editingResourceId && resourceType !== 'PDF'}>PDF Document</TabsTrigger>
+              <TabsTrigger value="QA" disabled={!!editingResourceId && resourceType !== 'QA'}>Q&A / Interview</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -417,7 +472,7 @@ export default function LibraryManagementPage() {
           {resourceType === 'PDF' && (
             <div className="space-y-4 border p-4 rounded-lg bg-muted/30">
               <div>
-                <Label>PDF File</Label>
+                <Label>PDF File {editingResourceId && "(Leave empty to keep current file)"}</Label>
                 <Input
                   type="file"
                   accept=".pdf"
@@ -530,8 +585,8 @@ export default function LibraryManagementPage() {
             />
           </div>
 
-          <Button className="w-full" onClick={handleCreateResource}>
-            Add {resourceType === 'PDF' ? 'Document' : 'Interview Q&A'}
+          <Button className="w-full" onClick={handleSaveResource}>
+            {editingResourceId ? "Update" : "Add"} {resourceType === 'PDF' ? 'Document' : 'Interview Q&A'}
           </Button>
 
         </CardContent>
@@ -548,10 +603,16 @@ export default function LibraryManagementPage() {
               <p className="text-sm text-muted-foreground">{r.description}</p>
             </div>
 
-            <div className="flex gap-2">
-              <span className={`text-xs px-2 py-1 rounded ${r.isPaid ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}>
+            <div className="flex gap-2 items-center">
+              <span className={`text-xs px-2 py-1 rounded h-fit ${r.isPaid ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}>
                 {r.isPaid ? "Paid" : "Free"}
               </span>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEditResource(r)}>
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600" onClick={() => handleDeleteResource(r.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </CardContent>
         </Card>

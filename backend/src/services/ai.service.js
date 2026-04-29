@@ -99,7 +99,7 @@ class AIService {
             console.log('[PDF Extract] Parsing PDF content...');
             const data = await pdf(dataBuffer);
             const extractedText = data.text || '';
-            
+
             if (!extractedText || extractedText.trim().length === 0) {
                 console.warn('[PDF Extract] PDF parsing returned empty text');
                 return null;
@@ -117,21 +117,29 @@ class AIService {
      * Generate the next question based on context using Gemini
      */
     async generateNextQuestion(interviewId, previousResponse = null) {
+        let isHrRound = false; // Define here to avoid ReferenceError in catch block
         try {
             console.log(`[generateNextQuestion] Starting for interview: ${interviewId}`);
-            
+
             const interview = await prisma.interview.findUnique({
                 where: { id: interviewId },
-                include: { questions: true }
+                include: {
+                    questions: {
+                        include: { response: true }
+                    }
+                }
             });
 
             if (!interview) {
-                console.error(`[generateNextQuestion] Interview not found: ${interviewId}`);
                 throw new Error('Interview not found');
             }
 
             const questionCount = interview.questions.length;
-            const existingQuestionTexts = interview.questions.map(q => q.question);
+            const existingQuestions = interview.questions.map(q => ({
+                text: q.question,
+                type: q.type,
+                score: q.response?.score
+            }));
 
             const settings = await prisma.interviewSettings.findFirst() || {
                 adaptiveDifficulty: true,
@@ -141,18 +149,13 @@ class AIService {
                 hrQuestionRatio: 3
             };
 
-            console.log(`[generateNextQuestion] Interview found with ${questionCount} existing questions`);
-
             if (questionCount >= settings.maxQuestions) {
-                console.log(`[generateNextQuestion] Max questions reached: ${questionCount}/${settings.maxQuestions}`);
                 return null; // End Interview
             }
 
-            let avatarRole = 'Technical';
             let difficulty = interview.difficulty;
-
             // Adaptive Difficulty Logic
-            if (settings.adaptiveDifficulty && previousResponse && previousResponse.score) {
+            if (settings.adaptiveDifficulty && previousResponse && previousResponse.score !== undefined) {
                 if (previousResponse.score >= settings.escalationThreshold) {
                     if (difficulty === 'BEGINNER') difficulty = 'INTERMEDIATE';
                     else if (difficulty === 'INTERMEDIATE') difficulty = 'ADVANCED';
@@ -162,136 +165,127 @@ class AIService {
                 }
             }
 
-            // HR Question Check
-            if ((questionCount + 1) % settings.hrQuestionRatio === 0) {
-                avatarRole = 'HR';
-                console.log(`[generateNextQuestion] HR round detected`);
-            }
+            isHrRound = (questionCount + 1) % settings.hrQuestionRatio === 0;
+            const avatarRole = isHrRound ? 'HR' : 'Technical';
 
-            let questionText = "";
-            let type = avatarRole === 'HR' ? 'BEHAVIORAL' : 'TECHNICAL';
-
-            // Try Knowledge Base first
+            // Try gemini-1.5-flash, fallback to gemini-pro if needed
+            let generativeModel;
             try {
-                const kbCount = await prisma.knowledgeBase.count({
-                    where: {
-                        domain: avatarRole === 'HR' ? 'HR' : interview.domain,
-                        difficulty: difficulty,
-                        content: {
-                            notIn: existingQuestionTexts
-                        }
-                    }
-                });
+                // Use a stable model name
+                generativeModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+                console.log("[generateNextQuestion] Using gemini-pro model");
+            } catch (e) {
+                console.warn("[generateNextQuestion] Failed to get gemini-pro, trying gemini-1.5-flash");
+                generativeModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            }
 
-                console.log(`[generateNextQuestion] Found ${kbCount} NEW KB questions for domain: ${interview.domain}, difficulty: ${difficulty}`);
-
-                const kbQuestion = kbCount > 0 ? await prisma.knowledgeBase.findFirst({
-                    where: {
-                        domain: avatarRole === 'HR' ? 'HR' : interview.domain,
-                        difficulty: difficulty,
-                        content: {
-                            notIn: existingQuestionTexts
-                        }
-                    },
-                    take: 1,
-                    skip: kbCount > 5 ? Math.floor(Math.random() * 5) : (kbCount > 0 ? Math.floor(Math.random() * kbCount) : 0)
-                }) : null;
-
-                if (kbQuestion && Math.random() > 0.3) {
-                    console.log(`[generateNextQuestion] Using KB question`);
-                    questionText = kbQuestion.content;
-                } else {
-                    console.log(`[generateNextQuestion] Will generate question with AI`);
-                    throw new Error('Using AI generation'); // Force AI generation
-                }
-            } catch (kbError) {
-                // Generate with Gemini
+            // Extract resume text
+            let resumeText = "";
+            if (interview.resumeUrl) {
                 try {
-                    console.log(`[generateNextQuestion] Attempting AI generation...`);
-                    
-                    // Fetch Resume Text if available
-                    let resumeText = null;
-                    if (interview.resumeUrl) {
-                        console.log(`[generateNextQuestion] Extracting resume from: ${interview.resumeUrl}`);
-                        resumeText = await this.extractTextFromPDF(interview.resumeUrl);
-                        if (resumeText) {
-                            console.log(`[generateNextQuestion] Resume extracted: ${resumeText.length} chars`);
-                        } else {
-                            console.warn(`[generateNextQuestion] Resume extraction returned null`);
-                        }
-                    }
-
-                    const prompt = `You are a professional AI Technical Interviewer. 
-Your goal is to conduct a highly personalized interview based on the candidate's resume.
-
-Candidate Resume Context:
-"""
-${resumeText || "No resume content available."}
-"""
-
-Target Role: ${interview.role}
-Target Technology: ${interview.technology || interview.domain}
-Difficulty: ${difficulty}
-
-Core Task:
-Generate exactly ONE (1) technical interview question for the next step of the interview.
-
-Focus heavily on:
-1. Specific Skills mentioned in the resume.
-2. Projects the candidate has worked on.
-3. Their professional Experience.
-
-Current Interview Progress:
-- Questions Asked So Far: ${questionCount}
-- Questions Already Asked (IMPORTANT: DO NOT REPEAT THESE):
-${existingQuestionTexts.map((q, i) => `  ${i + 1}. ${q}`).join('\n')}
-
-- Previous Candidate Answer: "${previousResponse?.transcript || 'None'}"
-
-Instructions:
-- Generate exactly ONE (1) NEW technical interview question that follows naturally from the previous topic BUT is not identical to any previous questions.
-- Keep the question concise and professional (max 40 words).
-- If resume content is available, tailor the question to a specific project or skill found there.
-- Ensure the question is different in substance and wording from the "Questions Already Asked" list above.
-- Return ONLY the question text. Do not include any prefix like "Interviewer:" or numbering.`;
-
-                    console.log(`[generateNextQuestion] Sending prompt to Gemini...`);
-                    const result = await model.generateContent(prompt);
-                    const response = await result.response;
-                    questionText = response.text().trim();
-                    console.log(`[generateNextQuestion] AI generated question: ${questionText.substring(0, 50)}...`);
-                } catch (geminiError) {
-                    console.error(`[generateNextQuestion] Gemini error:`, geminiError.message);
-                    // Fallback to Static Bank
-                    console.log(`[generateNextQuestion] Using fallback question bank`);
-                    const bank = avatarRole === 'HR'
-                        ? QUESTION_BANK.HR
-                        : (QUESTION_BANK['IT'][difficulty] || QUESTION_BANK['IT']['BEGINNER']);
-                    questionText = bank[Math.floor(Math.random() * bank.length)];
-                    console.log(`[generateNextQuestion] Fallback question: ${questionText}`);
+                    console.log(`[generateNextQuestion] Extracting text from resume: ${interview.resumeUrl}`);
+                    const extracted = await this.extractTextFromPDF(interview.resumeUrl);
+                    resumeText = extracted || "";
+                } catch (pdfError) {
+                    console.error(`[generateNextQuestion] PDF Extraction failed:`, pdfError);
+                    resumeText = "Error extracting resume text.";
                 }
             }
 
-            console.log(`[generateNextQuestion] Success: Generated question of type ${type}`);
+            const prompt = `You are an AI Technical Interviewer designed to conduct a dynamic and adaptive interview session.
+Interview Duration: 30 minutes total.
+Current Progress: Question ${questionCount + 1} of ${settings.maxQuestions}.
+Candidate Role: ${interview.role}
+Target Technology: ${interview.technology || interview.domain}
+Current Difficulty: ${difficulty}
+
+RULES:
+1. STRICTLY avoid repeating any question or concept already covered.
+2. COVER a wide range of topics relevant to the candidate's skills and resume.
+3. ADJUST difficulty dynamically based on previous answers.
+4. MIX different types of questions:
+   - Conceptual questions
+   - Coding/problem-solving questions
+   - Scenario-based questions
+   - Real-world application questions
+
+RESUME CONTEXT:
+${resumeText || "No resume provided."}
+
+QUESTION HISTORY (DO NOT REPEAT CONCEPTS FROM THESE):
+${existingQuestions.map((q, i) => `${i + 1}. [${q.type}] ${q.text} (Score: ${q.score || 'N/A'})`).join('\n')}
+
+PREVIOUS FEEDBACK: "${previousResponse?.briefFeedback || 'None'}"
+
+TASK:
+Generate exactly ONE (1) NEW interview question.
+If it's a technical round, focus on ${interview.technology || interview.domain}. 
+If it's an HR round (${isHrRound}), focus on behavioral/scenario traits.
+
+Return ONLY a JSON object in this format:
+{
+    "question": "The question text",
+    "type": "TECHNICAL" | "BEHAVIORAL" | "SITUATIONAL" | "HR" | "CODING",
+    "avatarRole": "${avatarRole}",
+    "difficulty": "${difficulty}"
+}
+Note: 
+- Use "TECHNICAL" for conceptual or coding questions.
+- Use "BEHAVIORAL" or "SITUATIONAL" for behavioral/scenario questions.
+- Use "CODING" ONLY if the question explicitly requires writing code.`;
+
+            console.log(`[generateNextQuestion] Prompting Gemini for interview: ${interviewId}`);
+            const result = await generativeModel.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            
+            console.log(`[generateNextQuestion] Gemini raw response: ${text.substring(0, 100)}...`);
+
+            // Robust JSON extraction
+            let jsonStr = text.trim();
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                jsonStr = jsonMatch[0];
+            } else {
+                jsonStr = text.replace(/```json|```/gi, '').trim();
+            }
+
+            const aiResponse = JSON.parse(jsonStr);
+            console.log(`[generateNextQuestion] Parsed AI response successfully`);
+
+            // Map types to valid enum values to prevent Prisma errors
+            const typeMap = {
+                'CONCEPTUAL': 'TECHNICAL',
+                'REAL_WORLD': 'TECHNICAL',
+                'SCENARIO': 'SITUATIONAL',
+                'TECHNICAL': 'TECHNICAL',
+                'BEHAVIORAL': 'BEHAVIORAL',
+                'SITUATIONAL': 'SITUATIONAL',
+                'HR': 'HR',
+                'CODING': 'CODING'
+            };
+            const finalType = typeMap[aiResponse.type?.toUpperCase()] || (isHrRound ? 'BEHAVIORAL' : 'TECHNICAL');
+
             return {
-                question: questionText || "Tell me about a challenging project you've worked on.",
-                type: type,
-                avatarRole: avatarRole,
-                avatarId: avatarRole === 'HR' ? 'hr-1' : 'tech-1',
-                difficulty: difficulty
+                question: aiResponse.question,
+                type: finalType,
+                avatarRole: aiResponse.avatarRole || avatarRole,
+                avatarId: isHrRound ? 'hr-1' : 'tech-1',
+                difficulty: aiResponse.difficulty || difficulty
             };
         } catch (error) {
-            console.error(`[generateNextQuestion] CRITICAL ERROR:`, error.message, error.stack);
-            // Return a safe fallback question
+            console.error(`[generateNextQuestion] Error:`, error);
+            // Fallback that is safe from ReferenceErrors
             return {
-                question: "Tell me about yourself and your background in this field.",
-                type: 'TECHNICAL',
+                question: "Tell me about a challenging technical problem you solved recently.",
+                type: isHrRound ? 'BEHAVIORAL' : 'SITUATIONAL',
                 avatarRole: 'Technical',
                 avatarId: 'tech-1',
-                difficulty: 'BEGINNER'
+                difficulty: 'INTERMEDIATE'
             };
         }
     }
+
 
     /**
      * Evaluate a response using Gemini
@@ -304,22 +298,50 @@ Instructions:
         if (!responseText && !code) {
             return {
                 score: 0,
-                feedback: "No response detected. Please ensure you answer the question or write code.",
+                feedback: "No response detected.",
+                briefFeedback: "I didn't catch that. Could you please provide an answer?",
                 sentiment: "NEGATIVE",
                 missingKeywords: []
             };
         }
 
         try {
-            const prompt = `You are an expert interviewer evaluating a candidate's answer.\n\nQuestion: "${questionData?.question || 'Unknown Question'}"\nContext/Type: ${questionData?.type || 'General'}\n\nCandidate Answer: "${responseText || ''}"\n${code ? `Candidate Code:\n${code}\n` : ''}\n\nTask: Evaluate the answer heavily on technical accuracy, clarity, and depth.\n\nReturn EXACTLY a JSON object in this format (no markdown blocks, no extra text):\n{\n    "score": (0-100 integer),\n    "feedback": "2-3 sentences of constructive feedback.",\n    "sentiment": "POSITIVE" | "NEUTRAL" | "NEGATIVE",\n    "missingKeywords": ["concept1", "concept2"],\n    "foundKeywords": ["concept3", "concept4"]\n}`;
+            const prompt = `Evaluate the following candidate response to an interview question.
+            
+Question: "${questionData?.question}"
+Type: ${questionData?.type}
+
+Candidate Answer: "${responseText || ''}"
+${code ? `Candidate Code:\n${code}\n` : ''}
+
+TASK:
+1. Provide a technical score (0-100).
+2. Provide constructive feedback for the final report.
+3. Provide a "briefFeedback" - a single sentence (max 12 words) that I (the interviewer) will say to the candidate immediately before moving to the next question. It should be brief feedback on their answer.
+
+Return ONLY a JSON object:
+{
+    "score": number,
+    "feedback": "string",
+    "briefFeedback": "string",
+    "sentiment": "POSITIVE" | "NEUTRAL" | "NEGATIVE",
+    "foundKeywords": [],
+    "missingKeywords": []
+}`;
 
             const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text().trim().replace(/```json|```/gi, '');
-            return JSON.parse(text);
+            const resText = (await result.response).text().trim().replace(/```json|```/gi, '');
+            return JSON.parse(resText);
         } catch (error) {
-            console.error("Gemini Evaluation Error (Falling back to heuristic):", error);
-            return this.evaluateResponseHeuristic(responseText, code);
+            console.error("Evaluation Error:", error);
+            return {
+                score: 50,
+                feedback: "AI evaluation unavailable.",
+                briefFeedback: "Thanks for that explanation. Let's move on.",
+                sentiment: "NEUTRAL",
+                foundKeywords: [],
+                missingKeywords: []
+            };
         }
     }
 
@@ -355,35 +377,30 @@ Instructions:
      */
     async generateQuestionsFromContext({ context, domain, role, difficulty, count = 5 }) {
         try {
-            const prompt = `You are an AI Technical Interviewer.
-Analyze the following Background/Resume/Job Description:
-"""
-${context.substring(0, 4000)}
-"""
+            const prompt = `
+You are an expert ${role} interviewer.
 
-Task:
-Generate exactly ${count} technical interview questions tailored to this context for a ${difficulty} level ${role} role.
+Generate exactly ${count} UNIQUE and NON-REPEATED interview questions for a ${difficulty} level candidate in the ${domain} domain ${company ? `for ${company}` : ''}.
 
-Focus on:
-- Skills mentioned in the text
-- Projects and accomplishments
-- Relative experience
+Strict Rules:
+- Each question MUST be different from the others.
+- Avoid generic or commonly asked questions.
+- Cover diverse topics (concepts, coding, debugging, system design, real-world scenarios).
+- Do NOT repeat topics or patterns.
+- Ensure questions feel like a real 30-minute interview progression.
 
-Output Requirements:
-- Return ONLY a JSON array of objects.
-- Keys: "topic", "content", "answer", "difficulty", "type".
-- "type" should be "TECHNICAL".
+Avoid questions similar to:
+${JSON.stringify(previousQuestions)}
 
-JSON Format:
-[
-    {
-        "topic": "Topic name",
-        "content": "Question text",
-        "answer": "Ideal model answer",
-        "difficulty": "${difficulty}",
-        "type": "TECHNICAL"
-    }
-]`;
+Output:
+Return ONLY a JSON array with:
+{
+  "topic": "",
+  "content": "",
+  "answer": ""
+}
+        ]`;
+
 
             const result = await model.generateContent(prompt);
             const response = await result.response;

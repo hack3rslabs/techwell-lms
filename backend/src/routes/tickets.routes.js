@@ -68,14 +68,14 @@ router.post('/', authenticate, upload.single('attachment'), async (req, res, nex
  * @desc    Get all tickets (User gets own, Admin gets all)
  * @access  Private
  */
-router.get('/', authenticate, checkPermission('VIEW_TICKETS'), async (req, res, next) => {
+router.get('/', authenticate, checkPermission('TICKETS'), async (req, res, next) => {
     try {
         const { status, priority, category } = req.query;
         let where = {};
 
         // If not admin or support staff, restrict to own tickets
         // We check for MANAGE_TICKETS permission to allow viewing all tickets
-        const canManageTickets = req.user.permissions.includes('MANAGE_TICKETS') || req.user.permissions.includes('ALL');
+        const canManageTickets = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('MANAGE_TICKETS') || req.user.permissions.includes('ALL');
 
         if (!canManageTickets) {
             where.userId = req.user.id;
@@ -105,7 +105,7 @@ router.get('/', authenticate, checkPermission('VIEW_TICKETS'), async (req, res, 
  * @desc    Get ticket details with messages
  * @access  Private
  */
-router.get('/:id', authenticate, checkPermission('VIEW_TICKETS'), async (req, res, next) => {
+router.get('/:id', authenticate, checkPermission('TICKETS'), async (req, res, next) => {
     try {
         const ticket = await prisma.ticket.findUnique({
             where: { id: req.params.id },
@@ -118,7 +118,7 @@ router.get('/:id', authenticate, checkPermission('VIEW_TICKETS'), async (req, re
         if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
 
         // Access check
-        const canManageTickets = req.user.permissions.includes('MANAGE_TICKETS') || req.user.permissions.includes('ALL');
+        const canManageTickets = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('MANAGE_TICKETS') || req.user.permissions.includes('ALL');
 
         if (!canManageTickets && ticket.userId !== req.user.id) {
             return res.status(403).json({ error: 'Access denied' });
@@ -135,13 +135,13 @@ router.get('/:id', authenticate, checkPermission('VIEW_TICKETS'), async (req, re
  * @desc    Add a reply to a ticket
  * @access  Private
  */
-router.post('/:id/reply', authenticate, checkPermission('VIEW_TICKETS'), upload.single('attachment'), async (req, res, next) => {
+router.post('/:id/reply', authenticate, checkPermission('TICKETS'), upload.single('attachment'), async (req, res, next) => {
     try {
         const { message } = req.body;
         const attachmentUrl = req.file ? `/uploads/tickets/${req.file.filename}` : null;
 
         // Check if user is staff/admin based on permissions
-        const isStaff = req.user.permissions.includes('MANAGE_TICKETS') || req.user.permissions.includes('ALL');
+        const isStaff = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('MANAGE_TICKETS') || req.user.permissions.includes('ALL');
 
         // Verify ticket exists
         const ticket = await prisma.ticket.findUnique({ where: { id: req.params.id } });
@@ -190,7 +190,7 @@ router.post('/:id/reply', authenticate, checkPermission('VIEW_TICKETS'), upload.
  * @desc    Update ticket status (Admin/Staff only)
  * @access  Private/Admin/Manager
  */
-router.put('/:id/status', authenticate, checkPermission('MANAGE_TICKETS'), async (req, res, next) => {
+router.put('/:id/status', authenticate, checkPermission('TICKETS'), async (req, res, next) => {
     try {
         const { status, priority } = req.body;
         const ticket = await prisma.ticket.update({
@@ -208,7 +208,7 @@ router.put('/:id/status', authenticate, checkPermission('MANAGE_TICKETS'), async
  * @desc    Assign ticket to staff
  * @access  Private/Admin/Manager
  */
-router.patch('/:id/assign', authenticate, checkPermission('MANAGE_TICKETS'), async (req, res, next) => {
+router.patch('/:id/assign', authenticate, checkPermission('TICKETS'), async (req, res, next) => {
     try {
         const { assignedTo, internalNotes } = req.body;
 

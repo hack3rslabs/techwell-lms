@@ -78,7 +78,7 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
  * @desc    Get courses pending review or in specific status
  * @access  Private/Admin
  */
-router.get('/courses/pending', authenticate, checkPermission('VIEW_SYSTEM_LOGS'), async (req, res, next) => {
+router.get('/courses/pending', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { status = 'IN_REVIEW' } = req.query;
 
@@ -107,7 +107,7 @@ router.get('/courses/pending', authenticate, checkPermission('VIEW_SYSTEM_LOGS')
  * @desc    Approve a course and set to PUBLISHED
  * @access  Private/Admin
  */
-router.patch('/courses/:id/approve', authenticate, checkPermission('MANAGE_SYSTEM_LOGS'), async (req, res, next) => {
+router.patch('/courses/:id/approve', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
@@ -133,7 +133,7 @@ router.patch('/courses/:id/approve', authenticate, checkPermission('MANAGE_SYSTE
  * @desc    Reject a course and send it back to DRAFT
  * @access  Private/Admin
  */
-router.patch('/courses/:id/reject', authenticate, checkPermission('MANAGE_SYSTEM_LOGS'), async (req, res, next) => {
+router.patch('/courses/:id/reject', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
@@ -161,7 +161,7 @@ router.patch('/courses/:id/reject', authenticate, checkPermission('MANAGE_SYSTEM
  * @desc    Archive a published course
  * @access  Private/Admin
  */
-router.patch('/courses/:id/archive', authenticate, checkPermission('MANAGE_SYSTEM_LOGS'), async (req, res, next) => {
+router.patch('/courses/:id/archive', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -184,7 +184,7 @@ router.patch('/courses/:id/archive', authenticate, checkPermission('MANAGE_SYSTE
  * @desc    Create a Staff or Institute Admin user with specific permissions
  * @access  Private/Admin
  */
-router.post('/staff', authenticate, checkPermission('MANAGE_SYSTEM_LOGS'), async (req, res, next) => {
+router.post('/staff', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { name, email, password, role, permissions, phone } = req.body;
 
@@ -385,7 +385,7 @@ router.get('/students', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF')
  * @desc    Get all system audit logs across the entire platform
  * @access  Private/Admin
  */
-router.get('/audit-logs', authenticate, checkPermission('VIEW_SYSTEM_LOGS'), async (req, res, next) => {
+router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { search, action, entityType, page = 1, limit = 50 } = req.query;
         const skip = (Number(page) - 1) * Number(limit);

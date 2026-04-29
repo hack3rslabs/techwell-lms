@@ -27,13 +27,25 @@ export const getFullImageUrl = (path?: string | null): string => {
     }
 
     // Remove /api if present at the end
-    const baseUrl = apiUrl.replace(/\/api\/?$/, "");
+    const baseUrl = apiUrl.replace(/\/api\/?$/, "").replace(/\/+$/, "");
 
     // Ensure path starts with a slash
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
     // Join baseUrl and path, ensuring no double slashes except for protocol
-    const fullUrl = `${baseUrl}${normalizedPath}`.replace(/([^:]\/)\/+/g, "$1");
+    const fullUrl = `${baseUrl}${normalizedPath}`;
+
+    // Diagnostic logging in development
+    if (process.env.NODE_ENV === 'development') {
+        // Only log once per path to avoid spamming the console
+        if (typeof window !== 'undefined') {
+            const cacheKey = `img_log_${path}`;
+            if (!(window as any)[cacheKey]) {
+                console.log(`[IMAGE DEBUG] Path: ${path} -> Full URL: ${fullUrl}`);
+                (window as any)[cacheKey] = true;
+            }
+        }
+    }
 
     return fullUrl;
 };

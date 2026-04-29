@@ -373,8 +373,29 @@ export default function CourseDetailClient() {
         : (course.discountPrice || course.price);
 
     return (
-        <div className="container py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="container py-6">
+            {/* Course Banner */}
+            <div className="relative w-full aspect-[12/4] mb-10 rounded-3xl overflow-hidden shadow-2xl shadow-primary/10 group bg-muted flex items-center justify-center">
+                <GraduationCap className="h-24 w-24 text-primary/10 absolute z-0" />
+                {course.bannerUrl && (
+                    <Image
+                        src={getFullImageUrl(course.bannerUrl)}
+                        alt={`${course.title} Banner`}
+                        fill
+                        unoptimized
+                        className="object-cover transition-all duration-700 group-hover:scale-[1.03] z-10"
+                        priority
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            console.error(`[BANNER ERROR] Failed to load: ${target.src}`);
+                            target.style.opacity = '0';
+                        }}
+                    />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 z-20 pointer-events-none" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 <div className="lg:col-span-2">
                     <div className="mb-8">
                         <div className="flex items-center gap-3 mb-4">
@@ -534,24 +555,22 @@ export default function CourseDetailClient() {
 
                 <div className="lg:col-span-1">
                     <Card className="sticky top-24">
-                        <div className="h-40 relative bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-t-lg flex items-center justify-center overflow-hidden">
-                            {course.thumbnail ? (
+                        <div className="h-40 relative bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-t-lg flex items-center justify-center overflow-hidden">
+                            <GraduationCap className="h-16 w-16 text-primary/20 absolute z-0" />
+                            {course.thumbnail && (
                                 <Image
                                     src={getFullImageUrl(course.thumbnail)}
                                     alt={course.title}
-                                    width={400}
-                                    height={160}
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    unoptimized
+                                    className="w-full h-full object-cover z-10 transition-opacity duration-300"
                                     onError={(e) => {
                                         const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                        target.parentElement?.classList.remove('overflow-hidden');
-                                        const icon = target.nextElementSibling as HTMLElement;
-                                        if (icon) icon.style.display = 'block';
+                                        console.error(`[THUMBNAIL ERROR] Failed to load: ${target.src}`);
+                                        target.style.opacity = '0';
                                     }}
                                 />
-                            ) : null}
-                            <GraduationCap className={`h-16 w-16 text-primary/50 ${course.thumbnail ? 'hidden' : ''}`} />
+                            )}
                         </div>
                         <CardContent className="pt-4">
                             {course.hasInterviewPrep && !course.isEnrolled && (

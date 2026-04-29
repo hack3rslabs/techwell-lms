@@ -11,7 +11,8 @@ interface User {
     email: string;
     name: string;
     role: string;
-    permissions?: string[];
+    rolePermissions?: Record<string, { canRead: boolean; canWrite: boolean; isDisabled: boolean }>;
+    systemRole?: { name: string };
     avatar?: string;
     dob?: string;
     qualification?: string;
@@ -31,6 +32,7 @@ interface AuthContextType {
     logout: () => void;
     refreshUser: () => Promise<void>;
     hasPermission: (permission: string) => boolean;
+    canWrite: (permission: string) => boolean;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -129,10 +131,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const hasPermission = (permission: string) => {
+    const hasPermission = (featureCode: string) => {
         if (!user) return false;
-        if (user.role === 'SUPER_ADMIN') return true;
-        return user.permissions?.includes(permission) || false;
+        
+        // Super Admins and Admins have all permissions
+        if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') return true;
+        
+        const perms = user.rolePermissions?.[featureCode];
+        if (!perms || perms.isDisabled) return false;
+        
+        return perms.canRead || perms.canWrite;
+    };
+
+    const canWrite = (featureCode: string) => {
+        if (!user) return false;
+        
+        // Super Admins and Admins have all permissions
+        if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') return true;
+        
+        const perms = user.rolePermissions?.[featureCode];
+        return !!(perms?.canWrite && !perms.isDisabled);
     };
 
     return (
@@ -148,6 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 logout,
                 refreshUser,
                 hasPermission,
+                canWrite,
             }}
         >
             {children}

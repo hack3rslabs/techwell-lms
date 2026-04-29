@@ -125,7 +125,6 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
                 window.removeEventListener(event, handleActivity);
             });
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
 
     return { isWarning, remainingSeconds, resetTimer };

@@ -6,8 +6,11 @@ import api from '@/lib/api'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Plus, BookOpen, Clock, Trash2 } from 'lucide-react'
+import { Loader2, Plus, BookOpen, Clock, Trash2, GraduationCap } from 'lucide-react'
 import { courseApi } from '@/lib/api'
+import { useAuth } from '@/lib/auth-context'
+import Image from 'next/image'
+import { getFullImageUrl } from '@/lib/image-utils'
 
 interface Course {
     id: string
@@ -16,11 +19,14 @@ interface Course {
     isPublished: boolean
     difficulty: string
     price: number
+    bannerUrl?: string
+    thumbnail?: string
     _count?: { enrollments: number; modules: number }
 }
 
 export default function AdminCoursesPage() {
     const router = useRouter()
+    const { canWrite } = useAuth()
     const [courses, setCourses] = React.useState<Course[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [isDeleting, setIsDeleting] = React.useState<string | null>(null)
@@ -82,8 +88,24 @@ export default function AdminCoursesPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {courses.map((course) => (
-                        <Card key={course.id} className="hover:shadow-lg transition-all group overflow-hidden">
-                            <div className="h-2 bg-primary/10 group-hover:bg-primary transition-colors" />
+                        <Card key={course.id} className="hover:shadow-lg transition-all group overflow-hidden flex flex-col">
+                            <div className="h-32 bg-primary/10 relative overflow-hidden flex items-center justify-center">
+                                {(course.bannerUrl || course.thumbnail) ? (
+                                    <Image
+                                        src={getFullImageUrl(course.bannerUrl)}
+                                        alt={course.title}
+                                        fill
+                                        className="object-cover transition-transform group-hover:scale-105"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = "none";
+                                        }}
+                                    />
+                                ) : (
+                                    <GraduationCap className="h-8 w-8 text-primary/30" />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                            </div>
                             <CardContent className="p-6">
                                 <div className="flex justify-between items-start mb-4">
                                     <Badge variant="outline" className="mb-2">
@@ -113,21 +135,23 @@ export default function AdminCoursesPage() {
                                         {course.price === 0 ? 'Free' : `₹${course.price}`}
                                     </span>
                                     <div className="flex gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8"
-                                            onClick={() => handleDelete(course.id, course.title)}
-                                            disabled={isDeleting === course.id}
-                                        >
-                                            {isDeleting === course.id ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                <Trash2 className="h-4 w-4" />
-                                            )}
-                                        </Button>
+                                        {canWrite('COURSES') && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8"
+                                                onClick={() => handleDelete(course.id, course.title)}
+                                                disabled={isDeleting === course.id}
+                                            >
+                                                {isDeleting === course.id ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                        )}
                                         <Button variant="secondary" size="sm" onClick={() => router.push(`/admin/courses/${course.id}/edit`)}>
-                                            Manage
+                                            {canWrite('COURSES') ? 'Manage' : 'View Details'}
                                         </Button>
                                     </div>
                                 </div>

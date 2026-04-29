@@ -99,6 +99,7 @@ export interface CoursePayload {
     difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
     courseCode?: string;
     bannerUrl?: string;
+    thumbnail?: string;
     jobRoles?: string[];
     courseType?: 'RECORDED' | 'LIVE' | 'HYBRID';
     hasInterviewPrep?: boolean;
@@ -358,6 +359,8 @@ export const libraryApi = {
     toggleBookmark: (resourceId: string) => api.post('/library/bookmarks', { resourceId }),
     getResources: (params?: { category?: string; domain?: string; search?: string }) => api.get('/library/resources', { params }),
     getCategories: () => api.get('/library/categories'),
+    updateResource: (id: string, data: any) => api.put(`/library/resources/${id}`, data),
+    deleteResource: (id: string) => api.delete(`/library/resources/${id}`),
 };
 
 // Students API (Admin)
@@ -367,12 +370,19 @@ export const studentsApi = {
 };
 
 export const rbacApi = {
+    getFeatures: () => api.get('/rbac/features'),
     getRoles: () => api.get('/rbac/roles'),
-    getPermissions: () => api.get('/rbac/permissions'),
-    createRole: (data: { name: string; description?: string; permissions: string[] }) => api.post('/rbac/roles', data),
-    updateRole: (id: string, data: { name?: string; description?: string; permissions: string[] }) => api.put(`/rbac/roles/${id}`, data),
+    createRole: (data: { 
+        name: string; 
+        description?: string; 
+        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }> 
+    }) => api.post('/rbac/roles', data),
+    updateRole: (id: string, data: { 
+        name?: string; 
+        description?: string; 
+        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }> 
+    }) => api.put(`/rbac/roles/${id}`, data),
     deleteRole: (id: string) => api.delete(`/rbac/roles/${id}`),
-    assignRole: (userId: string, roleId: string) => api.post('/rbac/assign', { userId, roleId }),
 };
 
 // Course Category API

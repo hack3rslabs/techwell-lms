@@ -52,7 +52,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
         }
 
         // Only allow users with MANAGE_COURSES permission or the creator (instructor) to delete
-        const hasPermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || req.user.permissions?.includes('MANAGE_COURSES') || req.user.permissions?.includes('ALL');
+        const hasPermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || req.user.rolePermissions?.COURSES?.canWrite || req.user.permissions?.includes('ALL');
         if (!hasPermission && course.instructorId !== userId) {
             console.log(`[DEBUG] Access denied for user: ${userId} role: ${userRole}`);
             return res.status(403).json({ error: 'Access denied. You do not have permission to delete this course.' });
@@ -253,8 +253,8 @@ router.patch('/:id/status', authenticate, async (req, res, next) => {
         
         if (!course) return res.status(404).json({ error: 'Course not found' });
 
-        const hasManagePermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || req.user.permissions?.includes('MANAGE_COURSES') || req.user.permissions?.includes('ALL');
-        const hasPublishPermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || req.user.permissions?.includes('PUBLISH_COURSE') || req.user.permissions?.includes('ALL');
+        const hasManagePermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || req.user.rolePermissions?.COURSES?.canWrite || req.user.permissions?.includes('ALL');
+        const hasPublishPermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || req.user.rolePermissions?.COURSES?.canWrite || req.user.permissions?.includes('ALL');
         const isOwner = course.instructorId === req.user.id;
 
         // Needs Manage or Publish permission, OR be the owner to request review/publish
@@ -294,11 +294,13 @@ router.patch('/:id/status', authenticate, async (req, res, next) => {
  * @access  Private/Admin
  */
 router.post('/', authenticate, async (req, res, next) => {
-    const canCreate = ['SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'].includes(req.user.role) || req.user.permissions?.includes('MANAGE_COURSES') || req.user.permissions?.includes('ALL');
+    const canCreate = ['SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'].includes(req.user.role) || req.user.rolePermissions?.COURSES?.canWrite || req.user.permissions?.includes('ALL');
     if (!canCreate) {
         return res.status(403).json({ error: 'Missing permission: MANAGE_COURSES' });
     }
     try {
+        console.log('[DEBUG] POST /api/courses - Body received:', JSON.stringify(req.body, null, 2));
+
         // Pre-process empty strings to null/undefined
         const body = { ...req.body };
         ['courseCode', 'bannerUrl', 'thumbnail'].forEach(field => {
@@ -322,12 +324,16 @@ router.post('/', authenticate, async (req, res, next) => {
             }
         });
 
+        console.log('[DEBUG] Prisma create data:', JSON.stringify(dataToCreate, null, 2));
+
         const course = await prisma.course.create({
             data: dataToCreate
         });
 
+        console.log('[DEBUG] Course created with ID:', course.id);
         res.status(201).json({ message: 'Course created', course });
     } catch (error) {
+        console.error('[DEBUG] Course creation failed:', error.message);
         next(error);
     }
 });
@@ -339,11 +345,13 @@ router.post('/', authenticate, async (req, res, next) => {
  */
 router.put('/:id', authenticate, async (req, res, next) => {
     try {
+        console.log(`[DEBUG] PUT /api/courses/${req.params.id} - Body received:`, JSON.stringify(req.body, null, 2));
+
         const course = await prisma.course.findUnique({ where: { id: req.params.id } });
         if (!course) return res.status(404).json({ error: 'Course not found' });
 
         const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
-                          req.user.permissions?.includes('MANAGE_COURSES') || 
+                          req.user.rolePermissions?.COURSES?.canWrite || 
                           req.user.permissions?.includes('ALL') ||
                           course.instructorId === req.user.id;
         
@@ -359,6 +367,8 @@ router.put('/:id', authenticate, async (req, res, next) => {
         const updateSchema = createCourseSchema.partial();
         const validatedData = updateSchema.parse(body);
 
+        console.log(`[DEBUG] Prisma update data:`, JSON.stringify(validatedData, null, 2));
+
         const updatedCourse = await prisma.course.update({
             where: { id: req.params.id },
             data: {
@@ -368,8 +378,10 @@ router.put('/:id', authenticate, async (req, res, next) => {
             }
         });
 
+        console.log('[DEBUG] Course updated with ID:', updatedCourse.id);
         res.json({ message: 'Course updated', course: updatedCourse });
     } catch (error) {
+        console.error('[DEBUG] Course update failed:', error.message);
         next(error);
     }
 });
@@ -505,7 +517,7 @@ const { generateCourseStructure } = require('../services/ai-course.service');
  * @desc    Generate a course structure using JSON-based Gemini AI
  * @access  Private/Admin
  */
-router.post('/generate', authenticate, checkPermission('MANAGE_COURSES'), async (req, res, next) => {
+router.post('/generate', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const { topic, difficulty } = req.body;
         if (!topic) return res.status(400).json({ error: 'Topic is required' });

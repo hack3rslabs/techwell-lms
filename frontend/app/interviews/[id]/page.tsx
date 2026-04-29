@@ -83,12 +83,13 @@ interface AvatarConfig {
     role: string
     color: string
     icon: React.ElementType
+    imageUrl?: string // Optional real image URL
 }
 
 const AVATARS: Record<string, AvatarConfig> = {
-    'tech-1': { name: "Alex Chen", role: "Technical Lead", color: "from-blue-500/20 to-cyan-500/20", icon: Bot },
-    'tech-2': { name: "Sarah Johnson", role: "Senior Engineer", color: "from-indigo-500/20 to-blue-500/20", icon: Bot },
-    'hr-1': { name: "Emma Williams", role: "HR Manager", color: "from-purple-500/20 to-pink-500/20", icon: Briefcase },
+    'tech-1': { name: "suman singh", role: "Technical Lead", color: "from-blue-500/20 to-cyan-500/20", icon: Bot, imageUrl: "https://assets.isu.pub/document-structure/240312171651-9775bf30331c563f0c3e285d730b03c0/v1/1ffb01b0184d05f1f53084337d8047fb.jpeg" },
+    'tech-2': { name: "Sarah Johnson", role: "Senior Engineer", color: "from-indigo-500/20 to-blue-500/20", icon: Bot, imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" },
+    'hr-1': { name: "Emma Williams", role: "HR Manager", color: "from-purple-500/20 to-pink-500/20", icon: Briefcase, imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop" },
     'hr-2': { name: "David Smith", role: "Talent Acquisition", color: "from-slate-500/20 to-gray-500/20", icon: Briefcase },
     // Fallbacks
     'Technical': { name: "AI Interviewer", role: "Technical", color: "from-blue-500/20 to-cyan-500/20", icon: Bot },
@@ -113,16 +114,16 @@ function SuccessOverlay({ onRedirect, onDashboard }: { onRedirect: () => void, o
                     <h2 className="text-3xl font-bold tracking-tight">Interview Completed!</h2>
                     <p className="text-muted-foreground">Great job! We are generating your performance report now.</p>
                 </div>
-                
+
                 <div className="flex flex-col gap-3 pt-4">
-                    <Button 
+                    <Button
                         onClick={onRedirect}
                         className="w-full h-12 rounded-xl font-bold"
                     >
                         View Performance Report
                         <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
-                    <Button 
+                    <Button
                         variant="outline"
                         onClick={onDashboard}
                         className="w-full h-12 rounded-xl font-bold"
@@ -152,6 +153,8 @@ export default function InterviewRoomPage() {
     const [stream, setStream] = React.useState<MediaStream | null>(null)
     const [isVideoOn, setIsVideoOn] = React.useState(true)
     const [isMicOn, setIsMicOn] = React.useState(true)
+    const [isVoiceEnabled, setIsVoiceEnabled] = React.useState(true)
+    const [isAudioMonitoring, setIsAudioMonitoring] = React.useState(false)
 
     // AI State
     const [currentQuestion, setCurrentQuestion] = React.useState<Question | null>(null)
@@ -171,7 +174,6 @@ export default function InterviewRoomPage() {
     const [isTabActive, setIsTabActive] = React.useState(true)
     const [isStarted, setIsStarted] = React.useState(false)
     const [isFullscreen, setIsFullscreen] = React.useState(false)
-    const [isVoiceEnabled, setIsVoiceEnabled] = React.useState(true)
 
     // Fullscreen Toggle
     const toggleFullscreen = React.useCallback(() => {
@@ -252,13 +254,51 @@ export default function InterviewRoomPage() {
     React.useEffect(() => {
         const fetchInterview = async () => {
             try {
+                console.log("[InterviewRoom] Fetching interview details...");
                 const res = await interviewApi.getById(params.id as string)
-                setInterview(res.data.interview)
-                // Initialize timer (default 30 mins if missing)
-                if (res.data.interview.duration) {
-                    setTimeLeft(res.data.interview.duration * 60)
+                const interviewData = res.data.interview
+                setInterview(interviewData)
+
+                // 1. Check for existing unanswered question
+                const questions = interviewData.questions || [];
+                const lastUnanswered = questions.find((q: any) => !q.response);
+                
+                if (lastUnanswered) {
+                    console.log("[InterviewRoom] Found existing unanswered question:", lastUnanswered.id);
+                    setCurrentQuestion({
+                        id: lastUnanswered.id,
+                        question: lastUnanswered.question,
+                        type: lastUnanswered.type,
+                        avatarRole: lastUnanswered.avatarRole || (lastUnanswered.avatarId?.includes('hr') ? 'HR' : 'Technical')
+                    });
+                    setQuestionCount(questions.length);
+                    
+                    // Add to chat if not already there
+                    setMessages(prev => {
+                        const exists = prev.some(m => m.content === lastUnanswered.question);
+                        if (!exists) {
+                            return [...prev, {
+                                id: 'init-' + lastUnanswered.id,
+                                role: 'interviewer',
+                                content: lastUnanswered.question,
+                                timestamp: new Date()
+                            }];
+                        }
+                        return prev;
+                    });
+                }
+
+                // 2. Auto-start if already in progress
+                if (interviewData.status === 'IN_PROGRESS' || interviewData.status === 'STARTED') {
+                    console.log("[InterviewRoom] Interview already in progress, auto-starting UI...");
+                    setIsStarted(true)
+                }
+
+                // Initialize timer
+                if (interviewData.duration) {
+                    setTimeLeft(interviewData.duration * 60)
                 } else {
-                    setTimeLeft(30 * 60)
+                    setTimeLeft(60 * 60)
                 }
             } catch (error) {
                 console.error('Failed to fetch interview:', error)
@@ -346,7 +386,7 @@ export default function InterviewRoomPage() {
         } catch (error) {
             console.error('Failed to complete interview:', error)
         }
-        
+
         // Ensure ALL tracks are stopped and disabled
         if (stream) {
             stream.getTracks().forEach(track => {
@@ -358,7 +398,7 @@ export default function InterviewRoomPage() {
         }
         setIsVideoOn(false);
         setIsMicOn(false);
-        
+
         // Stop recognition if active
         if (isRecording) {
             recognitionRef.current?.stop();
@@ -385,9 +425,13 @@ export default function InterviewRoomPage() {
         }
     }, [isCompleted, timeLeft])
 
+    const [fetchRetryCount, setFetchRetryCount] = React.useState(0);
+
     const fetchNextQuestion = async () => {
         try {
             setIsAIProcessing(true);
+            console.log(`[InterviewRoom] Fetching next question (Attempt ${fetchRetryCount + 1})...`);
+            
             const res = await interviewApi.nextQuestion(params.id as string);
 
             if (res.data.completed) {
@@ -398,8 +442,7 @@ export default function InterviewRoomPage() {
                     content: "Thank you! The interview is complete. Generating your performance report...",
                     timestamp: new Date()
                 }]);
-                
-                // Cleanup camera on auto-completion
+
                 if (stream) {
                     stream.getTracks().forEach(track => {
                         track.enabled = false;
@@ -410,7 +453,6 @@ export default function InterviewRoomPage() {
                 setIsVideoOn(false);
                 setIsMicOn(false);
 
-                // Show success overlay after a brief delay for the message to be read
                 setTimeout(() => setShowSuccess(true), 2000);
                 return;
             }
@@ -426,6 +468,7 @@ export default function InterviewRoomPage() {
             });
 
             setQuestionCount(prev => prev + 1);
+            setFetchRetryCount(0); // Reset on success
 
             // Add to chat
             setMessages(prev => [...prev, {
@@ -437,13 +480,22 @@ export default function InterviewRoomPage() {
 
             // Speak the question
             speakText(questionData.question);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to fetch next question:", error);
-            toast({
-                variant: "destructive",
-                title: "AI Connection Error",
-                description: "Failed to load the next question. Please check your connection or try again."
-            });
+            
+            const errorMessage = error.response?.data?.error || error.message || "Unknown error";
+            
+            if (fetchRetryCount < 2) {
+                console.log("[InterviewRoom] Retrying fetch...");
+                setFetchRetryCount(prev => prev + 1);
+                setTimeout(fetchNextQuestion, 2000);
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "AI Connection Error",
+                    description: `Failed after 3 attempts: ${errorMessage}. Please check your internet or reload.`
+                });
+            }
         } finally {
             setIsAIProcessing(false);
         }
@@ -471,19 +523,36 @@ export default function InterviewRoomPage() {
                 recognitionRef.current.interimResults = true
 
                 recognitionRef.current.onresult = (event: ISpeechRecognitionEvent) => {
-                    let transcript = ''
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        transcript += event.results[i][0].transcript
+                    let fullTranscript = ''
+                    for (let i = 0; i < event.results.length; i++) {
+                        fullTranscript += event.results[i][0].transcript
                     }
-                    setUserResponse(transcript)
-                    analyzeSpeech(transcript)
+                    setUserResponse(fullTranscript)
+                    analyzeSpeech(fullTranscript)
                 }
-
-
 
                 recognitionRef.current.onerror = (event: ISpeechRecognitionErrorEvent) => {
                     console.error('Speech recognition error:', event.error)
                     setIsRecording(false)
+
+                    let errorMessage = "Speech recognition failed."
+                    let errorTitle = "Voice Error"
+
+                    if (event.error === 'network') {
+                        errorTitle = "Network Error"
+                        errorMessage = "Speech service is unavailable. Please check your connection or type your answer."
+                    } else if (event.error === 'not-allowed') {
+                        errorTitle = "Permission Denied"
+                        errorMessage = "Microphone access was denied. Please check browser permissions."
+                    } else if (event.error === 'no-speech') {
+                        return
+                    }
+
+                    toast({
+                        variant: "destructive",
+                        title: errorTitle,
+                        description: errorMessage
+                    })
                 }
 
                 recognitionRef.current.onend = () => {
@@ -502,11 +571,21 @@ export default function InterviewRoomPage() {
                 setIsMicOn(true)
             }
             setUserResponse('')
-            recognitionRef.current?.start()
-            setIsRecording(true)
-            setSpeechStartTime(Date.now())
-            setWpm(0)
-            setFillerCount(0)
+            try {
+                recognitionRef.current?.start()
+                setIsRecording(true)
+                setSpeechStartTime(Date.now())
+                setWpm(0)
+                setFillerCount(0)
+            } catch (error) {
+                console.error("Failed to start speech recognition:", error)
+                toast({
+                    variant: "destructive",
+                    title: "Speech Error",
+                    description: "Could not start speech recognition. You can type your answer instead."
+                })
+                setIsRecording(false)
+            }
         }
     }
 
@@ -523,7 +602,7 @@ export default function InterviewRoomPage() {
 
             // Get voices
             let voices = window.speechSynthesis.getVoices()
-            
+
             // If voices aren't loaded, wait for them
             if (voices.length === 0) {
                 const voiceRetry = setInterval(() => {
@@ -635,14 +714,32 @@ export default function InterviewRoomPage() {
 
         // Submit to AI
         try {
-            await interviewApi.submitResponse(params.id as string, {
+            const res = await interviewApi.submitResponse(params.id as string, {
                 questionId: currentQuestion.id,
                 answer: finalResponse,
                 code: currentQuestion.type === 'CODING' ? codeResponse : undefined
             });
 
-            // Always wait for next question (backend decides if it's the last one)
-            setNextQuestionTimer(5) // Short gap before next question
+            const briefFeedback = res.data.response?.briefFeedback;
+
+            if (briefFeedback) {
+                // Add feedback message
+                setMessages(prev => [...prev, {
+                    id: 'fb-' + Date.now(),
+                    role: 'interviewer',
+                    content: briefFeedback,
+                    timestamp: new Date()
+                }]);
+
+                // Speak the feedback
+                speakText(briefFeedback);
+
+                // Wait slightly longer since we're speaking feedback
+                setNextQuestionTimer(8)
+            } else {
+                setNextQuestionTimer(5)
+            }
+
             setIsWaitingNext(true)
 
         } catch (error) {
@@ -687,8 +784,8 @@ export default function InterviewRoomPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            {showSuccess && <SuccessOverlay 
-                onRedirect={() => router.push(`/interviews/${params.id}/report`)} 
+            {showSuccess && <SuccessOverlay
+                onRedirect={() => router.push(`/interviews/${params.id}/report`)}
                 onDashboard={() => router.push('/dashboard')}
             />}
 
@@ -753,18 +850,18 @@ export default function InterviewRoomPage() {
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1 bg-background/50 p-1 rounded-xl border group">
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
                             onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
                             title={isVoiceEnabled ? "Mute AI Voice" : "Unmute AI Voice"}
                         >
                             {isVoiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4 text-red-500" />}
                         </Button>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
                             onClick={toggleFullscreen}
                             title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
@@ -793,298 +890,244 @@ export default function InterviewRoomPage() {
                 </div>
             </div>
 
-            <div className={`flex h-[calc(100vh-3.5rem)] overflow-hidden transition-all duration-500 ${isFullscreen ? 'max-w-[1600px] mx-auto' : ''}`}>
-
-                {/* Video Section */}
-                <div className="flex-1 p-4 flex flex-col gap-4 bg-muted/10 relative">
-                    {/* CODING MODE LAYOUT */}
-                    {currentQuestion?.type === 'CODING' ? (
-                        <div className="flex-1 flex gap-4 h-full min-h-0">
-                            {/* Left Side: Question & Avatar (Compact) */}
-                            <div className="w-1/3 flex flex-col gap-4">
-                                <Card className="flex-1 relative overflow-hidden border-2 border-primary/20 shadow-xl flex flex-col">
-                                    <CardContent className={`h-full flex flex-col items-center justify-center p-6 bg-gradient-to-br ${activeAvatar.color}`}>
-                                        <div className="relative mb-6">
-                                            <div className="h-24 w-24 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center shadow-2xl">
-                                                <AvatarIcon className="h-12 w-12 text-primary" />
-                                            </div>
-                                            {isAIProcessing && (
-                                                <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-primary rounded-full flex items-center justify-center animate-bounce">
-                                                    <div className="h-2 w-2 bg-primary-foreground rounded-full animate-ping" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="z-10 w-full px-4 text-center">
-                                            <div className="bg-background/80 backdrop-blur-md p-4 rounded-xl border border-primary/20 shadow-lg mb-4">
-                                                <h2 className="font-bold text-base leading-tight">
-                                                    {currentQuestion.question}
-                                                </h2>
-                                            </div>
-                                            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-                                                Coding Challenge
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            {/* Right Side: Code Editor */}
-                            <div className="flex-1 flex flex-col bg-[#1e1e1e] rounded-xl border border-border/50 shadow-2xl overflow-hidden">
-                                <div className="bg-[#2d2d2d] px-4 py-2 flex items-center justify-between border-b border-white/10 text-xs text-gray-400 font-mono">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-blue-400">JS</span>
-                                        <span>solution.js</span>
+            <div className={`flex flex-col md:flex-row h-[calc(100vh-3.5rem)] overflow-hidden transition-all duration-500 bg-background ${isFullscreen ? 'max-w-[1600px] mx-auto' : ''}`}>
+                
+                {/* STAGE: Video & Controls */}
+                <div className="flex-1 flex flex-col min-w-0 bg-muted/5">
+                    <div className="flex-1 relative p-6 flex items-center justify-center overflow-hidden">
+                        {currentQuestion?.type === 'CODING' ? (
+                            <div className="w-full h-full flex flex-col gap-4">
+                                {/* Compact Avatar/Question for Coding Mode */}
+                                <div className="flex items-center gap-4 bg-background/50 backdrop-blur-md p-4 rounded-2xl border border-primary/20">
+                                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                                        <AvatarIcon className="h-6 w-6 text-primary" />
                                     </div>
-                                    <span>Auto-save enabled</span>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold leading-tight line-clamp-2">{currentQuestion.question}</p>
+                                    </div>
                                 </div>
-                                <textarea
-                                    value={codeResponse}
-                                    onChange={(e) => setCodeResponse(e.target.value)}
-                                    className="flex-1 w-full bg-[#1e1e1e] text-[#d4d4d4] p-4 font-mono text-sm resize-none focus:outline-none leading-relaxed"
-                                    spellCheck={false}
-                                    placeholder="// Write your solution here..."
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        /* STANDARD MODE LAYOUT */
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 h-full min-h-0">
-                            {/* AI Interviewer - Dynamic Avatar */}
-                            <Card className={`relative overflow-hidden border-2 transition-all duration-500 flex flex-col ${isAIProcessing ? 'border-primary/50' : 'border-transparent shadow-xl'}`}>
-                                <CardContent className={`h-full flex flex-col items-center justify-center p-8 bg-gradient-to-br ${activeAvatar.color} relative`}>
-                                    <div className="absolute top-4 left-4 bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full border border-primary/20 z-20">
+                                
+                                {/* Code Editor */}
+                                <div className="flex-1 flex flex-col bg-[#1e1e1e] rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
+                                    <div className="bg-[#2d2d2d] px-4 py-2 flex items-center justify-between border-b border-white/10 text-xs text-gray-400 font-mono">
                                         <div className="flex items-center gap-2">
-                                            <Bot className="h-3 w-3 text-primary" />
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Interviewer</span>
+                                            <span className="text-blue-400">JS</span>
+                                            <span>solution.js</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                                            <span>Live Editor</span>
                                         </div>
                                     </div>
-
-                                    <div className="text-center space-y-6 mb-12">
-                                        <div className="h-32 w-32 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center mx-auto shadow-2xl animate-in zoom-in duration-500">
-                                            {activeAvatar && <AvatarIcon className="h-16 w-16 text-primary" />}
-                                        </div>
-                                        <div className="space-y-1">
-                                            <h2 className="font-bold text-2xl tracking-tight">{activeAvatar.name}</h2>
-                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">{activeAvatar.role}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Prominent Question Overlay */}
-                                    <div className="absolute bottom-8 left-4 right-4 z-10">
-                                        {currentQuestion ? (
-                                            <div className="bg-background/90 backdrop-blur-md p-6 rounded-2xl border-2 border-primary/20 shadow-2xl animate-in slide-in-from-bottom-5 duration-500">
-                                                <p className="text-xl font-black leading-relaxed text-foreground text-center">
-                                                    &quot;{currentQuestion.question}&quot;
-                                                </p>
-                                            </div>
-                                        ) : isAIProcessing ? (
-                                            <div className="flex flex-col items-center gap-4 text-center">
-                                                <div className="flex gap-1 items-end h-8">
-                                                    {[1, 2, 3, 4, 5].map(i => (
-                                                        <div key={i} className="w-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i * 100}ms` }} />
-                                                    ))}
+                                    <textarea
+                                        value={codeResponse}
+                                        onChange={(e) => setCodeResponse(e.target.value)}
+                                        className="flex-1 w-full bg-[#1e1e1e] text-[#d4d4d4] p-6 font-mono text-sm resize-none focus:outline-none leading-relaxed"
+                                        spellCheck={false}
+                                        placeholder="// Write your solution here..."
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            /* Standard Mode: Video Circles */
+                            <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24 w-full max-w-6xl">
+                                {/* AI Interviewer */}
+                                <div className="relative group">
+                                    <div className={`h-64 w-64 md:h-80 md:w-80 lg:h-96 lg:w-96 rounded-full overflow-hidden border-4 transition-all duration-700 shadow-2xl ${isAIProcessing ? 'border-primary animate-pulse scale-105' : 'border-background/20 scale-100 hover:scale-105'}`}>
+                                        <div className={`h-full w-full flex flex-col items-center justify-center bg-gradient-to-br ${activeAvatar.color} relative`}>
+                                            <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full border border-primary/20 z-20">
+                                                <div className="flex items-center gap-2">
+                                                    <Bot className="h-3 w-3 text-primary" />
+                                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">Interviewer</span>
                                                 </div>
-                                                <p className="font-bold text-sm text-primary uppercase tracking-widest animate-pulse">AI is thinking...</p>
                                             </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center gap-4">
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="lg" 
-                                                    className="bg-primary/10 border-primary/20 text-primary font-bold rounded-2xl px-8 h-12 hover:scale-105 transition-all"
-                                                    onClick={fetchNextQuestion}
-                                                >
-                                                    <Bot className="h-4 w-4 mr-2" />
-                                                    Start Asking Questions
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            {/* ... (rest of standard layout) */}
-
-
-                            {/* User Video */}
-                            <Card className="relative overflow-hidden bg-muted/50 border-transparent shadow-lg">
-                                <CardContent className="h-full flex items-center justify-center p-0">
-                                    {isVideoOn && stream ? (
-                                        <video
-                                            ref={videoRef}
-                                            autoPlay
-                                            muted
-                                            playsInline
-                                            className="w-full h-full object-cover scale-x-[-1]"
-                                        />
-                                    ) : (
-                                        <div className="text-center p-8">
-                                            <div className="h-28 w-28 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-muted">
-                                                {isVideoOn ? <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /> : <VideoOff className="h-8 w-8 text-muted-foreground" />}
-                                            </div>
-                                            <p className="font-bold">You</p>
-                                            <p className="text-xs text-muted-foreground">{isVideoOn ? 'Camera loading...' : 'Camera is disabled'}</p>
-                                        </div>
-                                    )}
-
-                                    {/* AI Coach Widget */}
-                                    {isRecording && (
-                                        <div className="absolute top-4 left-4 flex flex-col gap-2">
-                                            <div className="bg-black/60 backdrop-blur-md px-3 py-2 rounded-xl text-white text-xs border border-white/10 shadow-xl">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className={`h-2 w-2 rounded-full ${wpm > 160 ? 'bg-red-500' : wpm < 100 ? 'bg-yellow-500' : 'bg-green-500'}`} />
-                                                    <span className="font-bold uppercase tracking-wider">Live Coach</span>
+                                            <div className="text-center space-y-4">
+                                                <div className="h-32 w-32 md:h-40 md:w-40 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center mx-auto shadow-2xl overflow-hidden border-2 border-white/20">
+                                                    {activeAvatar.imageUrl ? (
+                                                        <img src={activeAvatar.imageUrl} alt={activeAvatar.name} className="h-full w-full object-cover" />
+                                                    ) : (
+                                                        <AvatarIcon className="h-16 w-16 md:h-20 md:w-20 text-primary" />
+                                                    )}
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <div className="flex justify-between gap-4">
-                                                        <span className="text-white/70">Pace:</span>
-                                                        <span className={`font-mono font-bold ${wpm > 160 || wpm < 100 ? 'text-yellow-400' : 'text-green-400'}`}>
-                                                            {wpm} WPM
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex justify-between gap-4">
-                                                        <span className="text-white/70">Fillers:</span>
-                                                        <span className={`font-mono font-bold ${fillerCount > 3 ? 'text-red-400' : 'text-green-400'}`}>
-                                                            {fillerCount}
-                                                        </span>
-                                                    </div>
+                                                    <h2 className="font-bold text-2xl tracking-tight">{activeAvatar.name}</h2>
+                                                    <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">{activeAvatar.role}</p>
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
+                                    {isAIProcessing && <div className="absolute -inset-4 bg-primary/10 rounded-full animate-ping -z-10" />}
+                                </div>
 
-                                    {/* Anti-Cheat Warning */}
-                                    {!isTabActive && (
-                                        <div className="absolute inset-0 bg-red-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-8 text-center animate-in fade-in">
-                                            <div>
-                                                <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                                                <h3 className="text-xl font-bold text-white mb-2">Tab Switch Detected!</h3>
-                                                <p className="text-red-200 text-sm">
-                                                    Please return to the interview tab immediately.<br />
-                                                    This incident has been flagged.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="absolute bottom-4 left-4 flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl text-white">
-                                        {isMicOn ? (
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex gap-0.5 items-end h-3">
-                                                    <div className="w-0.5 h-1 bg-green-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                                                    <div className="w-0.5 h-2 bg-green-400 animate-bounce" style={{ animationDelay: '100ms' }} />
-                                                    <div className="w-0.5 h-3 bg-green-400 animate-bounce" style={{ animationDelay: '200ms' }} />
-                                                </div>
-                                                <span className="text-[10px] font-bold uppercase tracking-wider">Audio Active</span>
-                                            </div>
+                                {/* User Video */}
+                                <div className="relative group">
+                                    <div className="h-64 w-64 md:h-80 md:w-80 lg:h-96 lg:w-96 rounded-full overflow-hidden border-4 border-background/20 shadow-2xl transition-all duration-700 hover:scale-105 bg-muted/30 relative">
+                                        {isVideoOn && stream ? (
+                                            <video ref={videoRef} autoPlay muted={!isAudioMonitoring} playsInline className="w-full h-full object-cover scale-x-[-1]" />
                                         ) : (
-                                            <div className="flex items-center gap-2">
-                                                <MicOff className="h-3 w-3 text-red-400" />
-                                                <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Microphone Muted</span>
+                                            <div className="h-full w-full flex flex-col items-center justify-center p-8 text-center bg-muted/40">
+                                                <div className="h-20 w-20 rounded-full bg-background/50 flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-muted">
+                                                    {isVideoOn ? <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /> : <VideoOff className="h-8 w-8 text-muted-foreground" />}
+                                                </div>
+                                                <p className="font-bold">You</p>
+                                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{isVideoOn ? "Loading..." : "Camera Disabled"}</p>
+                                            </div>
+                                        )}
+                                        {isRecording && <div className="absolute inset-0 bg-red-500/10 pointer-events-none border-4 border-red-500/20 rounded-full animate-pulse" />}
+                                        
+                                        {/* Floating Transcription Bubble */}
+                                        {isRecording && userResponse && (
+                                            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[85%] bg-black/60 backdrop-blur-md text-white p-3 rounded-2xl border border-white/20 shadow-2xl animate-in slide-in-from-bottom-2 duration-300">
+                                                <p className="text-xs font-medium line-clamp-3 text-center leading-snug">
+                                                    {userResponse}
+                                                </p>
                                             </div>
                                         )}
                                     </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    )}
-                    {/* Transcription/Answer Box */}
-                    <Card className="border-2 border-primary/10 shadow-lg overflow-hidden transition-all duration-300">
-                        <div className="bg-muted/30 px-4 py-2 flex items-center justify-between border-b border-white/5">
+                                    {isRecording && (
+                                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-md px-4 py-2 rounded-xl border border-primary/20 shadow-xl flex items-center gap-2 z-30">
+                                            <div className={`h-2 w-2 rounded-full ${wpm > 160 ? "bg-red-500" : "bg-green-500"} animate-pulse`} />
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Pace: {wpm} WPM</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Integrated Controls Panel */}
+                    <div className="p-6 bg-background/50 border-t backdrop-blur-md">
+                        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
                             <div className="flex items-center gap-2">
-                                <Bot className="h-4 w-4 text-primary" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Your Answer</span>
+                                <Button
+                                    variant={isAudioMonitoring ? "default" : "outline"}
+                                    size="icon"
+                                    className="h-12 w-12 rounded-2xl transition-all"
+                                    onClick={() => {
+                                        setIsAudioMonitoring(!isAudioMonitoring);
+                                        if (!isAudioMonitoring) toast({ title: "Monitoring Enabled", description: "Use headphones to avoid echo." });
+                                    }}
+                                    title="Monitor Voice"
+                                >
+                                    {isAudioMonitoring ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+                                </Button>
+                                <Button
+                                    variant={isMicOn ? "outline" : "destructive"}
+                                    size="icon"
+                                    className="h-12 w-12 rounded-2xl"
+                                    onClick={() => setIsMicOn(!isMicOn)}
+                                    title="Mute Mic"
+                                >
+                                    {isMicOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+                                </Button>
+                                <Button
+                                    variant={isVideoOn ? "outline" : "destructive"}
+                                    size="icon"
+                                    className="h-12 w-12 rounded-2xl"
+                                    onClick={() => {
+                                        if (currentQuestion) {
+                                            toast({ variant: "destructive", title: "Video Mandatory", description: "Video must remain on." });
+                                            return;
+                                        }
+                                        setIsVideoOn(!isVideoOn);
+                                    }}
+                                    title="Toggle Video"
+                                >
+                                    {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                                </Button>
                             </div>
-                            <div className="flex items-center gap-3">
-                                {isRecording && (
-                                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 rounded-full border border-red-500/20">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-                                        <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter">Recording...</span>
-                                    </div>
-                                )}
-                                <span className="text-[9px] font-mono text-muted-foreground">{userResponse.length} characters</span>
+
+                            <div className="flex-1 flex justify-center">
+                                <Button
+                                    variant={isRecording ? "destructive" : "default"}
+                                    size="lg"
+                                    className={`h-14 px-8 rounded-2xl text-base font-bold transition-all ${isRecording ? 'ring-4 ring-primary/20 shadow-xl' : 'shadow-lg shadow-primary/20'}`}
+                                    onClick={toggleRecording}
+                                >
+                                    {isRecording ? (
+                                        <><div className="h-3 w-3 bg-white rounded-full animate-pulse mr-3" /> Stop Recording</>
+                                    ) : (
+                                        <><Mic className="h-5 w-5 mr-3" /> Start Speaking</>
+                                    )}
+                                </Button>
                             </div>
-                        </div>
-                        <textarea
-                            value={userResponse}
-                            onChange={(e) => setUserResponse(e.target.value)}
-                            placeholder={isRecording ? "Listening to your answer... Click 'Stop' or wait for the auto-submit." : "Type your answer here or click the microphone to speak..."}
-                            className="w-full h-32 p-4 bg-background text-foreground text-sm font-medium resize-none focus:outline-none focus:ring-1 focus:ring-primary/20 leading-relaxed transition-all"
-                            spellCheck={true}
-                        />
-                    </Card>
 
-                    {/* Controls - Minimalist Auto-hide in Fullscreen */}
-                    <div className={`transition-all duration-500 ${isFullscreen ? 'opacity-0 hover:opacity-100 fixed bottom-8 transform -translate-x-1/2 left-1/2 z-50' : 'bg-background/80 backdrop-blur-md p-4 rounded-3xl border shadow-xl flex items-center justify-center gap-6 max-w-md mx-auto w-full'}`}>
-                        <div className="flex flex-col items-center gap-1">
-                            <Button
-                                variant={isMicOn ? "outline" : "destructive"}
-                                size="icon"
-                                className={`h-12 w-12 rounded-2xl transition-all ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
-                                onClick={() => setIsMicOn(!isMicOn)}
-                                title={isMicOn ? "Mute Microphone" : "Unmute Microphone"}
-                            >
-                                {isMicOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-                            </Button>
-                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">{isMicOn ? 'Mute' : 'Unmute'}</span>}
-                        </div>
-
-                        <div className="flex flex-col items-center gap-1">
-                            <Button
-                                variant={isRecording ? "destructive" : "outline"}
-                                size="icon"
-                                className={`h-12 w-12 rounded-2xl transition-all ${isRecording ? 'ring-4 ring-primary/20 animate-pulse shadow-xl shadow-primary/20 bg-primary/10' : ''} ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
-                                onClick={toggleRecording}
-                                title={isRecording ? "Stop Transcribing" : "Start Transcribing"}
-                            >
-                                {isRecording ? <div className="h-3 w-3 bg-red-500 rounded-sm animate-pulse" /> : <Bot className="h-5 w-5 text-primary" />}
-                            </Button>
-                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">{isRecording ? 'Stop' : 'Transcribe'}</span>}
-                        </div>
-
-                        <div className="flex flex-col items-center gap-1">
-                            <Button
-                                variant={isVideoOn ? "outline" : "destructive"}
-                                size="icon"
-                                className={`h-12 w-12 rounded-2xl transition-all ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
-                                onClick={() => setIsVideoOn(!isVideoOn)}
-                            >
-                                {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-                            </Button>
-                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">{isVideoOn ? 'Stop Video' : 'Start Video'}</span>}
-                        </div>
-
-                        <div className="flex flex-col items-center gap-1">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`h-12 w-12 rounded-2xl transition-all hover:bg-primary/20 hover:text-primary ${isFullscreen ? 'bg-background/50 border-white/20' : ''}`}
-                                onClick={() => handleSendResponse(false)}
-                                disabled={isAIProcessing || isThinking || !userResponse.trim()}
-                                title="Submit Answer"
-                            >
-                                <Send className="h-5 w-5" />
-                            </Button>
-                            {!isFullscreen && <span className="text-[10px] font-bold text-muted-foreground uppercase">Submit</span>}
-                        </div>
-
-                        <div className="h-10 w-px bg-border mx-2" />
-
-                        <div className="flex flex-col items-center gap-1">
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="h-12 w-12 rounded-2xl shadow-lg shadow-red-500/20 hover:scale-110 active:scale-95 transition-all"
-                                onClick={handleEndInterview}
-                            >
-                                <Phone className="h-5 w-5 rotate-[135deg]" />
-                            </Button>
-                            {!isFullscreen && <span className="text-[10px] font-bold text-red-600 uppercase">End Session</span>}
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="h-12 w-12 rounded-2xl shadow-lg shadow-red-500/20 hover:scale-110"
+                                    onClick={handleEndInterview}
+                                    title="End Session"
+                                >
+                                    <Phone className="h-5 w-5 rotate-[135deg]" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                {/* SIDEBAR: Question & Transcription */}
+                <div className="w-full md:w-[400px] lg:w-[450px] border-l bg-card flex flex-col shadow-2xl">
+                    {/* Active Question Display */}
+                    <div className="p-6 bg-primary/5 border-b">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Bot className="h-4 w-4 text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Interviewer Prompt</span>
+                        </div>
+                        {currentQuestion ? (
+                            <div className="bg-background p-5 rounded-2xl border-2 border-primary/20 shadow-inner">
+                                <p className="text-lg font-bold leading-relaxed text-foreground">
+                                    "{currentQuestion.question}"
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="animate-pulse space-y-3">
+                                <div className="h-4 bg-muted rounded w-3/4" />
+                                <div className="h-4 bg-muted rounded w-1/2" />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Transcription Area */}
+                    <div className="flex-1 flex flex-col min-h-0">
+                        <div className="px-6 py-4 border-b bg-muted/20 flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Real-time Answer</span>
+                            {isRecording && (
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 rounded-full border border-red-500/20">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                                    <span className="text-[9px] font-bold text-red-500 uppercase">Listening</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex-1 p-6 overflow-y-auto bg-background/50 space-y-4">
+                            <textarea
+                                value={userResponse}
+                                onChange={(e) => setUserResponse(e.target.value)}
+                                placeholder={isRecording ? "Listening to your answer..." : "Your answer will appear here as you speak, or you can type directly."}
+                                className="w-full h-full bg-transparent text-foreground text-base font-medium resize-none focus:outline-none leading-relaxed placeholder:italic placeholder:opacity-50"
+                                spellCheck={true}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Action Bar */}
+                    <div className="p-6 bg-muted/10 border-t">
+                        <Button
+                            size="lg"
+                            className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 group"
+                            onClick={() => handleSendResponse(false)}
+                            disabled={isAIProcessing || isThinking || !userResponse.trim()}
+                        >
+                            Submit Answer
+                            <Send className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                        <p className="text-center text-[10px] text-muted-foreground mt-4 font-medium uppercase tracking-tighter">
+                            Pressing Submit will evaluate your answer and load the next question
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
-    )
+    );
 }

@@ -410,23 +410,42 @@ router.get('/job-interviews', authenticate, async (req, res, next) => {
  */
 router.post('/:id/next-question', authenticate, async (req, res, next) => {
     try {
+        console.log(`[Interview API] next-question request for ID: ${req.params.id}`);
         const interview = await prisma.interview.findFirst({
             where: { id: req.params.id, userId: req.user.id }
         });
 
-        if (!interview) return res.status(404).json({ error: 'Interview not found' });
+        if (!interview) {
+            console.log(`[Interview API] Interview not found: ${req.params.id}`);
+            return res.status(404).json({ error: 'Interview not found' });
+        }
+
+        // Check if there's already an unanswered question
+        const existingUnanswered = await prisma.interviewQuestion.findFirst({
+            where: {
+                interviewId: interview.id,
+                response: { is: null }
+            },
+            orderBy: { order: 'desc' }
+        });
+
+        if (existingUnanswered) {
+            console.log(`[Interview API] Returning existing unanswered question: ${existingUnanswered.id}`);
+            return res.json({ question: existingUnanswered });
+        }
 
         // Pass previous response for adaptive logic?
-        // We need to fetch the last response for this interview to pass to AI service
         const lastResponse = await prisma.interviewResponse.findFirst({
             where: { interviewId: interview.id },
             orderBy: { respondedAt: 'desc' },
             include: { question: true }
         });
 
+        console.log(`[Interview API] Generating next question for interview: ${interview.id}`);
         const aiResponse = await aiService.generateNextQuestion(interview.id, lastResponse);
 
         if (!aiResponse) {
+            console.log(`[Interview API] Interview completed for: ${interview.id}`);
             // Mark as completed
             await prisma.interview.update({
                 where: { id: interview.id },
@@ -435,6 +454,7 @@ router.post('/:id/next-question', authenticate, async (req, res, next) => {
             return res.json({ message: 'Interview completed', completed: true });
         }
 
+        console.log(`[Interview API] Saving new question to DB: ${aiResponse.question.substring(0, 30)}...`);
         // Store question in DB
         const question = await prisma.interviewQuestion.create({
             data: {
@@ -447,6 +467,7 @@ router.post('/:id/next-question', authenticate, async (req, res, next) => {
             }
         });
 
+        console.log(`[Interview API] Success: next question generated: ${question.id}`);
         res.json({ question });
     } catch (error) {
         console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
@@ -474,12 +495,17 @@ router.post('/:id/response', authenticate, async (req, res, next) => {
                 transcript: answer,
                 code, // Save the code!
                 score: evaluation.score,
-                feedback: evaluation.feedback
+                feedback: evaluation.feedback,
+                // We'll store briefFeedback in a temporary way or just pass it back
+                // For now, let's just pass it back in the response
             }
         });
 
         res.json({
-            response,
+            response: {
+                ...response,
+                briefFeedback: evaluation.briefFeedback
+            },
             evaluation
         });
     } catch (error) {

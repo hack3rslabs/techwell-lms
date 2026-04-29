@@ -83,26 +83,30 @@ export default function AdminDashboard() {
     const [_trainMessage, setTrainMessage] = React.useState<{ msg: string, type: 'success' | 'error' } | null>(null)
 
     React.useEffect(() => {
-        if (!authLoading && (!isAuthenticated || !['SUPER_ADMIN', 'ADMIN'].includes(user?.role || ''))) {
+        if (!authLoading && (!isAuthenticated || !['SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN', 'STAFF', 'INSTRUCTOR', 'EMPLOYER'].includes(user?.role || ''))) {
             router.push('/dashboard')
         }
     }, [authLoading, isAuthenticated, user, router])
 
     React.useEffect(() => {
         const fetchData = async () => {
-            if (!isAuthenticated) return
-
             try {
                 // Fetch basic lists AND real stats
-                const [usersRes, coursesRes, statsRes] = await Promise.all([
-                    api.get('/users'),
-                    api.get('/courses'),
-                    userApi.getAdminStats() // Use new endpoint
+                const [usersRes, coursesRes, statsRes] = await Promise.allSettled([
+                    hasPermission('USERS') ? api.get('/users') : Promise.resolve({ data: { users: [] } }),
+                    hasPermission('COURSES') ? api.get('/courses') : Promise.resolve({ data: { courses: [] } }),
+                    userApi.getAdminStats() // This endpoint uses authorize() so it's safer
                 ])
 
-                setUsers(usersRes.data.users || [])
-                setCourses(coursesRes.data.courses || [])
-                setStats(statsRes.data) // Use real stats from backend
+                if (usersRes.status === 'fulfilled') {
+                    setUsers(usersRes.value.data.users || [])
+                }
+                if (coursesRes.status === 'fulfilled') {
+                    setCourses(coursesRes.value.data.courses || [])
+                }
+                if (statsRes.status === 'fulfilled') {
+                    setStats(statsRes.value.data)
+                }
 
             } catch (error) {
                 console.error('Failed to fetch data:', error)
@@ -111,10 +115,10 @@ export default function AdminDashboard() {
             }
         }
 
-        if (isAuthenticated && ['SUPER_ADMIN', 'ADMIN'].includes(user?.role || '')) {
+        if (isAuthenticated && ['SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN', 'STAFF'].includes(user?.role || '')) {
             fetchData()
         }
-    }, [isAuthenticated, user])
+    }, [isAuthenticated, user, hasPermission])
 
     const _toggleUserStatus = async (userId: string, isActive: boolean) => {
         try {
@@ -152,12 +156,10 @@ export default function AdminDashboard() {
 
 
 
-    if (authLoading || !user || !['SUPER_ADMIN', 'ADMIN'].includes(user.role)) {
-        return (
-            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        )
+    // Only check if user exists and is not a student
+    // Layout already handles the detailed loading and redirect logic
+    if (!user || user.role === 'STUDENT') {
+        return null;
     }
 
     // ... existing imports
@@ -196,7 +198,7 @@ export default function AdminDashboard() {
                 <div className="space-y-8">
                     {/* Stats Grid */}
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        {hasPermission('VIEW_FINANCE') && (
+                        {hasPermission('FINANCE') && (
                             <>
                                 <Card
                                     className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-green-500 hover:-translate-y-1"
@@ -236,10 +238,10 @@ export default function AdminDashboard() {
                             </>
                         )}
 
-                        {hasPermission('MANAGE_USERS') && (
+                        {hasPermission('USERS') && (
                             <Card
                                 className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-blue-500 hover:-translate-y-1"
-                                onClick={() => router.push('/admin/users')}
+                                onClick={() => router.push('/admin/roles')}
                             >
                                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -326,7 +328,7 @@ export default function AdminDashboard() {
                                             <div className="text-xs text-muted-foreground">Check latest leads</div>
                                         </div>
                                     </Button>
-                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/users')}>
+                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/roles')}>
                                         <div className="bg-orange-100 p-2 rounded-full mr-3">
                                             <UserCheck className="h-4 w-4 text-orange-600" />
                                         </div>
@@ -335,7 +337,7 @@ export default function AdminDashboard() {
                                             <div className="text-xs text-muted-foreground">Approve new registrations</div>
                                         </div>
                                     </Button>
-                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/ai-training')}>
+                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/ai/training')}>
                                         <div className="bg-purple-100 p-2 rounded-full mr-3">
                                             <BrainCircuit className="h-4 w-4 text-purple-600" />
                                         </div>

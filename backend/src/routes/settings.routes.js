@@ -40,7 +40,7 @@ router.get('/public', async (req, res, next) => {
  * @access  Private (Admin/Staff)
  */
 router.get('/', authenticate, (req, res, next) => {
-    if (req.user.permissions.includes('MANAGE_SETTINGS') || req.user.permissions.includes('ALL')) {
+    if (req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('MANAGE_SETTINGS') || req.user.permissions.includes('ALL')) {
         return next();
     }
     return res.status(403).json({ error: 'Permission denied: MANAGE_SETTINGS required' });
@@ -67,7 +67,7 @@ router.get('/', authenticate, (req, res, next) => {
 router.put('/', authenticate, async (req, res, next) => {
     try {
         // Permission check
-        const canManage = req.user.permissions.includes('MANAGE_SETTINGS') || req.user.permissions.includes('ALL');
+        const canManage = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('MANAGE_SETTINGS') || req.user.permissions.includes('ALL');
 
         if (!canManage) {
             return res.status(403).json({ error: 'Permission denied: MANAGE_SETTINGS required' });

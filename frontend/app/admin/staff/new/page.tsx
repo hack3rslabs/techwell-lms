@@ -52,7 +52,7 @@ export default function CreateStaffPage() {
         const manageKey = `MANAGE_${moduleId}`;
         
         setFormData(prev => {
-            let nextPermissions = prev.permissions.filter(p => p !== viewKey && p !== manageKey);
+            const nextPermissions = prev.permissions.filter(p => p !== viewKey && p !== manageKey);
             
             if (value === "allow") {
                 nextPermissions.push(viewKey, manageKey);
