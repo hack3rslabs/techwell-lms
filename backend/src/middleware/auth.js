@@ -106,8 +106,8 @@ const checkPermission = (featureCode, accessType = null) => {
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        // 1. Bypass check for Super Admins and Admins
-        if (['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
+        // 1. Bypass check for Super Admins only
+        if (req.user.role === 'SUPER_ADMIN') {
             return next();
         }
 

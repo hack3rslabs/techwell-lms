@@ -222,7 +222,18 @@ router.post('/login', async (req, res, next) => {
 
         // Find user
         const user = await prisma.user.findUnique({
-            where: { email: validatedData.email }
+            where: { email: validatedData.email },
+            include: {
+                systemRole: {
+                    include: {
+                        rolePermissions: {
+                            include: {
+                                feature: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!user) {
@@ -244,6 +255,18 @@ router.post('/login', async (req, res, next) => {
             return res.status(403).json({ error: 'Account is deactivated' });
         }
 
+        // Format role permissions
+        const rolePermissions = {};
+        if (user.systemRole && user.systemRole.rolePermissions) {
+            user.systemRole.rolePermissions.forEach(rp => {
+                rolePermissions[rp.feature.code] = {
+                    canRead: rp.canRead,
+                    canWrite: rp.canWrite,
+                    isDisabled: rp.isDisabled
+                };
+            });
+        }
+
         // Generate token
         const token = jwt.sign(
             { userId: user.id },
@@ -259,6 +282,8 @@ router.post('/login', async (req, res, next) => {
                 name: user.name,
                 role: user.role,
                 permissions: user.permissions || [],
+                rolePermissions: rolePermissions,
+                systemRole: user.systemRole ? { name: user.systemRole.name } : null,
                 hasUnlimitedInterviews: true
             },
             token

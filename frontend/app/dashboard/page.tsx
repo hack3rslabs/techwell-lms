@@ -147,12 +147,14 @@ export default function DashboardPage() {
         if (!authLoading) {
             if (!user) {
                 router.push('/login')
-            } else if (user.role === 'EMPLOYER') {
-                router.push('/employer/dashboard')
-            } else if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+            } else if (user.role === 'STUDENT') {
+                // Students stay here, but if they somehow get here with no role or something else
+                // We just keep them or handle below.
+                // However, the logic below is the student dashboard.
+            } else {
+                // All other roles (SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, INSTITUTE_ADMIN, EMPLOYER, etc.)
+                // go to /admin to see the sidebar and their permitted features
                 router.push('/admin')
-            } else if (user.role === 'INSTRUCTOR') {
-                router.push('/instructor')
             }
         }
     }, [authLoading, user, router])
