@@ -19,6 +19,7 @@ interface Course {
     difficulty: string
     duration: number
     price: number
+    discountPrice?: number
     thumbnail?: string
     bannerUrl?: string
     instructor?: { name: string }
@@ -223,9 +224,10 @@ export default function CourseList() {
                             <CardFooter className="pt-4 border-t border-border/10 flex items-center justify-between bg-muted/5">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Price</span>
-                                    <span className="text-2xl font-black text-foreground">
+                                    <span className="text-sm font-black text-gray-500 line-through">
                                         {course.price === 0 ? 'Free' : `₹${course.price}`}
                                     </span>
+                                    <p className="text-2xl font-semibold text-white"> ₹{course.discountPrice}</p>
                                 </div>
                                 {course.isEnrolled && (
                                     <span className="text-xs px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-full font-semibold dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">

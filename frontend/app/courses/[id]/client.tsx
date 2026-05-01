@@ -466,14 +466,7 @@ export default function CourseDetailClient() {
                         <p className="text-lg text-muted-foreground mb-6">{course.description}</p>
 
                         <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                                <Users className="h-4 w-4" />
-                                <span>{course._count?.enrollments || 0} students enrolled</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <PlayCircle className="h-4 w-4" />
-                                <span>{course.duration} hours content</span>
-                            </div>
+                            
                             {course.instructor && (
                                 <div className="flex items-center gap-2">
                                     <GraduationCap className="h-4 w-4" />

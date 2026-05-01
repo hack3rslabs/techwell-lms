@@ -19,6 +19,7 @@ interface Course {
     isPublished: boolean
     difficulty: string
     price: number
+    discountPrice?: number
     bannerUrl?: string
     thumbnail?: string
     _count?: { enrollments: number; modules: number }
