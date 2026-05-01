@@ -134,8 +134,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const hasPermission = (featureCode: string) => {
         if (!user) return false;
         
-        // Super Admins and Admins have all permissions
-        if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') return true;
+        // Only Super Admins have all permissions
+        if (user.role === 'SUPER_ADMIN') return true;
         
         const perms = user.rolePermissions?.[featureCode];
         if (!perms || perms.isDisabled) return false;
@@ -146,8 +146,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const canWrite = (featureCode: string) => {
         if (!user) return false;
         
-        // Super Admins and Admins have all permissions
-        if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') return true;
+        // Only Super Admins have all permissions
+        if (user.role === 'SUPER_ADMIN') return true;
         
         const perms = user.rolePermissions?.[featureCode];
         return !!(perms?.canWrite && !perms.isDisabled);

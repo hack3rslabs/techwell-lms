@@ -35,18 +35,8 @@ export default function AdminLayout({
                 return
             }
 
-            // Super Admins always have access to the layout
-            if (user?.role === 'SUPER_ADMIN') {
-                return
-            }
-
-            // For other roles, check if they have at least one permission
-            const rolePermissions = user?.rolePermissions || {};
-            const hasAnyPermission = Object.values(rolePermissions).some(p => (p.canRead || p.canWrite) && !p.isDisabled);
-
-            if (!hasAnyPermission) {
-                router.push('/dashboard')
-            }
+            // All other roles (SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, etc.)
+            // are allowed in — the sidebar filters features by permission
         }
     }, [isLoading, isAuthenticated, user, router, mounted])
 
@@ -59,13 +49,10 @@ export default function AdminLayout({
         )
     }
 
-    // Safety check for final render
-    const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-    const rolePermissions = user?.rolePermissions || {};
-    const hasAnyPermission = Object.values(rolePermissions).some(p => (p.canRead || p.canWrite) && !p.isDisabled);
+    // Safety check for final render — only block students and unauthenticated users
     const isStudent = user?.role === 'STUDENT';
 
-    if (!isAuthenticated || isStudent || (!isSuperAdmin && !hasAnyPermission)) {
+    if (!isAuthenticated || isStudent) {
         return null
     }
 

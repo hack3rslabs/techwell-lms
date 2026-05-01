@@ -26,14 +26,11 @@ export default function LoginPage() {
 
     React.useEffect(() => {
         if (isAuthenticated && user) {
-            if (['SUPER_ADMIN', 'ADMIN', 'STAFF', 'INSTITUTE_ADMIN'].includes(user.role)) {
-                router.push('/admin')
-            } else if (user.role === 'EMPLOYER') {
-                router.push('/employer/dashboard')
-            } else if (user.role === 'INSTRUCTOR') {
-                router.push('/instructor')
-            } else {
+            if (user.role === 'STUDENT') {
                 router.push('/dashboard')
+            } else {
+                // SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, INSTITUTE_ADMIN, EMPLOYER, etc.
+                router.push('/admin')
             }
         }
     }, [isAuthenticated, user, router])

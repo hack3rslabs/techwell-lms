@@ -43,7 +43,7 @@ type SidebarProps = React.HTMLAttributes<HTMLDivElement>
 export function AdminSidebar({ className }: SidebarProps) {
 
     const pathname = usePathname()
-    const { logout, hasPermission } = useAuth()
+    const { logout, hasPermission, user } = useAuth()
     const [isMobileOpen, setIsMobileOpen] = useState(false)
     const [leadCounts, setLeadCounts] = useState({ totalCount: 0, unreadCount: 0 })
 
@@ -146,7 +146,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                 <div className="px-6 py-5 border-b flex-shrink-0">
                     <h2 className="text-xl font-bold text-primary">Admin Panel</h2>
                     <p className="text-xs text-muted-foreground">
-                        Super Admin Console
+                        {user?.systemRole?.name ?? user?.role?.replace(/_/g, ' ')}
                     </p>
                 </div>
 
