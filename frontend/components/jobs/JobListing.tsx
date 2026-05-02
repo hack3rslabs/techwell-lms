@@ -2,8 +2,14 @@
 
 import * as React from "react"
 import { useState, useEffect } from "react"
-import { Search, MapPin, Briefcase, Filter, Building2, Clock, Banknote, GraduationCap, ChevronRight } from "lucide-react"
+import { 
+    Search, MapPin, Briefcase, Filter, Building2, Clock, 
+    Banknote, GraduationCap, ChevronRight, Zap, Star, 
+    TrendingUp, History, BrainCircuit, Target, CheckCircle2,
+    PlayCircle, Sparkles, LayoutGrid, ListFilter
+} from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,12 +20,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Slider } from "@/components/ui/slider"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { 
-    Search, MapPin, Briefcase, Filter, Building2, Clock, 
-    Banknote, GraduationCap, ChevronRight, Zap, Star, 
-    TrendingUp, History, BrainCircuit, Target, CheckCircle2,
-    PlayCircle, Sparkles, LayoutGrid, ListFilter
-} from "lucide-react"
 import api from "@/lib/api"
 import { useAuth } from "@/lib/auth-context"
 import EmployerRequestDialog from "@/components/jobs/EmployerRequestDialog"
@@ -46,6 +46,7 @@ interface Job {
 
 export default function JobListing() {
     const { user, isAuthenticated } = useAuth()
+    const router = useRouter()
     const [jobs, setJobs] = useState<Job[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [resumeData, setResumeData] = useState<any>(null)

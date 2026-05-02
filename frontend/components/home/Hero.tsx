@@ -265,7 +265,7 @@ export function Hero() {
                             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
                                 <GraduationCap className="h-6 w-6" />
                             </div>
-                            <h3 className="mb-2 text-xl font-bold text-foreground">LMS & Courses</h3>
+                            <h3 className="mb-2 text-xl font-bold text-foreground">Courses</h3>
                             <p className="text-sm text-muted-foreground">Comprehensive learning management system with premium courses.</p>
                             <Link href="/courses" className="absolute inset-0 z-10" />
                         </motion.div>
