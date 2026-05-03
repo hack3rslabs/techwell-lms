@@ -169,7 +169,10 @@ export default function LoginPage() {
                                             <label htmlFor="password" className="text-sm font-semibold">
                                                 Password
                                             </label>
-                                            <Link href="/forgot-password" className="text-xs text-primary hover:underline font-medium">
+                                            <Link 
+                                                href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`} 
+                                                className="text-xs text-primary hover:underline font-medium"
+                                            >
                                                 Forgot password?
                                             </Link>
                                         </div>
