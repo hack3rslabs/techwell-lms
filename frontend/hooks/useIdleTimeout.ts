@@ -125,7 +125,7 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
                 window.removeEventListener(event, handleActivity);
             });
         };
-    }, [isAuthenticated]);
+    }, [isAuthenticated, isWarning, clearAllTimers, resetTimer, startTimers]);
 
     return { isWarning, remainingSeconds, resetTimer };
 }

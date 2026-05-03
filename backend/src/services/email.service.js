@@ -122,9 +122,26 @@ const sendOtpEmail = async (email, otp) => {
     return sendEmail(email, subject, html);
 };
 
+const sendPasswordResetOtpEmail = async (email, otp) => {
+    const subject = 'TechWell - Password Reset OTP';
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Password Reset</h1>
+            <p>You requested to reset your password. Your OTP verification code is:</p>
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                <h2 style="font-size: 36px; letter-spacing: 8px; color: #111827; margin: 0;">${otp}</h2>
+            </div>
+            <p style="color: #6b7280;">This code is valid for <strong>10 minutes</strong>. If you didn't request this, please ignore this email.</p>
+            <p>Best regards,<br/>The TechWell Team</p>
+        </div>
+    `;
+    return sendEmail(email, subject, html);
+};
+
 module.exports = {
     sendWelcomeEmail,
     sendCertificateEmail,
     sendInterviewScheduledEmail,
-    sendOtpEmail
+    sendOtpEmail,
+    sendPasswordResetOtpEmail
 };
