@@ -50,6 +50,13 @@ interface Permission {
     module: string
 }
 
+interface RolePermission {
+    featureId: string
+    canRead: boolean
+    canWrite: boolean
+    isDisabled: boolean
+}
+
 export default function RolesAndUsersPage() {
     const router = useRouter()
     const { user: currentUser, hasPermission, canWrite, isLoading: authLoading } = useAuth()
@@ -76,7 +83,7 @@ export default function RolesAndUsersPage() {
     const [newRoleData, setNewRoleData] = React.useState({
         name: "",
         description: "",
-        permissions: [] as any[]
+        permissions: [] as RolePermission[]
     })
 
     const fetchUsers = async () => {
@@ -224,10 +231,10 @@ export default function RolesAndUsersPage() {
 
     const handlePermissionLevelChange = (featureId: string, level: 'canRead' | 'canWrite' | 'isDisabled', value: boolean) => {
         setNewRoleData(prev => {
-            const existing = prev.permissions.find(p => p.featureId === featureId);
+            const existing = prev.permissions.find((p: RolePermission) => p.featureId === featureId);
             let updatedPermissions = [...prev.permissions];
             if (existing) {
-                const updated = { ...existing, [level]: value };
+                const updated = { ...existing, [level]: value } as RolePermission;
                 if (level === 'isDisabled' && value) { updated.canRead = false; updated.canWrite = false; }
                 if (level === 'canWrite' && value) { updated.canRead = true; updated.isDisabled = false; }
                 if ((level === 'canRead' || level === 'canWrite') && value) { updated.isDisabled = false; }
@@ -242,10 +249,10 @@ export default function RolesAndUsersPage() {
     }
 
     const renderTable = (data: User[]) => (
-        <div className="rounded-2xl border border-white/10 glass-card overflow-hidden">
+        <div className="rounded-2xl border border-border glass-card overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-white/5 border-b border-white/10">
+                    <thead className="bg-muted/50 border-b border-border">
                         <tr>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">User Profile</th>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Access Level</th>
@@ -253,12 +260,12 @@ export default function RolesAndUsersPage() {
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px] text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-border">
                         {data.length === 0 ? (
                             <tr><td colSpan={4} className="p-20 text-center opacity-50"><p className="text-sm font-bold">No users found</p></td></tr>
                         ) : (
                             data.map(user => (
-                                <tr key={user.id} className="hover:bg-white/5 transition-colors group">
+                                <tr key={user.id} className="hover:bg-muted/50 transition-colors group">
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{user.name[0]}</div>
@@ -297,19 +304,19 @@ export default function RolesAndUsersPage() {
     )
 
     const renderRolesTable = () => (
-        <div className="rounded-2xl border border-white/10 glass-card overflow-hidden">
+        <div className="rounded-2xl border border-border glass-card overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-white/5 border-b border-white/10">
+                    <thead className="bg-muted/50 border-b border-border">
                         <tr>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Role Name</th>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Description</th>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px] text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-border">
                         {roles.map(role => (
-                            <tr key={role.id} className="hover:bg-white/5 transition-colors group">
+                            <tr key={role.id} className="hover:bg-muted/50 transition-colors group">
                                 <td className="p-4">
                                     <div className="flex items-center gap-2">
                                         <div className="font-bold">{role.name}</div>
@@ -353,17 +360,17 @@ export default function RolesAndUsersPage() {
 
             <Tabs defaultValue="users" className="w-full" onValueChange={setActiveTab}>
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                    <TabsList className="bg-white/5 border border-white/10 p-1 h-12 rounded-xl">
+                    <TabsList className="bg-muted/50 border border-border p-1 h-12 rounded-xl">
                         <TabsTrigger value="users" className="rounded-lg data-[state=active]:bg-primary h-full px-8 text-xs font-bold uppercase">User Directory</TabsTrigger>
                         <TabsTrigger value="roles" className="rounded-lg data-[state=active]:bg-primary h-full px-8 text-xs font-bold uppercase">Roles & Access</TabsTrigger>
                     </TabsList>
                     <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                         <div className="w-full md:w-48">
                             <Select value={selectedRole} onValueChange={setSelectedRole}>
-                                <SelectTrigger className="h-11 glass-input rounded-xl border-white/10">
+                                <SelectTrigger className="h-11 glass-input rounded-xl border-border">
                                     <SelectValue placeholder="All Roles" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-[#0a0a0b] border-white/10">
+                                <SelectContent className="border-border">
                                     <SelectItem value="all">All Roles</SelectItem>
                                     {roles.map(role => (
                                         <SelectItem key={role.id} value={role.name}>{role.name}</SelectItem>
@@ -384,24 +391,24 @@ export default function RolesAndUsersPage() {
             <CreateUserModal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} onSuccess={fetchUsers} />
 
             <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
-                <DialogContent className="max-w-4xl bg-[#0a0a0b] border-white/10 max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle className="text-2xl font-black italic uppercase text-primary">Configure Permissions</DialogTitle></DialogHeader>
                     <div className="space-y-6 py-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Internal Name</Label><Input className="glass-input h-11 border-white/10 rounded-xl bg-muted/50" value={newRoleData.name} disabled /></div>
-                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Input className="glass-input h-11 border-white/10 rounded-xl" value={newRoleData.description} onChange={e => setNewRoleData(prev => ({ ...prev, description: e.target.value }))} /></div>
+                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase">Internal Name</Label><Input className="glass-input h-11 border-border rounded-xl bg-muted/50" value={newRoleData.name} disabled /></div>
+                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase">Description</Label><Input className="glass-input h-11 border-border rounded-xl" value={newRoleData.description} onChange={e => setNewRoleData(prev => ({ ...prev, description: e.target.value }))} /></div>
                         </div>
-                        <div className="border rounded-xl border-white/10 overflow-hidden">
+                        <div className="border rounded-xl border-border overflow-hidden">
                             <table className="w-full text-xs text-left">
-                                <thead className="bg-white/5 border-b border-white/10"><tr><th className="p-3 font-bold uppercase">Module</th><th className="p-3 font-bold uppercase text-center">Read</th><th className="p-3 font-bold uppercase text-center">Write</th><th className="p-3 font-bold uppercase text-center">Disable</th></tr></thead>
+                                <thead className="bg-muted/50 border-b border-border"><tr><th className="p-3 font-bold uppercase">Module</th><th className="p-3 font-bold uppercase text-center">Read</th><th className="p-3 font-bold uppercase text-center">Write</th><th className="p-3 font-bold uppercase text-center">Disable</th></tr></thead>
                                 <tbody>
                                     {Array.from(new Set(permissions.map(p => p.module || 'General'))).map(moduleName => (
                                         <React.Fragment key={moduleName}>
-                                            <tr className="bg-white/5"><td colSpan={4} className="p-2 px-3 font-black text-[9px] uppercase text-primary/70">{moduleName}</td></tr>
+                                            <tr className="bg-muted/30"><td colSpan={4} className="p-2 px-3 text-[9px] uppercase font-bold text-primary/70">{moduleName}</td></tr>
                                             {permissions.filter(p => (p.module || 'General') === moduleName).map(perm => {
                                                 const p = newRoleData.permissions.find(pr => pr.featureId === perm.id) || { canRead: false, canWrite: false, isDisabled: false };
                                                 return (
-                                                    <tr key={perm.id} className="border-b border-white/5 last:border-0"><td className="p-3 font-medium">{perm.name}</td>
+                                                    <tr key={perm.id} className="border-b border-border last:border-0"><td className="p-3 font-medium">{perm.name}</td>
                                                         <td className="p-3 text-center"><Checkbox checked={p.canRead} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canRead', !!v)} /></td>
                                                         <td className="p-3 text-center"><Checkbox checked={p.canWrite} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canWrite', !!v)} /></td>
                                                         <td className="p-3 text-center"><Checkbox checked={p.isDisabled} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'isDisabled', !!v)} /></td>
@@ -414,21 +421,21 @@ export default function RolesAndUsersPage() {
                             </table>
                         </div>
                     </div>
-                    <DialogFooter><Button variant="outline" className="glass border-white/10 rounded-xl" onClick={() => setIsCreateFormOpen(false)}>Cancel</Button><Button className="bg-primary hover:bg-primary/90 rounded-xl" onClick={handleSaveRole}>Save Configuration</Button></DialogFooter>
+                    <DialogFooter><Button variant="outline" className="glass border-border rounded-xl" onClick={() => setIsCreateFormOpen(false)}>Cancel</Button><Button className="bg-primary hover:bg-primary/90 rounded-xl" onClick={handleSaveRole}>Save Configuration</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={isDeleteUserOpen} onOpenChange={setIsDeleteUserOpen}>
-                <DialogContent className="bg-[#0a0a0b] border-white/10"><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete User</DialogTitle></DialogHeader>
+                <DialogContent><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete User</DialogTitle></DialogHeader>
                     <p className="text-sm text-muted-foreground">Are you sure you want to delete <b>{userToDelete?.name}</b>? This action is permanent.</p>
-                    <DialogFooter><Button variant="outline" className="glass" onClick={() => setIsDeleteUserOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteUser}>Confirm Delete</Button></DialogFooter>
+                    <DialogFooter><Button variant="outline" className="glass" onClick={() => setIsDeleteUserOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleDeleteUser}>Confirm Delete</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={isDeleteRoleOpen} onOpenChange={setIsDeleteRoleOpen}>
-                <DialogContent className="bg-[#0a0a0b] border-white/10"><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete Role</DialogTitle></DialogHeader>
+                <DialogContent><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete Role</DialogTitle></DialogHeader>
                     <p className="text-sm text-muted-foreground">Are you sure you want to delete the <b>{roleToDelete?.name}</b> role?</p>
-                    <DialogFooter><Button variant="outline" className="glass" onClick={() => setIsDeleteRoleOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteRole}>Confirm Delete</Button></DialogFooter>
+                    <DialogFooter><Button variant="outline" className="glass" onClick={() => setIsDeleteRoleOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleDeleteRole}>Confirm Delete</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

@@ -22,6 +22,8 @@ const loginSchema = z.object({
 
 // In-memory store for pending registrations (OTP verification)
 const pendingRegistrations = new Map();
+// In-memory store for password resets (OTP verification)
+const passwordResets = new Map();
 const OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 function generateOtp() {
@@ -34,6 +36,11 @@ setInterval(() => {
     for (const [email, data] of pendingRegistrations) {
         if (now - data.createdAt > OTP_EXPIRY_MS) {
             pendingRegistrations.delete(email);
+        }
+    }
+    for (const [email, data] of passwordResets) {
+        if (now - data.createdAt > OTP_EXPIRY_MS) {
+            passwordResets.delete(email);
         }
     }
 }, 5 * 60 * 1000);
@@ -332,6 +339,139 @@ router.post('/refresh', async (req, res, next) => {
         } catch (error) {
             return res.status(401).json({ error: 'Invalid token' });
         }
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/auth/forgot-password
+ * @desc    Step 1: Find user and send reset OTP
+ * @access  Public
+ */
+router.post('/forgot-password', async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required' });
+        }
+
+        // Check if user exists
+        const user = await prisma.user.findUnique({
+            where: { email }
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User with this email not found' });
+        }
+
+        // Generate OTP
+        const otp = generateOtp();
+
+        // Store reset request
+        passwordResets.set(email, {
+            email,
+            otp,
+            createdAt: Date.now(),
+            verified: false
+        });
+
+        // Send OTP email
+        const { sendPasswordResetOtpEmail } = require('../services/email.service');
+        sendPasswordResetOtpEmail(email, otp).catch(err => console.error('Reset OTP email error:', err));
+
+        console.log(`[RESET OTP] Code for ${email}: ${otp}`);
+
+        res.status(200).json({
+            message: 'Password reset OTP sent to your email',
+            email
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/auth/verify-reset-otp
+ * @desc    Step 2: Verify reset OTP
+ * @access  Public
+ */
+router.post('/verify-reset-otp', async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ error: 'Email and OTP are required' });
+        }
+
+        const resetData = passwordResets.get(email);
+
+        if (!resetData) {
+            return res.status(400).json({ error: 'No pending reset request found.' });
+        }
+
+        // Check expiry
+        if (Date.now() - resetData.createdAt > OTP_EXPIRY_MS) {
+            passwordResets.delete(email);
+            return res.status(400).json({ error: 'OTP has expired.' });
+        }
+
+        // Verify OTP
+        if (resetData.otp !== otp.toString()) {
+            return res.status(400).json({ error: 'Invalid OTP.' });
+        }
+
+        // OTP verified
+        resetData.verified = true;
+        passwordResets.set(email, resetData);
+
+        res.status(200).json({
+            message: 'OTP verified successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/auth/reset-password
+ * @desc    Step 3: Update password
+ * @access  Public
+ */
+router.post('/reset-password', async (req, res, next) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ error: 'Email, OTP, and new password are required' });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
+        }
+
+        const resetData = passwordResets.get(email);
+
+        if (!resetData || !resetData.verified || resetData.otp !== otp.toString()) {
+            return res.status(400).json({ error: 'Verification failed. Please try again.' });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+        // Update user
+        await prisma.user.update({
+            where: { email },
+            data: { password: hashedPassword }
+        });
+
+        // Remove from memory
+        passwordResets.delete(email);
+
+        res.status(200).json({
+            message: 'Password reset successful. You can now login with your new password.'
+        });
     } catch (error) {
         next(error);
     }

@@ -173,7 +173,7 @@ export const interviewApi = {
 export const paymentApi = {
     getAll: () => api.get('/admin/transactions'),
     getConfig: () => api.get('/payments/config'),
-    updateConfig: (data: any) => api.put('/payments/config', data),
+    updateConfig: (data: unknown) => api.put('/payments/config', data),
     // Send amount (in rupees) and optional currency; backend will create order and return orderId, keyId and amount (in paise)
     createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY', amount?: number, currency = 'INR') =>
         api.post('/payments/create-order', { courseId, type, amount, currency }),
@@ -355,7 +355,7 @@ export const libraryApi = {
     toggleBookmark: (resourceId: string) => api.post('/library/bookmarks', { resourceId }),
     getResources: (params?: { category?: string; domain?: string; search?: string }) => api.get('/library/resources', { params }),
     getCategories: () => api.get('/library/categories'),
-    updateResource: (id: string, data: any) => api.put(`/library/resources/${id}`, data),
+    updateResource: (id: string, data: unknown) => api.put(`/library/resources/${id}`, data),
     deleteResource: (id: string) => api.delete(`/library/resources/${id}`),
 };
 
