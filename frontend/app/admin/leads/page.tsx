@@ -55,6 +55,7 @@ export default function LeadsPage() {
         qualification?: string
         dob?: string
         notes?: string
+        courseName?: string
         createdAt: string
     }
     const [leads, setLeads] = React.useState<Lead[]>([])
@@ -244,7 +245,8 @@ export default function LeadsPage() {
         lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.phone?.includes(searchQuery) ||
-        lead.college?.toLowerCase().includes(searchQuery.toLowerCase())
+        lead.college?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.courseName?.toLowerCase().includes(searchQuery.toLowerCase())
     )
 
     const getStatusColor = (status: string) => {
@@ -458,9 +460,8 @@ export default function LeadsPage() {
                             <Table>
                                 <TableHeader>
                                         <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Demographics</TableHead>
-                                            <TableHead>Qualification</TableHead>
+                                            <TableHead>Name & Details</TableHead>
+                                            <TableHead>Course Interest</TableHead>
                                             <TableHead>Source</TableHead>
                                             <TableHead>Status</TableHead>
                                             <TableHead>Added On</TableHead>
@@ -474,27 +475,19 @@ export default function LeadsPage() {
                                                 <div className="font-medium">{lead.name}</div>
                                                 <div className="text-xs text-muted-foreground">{lead.email}</div>
                                                 <div className="text-xs text-muted-foreground">{lead.phone}</div>
+                                                <div className="text-[10px] text-primary font-medium mt-1 uppercase italic">
+                                                    {lead.qualification || 'General Enquiry'}
+                                                </div>
+                                                {(lead.college || lead.location) && (
+                                                    <div className="text-[10px] text-muted-foreground mt-0.5 opacity-70">
+                                                        {lead.college}{lead.college && lead.location ? ' • ' : ''}{lead.location}
+                                                    </div>
+                                                )}
                                             </TableCell>
                                             <TableCell>
-                                                {lead.college && (
-                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                                                        <School className="h-3 w-3" /> {lead.college}
-                                                    </div>
-                                                )}
-                                                {lead.location && (
-                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                        <MapPin className="h-3 w-3" /> {lead.location}
-                                                    </div>
-                                                )}
-                                                {!lead.college && !lead.location && <span className="text-muted-foreground">-</span>}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm">{lead.qualification || '-'}</div>
-                                                {lead.source === 'Course Enrollment' && lead.notes && (
-                                                    <div className="text-[10px] text-primary font-medium mt-1 uppercase italic">
-                                                        {lead.notes.split(': ')[1] || lead.notes}
-                                                    </div>
-                                                )}
+                                                <div className="font-semibold text-sm text-primary">
+                                                    {lead.courseName || (lead.notes?.includes('course:') ? lead.notes.split('course:')[1].split('|')[0].trim() : '-')}
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="outline">{lead.source}</Badge>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import api, { rbacApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, UserCheck, UserX, Loader2, Users, Download, Eye, CheckCircle, Plus, Trash2, Shield, ShieldAlert, Edit2 } from 'lucide-react'
+import { Search, UserCheck, UserX, Loader2, Eye, Plus, Trash2, Shield, ShieldAlert, Edit2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { exportToCSV } from '@/lib/export-utils'
@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from '@/components/ui/use-toast'
 import { useAuth } from '@/lib/auth-context'
 import { CreateUserModal } from '@/components/admin/users/CreateUserModal'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface User {
     id: string
@@ -24,6 +25,7 @@ interface User {
     isActive: boolean
     createdAt: string
     employerProfile?: { status: string }
+    systemRole?: { name: string }
     totalPaid?: number
 }
 
@@ -56,6 +58,7 @@ export default function RolesAndUsersPage() {
     const [permissions, setPermissions] = React.useState<Permission[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [searchQuery, setSearchQuery] = React.useState("")
+    const [selectedRole, setSelectedRole] = React.useState<string>("all")
     const [activeTab, setActiveTab] = React.useState<string>('users')
 
     // Modals State
@@ -159,6 +162,13 @@ export default function RolesAndUsersPage() {
                 u.email.toLowerCase().includes(searchQuery.toLowerCase())
             )
         }
+        if (selectedRole !== "all") {
+            filtered = filtered.filter(u => {
+                const userRoleName = (u.systemRole?.name || u.role).toUpperCase().replace(/\s+/g, '_');
+                const selectedRoleName = selectedRole.toUpperCase().replace(/\s+/g, '_');
+                return userRoleName === selectedRoleName;
+            })
+        }
         return filtered
     }
 
@@ -259,7 +269,9 @@ export default function RolesAndUsersPage() {
                                         </div>
                                     </td>
                                     <td className="p-4">
-                                        <Badge variant="outline" className={`${getRoleBadgeColor(user.role)} text-[10px] uppercase font-bold`}>{user.role}</Badge>
+                                        <Badge variant="outline" className={`${getRoleBadgeColor(user.role)} text-[10px] uppercase font-bold`}>
+                                            {user.systemRole?.name || user.role}
+                                        </Badge>
                                     </td>
                                     <td className="p-4">
                                         {user.isActive ? <Badge className="bg-green-500/10 text-green-500 border-none text-[9px]">ACTIVE</Badge> : <Badge className="bg-red-500/10 text-red-500 border-none text-[9px]">LOCKED</Badge>}
@@ -345,8 +357,23 @@ export default function RolesAndUsersPage() {
                         <TabsTrigger value="users" className="rounded-lg data-[state=active]:bg-primary h-full px-8 text-xs font-bold uppercase">User Directory</TabsTrigger>
                         <TabsTrigger value="roles" className="rounded-lg data-[state=active]:bg-primary h-full px-8 text-xs font-bold uppercase">Roles & Access</TabsTrigger>
                     </TabsList>
-                    <div className="relative w-full md:w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Search records..." className="pl-10 h-11 glass-input rounded-xl" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                    <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                        <div className="w-full md:w-48">
+                            <Select value={selectedRole} onValueChange={setSelectedRole}>
+                                <SelectTrigger className="h-11 glass-input rounded-xl border-white/10">
+                                    <SelectValue placeholder="All Roles" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-[#0a0a0b] border-white/10">
+                                    <SelectItem value="all">All Roles</SelectItem>
+                                    {roles.map(role => (
+                                        <SelectItem key={role.id} value={role.name}>{role.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="relative w-full md:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Search records..." className="pl-10 h-11 glass-input rounded-xl" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                        </div>
                     </div>
                 </div>
                 {isLoading ? <div className="flex flex-col items-center py-20 gap-4"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="text-xs font-bold animate-pulse uppercase tracking-widest">Synchronizing...</p></div> : (

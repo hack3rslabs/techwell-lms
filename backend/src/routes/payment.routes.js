@@ -152,15 +152,21 @@ router.post('/create-order', authenticate, async (req, res) => {
                 }
             });
 
-            if (!existingEnrollment) {
-                await prisma.enrollment.create({
-                    data: {
+            // Use upsert for free enrollment to activate any existing pending/cancelled records
+            await prisma.enrollment.upsert({
+                where: {
+                    userId_courseId: {
                         userId: req.user.id,
-                        courseId,
-                        status: 'ACTIVE'
+                        courseId
                     }
-                });
-            }
+                },
+                update: { status: 'ACTIVE' },
+                create: {
+                    userId: req.user.id,
+                    courseId,
+                    status: 'ACTIVE'
+                }
+            });
 
             return res.json({
                 gateway: 'FREE',
@@ -285,60 +291,41 @@ router.post('/verify-payment', authenticate, async (req, res) => {
 
             if (user?.email) {
                 const successNote = `Payment successful for course: ${course?.title || payment.courseId}`;
-                const existingLead = await prisma.lead.findFirst({
-                    where: { email: user.email }
+                // Always create a new lead record for each enrollment as requested
+                await prisma.lead.create({
+                    data: {
+                        name: user.name || 'TechWell Student',
+                        email: user.email,
+                        phone: user.phone || null,
+                        qualification: user.qualification || null,
+                        college: user.college || null,
+                        dob: user.dob || null,
+                        source: 'Course Enrollment',
+                        status: 'CONVERTED',
+                        notes: successNote,
+                        courseId: payment.courseId,
+                        courseName: course?.title || 'Unknown Course'
+                    }
                 });
-
-                if (existingLead) {
-                    await prisma.lead.update({
-                        where: { id: existingLead.id },
-                        data: {
-                            name: user.name || existingLead.name,
-                            phone: user.phone || existingLead.phone,
-                            qualification: user.qualification || existingLead.qualification,
-                            college: user.college || existingLead.college,
-                            dob: user.dob || existingLead.dob,
-                            source: existingLead.source || 'Course Enrollment',
-                            status: 'CONVERTED',
-                            notes: existingLead.notes ? `${existingLead.notes} | ${successNote}` : successNote
-                        }
-                    });
-                } else {
-                    await prisma.lead.create({
-                        data: {
-                            name: user.name || 'TechWell Student',
-                            email: user.email,
-                            phone: user.phone || null,
-                            qualification: user.qualification || null,
-                            college: user.college || null,
-                            dob: user.dob || null,
-                            source: 'Course Enrollment',
-                            status: 'CONVERTED',
-                            notes: successNote
-                        }
-                    });
-                }
             }
 
-            // Auto-enroll user in the course
-            const existingEnrollment = await prisma.enrollment.findUnique({
+            // Auto-enroll user in the course - Use upsert to ensure status is updated to ACTIVE even if record exists
+            await prisma.enrollment.upsert({
                 where: {
                     userId_courseId: {
                         userId: payment.userId,
                         courseId: payment.courseId
                     }
+                },
+                update: { 
+                    status: 'ACTIVE' 
+                },
+                create: {
+                    userId: payment.userId,
+                    courseId: payment.courseId,
+                    status: 'ACTIVE'
                 }
             });
-
-            if (!existingEnrollment) {
-                await prisma.enrollment.create({
-                    data: {
-                        userId: payment.userId,
-                        courseId: payment.courseId,
-                        status: 'ACTIVE'
-                    }
-                });
-            }
 
             return res.json({ success: true, message: "Payment verified and enrollment created" });
         } else {
@@ -396,5 +383,6 @@ router.get('/order-status/:orderId', authenticate, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch Razorpay order status' });
     }
 });
+
 
 module.exports = router;

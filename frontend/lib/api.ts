@@ -129,13 +129,6 @@ export const courseApi = {
     delete: (id: string) => api.delete(`/courses/${id}`),
 };
 
-// Enrollment Request API
-export const enrollmentRequestApi = {
-    submit: (data: { courseId: string; name: string; email: string; phone?: string; qualification?: string }) => api.post('/enrollment-requests', data),
-    getMyRequest: (courseId: string) => api.get(`/enrollment-requests/my/${courseId}`),
-    getAll: () => api.get('/enrollment-requests'),
-    updateStatus: (id: string, status: 'APPROVED' | 'REJECTED') => api.put(`/enrollment-requests/${id}/status`, { status }),
-};
 
 // Employer Request API
 export const employerRequestApi = {
@@ -178,6 +171,9 @@ export const interviewApi = {
 
 // Payment API
 export const paymentApi = {
+    getAll: () => api.get('/admin/transactions'),
+    getConfig: () => api.get('/payments/config'),
+    updateConfig: (data: any) => api.put('/payments/config', data),
     // Send amount (in rupees) and optional currency; backend will create order and return orderId, keyId and amount (in paise)
     createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY', amount?: number, currency = 'INR') =>
         api.post('/payments/create-order', { courseId, type, amount, currency }),
@@ -397,6 +393,14 @@ export const courseCategoryApi = {
         api.put(`/course-categories/${id}`, data),
     delete: (id: string) => api.delete(`/course-categories/${id}`),
 };
+
+// Gallery API
+export const galleryApi = {
+    getAll: () => api.get('/gallery'),
+    add: (data: { url: string; caption?: string; order?: number }) => api.post('/gallery', data),
+    delete: (id: string) => api.delete('/gallery', { params: { id } }),
+};
+
 
 export default api;
 

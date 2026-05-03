@@ -453,4 +453,31 @@ router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (r
     }
 });
 
+// GET /api/admin/transactions
+router.get('/transactions', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+    try {
+        const payments = await prisma.payment.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        email: true
+                    }
+                },
+                course: {
+                    select: {
+                        title: true
+                    }
+                }
+            }
+        });
+
+        res.json(payments);
+    } catch (error) {
+        console.error("Fetch All Payments Error:", error);
+        res.status(500).json({ error: "Failed to fetch transactions" });
+    }
+});
+
 module.exports = router;

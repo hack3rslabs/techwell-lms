@@ -87,11 +87,12 @@ app.use('/api/trainer', require('./routes/trainer.routes'));
 app.use('/api/behavior', require('./routes/behavior.routes'));
 app.use('/api/library', require('./routes/library.routes'));
 app.use('/api/chatgpt', require('./routes/chatgpt.routes'));
-app.use('/api/enrollment-requests', require('./routes/enrollment-requests.routes'));
+// app.use('/api/enrollment-requests', require('./routes/enrollment-requests.routes'));
 app.use('/api/employer-requests', require('./routes/employer-requests.routes'));
 app.use('/api/messages', require('./routes/messages.routes'));
 app.use('/api/course-categories', require('./routes/course-categories.routes'));
 app.use('/api/resume', require('./routes/resume.routes'));
+app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
 
 // Health check
 app.get('/api/health', async (req, res) => {
@@ -118,9 +119,19 @@ app.use((err, req, res, next) => {
 
     // Handle Prisma errors
     if (err.code && err.code.startsWith('P')) {
+        let errorMsg = 'Database operation failed';
+        if (err.code === 'P2002') {
+            errorMsg = 'A unique constraint was violated (duplicate record).';
+        } else if (err.code === 'P2003') {
+            errorMsg = 'A foreign key constraint failed.';
+        } else if (err.code === 'P2025') {
+            errorMsg = 'Requested record was not found.';
+        }
+
         return res.status(400).json({
-            error: 'Database operation failed',
-            details: err.message
+            error: errorMsg,
+            details: err.message,
+            code: err.code
         });
     }
 
