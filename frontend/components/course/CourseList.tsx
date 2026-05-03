@@ -227,7 +227,7 @@ export default function CourseList() {
                                     <span className="text-sm font-black text-gray-500 line-through">
                                         {course.price === 0 ? 'Free' : `₹${course.price}`}
                                     </span>
-                                    <p className="text-2xl font-semibold text-white"> ₹{course.discountPrice}</p>
+                                    <p className="text-2xl font-semibold text-black dark:text-white"> ₹{course.discountPrice}</p>
                                 </div>
                                 {course.isEnrolled && (
                                     <span className="text-xs px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-full font-semibold dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
