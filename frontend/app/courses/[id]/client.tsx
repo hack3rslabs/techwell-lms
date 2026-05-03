@@ -123,28 +123,6 @@ export default function CourseDetailClient() {
     const [isEnrolling, setIsEnrolling] = React.useState(false)
     const [expandedModules, setExpandedModules] = React.useState<string[]>([])
     const [purchaseType, setPurchaseType] = React.useState<'COURSE_ONLY' | 'BUNDLE'>('COURSE_ONLY');
-    const [isRequesting, setIsRequesting] = React.useState(false)
-    const [showRequestDialog, setShowRequestDialog] = React.useState(false)
-    const [dialogMessage, setDialogMessage] = React.useState<{ title: string; desc: string; type: 'success' | 'error' } | null>(null)
-    const [formData, setFormData] = React.useState({
-        name: user?.name || '',
-        email: user?.email || '',
-        phone: user?.phone || '',
-        qualification: user?.qualification || ''
-    })
-
-    React.useEffect(() => {
-        if (user) {
-            setFormData(prev => ({
-                ...prev,
-                name: user.name || prev.name,
-                email: user.email || prev.email,
-                phone: user.phone || prev.phone,
-                qualification: user.qualification || prev.qualification
-            }))
-        }
-    }, [user])
-
     React.useEffect(() => {
         const fetchCourseData = async () => {
             try {
@@ -165,28 +143,51 @@ export default function CourseDetailClient() {
         }
     }, [params.id])
 
+    const [dialogMessage, setDialogMessage] = React.useState<{ title: string; desc: string; type: 'success' | 'error' } | null>(null)
+    const [showRequestDialog, setShowRequestDialog] = React.useState(false)
+    const [isRequesting, setIsRequesting] = React.useState(false)
+    const [formData, setFormData] = React.useState({
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        qualification: ''
+    })
+
+    React.useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                name: user.name || prev.name,
+                email: user.email || prev.email,
+                phone: user.phone || prev.phone
+            }))
+        }
+    }, [user])
+
     const handleEnrollInterest = async (e: React.FormEvent) => {
         e.preventDefault()
-
+        if (!course) return
         setIsRequesting(true)
         try {
             await leadApi.capture({
-                courseId: course!.id,
-                courseTitle: course!.title,
-                ...formData
+                courseId: course.id,
+                courseTitle: course.title,
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                qualification: formData.qualification
             })
-            setShowRequestDialog(false)
             setDialogMessage({
-                title: 'Interest Submitted!',
-                desc: 'Your details have been added to Leads. Our TechWell team will contact you soon.',
+                title: 'Interest Captured!',
+                desc: 'Thank you for your interest. Our career counselor will contact you shortly.',
                 type: 'success'
             })
-        } catch (error: unknown) {
-            const err = error as { response?: { data?: { error?: string } } };
-            console.error('Failed to submit enrollment interest:', error)
+            setShowRequestDialog(false)
+        } catch (error) {
+            console.error('Failed to capture interest:', error)
             setDialogMessage({
                 title: 'Submission Failed',
-                desc: err.response?.data?.error || 'Failed to submit details. Please try again or use Buy Now.',
+                desc: 'Something went wrong. Please try again or contact support.',
                 type: 'error'
             })
         } finally {
@@ -430,7 +431,7 @@ export default function CourseDetailClient() {
                                         <DialogHeader>
                                             <DialogTitle>Share Course Interest</DialogTitle>
                                             <DialogDescription>
-                                                Submit your details to Leads and our team will help you with the next steps.
+                                                Submit your details and our team will help you with the next steps. This will be added to our Leads for follow-up.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <form onSubmit={handleEnrollInterest} className="space-y-4 pt-4">
@@ -639,20 +640,6 @@ export default function CourseDetailClient() {
                                         )}
                                         {isEnrolling ? 'Processing...' : (currentPrice === 0 ? 'Enroll for Free' : `Buy ${purchaseType === 'BUNDLE' ? 'Bundle' : 'Now'}`)}
                                     </Button>
-                                    
-                                    <Button 
-                                        variant="outline" 
-                                        className="w-full" 
-                                        onClick={() => {
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            setShowRequestDialog(true);
-                                        }}
-                                    >
-                                        Talk to an Advisor
-                                    </Button>
-                                    <p className="text-xs text-center text-muted-foreground mt-1">
-                                        Interested but not ready to pay? We will add you to Leads and call you.
-                                    </p>
                                 </div>
                             )}
 

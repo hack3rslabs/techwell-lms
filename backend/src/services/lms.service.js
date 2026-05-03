@@ -29,8 +29,19 @@ const getStudentCourseView = async (userId, courseId) => {
         }
     });
 
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true }
+    });
+
     if (!course) throw new Error('Course not found');
     if (course.enrollments.length === 0) throw new Error('Not enrolled');
+
+    // Check Enrollment status
+    const enrollment = course.enrollments[0];
+    if (!['ACTIVE', 'COMPLETED'].includes(enrollment.status)) {
+        throw new Error('Access denied. Enrollment is not active.');
+    }
 
     // 2. Calculate Locked Status & Progress
     let previousLessonCompleted = true; // First lesson is always unlocked

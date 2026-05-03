@@ -57,6 +57,7 @@ model User {
   institute              Institute?             @relation(fields: [instituteId], references: [id])
   systemRole             SystemRole?            @relation(fields: [systemRoleId], references: [id])
   conversations          Conversation[]         @relation("UserConversations")
+  notifications          Notification[]
   resume                 Resume?
 }
 
@@ -164,6 +165,7 @@ model Course {
   payments             Payment[]
   reviews              Review[]
   certificates         Certificate[]
+  meetings             Meeting[]
 
   @@unique([title, instructorId])
 }
@@ -719,7 +721,8 @@ model Lead {
   campaignId    String?
   adGroupId     String?
   adId          String?
-  formId        String?
+  courseId      String?
+  courseName    String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   tasks         Task[]
@@ -1380,4 +1383,29 @@ model Resume {
   data      Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Meeting {
+  id          String         @id @default(cuid())
+  courseId    String
+  title       String
+  link        String
+  datetime    DateTime
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  course      Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  meetingId String?
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  meeting   Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

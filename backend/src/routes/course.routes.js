@@ -8,6 +8,105 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
 
 console.log('Loading Course Routes...');
 
+/**
+ * @route   GET /api/courses/my/enrolled
+ * @desc    Get user's enrolled courses
+ * @access  Private
+ */
+router.get('/my/enrolled', authenticate, async (req, res, next) => {
+    try {
+        // Get all enrollments for this user
+        const enrollments = await prisma.enrollment.findMany({
+            where: { userId: req.user.id },
+            include: { course: true },
+            orderBy: { enrolledAt: 'desc' }
+        });
+
+        // Get all successful payments for this user
+        const successfulPayments = await prisma.payment.findMany({
+            where: {
+                userId: req.user.id,
+                status: { in: ['SUCCESS', 'success', 'captured', 'CAPTURED'] }
+            },
+            select: { courseId: true }
+        });
+
+        const paidCourseIds = new Set(successfulPayments.map(p => p.courseId));
+        const enrollmentCourseIds = new Set(enrollments.map(e => e.courseId));
+
+        // Combine logic: 
+        // 1. Show existing ACTIVE/COMPLETED enrollments
+        // 2. Show ANY enrollment that has a successful payment record (even if status is PENDING/null)
+        // 3. Show FREE courses that are ACTIVE
+        const filteredEnrollments = enrollments.filter(e => {
+            // Safety check: if course was deleted but enrollment remains
+            if (!e.course) return false;
+
+            const isActive = ['ACTIVE', 'COMPLETED'].includes(e.status?.toUpperCase());
+            const isPaid = paidCourseIds.has(e.courseId);
+            
+            // Check if free
+            const effectivePrice = e.course.discountPrice !== null ? Number(e.course.discountPrice) : Number(e.course.price);
+            const isFree = effectivePrice <= 0;
+
+            return isPaid || isActive || isFree;
+        });
+
+        // Healing: If there's a successful payment but NO enrollment record at all,
+        // we should ideally show it. We'll add it to the response so the student sees it.
+        const missingPaidEnrollments = [];
+        for (const paymentCourseId of paidCourseIds) {
+            // Skip if no courseId (e.g. bundle payment or other type)
+            if (!paymentCourseId) continue;
+
+            if (!enrollmentCourseIds.has(paymentCourseId)) {
+                const course = await prisma.course.findUnique({ where: { id: paymentCourseId } });
+                if (course) {
+                    missingPaidEnrollments.push({
+                        id: `missing_${paymentCourseId}`,
+                        userId: req.user.id,
+                        courseId: paymentCourseId,
+                        status: 'ACTIVE',
+                        progress: 0,
+                        course: course,
+                        enrolledAt: new Date()
+                    });
+                }
+            }
+        }
+
+        const finalResults = [...filteredEnrollments, ...missingPaidEnrollments];
+
+        res.json({ enrollments: finalResults });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/courses/my/created
+ * @desc    Get courses created by the instructor
+ * @access  Private/Instructor
+ */
+router.get('/my/created', authenticate, async (req, res, next) => {
+    try {
+        if (!['INSTRUCTOR', 'ADMIN', 'SUPER_ADMIN'].includes(req.user.role) && !req.user.permissions?.includes('MANAGE_COURSES')) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+        const courses = await prisma.course.findMany({
+            where: { instructorId: req.user.id },
+            orderBy: { createdAt: 'desc' },
+            include: {
+                _count: { select: { modules: true, enrollments: true } }
+            }
+        });
+        res.json({ courses });
+    } catch (error) {
+        next(error);
+    }
+});
+
+
 // Validation schemas
 const createCourseSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -136,9 +235,15 @@ router.get('/', optionalAuth, async (req, res, next) => {
                     userId: req.user.id,
                     courseId: { in: courseIds }
                 },
-                select: { courseId: true }
+                include: { course: { select: { id: true, price: true } } }
             });
-            const enrolledCourseIds = new Set(enrollments.map(e => e.courseId));
+
+            const enrolledCourseIds = new Set(
+                enrollments
+                    .filter(e => ['ACTIVE', 'COMPLETED'].includes(e.status))
+                    .map(e => e.courseId)
+            );
+
             coursesWithEnrollment = courses.map((c) => ({
                 ...c,
                 isEnrolled: enrolledCourseIds.has(c.id)
@@ -162,28 +267,6 @@ router.get('/', optionalAuth, async (req, res, next) => {
     }
 });
 
-/**
- * @route   GET /api/courses/my/created
- * @desc    Get courses created by the instructor
- * @access  Private/Instructor
- */
-router.get('/my/created', authenticate, async (req, res, next) => {
-    try {
-        if (!['INSTRUCTOR', 'ADMIN', 'SUPER_ADMIN'].includes(req.user.role) && !req.user.permissions.includes('MANAGE_COURSES')) {
-            return res.status(403).json({ error: 'Access denied' });
-        }
-        const courses = await prisma.course.findMany({
-            where: { instructorId: req.user.id },
-            orderBy: { createdAt: 'desc' },
-            include: {
-                _count: { select: { modules: true, enrollments: true } }
-            }
-        });
-        res.json({ courses });
-    } catch (error) {
-        next(error);
-    }
-});
 
 /**
  * @route   GET /api/courses/:id
@@ -219,7 +302,7 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
             return res.status(404).json({ error: 'Course not found' });
         }
 
-        // Check if user is enrolled
+        // Check if user is enrolled AND paid (if not free)
         let isEnrolled = false;
         if (req.user) {
             const enrollment = await prisma.enrollment.findUnique({
@@ -230,7 +313,10 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
                     }
                 }
             });
-            isEnrolled = !!enrollment;
+            
+            if (enrollment) {
+                isEnrolled = ['ACTIVE', 'COMPLETED'].includes(enrollment.status);
+            }
         }
 
         res.json({ course, isEnrolled });
@@ -333,6 +419,13 @@ router.post('/', authenticate, async (req, res, next) => {
         console.log('[DEBUG] Course created with ID:', course.id);
         res.status(201).json({ message: 'Course created', course });
     } catch (error) {
+        if (error.code === 'P2002') {
+            const target = error.meta?.target || [];
+            if (Array.isArray(target) && target.includes('courseCode')) {
+                return res.status(400).json({ error: 'This course code is already in use. Please choose a unique code.' });
+            }
+            return res.status(400).json({ error: 'You already have a course with this title. Please choose a unique title for each of your courses.' });
+        }
         console.error('[DEBUG] Course creation failed:', error.message);
         next(error);
     }
@@ -381,6 +474,13 @@ router.put('/:id', authenticate, async (req, res, next) => {
         console.log('[DEBUG] Course updated with ID:', updatedCourse.id);
         res.json({ message: 'Course updated', course: updatedCourse });
     } catch (error) {
+        if (error.code === 'P2002') {
+            const target = error.meta?.target || [];
+            if (Array.isArray(target) && target.includes('courseCode')) {
+                return res.status(400).json({ error: 'This course code is already in use. Please choose a unique code.' });
+            }
+            return res.status(400).json({ error: 'You already have a course with this title. Please choose a unique title for each of your courses.' });
+        }
         console.error('[DEBUG] Course update failed:', error.message);
         next(error);
     }
@@ -440,36 +540,22 @@ router.post('/:id/enroll', authenticate, async (req, res, next) => {
             where: { email: user.email }
         });
 
-        let lead;
-        if (existingLead) {
-            lead = await prisma.lead.update({
-                where: { id: existingLead.id },
-                data: {
-                    name: user.name,
-                    phone: user.phone || existingLead.phone,
-                    qualification: user.qualification || existingLead.qualification,
-                    college: user.college || existingLead.college,
-                    dob: user.dob || existingLead.dob,
-                    source: existingLead.source || 'Course Enrollment',
-                    status: existingLead.status === 'CONVERTED' ? 'CONVERTED' : 'INTERESTED',
-                    notes: existingLead.notes ? `${existingLead.notes} | ${interestNote}` : interestNote
-                }
-            });
-        } else {
-            lead = await prisma.lead.create({
-                data: {
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone || null,
-                    qualification: user.qualification || null,
-                    college: user.college || null,
-                    dob: user.dob || null,
-                    source: 'Course Enrollment',
-                    status: 'INTERESTED',
-                    notes: interestNote
-                }
-            });
-        }
+        // Always create a new lead for every interest/enrollment as requested
+        const lead = await prisma.lead.create({
+            data: {
+                name: user.name,
+                email: user.email,
+                phone: user.phone || null,
+                qualification: user.qualification || null,
+                college: user.college || null,
+                dob: user.dob || null,
+                source: 'Course Enrollment',
+                status: 'INTERESTED',
+                notes: interestNote,
+                courseId: id,
+                courseName: course?.title || 'Unknown Course'
+            }
+        });
 
         res.status(200).json({
             message: 'Interest captured successfully. Our team can follow up from Leads.',
@@ -480,35 +566,6 @@ router.post('/:id/enroll', authenticate, async (req, res, next) => {
     }
 });
 
-/**
- * @route   GET /api/courses/my/enrolled
- * @desc    Get user's enrolled courses
- * @access  Private
- */
-router.get('/my/enrolled', authenticate, async (req, res, next) => {
-    try {
-        const enrollments = await prisma.enrollment.findMany({
-            where: { userId: req.user.id },
-            include: {
-                course: {
-                    select: {
-                        id: true,
-                        title: true,
-                        thumbnail: true,
-                        bannerUrl: true,
-                        category: true,
-                        difficulty: true
-                    }
-                }
-            },
-            orderBy: { enrolledAt: 'desc' }
-        });
-
-        res.json({ enrollments });
-    } catch (error) {
-        next(error);
-    }
-});
 
 const { generateCourseStructure } = require('../services/ai-course.service');
 
@@ -650,11 +707,17 @@ router.get('/:id/learn', authenticate, async (req, res, next) => {
         const enrollment = await prisma.enrollment.findUnique({
             where: {
                 userId_courseId: { userId, courseId }
-            }
+            },
+            include: { course: true }
         });
 
         if (!enrollment) {
             return res.status(403).json({ error: 'Access denied. Not enrolled.' });
+        }
+
+        // Check Enrollment status
+        if (!['ACTIVE', 'COMPLETED'].includes(enrollment.status)) {
+            return res.status(403).json({ error: 'Access denied. Enrollment is not active.' });
         }
 
         // Use LMS Service to get structured view with Locks
