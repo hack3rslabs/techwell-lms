@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import api, { courseApi, interviewApi, certificateApi, liveClassApi } from '@/lib/api'
 import Image from 'next/image'
@@ -25,7 +25,9 @@ import {
     FileText,
     MapPin,
     Building2,
-    CheckCircle2
+    CheckCircle2,
+    RefreshCw,
+    MessageSquare
 } from 'lucide-react'
 import { NewInterviewDialog } from '@/components/interviews/NewInterviewDialog'
 import { StudentMessages } from '@/components/messages/StudentMessages'
@@ -118,17 +120,27 @@ export default function DashboardPage() {
     const router = useRouter()
     const { user, isLoading: authLoading, logout } = useAuth()
 
-    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-    const initialTabParam = searchParams?.get('tab')
+    const searchParams = useSearchParams()
+    const tabParam = searchParams.get('tab')
 
     type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume'
     const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume']
 
-    const [activeTab, setActiveTab] = React.useState<TabType>(
-        (initialTabParam && (validTabs as string[]).includes(initialTabParam))
-            ? initialTabParam as TabType
-            : 'overview'
-    )
+    const [activeTab, setActiveTab] = React.useState<TabType>('overview')
+
+    // Sync tab from URL
+    React.useEffect(() => {
+        if (tabParam && validTabs.includes(tabParam as TabType)) {
+            setActiveTab(tabParam as TabType)
+        } else if (!tabParam) {
+            setActiveTab('overview')
+        }
+    }, [tabParam])
+
+    const handleTabChange = (newTab: TabType) => {
+        setActiveTab(newTab)
+        router.push(`/dashboard?tab=${newTab}`, { scroll: false })
+    }
     const [stats, setStats] = React.useState<{
         enrollments: number;
         interviews: { total: number; completed: number; averageScore: number };
@@ -159,63 +171,94 @@ export default function DashboardPage() {
         }
     }, [authLoading, user, router])
 
-    React.useEffect(() => {
-        const fetchData = async () => {
-            if (!user) return
+    const [refreshTrigger, setRefreshTrigger] = React.useState(0)
 
-            try {
-                const [enrollmentsRes, interviewStatsRes, interviewsRes, jobInterviewsRes, liveClassesRes] = await Promise.all([
-                    courseApi.getMyEnrollments(),
-                    interviewApi.getStats(),
-                    interviewApi.getAll({ page: 1 }),
-                    interviewApi.getJobInterviews ? interviewApi.getJobInterviews() : Promise.resolve({ data: { interviews: [] } }),
-                    liveClassApi.getAll({ upcoming: true }).catch(() => ({ data: [] as LiveClassMessage[] }))
-                ])
+    const fetchData = React.useCallback(async () => {
+        if (!user) return
+        setIsLoading(true)
 
-                setEnrollments(enrollmentsRes.data.enrollments || [])
-                setInterviews(interviewsRes.data.interviews || [])
-                setJobInterviews(jobInterviewsRes.data.interviews || [])
+        try {
+            // Using Promise.allSettled would be better, but let's just use try/catch blocks for critical ones
+            // to ensure enrollments load even if interviews fail.
+            
+            const results = await Promise.allSettled([
+                courseApi.getMyEnrollments(),
+                interviewApi.getStats(),
+                interviewApi.getAll({ page: 1 }),
+                interviewApi.getJobInterviews ? interviewApi.getJobInterviews() : Promise.resolve({ data: { interviews: [] } }),
+                liveClassApi.getAll({ upcoming: true })
+            ])
+
+            // Handle Enrollments (Critical)
+            if (results[0].status === 'fulfilled') {
+                const enrollRes = results[0].value;
+                setEnrollments(enrollRes.data.enrollments || [])
+                setStats(prev => ({
+                    ...prev!,
+                    enrollments: enrollRes.data.enrollments?.length || 0
+                }))
+            }
+
+            // Handle Interview Stats
+            if (results[1].status === 'fulfilled') {
+                const statsRes = results[1].value;
+                setStats(prev => ({
+                    ...prev!,
+                    interviews: statsRes.data.stats || { total: 0, completed: 0, averageScore: 0 }
+                }))
+            }
+
+            // Handle Interviews List
+            if (results[2].status === 'fulfilled') {
+                setInterviews(results[2].value.data.interviews || [])
+            }
+
+            // Handle Job Interviews
+            if (results[3].status === 'fulfilled') {
+                setJobInterviews(results[3].value.data.interviews || [])
+            }
+
+            // Handle Live Classes
+            if (results[4].status === 'fulfilled') {
+                const liveClassesRes = results[4].value;
                 setCourseMessages(
                     (liveClassesRes.data || []).reduce((messagesByCourse: Record<string, LiveClassMessage[]>, liveClass: LiveClassMessage) => {
                         if (!messagesByCourse[liveClass.courseId]) {
                             messagesByCourse[liveClass.courseId] = []
                         }
-
                         messagesByCourse[liveClass.courseId].push(liveClass)
                         return messagesByCourse
                     }, {})
                 )
-
-                setStats({
-                    enrollments: enrollmentsRes.data.enrollments?.length || 0,
-                    interviews: interviewStatsRes.data.stats || { total: 0, completed: 0, averageScore: 0 },
-                })
-
-                // Fetch certificates and applications in background (non-blocking)
-                try {
-                    const certsRes = await certificateApi.getAll()
-                    setCertificates(certsRes.data.certificates || certsRes.data || [])
-                } catch {
-                    // Certificate endpoint might fail - graceful fallback
-                }
-
-                try {
-                    const appsRes = await api.get('/jobs/applications/me')
-                    setApplications(appsRes.data || [])
-                } catch {
-                    // Applications endpoint might fail - graceful fallback
-                }
-            } catch {
-                // Error handling
-            } finally {
-                setIsLoading(false)
             }
-        }
 
+            // Secondary fetches (non-blocking)
+            try {
+                const certsRes = await certificateApi.getAll()
+                setCertificates(certsRes.data.certificates || certsRes.data || [])
+            } catch (err) {
+                console.error("Dashboard: Failed to load certificates", err)
+            }
+
+            try {
+                const appsRes = await api.get('/jobs/applications/me')
+                setApplications(appsRes.data || [])
+            } catch (err) {
+                console.error("Dashboard: Failed to load applications", err)
+            }
+
+        } catch (error) {
+            console.error("Dashboard: Unexpected error in fetchData", error)
+        } finally {
+            setIsLoading(false)
+        }
+    }, [user])
+
+    React.useEffect(() => {
         if (user) {
             fetchData()
         }
-    }, [user])
+    }, [user, fetchData, refreshTrigger])
 
     const getStatusBadge = (status: string) => {
         const statusMap: Record<string, { label: string; className: string }> = {
@@ -265,6 +308,15 @@ export default function DashboardPage() {
                         <p className="text-muted-foreground mt-1 text-lg">Track your progress and manage your learning journey.</p>
                     </div>
                     <div className="flex gap-3">
+                        <Button
+                            variant="outline"
+                            className="hover:bg-muted/80"
+                            onClick={() => setRefreshTrigger(prev => prev + 1)}
+                            disabled={isLoading}
+                        >
+                            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            Refresh
+                        </Button>
                         <Button variant="outline" className="hover:bg-muted/80" onClick={() => router.push('/profile')}>
                             Profile Settings
                         </Button>
@@ -280,7 +332,7 @@ export default function DashboardPage() {
                     {[
                         { id: 'overview', label: 'Overview', icon: TrendingUp },
                         { id: 'learning', label: 'My Learning', icon: BookOpen },
-                        { id: 'messages', label: 'Messages', icon:BookOpen },
+                        { id: 'messages', label: 'Messages', icon: MessageSquare },
                         { id: 'interviews', label: 'Interviews', icon: Video },
                         { id: 'applications', label: 'Applications', icon: Briefcase, count: applications.length },
                         { id: 'certificates', label: 'Certificates', icon: Award, count: certificates.length },
@@ -288,7 +340,7 @@ export default function DashboardPage() {
                     ].map((tab) => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                            onClick={() => handleTabChange(tab.id as TabType)}
                             className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === tab.id
                                 ? 'bg-primary text-white shadow-lg shadow-primary/25'
                                 : 'text-muted-foreground hover:bg-background hover:text-foreground'
@@ -439,79 +491,14 @@ export default function DashboardPage() {
                                 </div>
 
                                 {/* Recent Activity / Quick Actions */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-card border border-border p-6 rounded-2xl">
-                                        <div className="flex flex-col gap-1 mb-6">
-                                            <h3 className="text-xl font-bold text-foreground">Continue Learning</h3>
-                                            <p className="text-sm text-muted-foreground">Pick up where you left off</p>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            {enrollments.length > 0 ? (
-                                                <>
-                                                    {enrollments.slice(0, 3).map((enrollment) => (
-                                                        <div key={enrollment.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
-                                                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                                <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                                    <BookOpen className="h-5 w-5 text-primary" />
-                                                                </div>
-                                                                <div className="min-w-0">
-                                                                    <h4 className="font-medium line-clamp-1 text-foreground">{enrollment.course.title}</h4>
-                                                                    <p className="text-xs text-muted-foreground">{enrollment.course.category} • {enrollment.progress || 0}% complete</p>
-                                                                </div>
-                                                            </div>
-                                                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full flex-shrink-0" onClick={() => router.push(`/courses/${enrollment.course.id}/learn`)}>
-                                                                <PlayCircle className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    ))}
-                                                    <Button variant="link" className="px-0 w-full text-primary" onClick={() => setActiveTab('learning')}>
-                                                        View All Courses
-                                                    </Button>
-                                                </>
-                                            ) : (
-                                                <div className="text-center py-6">
-                                                    <p className="text-muted-foreground mb-4">No courses enrolled yet.</p>
-                                                    <Button onClick={() => router.push('/courses')}>Browse Courses</Button>
-                                                </div>
-                                            )}
-                                        </div>
+                                {enrollments.length > 0 ? (
+                                    <></>
+                                ) : (
+                                    <div className="text-center py-6 bg-card border border-border rounded-2xl">
+                                        <p className="text-muted-foreground mb-4">No courses enrolled yet.</p>
+                                        <Button onClick={() => router.push('/courses')}>Browse Courses</Button>
                                     </div>
-
-                                    <div className="bg-card border border-border p-6 rounded-2xl">
-                                        <div className="flex flex-col gap-1 mb-6">
-                                            <h3 className="text-xl font-bold text-foreground">Interview Practice</h3>
-                                            <p className="text-sm text-muted-foreground">Recent mock interviews</p>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            {interviews.length > 0 ? (
-                                                <>
-                                                    {interviews.slice(0, 3).map((interview) => (
-                                                        <div key={interview.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
-                                                            <div>
-                                                                <h4 className="font-medium text-foreground">{interview.role}</h4>
-                                                                <p className="text-xs text-muted-foreground">{interview.domain} • {new Date(interview.createdAt).toLocaleDateString()}</p>
-                                                            </div>
-                                                            <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${interview.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                                                                }`}>
-                                                                {interview.status === 'COMPLETED' ? `${interview.score || 0}%` : interview.status}
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                    <Button variant="link" className="px-0 w-full text-primary" onClick={() => setActiveTab('interviews')}>
-                                                        View All Interviews
-                                                    </Button>
-                                                </>
-                                            ) : (
-                                                <div className="text-center py-6">
-                                                    <p className="text-muted-foreground mb-4">No interviews taken yet.</p>
-                                                    <NewInterviewDialog trigger={<Button variant="outline">Start Interview</Button>} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                )}
 
                                 <StudentMessages />
                             </div>

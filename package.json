@@ -1,0 +1,20 @@
+{
+  "name": "techwell-lms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bulk-rbac-update.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hack3rslabs/techwell-lms.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hack3rslabs/techwell-lms/issues"
+  },
+  "homepage": "https://github.com/hack3rslabs/techwell-lms#readme"
+}

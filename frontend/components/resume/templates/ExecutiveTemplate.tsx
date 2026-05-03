@@ -162,7 +162,7 @@ export default function ExecutiveTemplate(props: ResumeProps) {
                     Executive Profile <span className="h-px bg-slate-100 flex-grow"></span>
                 </h2>
                 <p className="text-[13px] text-slate-700 text-justify leading-relaxed italic">
-                    "{props.summary}"
+                    &quot;{props.summary}&quot;
                 </p>
             </section>
         )}
@@ -246,7 +246,7 @@ export default function ExecutiveTemplate(props: ResumeProps) {
                     )}
                     {props.awards && props.awards.length > 0 && (
                         <ul className="space-y-2 text-[12px] italic text-slate-500 font-medium leading-relaxed">
-                            {props.awards.map((a, i) => <li key={i}>"{a.text}"</li>)}
+                            {props.awards.map((a, i) => <li key={i}>&quot;{a.text}&quot;</li>)}
                         </ul>
                     )}
                 </div>

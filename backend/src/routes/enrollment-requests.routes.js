@@ -200,24 +200,21 @@ router.put('/:id/status', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'STAFF
             });
 
             if (status === 'APPROVED') {
-                // Ensure enrollment exists or create it
-                const existingEnrollment = await tx.enrollment.findUnique({
+                // Ensure enrollment is ACTIVE or created
+                await tx.enrollment.upsert({
                     where: {
                         userId_courseId: {
                             userId: request.userId,
                             courseId: request.courseId
                         }
+                    },
+                    update: { status: 'ACTIVE' },
+                    create: {
+                        userId: request.userId,
+                        courseId: request.courseId,
+                        status: 'ACTIVE'
                     }
                 });
-
-                if (!existingEnrollment) {
-                    await tx.enrollment.create({
-                        data: {
-                            userId: request.userId,
-                            courseId: request.courseId
-                        }
-                    });
-                }
             } else if (status === 'REJECTED') {
                 // Delete existing enrollment if they were revoked
                 await tx.enrollment.deleteMany({

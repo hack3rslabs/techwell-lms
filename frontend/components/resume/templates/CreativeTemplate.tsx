@@ -111,7 +111,7 @@ export default function CreativeTemplate(props: ResumeProps) {
                             <div className="h-px bg-slate-100 flex-grow"></div>
                         </div>
                         <p className="text-slate-600 text-lg leading-relaxed max-w-3xl italic font-medium">
-                            "{props.summary}"
+                            &quot;{props.summary}&quot;
                         </p>
                     </section>
                 )}
@@ -227,7 +227,7 @@ export default function CreativeTemplate(props: ResumeProps) {
                                             {proj.liveUrl && <a href={proj.liveUrl} className="p-2 bg-pink-50 text-pink-500 rounded-xl hover:bg-pink-500 hover:text-white transition-all"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>}
                                         </div>
                                     </div>
-                                    <p className="text-slate-600 text-[13px] leading-relaxed mb-6 font-medium italic opacity-70">"{proj.description}"</p>
+                                    <p className="text-slate-600 text-[13px] leading-relaxed mb-6 font-medium italic opacity-70">&quot;{proj.description}&quot;</p>
                                 </div>
                                 <div className="space-y-4 pt-4 border-t border-slate-50">
                                     {proj.outcome && (

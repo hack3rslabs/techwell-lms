@@ -22,6 +22,7 @@ import {
     GraduationCap,
     Star,
     Image as ImageIcon,
+    CreditCard,
     type LucideIcon
 } from "lucide-react"
 
@@ -61,6 +62,7 @@ export function AdminSidebar({ className }: SidebarProps) {
         { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "USERS" },
         { label: "All Leads", icon: Magnet, href: "/admin/leads", permission: "LEADS", showLeadCounts: true },
         { label: "Finance", icon: FileText, href: "/admin/finance", permission: "FINANCE" },
+        { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "FINANCE" },
         { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS" },
         { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "COURSES" },
         { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "COURSES" },
