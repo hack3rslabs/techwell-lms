@@ -7,11 +7,11 @@ $dbHost = 'localhost'
 $dbPort = 5432
 
 function Write-Step([string]$Message) {
-    Write-Host "[TechWell] $Message" -ForegroundColor Cyan
+    Write-Host "[Techwell] $Message" -ForegroundColor Cyan
 }
 
 function Fail([string]$Message) {
-    Write-Host "[TechWell] $Message" -ForegroundColor Red
+    Write-Host "[Techwell] $Message" -ForegroundColor Red
     exit 1
 }
 

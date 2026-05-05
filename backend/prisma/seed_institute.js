@@ -7,7 +7,7 @@ async function main() {
     // 1. Create Institute
     const institute = await prisma.institute.create({
         data: {
-            name: 'TechWell Logic Institute',
+            name: 'Techwell Logic Institute',
             code: 'TW-LOGIC',
             email: 'admin@logic-institute.com',
             address: '123 Tech Park, Cyber City',

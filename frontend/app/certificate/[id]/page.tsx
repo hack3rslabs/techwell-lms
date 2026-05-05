@@ -92,7 +92,7 @@ export default function CertificatePage() {
                     {/* Logo / Header */}
                     <div className="mb-4">
                         <div className="text-4xl font-bold tracking-widest uppercase text-primary font-serif">
-                            TechWell
+                            Techwell
                         </div>
                         <div className="text-sm text-muted-foreground tracking-widest uppercase mt-1">
                             Institute of Technology

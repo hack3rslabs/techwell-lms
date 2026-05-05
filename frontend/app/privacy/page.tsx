@@ -29,7 +29,7 @@ export default function PrivacyPage() {
                                 Introduction
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">
-                                TechWell (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy
+                                Techwell (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy
                                 explains how we collect, use, disclose, and safeguard your information when you use our
                                 AI-powered interview preparation and learning platform.
                             </p>

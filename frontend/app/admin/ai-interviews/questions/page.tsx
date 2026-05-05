@@ -61,22 +61,11 @@ interface KnowledgeEntry {
     createdAt: string
 }
 
-const _SAMPLE_ENTRIES: KnowledgeEntry[] = [
-    {
-        id: '1',
-        domain: 'IT',
-        topic: 'JavaScript Closures',
-        content: 'Explain what closures are in JavaScript and provide an example of their practical use.',
-        answer: 'A closure is the combination of a function bundled together (enclosed) with references to its surrounding state (the lexical environment).',
-        difficulty: 'INTERMEDIATE',
-        type: 'TECHNICAL',
-        createdAt: new Date().toISOString()
-    }
-]
+// Removed _SAMPLE_ENTRIES as it was unused.
 
 export default function QuestionsPage() {
     const [entries, setEntries] = useState<KnowledgeEntry[]>([])
-    const [_isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(true)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingEntry, setEditingEntry] = useState<KnowledgeEntry | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
@@ -135,7 +124,7 @@ export default function QuestionsPage() {
         company: ''
     })
 
-    const [_activeTab, setActiveTab] = useState('manual')
+    const [activeTab, setActiveTab] = useState('manual')
     const [jdText, setJdText] = useState('')
 
     const handleGenerate = async () => {

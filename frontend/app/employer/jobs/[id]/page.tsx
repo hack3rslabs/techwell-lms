@@ -171,7 +171,7 @@ export default function ATSPipelinePage() {
                                                                 <div className="flex items-start justify-between mb-2">
                                                                     <div className="flex items-center gap-2">
                                                                         {app.source === 'INTERNAL' && (
-                                                                            <Badge variant="default" className="bg-blue-600 text-[10px] h-5 px-1">TechWell</Badge>
+                                                                            <Badge variant="default" className="bg-blue-600 text-[10px] h-5 px-1">Techwell</Badge>
                                                                         )}
                                                                         {app.atsScore > 0 && (
                                                                             <Badge variant="outline" className={`text-[10px] h-5 px-1 ${app.atsScore >= 80 ? 'text-green-600 border-green-200' : 'text-orange-500'}`}>

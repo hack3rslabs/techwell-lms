@@ -1,7 +1,7 @@
 {
     "name": "techwell-backend",
     "version": "1.0.0",
-    "description": "TechWell Platform Backend API",
+    "description": "Techwell Platform Backend API",
     "main": "src/index.js",
     "scripts": {
         "start": "node src/index.js",

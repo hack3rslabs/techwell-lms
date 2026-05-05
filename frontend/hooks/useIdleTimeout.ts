@@ -52,6 +52,7 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
         warningTimerRef.current = null;
         logoutTimerRef.current = null;
         countdownIntervalRef.current = null;
+        setIsWarning(false);
     }, []);
 
     const startCountdown = useCallback(() => {
@@ -102,7 +103,6 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
     useEffect(() => {
         if (!isAuthenticated) {
             clearAllTimers();
-            setIsWarning(false);
             return;
         }
 

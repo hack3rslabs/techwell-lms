@@ -66,7 +66,7 @@ export function EmployerSidebar() {
                     </div>
                     <div className="flex flex-col">
                         <span className="text-lg font-bold text-gray-900 leading-none tracking-tight">
-                            TechWell
+                            Techwell
                         </span>
                         <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-widest mt-0.5">
                             Recruiter

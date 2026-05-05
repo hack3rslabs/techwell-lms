@@ -79,12 +79,12 @@ export default function EmployerRegisterPage() {
             <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
                 <div className="absolute inset-0 bg-slate-900" />
                 <div className="relative z-20 flex items-center text-lg font-medium">
-                    <Image src="/logo-dark.png" alt="TechWell" width={140} height={40} priority />
+                    <Image src="/logo-dark.png" alt="Techwell" width={140} height={40} priority />
                 </div>
                 <div className="relative z-20 mt-auto">
                     <blockquote className="space-y-2">
                         <p className="text-lg">
-                            &quot;Finding the right talent used to be a challenge. TechWell made it seamless to connect with skilled graduates.&quot;
+                            &quot;Finding the right talent used to be a challenge. Techwell made it seamless to connect with skilled graduates.&quot;
                         </p>
                         <footer className="text-sm">Sofia Davis, HR Director</footer>
                     </blockquote>

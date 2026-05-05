@@ -15,7 +15,7 @@ interface Message {
     content: string;
 }
 
-export default function TechWellGPTPage() {
+export default function TechwellGPTPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState('');
     const [isThinking, setIsThinking] = useState(false);

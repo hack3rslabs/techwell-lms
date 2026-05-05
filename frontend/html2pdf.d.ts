@@ -3,9 +3,9 @@
 
 interface Html2Pdf {
   from(element: HTMLElement | string): Html2Pdf;
-  set(options: any): Html2Pdf;
+  set(options: Record<string, unknown>): Html2Pdf;
   save(): Promise<void>;
-  output(type: string): Promise<any>;
+  output(type: string): Promise<unknown>;
 }
 
 declare const html2pdf: {

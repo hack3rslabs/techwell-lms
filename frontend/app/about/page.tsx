@@ -35,13 +35,13 @@ export default function AboutPage() {
                 <div className="container text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border shadow-sm mb-6 animate-fade-in-up">
                         <Calendar className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium">TechWell Founded in 2015</span>
+                        <span className="text-sm font-medium">Techwell Founded in 2015</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">
                         Transforming Tech Education with AI
                     </h1>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-                        TechWell is on a mission to make world-class tech education accessible to everyone.
+                        Techwell is on a mission to make world-class tech education accessible to everyone.
                         Our AI-powered platform adapts to your learning style and prepares you for real-world success.
                     </p>
                     <div className="flex justify-center gap-4">
@@ -91,7 +91,7 @@ export default function AboutPage() {
                             <h2 className="text-3xl font-bold mb-6">Our Story</h2>
                             <div className="space-y-4 text-muted-foreground">
                                 <p>
-                                    Founded in 2015, TechWell emerged from a simple observation: traditional education
+                                    Founded in 2015, Techwell emerged from a simple observation: traditional education
                                     wasn&apos;t keeping pace with the rapidly evolving tech industry. Graduates struggled
                                     to bridge the gap between academic knowledge and job-ready skills.
                                 </p>
@@ -102,7 +102,7 @@ export default function AboutPage() {
                                     them for real interviews at top tech companies.
                                 </p>
                                 <p>
-                                    Today, TechWell has helped thousands of students land their dream jobs at companies
+                                    Today, Techwell has helped thousands of students land their dream jobs at companies
                                     like Google, Amazon, Microsoft, and leading Indian startups.
                                 </p>
                             </div>
@@ -155,7 +155,7 @@ export default function AboutPage() {
                 <div className="container text-center">
                     <h2 className="text-3xl font-bold mb-4">Ready to Start Your Journey?</h2>
                     <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
-                        Join thousands of students who have transformed their careers with TechWell.
+                        Join thousands of students who have transformed their careers with Techwell.
                     </p>
                     <Link href="/register">
                         <Button size="lg" variant="secondary">

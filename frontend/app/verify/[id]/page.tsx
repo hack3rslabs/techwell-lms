@@ -74,7 +74,7 @@ export default function VerifyCertificatePage() {
                 isValid: true,
                 signatoryName: 'Dr. Sarah Johnson',
                 signatoryTitle: 'Academic Director',
-                instituteName: 'TechWell Academy'
+                instituteName: 'Techwell Academy'
             })
         } finally {
             setIsLoading(false)
@@ -305,12 +305,12 @@ export default function VerifyCertificatePage() {
     const handleShareLinkedIn = () => {
         if (!certificate) return
         const url = encodeURIComponent(getVerificationUrl())
-        window.open(`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(certificate.courseName)}&organizationName=${encodeURIComponent(certificate.instituteName || 'TechWell')}&issueYear=2026&issueMonth=1&certUrl=${url}&certId=${certificate.uniqueId}`, '_blank')
+        window.open(`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(certificate.courseName)}&organizationName=${encodeURIComponent(certificate.instituteName || 'Techwell')}&issueYear=2026&issueMonth=1&certUrl=${url}&certId=${certificate.uniqueId}`, '_blank')
     }
 
     const handleShareTwitter = () => {
         if (!certificate) return
-        const text = encodeURIComponent(`I just earned my ${certificate.courseName} certificate from ${certificate.instituteName || 'TechWell'}! 🎓`)
+        const text = encodeURIComponent(`I just earned my ${certificate.courseName} certificate from ${certificate.instituteName || 'Techwell'}! 🎓`)
         const url = encodeURIComponent(getVerificationUrl())
         window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank')
     }
@@ -371,7 +371,7 @@ export default function VerifyCertificatePage() {
                             <CardContent className="py-12 text-center">
                                 <div className="inline-flex items-center gap-2 text-primary mb-4">
                                     <Shield className="h-5 w-5" />
-                                    <span className="font-medium">{certificate.instituteName || 'TechWell Academy'}</span>
+                                    <span className="font-medium">{certificate.instituteName || 'Techwell Academy'}</span>
                                 </div>
 
                                 <h1 className="text-3xl font-bold text-primary mb-6">Certificate of Completion</h1>

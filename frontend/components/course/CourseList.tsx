@@ -119,7 +119,7 @@ export default function CourseList() {
         <div className="container py-8">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-4xl font-extrabold tracking-tight mb-2">Explore AI-Adaptive Courses</h1>
+                <h1 className="text-4xl font-extrabold tracking-tight mb-2">Explore  Courses</h1>
                 <p className="text-xl text-muted-foreground">
                     Master the most in-demand tech skills with our personalized learning paths.
                 </p>

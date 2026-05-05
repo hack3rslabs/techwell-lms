@@ -59,7 +59,7 @@ export default function CareersPage() {
                 {/* Hero */}
                 <div className="text-center mb-16">
                     <Badge variant="outline" className="mb-4">We&apos;re Hiring!</Badge>
-                    <h1 className="text-5xl font-bold mb-4">Join the TechWell Team</h1>
+                    <h1 className="text-5xl font-bold mb-4">Join the Techwell Team</h1>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                         Help us revolutionize how people prepare for interviews and learn new skills
                     </p>

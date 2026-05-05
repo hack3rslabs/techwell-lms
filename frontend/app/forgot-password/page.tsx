@@ -95,8 +95,8 @@ export default function ForgotPasswordPage() {
             <div className="w-full max-w-md space-y-6">
                 <div className="flex flex-col items-center mb-8">
                     <Link href="/">
-                        <Image src="/logo-light.png" alt="TechWell" width={160} height={48} className="dark:hidden" priority />
-                        <Image src="/logo-dark.png" alt="TechWell" width={160} height={48} className="hidden dark:block" priority />
+                        <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
+                        <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
                     </Link>
                 </div>
 

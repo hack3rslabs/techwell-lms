@@ -15,7 +15,7 @@ router.get('/public', async (req, res, next) => {
             where: { id: 'default' },
             update: {},
             create: {
-                platformName: 'TechWell Academy'
+                platformName: 'Techwell Academy'
             },
             select: {
                 platformName: true,
@@ -50,7 +50,7 @@ router.get('/', authenticate, (req, res, next) => {
             where: { id: 'default' },
             update: {},
             create: {
-                platformName: 'TechWell Academy'
+                platformName: 'Techwell Academy'
             }
         });
         res.json(settings);

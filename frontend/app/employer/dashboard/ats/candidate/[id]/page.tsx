@@ -275,7 +275,7 @@ export default function CandidateProfilePage() {
 
                         <div className="flex flex-wrap gap-2 justify-center mb-6">
                             {source === 'INTERNAL' ? (
-                                <Badge className="bg-blue-600 hover:bg-blue-700">TechWell Student</Badge>
+                                <Badge className="bg-blue-600 hover:bg-blue-700">Techwell Student</Badge>
                             ) : (
                                 <Badge variant="secondary">External</Badge>
                             )}
@@ -531,7 +531,7 @@ export default function CandidateProfilePage() {
                                         <Zap className="h-4 w-4 text-amber-500" /> AI Interview Results
                                     </CardTitle>
                                     <CardDescription>
-                                        Performance in practice interviews on TechWell.
+                                        Performance in practice interviews on Techwell.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>

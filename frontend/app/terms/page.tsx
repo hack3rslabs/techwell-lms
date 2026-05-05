@@ -29,7 +29,7 @@ export default function TermsPage() {
                                 Acceptance of Terms
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">
-                                By accessing or using TechWell, you agree to be bound by these Terms of Service. If you
+                                By accessing or using Techwell, you agree to be bound by these Terms of Service. If you
                                 disagree with any part of these terms, you may not access the service.
                             </p>
                         </CardContent>
@@ -42,7 +42,7 @@ export default function TermsPage() {
                                 <span className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-500 text-sm font-bold">2</span>
                                 Description of Service
                             </h2>
-                            <p className="text-muted-foreground mb-4">TechWell is an AI-powered interview preparation and learning platform designed
+                            <p className="text-muted-foreground mb-4">Techwell is an AI-powered interview preparation and learning platform designed
                                 for practice and educational purposes. The service includes:</p>
                             <ul className="space-y-2 text-muted-foreground">
                                 <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> AI interviewer simulations with voice and text interaction</li>
@@ -64,7 +64,7 @@ export default function TermsPage() {
                             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
                                 <p className="text-red-500 font-bold flex items-center gap-2">
                                     <AlertTriangle className="h-5 w-5" />
-                                    IMPORTANT: TechWell is strictly for PRACTICE purposes.
+                                    IMPORTANT: Techwell is strictly for PRACTICE purposes.
                                 </p>
                             </div>
                             <p className="text-muted-foreground mb-4">You agree NOT to:</p>
