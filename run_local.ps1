@@ -1,6 +1,6 @@
-# Master Start Script for TechWell LMS
+# Master Start Script for Techwell LMS
 
-Write-Host "Starting TechWell LMS Setup..." -ForegroundColor Cyan
+Write-Host "Starting Techwell LMS Setup..." -ForegroundColor Cyan
 
 # 1. Check for Node.js
 if (!(Get-Command npm -ErrorAction SilentlyContinue)) {
@@ -47,7 +47,7 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PS
 Write-Host "Frontend starting in a new window..." -ForegroundColor Gray
 
 Write-Host ""
-Write-Host "TechWell LMS is initializing!" -ForegroundColor Green
+Write-Host "Techwell LMS is initializing!" -ForegroundColor Green
 Write-Host "Backend:  http://localhost:5000"
 Write-Host "Frontend: http://localhost:3000"
 Write-Host ""

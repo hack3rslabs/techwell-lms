@@ -113,7 +113,7 @@ export default function PublicPortfolioPage() {
 
     const handleShareLinkedIn = () => {
         const url = encodeURIComponent(getPortfolioUrl())
-        const _title = encodeURIComponent(`Check out my TechWell Portfolio`)
+        const _title = encodeURIComponent(`Check out my Techwell Portfolio`)
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank')
     }
 
@@ -126,7 +126,7 @@ export default function PublicPortfolioPage() {
     const handleShareCertificateLinkedIn = (cert: PortfolioData['certificates'][0]) => {
         const certUrl = encodeURIComponent(`${getPortfolioUrl()}/certificate/${cert.uniqueId}`)
         const _title = encodeURIComponent(`Certificate: ${cert.courseName}`)
-        window.open(`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(cert.courseName)}&organizationName=TechWell&issueYear=2026&issueMonth=1&certUrl=${certUrl}&certId=${cert.uniqueId}`, '_blank')
+        window.open(`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(cert.courseName)}&organizationName=Techwell&issueYear=2026&issueMonth=1&certUrl=${certUrl}&certId=${cert.uniqueId}`, '_blank')
     }
 
     if (isLoading) {

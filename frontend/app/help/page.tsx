@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 
 const helpCategories = [
-    { icon: Book, title: 'Getting Started', description: 'Learn the basics of TechWell', articles: 12 },
+    { icon: Book, title: 'Getting Started', description: 'Learn the basics of Techwell', articles: 12 },
     { icon: Video, title: 'Courses & Learning', description: 'How to access and complete courses', articles: 18 },
     { icon: Users, title: 'AI Interviews', description: 'Prepare and take mock interviews', articles: 15 },
     { icon: MessageSquare, title: 'Account & Billing', description: 'Manage your subscription', articles: 10 },
@@ -24,7 +24,7 @@ const popularArticles = [
 ]
 
 const faqs = [
-    { q: 'Is TechWell free to use?', a: 'Yes! TechWell offers a free tier with access to 3 courses and 2 AI mock interviews per month. Premium plans unlock unlimited access.' },
+    { q: 'Is Techwell free to use?', a: 'Yes! Techwell offers a free tier with access to 3 courses and 2 AI mock interviews per month. Premium plans unlock unlimited access.' },
     { q: 'How realistic are the AI interviews?', a: 'Our AI interviews simulate real interview scenarios with industry-specific questions. Many users report the experience is very close to actual tech interviews.' },
     { q: 'Can I get a refund?', a: 'Yes, we offer a 7-day money-back guarantee on all paid plans. Contact support for assistance.' },
     { q: 'How do I contact support?', a: 'You can reach us via email at support@techwell.co.in or through the contact form on our website. We typically respond within 24 hours.' },

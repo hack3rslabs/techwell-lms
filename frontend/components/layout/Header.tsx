@@ -46,7 +46,7 @@ export function Header() {
                         <Link href="/" className="relative flex h-10 w-[180px] items-center">
                             <Image
                                 src="/logo-light.png"
-                                alt="TechWell"
+                                alt="Techwell"
                                 width={180}
                                 height={50}
                                 className="object-contain object-left dark:hidden"
@@ -54,7 +54,7 @@ export function Header() {
                             />
                             <Image
                                 src="/logo-dark.png"
-                                alt="TechWell"
+                                alt="Techwell"
                                 width={180}
                                 height={50}
                                 className="hidden object-contain object-left dark:block"

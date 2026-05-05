@@ -73,7 +73,7 @@ export default function CommunityLayout({
             <div className="space-y-0.5">
                 <h2 className="text-2xl font-bold tracking-tight">Community & Collaboration</h2>
                 <p className="text-muted-foreground">
-                    Connect with peers, mentors, and the wider TechWell community.
+                    Connect with peers, mentors, and the wider Techwell community.
                 </p>
             </div>
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">

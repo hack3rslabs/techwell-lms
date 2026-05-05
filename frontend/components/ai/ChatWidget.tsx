@@ -88,7 +88,7 @@ export default function ChatWidget() {
             setHasProvidedDetails(true)
             setMessages([{
                 role: 'model',
-                text: "Welcome back! I'm your TechWell AI Assistant. How can I help with your learning journey today?"
+                text: "Welcome back! I'm your Techwell AI Assistant. How can I help with your learning journey today?"
             }])
         }
     }, [])
@@ -239,13 +239,13 @@ export default function ChatWidget() {
                     id="chat-widget-open-btn"
                     onClick={() => setIsOpen(true)}
                     className="relative h-14 w-14 rounded-full shadow-2xl bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white transition-all duration-300 hover:scale-110 border border-white/10"
-                    aria-label="Open TechWell AI Assistant"
+                    aria-label="Open Techwell AI Assistant"
                 >
                     <Bot className="h-7 w-7" />
                 </Button>
                 {/* Hover tooltip */}
                 <div className="absolute bottom-[4.5rem] right-0 bg-gray-900 text-white text-xs rounded-xl px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-2xl pointer-events-none border border-white/10">
-                    <p className="font-semibold text-violet-300">TechWell AI</p>
+                    <p className="font-semibold text-violet-300">Techwell AI</p>
                     <p className="text-slate-400 text-[10px]">Chat with us now</p>
                     <div className="absolute -bottom-1.5 right-5 w-3 h-3 bg-gray-900 rotate-45 border-r border-b border-white/10" />
                 </div>
@@ -288,7 +288,7 @@ export default function ChatWidget() {
                     )}
                     <div>
                         <h3 className="font-bold text-white text-sm leading-tight">
-                            {mode === 'ticket' ? 'Create Support Ticket' : 'TechWell AI Receptionist'}
+                            {mode === 'ticket' ? 'Create Support Ticket' : 'Techwell AI Receptionist'}
                         </h3>
                         <p className="text-[10px] text-violet-200 flex items-center gap-1 mt-0.5">
                             <Sparkles className="h-2.5 w-2.5" />
@@ -636,7 +636,7 @@ export default function ChatWidget() {
             {/* Footer */}
             <div className="shrink-0 py-1.5 text-center text-[9px] text-slate-600 border-t border-white/5"
                 style={{ background: 'rgba(8,8,18,0.97)' }}>
-                Powered by <span className="text-violet-400 font-semibold">TechWell AI</span> · techwell.co.in
+                Powered by <span className="text-violet-400 font-semibold">Techwell AI</span> · techwell.co.in
             </div>
         </div>
     )

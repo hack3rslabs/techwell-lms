@@ -142,10 +142,10 @@ router.post('/capture', async (req, res, next) => {
         // Auto-Reply (Lead Follow-up Automation)
         sendEmail({
             to: email,
-            subject: 'Welcome to TechWell - Your Journey Begins!',
-            text: `Hi ${name},\n\nThank you for exploring TechWell. We have received your interest and a career counselor will be in touch shortly.\n\nBest Regards,\nTechWell Team`,
+            subject: 'Welcome to Techwell - Your Journey Begins!',
+            text: `Hi ${name},\n\nThank you for exploring Techwell. We have received your interest and a career counselor will be in touch shortly.\n\nBest Regards,\nTechwell Team`,
             html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                    <h2 style="color: #1469E2;">Welcome to TechWell, ${name}!</h2>
+                    <h2 style="color: #1469E2;">Welcome to Techwell, ${name}!</h2>
                     <p>Thank you for expressing interest in our career programs.</p>
                     <p>We are dedicated to helping you land your dream job in tech.</p>
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
@@ -156,7 +156,7 @@ router.post('/capture', async (req, res, next) => {
                         <li>Explore our <a href="https://techwell.co.in/courses">Free Courses</a> in the meantime.</li>
                     </ul>
                     <br/>
-                    <p>Best Regards,<br/><strong>The TechWell Team</strong></p>
+                    <p>Best Regards,<br/><strong>The Techwell Team</strong></p>
                     </div>`
         }).catch(err => console.error('[Shared Interest→Leads] Auto-Reply Failed:', err.message));
 
@@ -203,10 +203,10 @@ router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) 
             // Non-blocking email send
             sendEmail({
                 to: email,
-                subject: 'Welcome to TechWell - Your Journey Begins!',
-                text: `Hi ${name},\n\nThank you for exploring TechWell. We have received your interest and a career counselor will be in touch shortly.\n\nBest Regards,\nTechWell Team`,
+                subject: 'Welcome to Techwell - Your Journey Begins!',
+                text: `Hi ${name},\n\nThank you for exploring Techwell. We have received your interest and a career counselor will be in touch shortly.\n\nBest Regards,\nTechwell Team`,
                 html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                        <h2 style="color: #1469E2;">Welcome to TechWell, ${name}!</h2>
+                        <h2 style="color: #1469E2;">Welcome to Techwell, ${name}!</h2>
                         <p>Thank you for expressing interest in our career programs.</p>
                         <p>We are dedicated to helping you land your dream job in tech.</p>
                         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
@@ -217,7 +217,7 @@ router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) 
                             <li>Explore our <a href="https://techwell.co.in/courses">Free Courses</a> in the meantime.</li>
                         </ul>
                         <br/>
-                        <p>Best Regards,<br/><strong>The TechWell Team</strong></p>
+                        <p>Best Regards,<br/><strong>The Techwell Team</strong></p>
                        </div>`
             }).catch(err => console.error('Auto-Reply Failed:', err.message));
         }
@@ -584,7 +584,7 @@ router.post('/:id/convert', authenticate, checkPermission('LEADS'), async (req, 
         }
 
         // Create new student user
-        const tempPassword = `TechWell@${Math.floor(1000 + Math.random() * 9000)}`;
+        const tempPassword = `Techwell@${Math.floor(1000 + Math.random() * 9000)}`;
         const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         const newUser = await prisma.user.create({
@@ -609,10 +609,10 @@ router.post('/:id/convert', authenticate, checkPermission('LEADS'), async (req, 
         // Non-blocking
         sendEmail({
             to: newUser.email,
-            subject: 'Welcome to TechWell - Your Student Account is Ready',
-            text: `Hello ${newUser.name},\n\nYour student account has been created. Use the following credentials to login:\n\nEmail: ${newUser.email}\nPassword: ${tempPassword}\n\nPlease change your password after logging in.\n\nLogin URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/login\n\nBest Regards,\nTechWell Team`,
+            subject: 'Welcome to Techwell - Your Student Account is Ready',
+            text: `Hello ${newUser.name},\n\nYour student account has been created. Use the following credentials to login:\n\nEmail: ${newUser.email}\nPassword: ${tempPassword}\n\nPlease change your password after logging in.\n\nLogin URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/login\n\nBest Regards,\nTechwell Team`,
             html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                    <h2 style="color: #1469E2;">Welcome to TechWell, ${newUser.name}!</h2>
+                    <h2 style="color: #1469E2;">Welcome to Techwell, ${newUser.name}!</h2>
                     <p>Your student account has been successfully created.</p>
                     <div style="background: #f4f6f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
                         <p><strong>Login Credentials:</strong></p>
@@ -621,7 +621,7 @@ router.post('/:id/convert', authenticate, checkPermission('LEADS'), async (req, 
                     </div>
                     <p>Please <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login">Login Here</a> and change your password immediately.</p>
                     <br/>
-                    <p>Best Regards,<br/><strong>The TechWell Team</strong></p>
+                    <p>Best Regards,<br/><strong>The Techwell Team</strong></p>
                    </div>`
         }).catch(err => console.error('Credential Email Failed:', err.message));
 

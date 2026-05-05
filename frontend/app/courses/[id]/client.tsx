@@ -233,7 +233,7 @@ export default function CourseDetailClient() {
                 key: order.keyId || 'rzp_test_dummy12345',
                 amount: order.amount,
                 currency: order.currency || 'INR',
-                name: 'TechWell',
+                name: 'Techwell',
                 description: purchaseType === 'BUNDLE' ? `Course + Interview Bundle` : `Enrollment for ${course!.title}`,
                 order_id: order.orderId || order.id,
                 handler: async function (response: RazorpayResponse) {

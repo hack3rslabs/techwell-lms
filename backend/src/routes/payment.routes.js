@@ -294,7 +294,7 @@ router.post('/verify-payment', authenticate, async (req, res) => {
                 // Always create a new lead record for each enrollment as requested
                 await prisma.lead.create({
                     data: {
-                        name: user.name || 'TechWell Student',
+                        name: user.name || 'Techwell Student',
                         email: user.email,
                         phone: user.phone || null,
                         qualification: user.qualification || null,

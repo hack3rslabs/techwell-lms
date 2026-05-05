@@ -112,7 +112,7 @@ export function WhyChooseSection() {
                         transition={{ duration: 0.6 }}
                     >
                         <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
-                            Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">TechWell?</span>
+                            Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">Techwell?</span>
                         </h2>
                         <p className="text-xl text-muted-foreground leading-relaxed">
                             We don&apos;t just teach technology; we build your entire career ecosystem with AI-driven personalization and industry-leading mentorship.

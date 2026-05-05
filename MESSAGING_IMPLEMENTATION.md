@@ -1,7 +1,7 @@
 # Admin-to-Student Messaging Feature - Implementation Guide
 
 ## Overview
-This guide documents the complete implementation of an admin-to-student messaging system for the TechWell LMS platform.
+This guide documents the complete implementation of an admin-to-student messaging system for the Techwell LMS platform.
 
 ## 🎯 Features Implemented
 

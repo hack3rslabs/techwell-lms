@@ -386,7 +386,7 @@ export function Hero() {
                         {isVideoOpen && (
                             <iframe
                                 src="https://www.youtube.com/embed/Fq5kgzzXWco?autoplay=1&rel=0"
-                                title="TechWell Platform Demo"
+                                title="Techwell Platform Demo"
                                 frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen

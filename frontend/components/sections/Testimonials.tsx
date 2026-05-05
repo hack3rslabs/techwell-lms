@@ -13,7 +13,7 @@ const testimonials = [
         company: 'google',
         image: null,
         rating: 5,
-        quote: "TechWell's AI interviews helped me crack Google in just 3 months! The STAR method feedback was incredibly valuable.",
+        quote: "Techwell's AI interviews helped me crack Google in just 3 months! The STAR method feedback was incredibly valuable.",
         package: '₹45 LPA',
     },
     {
@@ -53,7 +53,7 @@ const testimonials = [
         company: 'flipkart',
         image: null,
         rating: 5,
-        quote: 'From zero confidence to cracking multiple offers. TechWell transformed my interview preparation.',
+        quote: 'From zero confidence to cracking multiple offers. Techwell transformed my interview preparation.',
         package: '₹28 LPA',
     },
 ]
@@ -77,7 +77,7 @@ export function Testimonials() {
                         Student Success Stories
                     </h2>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Join thousands of students who landed their dream jobs with TechWell
+                        Join thousands of students who landed their dream jobs with Techwell
                     </p>
                 </div>
 

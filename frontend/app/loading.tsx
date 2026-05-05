@@ -7,7 +7,7 @@ export default function Loading() {
                 <div className="h-16 w-16 rounded-full border-4 border-primary/20 animate-pulse" />
                 <Loader2 className="h-8 w-8 animate-spin text-primary absolute inset-0 m-auto" />
             </div>
-            <h2 className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">Loading TechWell Experience...</h2>
+            <h2 className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">Loading Techwell Experience...</h2>
         </div>
     )
 }

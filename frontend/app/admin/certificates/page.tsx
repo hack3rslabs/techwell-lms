@@ -670,7 +670,7 @@ export default function CertificatesPage() {
                                                 <Input
                                                     value={settings.instituteName}
                                                     onChange={e => setSettings({ ...settings, instituteName: e.target.value })}
-                                                    placeholder="TechWell Academy"
+                                                    placeholder="Techwell Academy"
                                                 />
                                             </div>
                                             <div className="space-y-2">

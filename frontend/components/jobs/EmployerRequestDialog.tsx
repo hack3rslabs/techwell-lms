@@ -187,7 +187,7 @@ export default function EmployerRequestDialog() {
         <DialogHeader>
           <DialogTitle>Request Employer to Post Jobs</DialogTitle>
           <DialogDescription>
-            Tell us about the employer you'd like to see posting jobs on TechWell
+            Tell us about the employer you'd like to see posting jobs on Techwell
           </DialogDescription>
         </DialogHeader>
 
@@ -269,7 +269,7 @@ export default function EmployerRequestDialog() {
 
           <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg p-3">
             <p className="text-sm text-blue-900 dark:text-blue-200">
-              <span className="font-semibold">What happens next?</span> Your request will be reviewed by our admin team. Once approved, the employer will be able to post jobs on TechWell.
+              <span className="font-semibold">What happens next?</span> Your request will be reviewed by our admin team. Once approved, the employer will be able to post jobs on Techwell.
             </p>
           </div>
 

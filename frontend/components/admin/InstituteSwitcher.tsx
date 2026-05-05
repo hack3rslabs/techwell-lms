@@ -27,7 +27,7 @@ const institutes = [
     },
     {
         value: "inst_tw_logic",
-        label: "TechWell Logic Institute",
+        label: "Techwell Logic Institute",
     },
 ]
 

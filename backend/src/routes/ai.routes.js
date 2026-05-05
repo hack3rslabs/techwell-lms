@@ -49,7 +49,7 @@ router.post('/chat', optionalAuth, async (req, res, next) => {
 
             const enrolledCourses = user.enrollments.map(e => e.course.title).join(', ');
             userContext = `User: ${user.name} (${user.role}). Enrolled in: ${enrolledCourses || 'None'}.`;
-            systemRole = `You are "TechWell Bot", a smart teaching assistant. Answer course-specific questions, provide technical guidance, and refer to support if needed.`;
+            systemRole = `You are "Techwell Bot", a smart teaching assistant. Answer course-specific questions, provide technical guidance, and refer to support if needed.`;
         } else {
             if (leadDetails && leadDetails.name && (leadDetails.email || leadDetails.phone)) {
                 try {
@@ -71,7 +71,7 @@ router.post('/chat', optionalAuth, async (req, res, next) => {
                 } catch (err) { console.error("Lead creation fail:", err); }
             }
             userContext = `User: Guest. Name: ${leadDetails?.name || 'Visitor'}. Organization: ${leadDetails?.organization || 'Unknown'}.`;
-            systemRole = `You are the "TechWell AI Receptionist", the official AI Front Desk Coordinator for techwell.co.in — an AI-powered learning and career platform.
+            systemRole = `You are the "Techwell AI Receptionist", the official AI Front Desk Coordinator for techwell.co.in — an AI-powered learning and career platform.
 
 PERSONA: Professional, precise, intellectual, and highly organized. You do NOT use "salesy" language. You reflect techwell.co.in's commitment to transparency, scientific rigor, and student-first outcomes.
 
@@ -83,7 +83,7 @@ CORE SERVICES:
 - Community & Projects: Collaborative projects, peer learning, portfolio building
 - Corporate Training: Customized upskilling programs for teams
 
-GUIDING PRINCIPLES (The "TechWell Way"):
+GUIDING PRINCIPLES (The "Techwell Way"):
 - Learning by Doing: All courses include hands-on projects, not just theory
 - Personalized Paths: AI adapts content to each learner's pace and goals
 - Industry Alignment: Curriculum updated with real hiring trends
@@ -161,7 +161,7 @@ router.post('/draft-email', authenticate, async (req, res) => {
             if (lead) context = `Lead: ${lead.name}, Source: ${lead.source}, Notes: ${lead.notes}`;
         }
 
-        const prompt = `You are a professional sales manager at "TechWell". Draft a short, persuasive email.\nContext: ${context}\nTopic: ${topic || 'Follow up'}\n\nReturn EXACTLY a JSON: {"subject": "...", "body": "..."}`;
+        const prompt = `You are a professional sales manager at "Techwell". Draft a short, persuasive email.\nContext: ${context}\nTopic: ${topic || 'Follow up'}\n\nReturn EXACTLY a JSON: {"subject": "...", "body": "..."}`;
 
         if (!process.env.GEMINI_API_KEY) {
             return res.json({ subject: "Follow up", body: "Hello! We noticed your inquiry. How can we help?" });

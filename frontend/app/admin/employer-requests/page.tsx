@@ -160,7 +160,7 @@ export default function EmployerRequestsPage() {
       <div>
         <h1 className="text-3xl font-bold">Employer Requests</h1>
         <p className="text-muted-foreground mt-2">
-          Manage and approve employer requests to post jobs on TechWell
+          Manage and approve employer requests to post jobs on Techwell
         </p>
       </div>
 

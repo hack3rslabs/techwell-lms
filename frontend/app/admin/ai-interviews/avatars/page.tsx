@@ -48,27 +48,6 @@ interface Avatar {
     isActive: boolean
 }
 
-const _DEFAULT_AVATARS: Avatar[] = [
-    {
-        id: '1',
-        name: ' MR. Suman Singh',
-        role: 'Technical Interviewer',
-        personality: 'Friendly',
-        avatarUrl: 'https://th.bing.com/th/id/R.6e9501e2addf67b0a8270b4f8257cb77?rik=CrdtbMCylza3wQ&riu=http%3a%2f%2fiverpure.com%2fcdn%2fshop%2farticles%2fv2-vckp7-ixatp_a5cabb8f-236c-434d-8489-52bbc0b33b65.jpg%3fv%3d1748315731&ehk=V%2fsFGcoo20sGPCCdlcBYuy2kdyxHNxu4hDvNJx0goUg%3d&risl=&pid=ImgRaw&r=0',
-        gender: 'MALE',
-        isActive: true
-    },
-    {
-        id: '2',
-        name: 'Sarah Johnson',
-        role: 'HR Interviewer',
-        personality: 'Professional',
-        avatarUrl: '/interviewer_avatar.png',
-        gender: 'FEMALE',
-        isActive: true
-    }
-]
-
 export default function AvatarsPage() {
     const [avatars, setAvatars] = useState<Avatar[]>([])
     const [isLoading, setIsLoading] = useState(true)
