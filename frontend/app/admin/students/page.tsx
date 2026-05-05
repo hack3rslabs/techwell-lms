@@ -212,31 +212,6 @@ export default function StudentsPage() {
         )
         : 0
 
-    const handleExportCSV = () => {
-        const headers = ['Name', 'Email', 'Phone', 'Course', 'Qualification', 'College', 'Progress', 'Enrollment Date', 'Approval Date']
-        const rows = students.map(s => {
-            const enrollment = getEnrollmentForCourse(s)
-            return [
-                s.name,
-                s.email,
-                s.phone || '',
-                s.course?.title || '',
-                s.qualification || s.user?.qualification || '',
-                s.user?.college || '',
-                `${enrollment?.progress || 0}%`,
-                enrollment?.enrolledAt ? new Date(enrollment.enrolledAt).toLocaleDateString() : '',
-                new Date(s.updatedAt).toLocaleDateString(),
-            ]
-        })
-
-        const csvContent = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n')
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-        const link = document.createElement('a')
-        link.href = URL.createObjectURL(blob)
-        link.download = `students_export_${new Date().toISOString().split('T')[0]}.csv`
-        link.click()
-    }
-
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-8">
             {/* Header */}
@@ -259,15 +234,7 @@ export default function StudentsPage() {
                         <RefreshCw className="h-4 w-4" />
                         Refresh
                     </Button>
-                    <Button
-                        size="sm"
-                        onClick={handleExportCSV}
-                        className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md"
-                        disabled={students.length === 0}
-                    >
-                        <Download className="h-4 w-4" />
-                        Export CSV
-                    </Button>
+                   
                 </div>
             </div>
 
@@ -286,33 +253,7 @@ export default function StudentsPage() {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-0 shadow-md bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30">
-                    <CardContent className="p-5">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground font-medium">Completed</p>
-                                <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-400 mt-1">{completedCount}</p>
-                            </div>
-                            <div className="h-12 w-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
-                                <Award className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30">
-                    <CardContent className="p-5">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground font-medium">In Progress</p>
-                                <p className="text-3xl font-bold text-amber-700 dark:text-amber-400 mt-1">{inProgressCount}</p>
-                            </div>
-                            <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
-                                <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-950/30 dark:to-sky-950/30">
+                {/* <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-950/30 dark:to-sky-950/30">
                     <CardContent className="p-5">
                         <div className="flex items-center justify-between">
                             <div>
@@ -324,7 +265,7 @@ export default function StudentsPage() {
                             </div>
                         </div>
                     </CardContent>
-                </Card>
+                </Card> */}
             </div>
 
             {/* Filters */}
@@ -418,9 +359,8 @@ export default function StudentsPage() {
                                             <TableHead className="font-semibold">Contact</TableHead>
                                             <TableHead className="font-semibold">Course</TableHead>
                                             <TableHead className="font-semibold">Qualification</TableHead>
-                                            <TableHead className="font-semibold">Progress</TableHead>
-                                            <TableHead className="font-semibold">Enrolled On</TableHead>
-                                            <TableHead className="font-semibold">Approved On</TableHead>
+                                            
+                                            <TableHead className="font-semibold">Payment On</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -469,20 +409,6 @@ export default function StudentsPage() {
                                                         </span>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="space-y-2 min-w-[140px]">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-sm font-medium">{progress}%</span>
-                                                                {getProgressBadge(progress)}
-                                                            </div>
-                                                            <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                                                                <div
-                                                                    className={`h-full rounded-full transition-all duration-500 ${getProgressColor(progress)}`}
-                                                                    style={{ width: `${progress}%` }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
                                                         <div className="flex items-center gap-1.5 text-sm">
                                                             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                                                             {enrollment?.enrolledAt
@@ -494,15 +420,7 @@ export default function StudentsPage() {
                                                                 : '—'}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            {new Date(student.updatedAt).toLocaleDateString('en-IN', {
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric',
-                                                            })}
-                                                        </div>
-                                                    </TableCell>
+                                                    
                                                 </TableRow>
                                             )
                                         })}
