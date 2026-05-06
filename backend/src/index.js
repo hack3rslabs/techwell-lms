@@ -145,7 +145,7 @@ const http = require('http');
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-    console.log(`🚀 TechWell API running on http://localhost:${PORT}`);
+    console.log(`🚀 Techwell API running on http://localhost:${PORT}`);
 });
 
 module.exports = app;

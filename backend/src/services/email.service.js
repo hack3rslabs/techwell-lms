@@ -29,10 +29,10 @@ const sendEmail = async (to, subject, html) => {
 };
 
 const sendWelcomeEmail = async (user) => {
-    const subject = 'Welcome to TechWell!';
+    const subject = 'Welcome to Techwell!';
     const html = `
         <h1>Welcome, ${user.name}!</h1>
-        <p>Thanks for joining TechWell. We're excited to have you.</p>
+        <p>Thanks for joining Techwell. We're excited to have you.</p>
         <p>Explore our courses and start your journey today.</p>
     `;
     return sendEmail(user.email, subject, html);
@@ -99,7 +99,7 @@ const sendInterviewScheduledEmail = async (applicantEmail, applicantName, interv
                 Good luck with your interview! If you have any questions, please reach out to the recruiter.
             </p>
             
-            <p>Best regards,<br/>The TechWell Team</p>
+            <p>Best regards,<br/>The Techwell Team</p>
         </div>
     `;
 
@@ -107,7 +107,7 @@ const sendInterviewScheduledEmail = async (applicantEmail, applicantName, interv
 };
 
 const sendOtpEmail = async (email, otp) => {
-    const subject = 'TechWell - Verify Your Email';
+    const subject = 'Techwell - Verify Your Email';
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #2563eb;">Verify Your Email</h1>
@@ -116,14 +116,14 @@ const sendOtpEmail = async (email, otp) => {
                 <h2 style="font-size: 36px; letter-spacing: 8px; color: #111827; margin: 0;">${otp}</h2>
             </div>
             <p style="color: #6b7280;">This code is valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>
-            <p>Best regards,<br/>The TechWell Team</p>
+            <p>Best regards,<br/>The Techwell Team</p>
         </div>
     `;
     return sendEmail(email, subject, html);
 };
 
 const sendPasswordResetOtpEmail = async (email, otp) => {
-    const subject = 'TechWell - Password Reset OTP';
+    const subject = 'Techwell - Password Reset OTP';
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #2563eb;">Password Reset</h1>
@@ -132,7 +132,7 @@ const sendPasswordResetOtpEmail = async (email, otp) => {
                 <h2 style="font-size: 36px; letter-spacing: 8px; color: #111827; margin: 0;">${otp}</h2>
             </div>
             <p style="color: #6b7280;">This code is valid for <strong>10 minutes</strong>. If you didn't request this, please ignore this email.</p>
-            <p>Best regards,<br/>The TechWell Team</p>
+            <p>Best regards,<br/>The Techwell Team</p>
         </div>
     `;
     return sendEmail(email, subject, html);

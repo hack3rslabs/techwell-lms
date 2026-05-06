@@ -68,7 +68,7 @@ const generateMeetingLink = async (scheduledAt, options = {}) => {
     }
 
     const meetingId = generateMeetingId();
-    const title = options.title || 'TechWell Interview';
+    const title = options.title || 'Techwell Interview';
     const duration = options.duration || 30;
 
     let meetingLink = '';
@@ -118,7 +118,7 @@ const generateMeetingLink = async (scheduledAt, options = {}) => {
             } catch (error) {
                 console.error('Zoom Meeting Creation Error:', error?.response?.data || error.message);
                 // Fallback to placeholder if an error happens (e.g. invalid credentials)
-                meetingLink = `https://zoom.us/j/${meetingId}?pwd=TechWell${Date.now().toString(36)}`;
+                meetingLink = `https://zoom.us/j/${meetingId}?pwd=Techwell${Date.now().toString(36)}`;
                 console.log(`⚠️ Falling back to placeholder link: ${meetingLink}`);
             }
             break;

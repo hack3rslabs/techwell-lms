@@ -629,7 +629,7 @@ model CertificateSettings {
   borderStyle           String   @default("classic")
   backgroundUrl         String?
   defaultValidityMonths Int?
-  instituteName         String   @default("TechWell Academy")
+  instituteName         String   @default("Techwell Academy")
   instituteLogoUrl      String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -861,7 +861,7 @@ model Expense {
 
 model SystemSettings {
   id                String   @id @default("default")
-  platformName      String   @default("TechWell Academy")
+  platformName      String   @default("Techwell Academy")
   supportEmail      String   @default("support@techwell.co.in")
   logoUrl           String?
   faviconUrl        String?

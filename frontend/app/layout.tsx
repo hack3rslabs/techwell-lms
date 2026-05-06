@@ -21,24 +21,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://techwell.co.in"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   title: {
-    default: "TechWell | AI-Powered Learning & Career Platform",
-    template: "%s | TechWell"
+    default: "Techwell | AI-Powered Learning & Career Platform",
+    template: "%s | Techwell"
   },
-  description: "Accelerate your tech career with AI-powered mock interviews, personalized adaptive courses, and direct placement support. Join 10,000+ successful students.",
+  description: "Techwell is a comprehensive AI-powered LMS for colleges and students. Master technical skills, ace interviews with AI avatars, and get placed at top companies.",
   keywords: [
-    "AI-Powered Learning",
-    "Tech Career Platform",
-    "AI Mock Interviews",
-    "Tailored Coding Courses",
-    "Placement Assistance India",
-    "TechWell Learning",
-    "Adaptive Learning AI"
+    "Techwell Learning",
+    "AI Interviews",
+    "LMS Platform",
+    "Career Readiness"
   ],
-  authors: [{ name: "TechWell Team", url: "https://techwell.co.in/about" }],
-  creator: "TechWell",
-  publisher: "TechWell Inc.",
+  authors: [{ name: "Techwell Team", url: "https://techwell.co.in/about" }],
+  creator: "Techwell",
+  publisher: "Techwell Inc.",
+  alternates: {
+    canonical: "/",
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -46,23 +46,23 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "en_IN",
+    locale: "en_US",
     url: "https://techwell.co.in",
-    siteName: "TechWell",
-    title: "TechWell | AI-Powered Learning",
-    description: "Launch your tech career with AI-mock interviews and personalized courses. Bridge the gap between campus and corporate.",
+    siteName: "Techwell",
+    title: "Techwell | AI-Powered Learning",
+    description: "The ultimate platform for tech education and placement preparation.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "TechWell - Your Tech Career Partner",
+        alt: "Techwell - Your Tech Career Partner",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TechWell | AI-Powered Learning & Jobs",
+    title: "Techwell | AI-Powered Learning & Jobs",
     description: "Master tech skills with AI. Ace interviews. Get placed.",
     images: ["/og-image.png"],
     creator: "@techwell_edu",

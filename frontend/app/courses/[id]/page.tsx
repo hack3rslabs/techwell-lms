@@ -19,13 +19,13 @@ async function getCourse(id: string) {
         // Based on previous code: response.data.course
         const data = await res.json()
         return data.course
-    } catch (_error) {
+    } catch {
         return null
     }
 }
 
 export async function generateMetadata(
-    { params, searchParams: _searchParams }: Props,
+    { params }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const { id } = await params
@@ -41,14 +41,14 @@ export async function generateMetadata(
 
     return {
         title: course.title,
-        description: course.description?.slice(0, 160) || "Learn with TechWell",
+        description: course.description?.slice(0, 160) || "Learn with Techwell",
         openGraph: {
             title: course.title,
             description: course.description?.slice(0, 160),
             images: course.thumbnail ? [course.thumbnail, ...previousImages] : previousImages,
             type: 'article',
             publishedTime: course.createdAt,
-            authors: [course.instructor?.name || 'TechWell'],
+            authors: [course.instructor?.name || 'Techwell'],
         },
         twitter: {
             card: "summary_large_image",
@@ -80,7 +80,7 @@ export default async function CoursePage({ params }: Props) {
         description: course.description,
         provider: {
             '@type': 'Organization',
-            name: 'TechWell',
+            name: 'Techwell',
             sameAs: 'https://techwell.co.in'
         },
         hasCourseInstance: {

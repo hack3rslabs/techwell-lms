@@ -40,9 +40,12 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
     const isAuthRef = useRef(isAuthenticated);
     const warningStartTimeRef = useRef<number | null>(null);
 
-    // Keep isAuthRef in sync
+    // Keep isAuthRef in sync and reset warning when logging out
     useEffect(() => {
         isAuthRef.current = isAuthenticated;
+        if (!isAuthenticated) {
+            setIsWarning(false);
+        }
     }, [isAuthenticated]);
 
     const clearAllTimers = useCallback(() => {
@@ -75,7 +78,10 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
 
     const startTimers = useCallback(() => {
         clearAllTimers();
-        setIsWarning(false);
+        setIsWarning(prev => {
+            if (prev) return false;
+            return prev;
+        });
 
         // Warning timer at 9 minutes
         warningTimerRef.current = setTimeout(() => {
@@ -99,10 +105,15 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
         startTimers();
     }, [startTimers]);
 
+    // Use refs for state values to avoid dependency loops in event listeners
+    const isWarningRef = useRef(false);
+    useEffect(() => {
+        isWarningRef.current = isWarning;
+    }, [isWarning]);
+
     useEffect(() => {
         if (!isAuthenticated) {
             clearAllTimers();
-            setIsWarning(false);
             return;
         }
 
@@ -110,7 +121,7 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
 
         const handleActivity = () => {
             // Only reset if warning is NOT showing (don't reset during warning countdown)
-            if (!isWarning) {
+            if (!isWarningRef.current) {
                 resetTimer();
             }
         };
@@ -125,7 +136,7 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
                 window.removeEventListener(event, handleActivity);
             });
         };
-    }, [isAuthenticated, isWarning, clearAllTimers, resetTimer, startTimers]);
+    }, [isAuthenticated, clearAllTimers, resetTimer, startTimers]);
 
     return { isWarning, remainingSeconds, resetTimer };
 }

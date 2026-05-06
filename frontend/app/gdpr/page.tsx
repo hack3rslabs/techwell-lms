@@ -26,7 +26,7 @@ export default function GDPRPage() {
                         <CardContent className="pt-6">
                             <p className="text-green-500 flex items-center gap-2 font-bold text-lg">
                                 <CheckCircle className="h-6 w-6" />
-                                TechWell is fully GDPR compliant
+                                Techwell is fully GDPR compliant
                             </p>
                         </CardContent>
                     </Card>

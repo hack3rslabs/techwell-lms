@@ -80,8 +80,8 @@ export default function LoginPage() {
             <div className="w-full max-w-5xl space-y-6">
                 <div className="flex flex-col items-center mb-8">
                     <Link href="/">
-                        <Image src="/logo-light.png" alt="TechWell" width={160} height={48} className="dark:hidden" priority />
-                        <Image src="/logo-dark.png" alt="TechWell" width={160} height={48} className="hidden dark:block" priority />
+                        <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
+                        <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
                     </Link>
                 </div>
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
                         <div className="text-center mt-12 space-y-4 relative z-10">
                             <h2 className="text-3xl font-extrabold text-primary tracking-tight">Secure Your Future</h2>
                             <p className="text-muted-foreground text-lg max-w-[320px] leading-relaxed">
-                                Join the ecosystem of innovation and professional growth with TechWell.
+                                Join the ecosystem of innovation and professional growth with Techwell.
                             </p>
                             <div className="pt-4 flex justify-center gap-2">
                                 <div className="h-1.5 w-8 rounded-full bg-primary/40" />
@@ -116,7 +116,7 @@ export default function LoginPage() {
                         <Card className="border-muted shadow-2xl backdrop-blur-sm bg-background/90 rounded-2xl">
                             <CardHeader className="text-center pt-10 pb-6">
                                 <CardTitle className="text-3xl font-bold tracking-tight">Welcome Back</CardTitle>
-                                <CardDescription className="text-base">Sign in to your TechWell account</CardDescription>
+                                <CardDescription className="text-base">Sign in to your Techwell account</CardDescription>
                             </CardHeader>
                             <CardContent className="px-8 pb-10">
                                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -212,7 +212,7 @@ export default function LoginPage() {
                                 </form>
 
                                 <div className="mt-8 pt-6 border-t border-muted/60 text-center text-sm">
-                                    <span className="text-muted-foreground">New to TechWell? </span>
+                                    <span className="text-muted-foreground">New to Techwell? </span>
                                     <Link href="/register" className="text-primary hover:underline font-bold">
                                         Create a free account
                                     </Link>

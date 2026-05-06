@@ -40,6 +40,7 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = React.useState<User | null>(null);
     const [isLoading, setIsLoading] = React.useState(true);
+    const router = useRouter();
 
     const isAuthenticated = !!user;
 
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const register = async (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string): Promise<User> => {
-        const _response = await authApi.register({ email, password, name, dob, qualification, college });
+        await authApi.register({ email, password, name, dob, qualification, college });
         // The backend now only sends { message: 'OTP sent...', email }
         // We do NOT set user/token yet, we wait for OTP verification.
         // Return a partial User object for type compatibility
@@ -101,8 +102,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const response = await authApi.resendOtp({ email });
         return response.data;
     };
-
-    const router = useRouter();
 
     const logout = React.useCallback(() => {
         localStorage.removeItem('token');

@@ -35,7 +35,7 @@ export default function ForCollegesPage() {
     }
 
     const shareVia = (platform: string) => {
-        const text = encodeURIComponent('Prepare for your interviews with TechWell - AI-powered mock interviews!')
+        const text = encodeURIComponent('Prepare for your interviews with Techwell - AI-powered mock interviews!')
         const link = encodeURIComponent(referralLink)
 
         let url = ''
@@ -44,7 +44,7 @@ export default function ForCollegesPage() {
                 url = `https://wa.me/?text=${text}%20${link}`
                 break
             case 'email':
-                url = `mailto:?subject=Interview Preparation with TechWell&body=${text}%0A%0A${link}`
+                url = `mailto:?subject=Interview Preparation with Techwell&body=${text}%0A%0A${link}`
                 break
             case 'linkedin':
                 url = `https://www.linkedin.com/sharing/share-offsite/?url=${link}`
@@ -77,7 +77,7 @@ export default function ForCollegesPage() {
                                     Transform Your Students Into <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Interview Champions</span>
                                 </h1>
                                 <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                                    Partner with TechWell to revolutionize your placement cell. Our AI-powered platform helps students build confidence, master technical skills, and ace interviews at top companies.
+                                    Partner with Techwell to revolutionize your placement cell. Our AI-powered platform helps students build confidence, master technical skills, and ace interviews at top companies.
                                 </p>
                                 <div className="flex flex-wrap gap-4">
                                     <Button size="lg" className="rounded-full shadow-lg shadow-primary/20" asChild>
@@ -160,7 +160,7 @@ export default function ForCollegesPage() {
                 <section id="features" className="py-24">
                     <div className="max-w-7xl mx-auto px-4">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold mb-4">How TechWell Helps Your Students</h2>
+                            <h2 className="text-3xl md:text-4xl font-bold mb-4">How Techwell Helps Your Students</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">A comprehensive platform designed to develop industry-ready professionals.</p>
                         </div>
 
@@ -227,7 +227,7 @@ export default function ForCollegesPage() {
                                         <p className="text-xs text-muted-foreground uppercase">Training & Placement Cell</p>
                                     </div>
                                 </div>
-                                <p className="text-muted-foreground italic">&quot;TechWell has become an integral part of our placement preparation. Students are more confident and better prepared than ever before.&quot;</p>
+                                <p className="text-muted-foreground italic">&quot;Techwell has become an integral part of our placement preparation. Students are more confident and better prepared than ever before.&quot;</p>
                             </Card>
                             <Card className="p-8 border-secondary/10">
                                 <div className="flex items-center gap-4 mb-4">

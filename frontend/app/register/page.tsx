@@ -118,8 +118,8 @@ export default function RegisterPage() {
                 <div className="w-full max-w-md space-y-6">
                     <div className="flex justify-center">
                         <Link href="/">
-                            <Image src="/logo-light.png" alt="TechWell" width={160} height={48} className="dark:hidden" priority />
-                            <Image src="/logo-dark.png" alt="TechWell" width={160} height={48} className="hidden dark:block" priority />
+                            <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
+                            <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
                         </Link>
                     </div>
                     <Card className="border-muted shadow-xl backdrop-blur-sm bg-background/80">
@@ -191,14 +191,14 @@ export default function RegisterPage() {
             <div className="w-full max-w-xl space-y-6">
                 <div className="flex justify-center">
                     <Link href="/">
-                        <Image src="/logo-light.png" alt="TechWell" width={160} height={48} className="dark:hidden" priority />
-                        <Image src="/logo-dark.png" alt="TechWell" width={160} height={48} className="hidden dark:block" priority />
+                        <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
+                        <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
                     </Link>
                 </div>
                 <Card className="border-muted shadow-xl backdrop-blur-sm bg-background/80">
                     <CardHeader className="text-center pt-8">
                         <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-                        <CardDescription>Join TechWell and start your journey</CardDescription>
+                        <CardDescription>Join Techwell and start your journey</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 px-10">
                         <form onSubmit={handleSubmit} className="space-y-6">

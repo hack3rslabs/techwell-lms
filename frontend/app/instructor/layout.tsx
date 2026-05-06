@@ -62,7 +62,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
                     <div className="bg-primary h-8 w-8 rounded-lg flex items-center justify-center">
                         <span className="text-white font-bold text-xl">T</span>
                     </div>
-                    <span className="font-bold text-xl tracking-tight">TechWell</span>
+                    <span className="font-bold text-xl tracking-tight">Techwell</span>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                     {isSidebarOpen ? <X /> : <Menu />}
@@ -81,7 +81,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
                                 <span className="text-white font-bold text-2xl">T</span>
                             </div>
                             <div>
-                                <h1 className="font-bold text-xl tracking-tight leading-none">TechWell</h1>
+                                <h1 className="font-bold text-xl tracking-tight leading-none">Techwell</h1>
                                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1 italic">Instructor</p>
                             </div>
                         </div>

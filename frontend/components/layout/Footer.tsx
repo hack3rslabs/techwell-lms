@@ -22,14 +22,14 @@ export function Footer() {
                         <Link href="/" className="relative flex h-9 w-[140px] items-center">
                             <Image
                                 src="/logo-light.png"
-                                alt="TechWell"
+                                alt="Techwell"
                                 width={140}
                                 height={40}
                                 className="object-contain object-left dark:hidden"
                             />
                             <Image
                                 src="/logo-dark.png"
-                                alt="TechWell"
+                                alt="Techwell"
                                 width={140}
                                 height={40}
                                 className="hidden object-contain object-left dark:block"

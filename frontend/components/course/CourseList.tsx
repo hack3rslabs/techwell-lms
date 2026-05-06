@@ -5,8 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { courseApi, courseCategoryApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { GraduationCap, Search, Loader2 } from 'lucide-react'
 import { getFullImageUrl } from '@/lib/image-utils'
@@ -43,7 +42,6 @@ export default function CourseList() {
     const [search, setSearch] = React.useState('')
     const [category, setCategory] = React.useState('')
     const [difficulty, setDifficulty] = React.useState('')
-    const [_enrollingId, setEnrollingId] = React.useState<string | null>(null)
     const [dbCategories, setDbCategories] = React.useState<{ name: string; icon: string | null }[]>([])
 
     React.useEffect(() => {
@@ -82,25 +80,6 @@ export default function CourseList() {
             abortController.abort()
         }
     }, [search, category])
-
-    const _handleEnroll = async (courseId: string) => {
-        if (!isAuthenticated) {
-            router.push('/login')
-            return
-        }
-
-        setEnrollingId(courseId)
-        try {
-            await courseApi.enroll(courseId)
-            setCourses(courses.map(c =>
-                c.id === courseId ? { ...c, isEnrolled: true } : c
-            ))
-        } catch (error) {
-            console.error('Failed to enroll:', error)
-        } finally {
-            setEnrollingId(null)
-        }
-    }
 
     const filteredCourses = difficulty
         ? courses.filter(c => c.difficulty === difficulty)
