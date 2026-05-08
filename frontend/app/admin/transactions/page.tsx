@@ -35,12 +35,16 @@ export default function TransactionsPage() {
         fetchPayments()
     }, [])
 
-    const filteredPayments = payments.filter(payment => 
-        payment.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.course?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.orderId?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredPayments = payments.filter(payment => {
+        const searchLower = searchTerm.toLowerCase()
+        return (
+            payment.user?.name?.toLowerCase().includes(searchLower) ||
+            payment.user?.email?.toLowerCase().includes(searchLower) ||
+            (payment.user?.phone || '').toLowerCase().includes(searchLower) ||
+            payment.course?.title?.toLowerCase().includes(searchLower) ||
+            payment.orderId?.toLowerCase().includes(searchLower)
+        )
+    })
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {
@@ -88,6 +92,7 @@ export default function TransactionsPage() {
                                 <TableRow>
                                     <TableHead>Date</TableHead>
                                     <TableHead>Student</TableHead>
+                                    <TableHead>Phone</TableHead>
                                     <TableHead>Course</TableHead>
                                     <TableHead>Amount</TableHead>
                                     <TableHead>Status</TableHead>
@@ -112,6 +117,13 @@ export default function TransactionsPage() {
                                                     <span className="font-medium">{payment.user?.name}</span>
                                                     <span className="text-xs text-muted-foreground">{payment.user?.email}</span>
                                                 </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm">
+                                                    {payment.user?.phone || (
+                                                        <span className="text-muted-foreground italic text-xs">Not Provided</span>
+                                                    )}
+                                                </span>
                                             </TableCell>
                                             <TableCell className="max-w-[200px] truncate">
                                                 {payment.course?.title}

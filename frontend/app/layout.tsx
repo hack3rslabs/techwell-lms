@@ -9,6 +9,7 @@ import { ScrollButton } from "@/components/ui/scroll-button";
 import { FloatingCallButton } from "@/components/ui/floating-call-button";
 import { BehaviorTrackingProvider } from "@/components/BehaviorTrackingProvider";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -125,6 +126,7 @@ export default function RootLayout({
           </AuthProvider>
         </ThemeProvider>
         <Toaster />
+        <SonnerToaster position="top-center" richColors />
       </body>
     </html>
   );

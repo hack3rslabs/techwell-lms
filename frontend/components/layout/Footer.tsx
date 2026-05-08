@@ -107,9 +107,14 @@ export function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/social-service" className="text-muted-foreground hover:text-foreground transition-colors">
+                                <a 
+                                    href="https://www.bloodhub.in/donor/login" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="text-muted-foreground hover:text-foreground transition-colors"
+                                >
                                     Social Service
-                                </Link>
+                                </a>
                             </li>
                             <li>
                                 <Link href="/jobs" className="text-muted-foreground hover:text-foreground transition-colors">

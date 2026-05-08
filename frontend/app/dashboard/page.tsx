@@ -19,7 +19,6 @@ import {
     Download,
     Award,
     Clock,
-    PlayCircle,
     Briefcase,
     ExternalLink,
     FileText,
@@ -116,15 +115,15 @@ interface Application {
     }
 }
 
+type TabType = 'overview' | 'learning' | 'messages' | 'interviews' | 'applications' | 'certificates' | 'resume'
+const validTabs: TabType[] = ['overview', 'learning', 'messages', 'interviews', 'applications', 'certificates', 'resume']
+
 export default function DashboardPage() {
     const router = useRouter()
     const { user, isLoading: authLoading, logout } = useAuth()
 
     const searchParams = useSearchParams()
     const tabParam = searchParams.get('tab')
-
-    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume'
-    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume']
 
     const [activeTab, setActiveTab] = React.useState<TabType>('overview')
 
@@ -154,6 +153,12 @@ export default function DashboardPage() {
     const [applications, setApplications] = React.useState<Application[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [appFilter, setAppFilter] = React.useState<string>('ALL')
+    
+    const allUpcomingMeetings = React.useMemo(() => {
+        return Object.values(courseMessages)
+            .flat()
+            .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+    }, [courseMessages]);
 
     React.useEffect(() => {
         if (!authLoading) {
@@ -500,7 +505,6 @@ export default function DashboardPage() {
                                     </div>
                                 )}
 
-                                <StudentMessages />
                             </div>
                         )}
 
@@ -517,7 +521,7 @@ export default function DashboardPage() {
                                         <div
                                             key={enrollment.id}
                                             className="bg-card border border-border p-0 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                                            onClick={() => router.push(`/courses/${enrollment.course.id}/learn`)}
+                                           
                                         >
                                             <div className="p-6 pb-2">
                                                 <div className="flex justify-between items-start">
@@ -556,83 +560,19 @@ export default function DashboardPage() {
                                                     <span className="text-muted-foreground">Progress</span>
                                                     <span className={`font-bold ${progress === 100 ? 'text-green-600' : 'text-foreground'}`}>{progress}%</span>
                                                 </div>
-
                                                 {courseLiveMessages.length > 0 && (
-                                                    <div className="mt-4 pt-4 border-t border-border space-y-3">
-                                                        <div className="flex items-center justify-between gap-2">
-                                                            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                                                                <Calendar className="h-4 w-4 text-primary" />
-                                                                <span>Course Meetings</span>
-                                                            </div>
-                                                            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                                                                {courseLiveMessages.length}
-                                                            </Badge>
+                                                    <div
+                                                        className="mt-4 pt-4 border-t border-border flex items-center justify-between cursor-pointer group"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveTab('messages');
+                                                        }}
+                                                    >
+                                                        <div className="flex items-center gap-2 text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                                                            <Calendar className="h-4 w-4" />
+                                                            <span>{courseLiveMessages.length} Scheduled Session{courseLiveMessages.length > 1 ? 's' : ''}</span>
                                                         </div>
-
-                                                        {courseLiveMessages.slice(0, 2).map((liveClass) => (
-                                                            <div key={liveClass.id} className="rounded-xl border border-primary/15 bg-primary/5 p-3 space-y-3">
-                                                                <div className="flex items-start justify-between gap-3">
-                                                                    <div className="min-w-0">
-                                                                        <p className="font-semibold text-sm text-foreground line-clamp-2">
-                                                                            {liveClass.title}
-                                                                        </p>
-                                                                        <p className="text-xs text-muted-foreground mt-1">
-                                                                            Sent by {liveClass.hostName || 'Super Admin'}
-                                                                        </p>
-                                                                    </div>
-                                                                    <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
-                                                                        {liveClass.platform.replace(/_/g, ' ')}
-                                                                    </Badge>
-                                                                </div>
-
-                                                                <div className="space-y-1.5 text-xs text-muted-foreground">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Calendar className="h-3.5 w-3.5 text-primary" />
-                                                                        <span>{new Date(liveClass.scheduledAt).toLocaleDateString()}</span>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Clock className="h-3.5 w-3.5 text-primary" />
-                                                                        <span>
-                                                                            {new Date(liveClass.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {liveClass.duration} mins
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="flex items-center gap-2">
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation()
-                                                                            router.push(`/courses/${enrollment.course.id}/learn`)
-                                                                        }}
-                                                                    >
-                                                                        <BookOpen className="mr-2 h-3.5 w-3.5" />
-                                                                        Open Course
-                                                                    </Button>
-                                                                    {liveClass.meetingLink ? (
-                                                                        <Button
-                                                                            size="sm"
-                                                                            onClick={(event) => {
-                                                                                event.stopPropagation()
-                                                                                window.open(liveClass.meetingLink, '_blank', 'noopener,noreferrer')
-                                                                            }}
-                                                                        >
-                                                                            <ExternalLink className="mr-2 h-3.5 w-3.5" />
-                                                                            Join
-                                                                        </Button>
-                                                                    ) : (
-                                                                        <span className="text-xs text-muted-foreground">Meeting link will appear soon.</span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-
-                                                        {courseLiveMessages.length > 2 && (
-                                                            <p className="text-xs text-muted-foreground">
-                                                                +{courseLiveMessages.length - 2} more scheduled session{courseLiveMessages.length - 2 > 1 ? 's' : ''} for this course.
-                                                            </p>
-                                                        )}
+                                                        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                                                     </div>
                                                 )}
 
@@ -658,6 +598,104 @@ export default function DashboardPage() {
                                         </Button>
                                     </div>
                                 )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* MESSAGES TAB */}
+                        {activeTab === 'messages' && (
+                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                    {/* General Announcements */}
+                                    <div className="lg:col-span-2">
+                                        <StudentMessages />
+                                    </div>
+
+                                    {/* Live Class Meetings */}
+                                    <div className="space-y-6">
+                                        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                                        <Calendar className="h-5 w-5 text-primary" />
+                                                    </div>
+                                                    <h3 className="font-bold text-lg text-foreground">Course Meetings</h3>
+                                                </div>
+                                                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                                    {allUpcomingMeetings.length}
+                                                </Badge>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                {allUpcomingMeetings.length > 0 ? (
+                                                    allUpcomingMeetings.map((liveClass) => {
+                                                        const enrollment = enrollments.find(e => e.course.id === liveClass.courseId);
+                                                        return (
+                                                            <div key={liveClass.id} className="rounded-xl border border-border bg-muted/30 p-4 space-y-4 hover:border-primary/30 transition-all group">
+                                                                <div className="flex items-start justify-between gap-3">
+                                                                    <div className="min-w-0">
+                                                                        <p className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                                                                            {liveClass.title}
+                                                                        </p>
+                                                                        <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">
+                                                                            {enrollment?.course.title || 'Enrolled Course'}
+                                                                        </p>
+                                                                    </div>
+                                                                    <Badge variant="outline" className="text-[9px] uppercase tracking-wide h-5">
+                                                                        {liveClass.platform.replace(/_/g, ' ')}
+                                                                    </Badge>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 gap-3 text-[11px] text-muted-foreground">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Calendar className="h-3.5 w-3.5 text-primary" />
+                                                                        <span>{new Date(liveClass.scheduledAt).toLocaleDateString()}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Clock className="h-3.5 w-3.5 text-primary" />
+                                                                        <span>
+                                                                            {new Date(liveClass.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex items-center gap-2 pt-1">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        className="flex-1 text-[11px] h-8"
+                                                                        onClick={() => router.push(`/courses/${liveClass.courseId}/learn`)}
+                                                                    >
+                                                                        <BookOpen className="mr-1.5 h-3 w-3" />
+                                                                        Study
+                                                                    </Button>
+                                                                    {liveClass.meetingLink ? (
+                                                                        <Button
+                                                                            size="sm"
+                                                                            className="flex-1 text-[11px] h-8"
+                                                                            onClick={() => window.open(liveClass.meetingLink, '_blank')}
+                                                                        >
+                                                                            <ExternalLink className="mr-1.5 h-3 w-3" />
+                                                                            Join
+                                                                        </Button>
+                                                                    ) : (
+                                                                        <div className="flex-1 text-[10px] text-muted-foreground flex items-center justify-center border border-dashed border-border rounded-md h-8">
+                                                                            Pending Link
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <div className="text-center py-10">
+                                                        <Calendar className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                                                        <p className="text-sm text-muted-foreground">No upcoming sessions.</p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

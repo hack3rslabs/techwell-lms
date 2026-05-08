@@ -462,7 +462,8 @@ router.get('/transactions', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
                 user: {
                     select: {
                         name: true,
-                        email: true
+                        email: true,
+                        phone: true
                     }
                 },
                 course: {

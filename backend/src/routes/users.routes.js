@@ -43,7 +43,7 @@ const upload = multer({
 const updateProfileSchema = z.object({
     name: z.string().min(2).optional(),
     phone: z.string().optional(),
-    avatar: z.string().url().optional()
+    avatar: z.string().optional().or(z.literal(''))
 });
 
 const createUserSchema = z.object({

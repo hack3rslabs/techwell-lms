@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { courseApi, courseCategoryApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { GraduationCap, Search, Loader2 } from 'lucide-react'
 import { getFullImageUrl } from '@/lib/image-utils'
@@ -24,6 +25,7 @@ interface Course {
     instructor?: { name: string }
     _count?: { enrollments: number }
     isEnrolled?: boolean
+    createdAt?: string;
 }
 
 const difficulties = [
@@ -35,7 +37,7 @@ const difficulties = [
 
 export default function CourseList() {
     const router = useRouter()
-    const { isAuthenticated } = useAuth()
+    const {} = useAuth()
 
     const [courses, setCourses] = React.useState<Course[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
@@ -161,12 +163,24 @@ export default function CourseList() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredCourses.map((course) => (
-                        <Card
-                            key={course.id}
-                            className="flex flex-col group hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden border-border/50 cursor-pointer"
-                            onClick={() => router.push(`/courses/${course.id}`)}
-                        >
+                    {filteredCourses.map((course) => {
+                        const isNew = course.createdAt
+                            ? (new Date().getTime() - new Date(course.createdAt).getTime()) < (7 * 24 * 60 * 60 * 1000)
+                            : false;
+
+                        return (
+                            <Card
+                                key={course.id}
+                                className="flex flex-col group hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden border-border/50 cursor-pointer relative"
+                                onClick={() => router.push(`/courses/${course.id}`)}
+                            >
+                                {isNew && (
+                                    <div className="absolute top-3 left-3 z-30">
+                                        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-none px-2.5 py-0.5 shadow-md text-[10px] font-bold tracking-wider">
+                                            NEW
+                                        </Badge>
+                                    </div>
+                                )}
                                 <div className="h-48 relative bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 flex items-center justify-center overflow-hidden">
                                     <GraduationCap className="h-16 w-16 text-primary/20 absolute z-0" />
                                     {(course.bannerUrl || course.thumbnail) && (
@@ -214,8 +228,9 @@ export default function CourseList() {
                                     </span>
                                 )}
                             </CardFooter>
-                        </Card>
-                    ))}
+                            </Card>
+                        )
+                    })}
                 </div>
             )}
         </div>
