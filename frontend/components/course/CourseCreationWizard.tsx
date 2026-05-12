@@ -49,6 +49,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                         category: c.category,
                         price: Number(c.price) || 0,
                         discountPrice: Number(c.discountPrice) || 0,
+                        duration: Number(c.duration) || 0,
                         difficulty: c.difficulty,
                         courseCode: c.courseCode || '',
                         bannerUrl: c.bannerUrl || '',
@@ -75,6 +76,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         category: 'Development',
         price: 0,
         discountPrice: 0,
+        duration: 0,
         difficulty: 'BEGINNER',
         courseCode: '',
         bannerUrl: '',
@@ -187,6 +189,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                 difficulty: basicData.difficulty as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED',
                 price: Number(basicData.price) || 0,
                 discountPrice: Number(basicData.discountPrice) || 0,
+                duration: Number(basicData.duration) || 0,
                 courseCode: basicData.courseCode || undefined,
                 bannerUrl: finalImageUrl || undefined,
                 thumbnail: finalImageUrl || undefined,
@@ -509,13 +512,25 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Course Code</label>
-                                <Input
-                                    value={basicData.courseCode}
-                                    onChange={e => setBasicData({ ...basicData, courseCode: e.target.value })}
-                                    placeholder="e.g. REACT-101"
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Course Code</label>
+                                    <Input
+                                        value={basicData.courseCode}
+                                        onChange={e => setBasicData({ ...basicData, courseCode: e.target.value })}
+                                        placeholder="e.g. REACT-101"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Duration (hours)</label>
+                                    <Input
+                                        type="number"
+                                        value={basicData.duration}
+                                        onChange={e => setBasicData({ ...basicData, duration: Number(e.target.value) })}
+                                        min="0"
+                                        placeholder="e.g. 3"
+                                    />
+                                </div>
                             </div>
 
                             <div className="space-y-2">

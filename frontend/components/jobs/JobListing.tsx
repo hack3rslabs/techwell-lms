@@ -3,10 +3,10 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { 
-    Search, MapPin, Briefcase, Filter, Building2, Clock, 
-    Banknote, GraduationCap, ChevronRight, Zap, Star, 
+    Search, MapPin, Briefcase, Building2, Clock, 
+    GraduationCap, ChevronRight, Zap, 
     TrendingUp, History, BrainCircuit, Target, CheckCircle2,
-    PlayCircle, Sparkles, LayoutGrid, ListFilter
+    PlayCircle, Sparkles, ListFilter
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -23,7 +23,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import api from "@/lib/api"
 import { useAuth } from "@/lib/auth-context"
 import EmployerRequestDialog from "@/components/jobs/EmployerRequestDialog"
-import { toast } from "sonner"
 
 interface Job {
     id: string
@@ -49,7 +48,7 @@ export default function JobListing() {
     const router = useRouter()
     const [jobs, setJobs] = useState<Job[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [resumeData, setResumeData] = useState<any>(null)
+    const [resumeData, setResumeData] = useState<unknown>(null)
     const [recentSearches, setRecentSearches] = useState<string[]>([])
     const [filters, setFilters] = useState({
         search: "",
@@ -103,32 +102,33 @@ export default function JobListing() {
     }
 
     const calculateMatchScore = (job: Job) => {
-        if (!resumeData) return 0
-        let score = 0
-        const skills = resumeData.technicalSkills || []
-        const domain = resumeData.domain || ""
+        const resume = resumeData as any;
+        if (!resume) return 0;
+        let score = 0;
+        const skills = resume.technicalSkills || [];
+        const domain = resume.domain || "";
 
         // Skill Match (40%)
         const matchedSkills = skills.filter((s: string) => 
             job.title.toLowerCase().includes(s.toLowerCase()) || 
             job.description.toLowerCase().includes(s.toLowerCase())
-        )
-        score += (matchedSkills.length / Math.max(skills.length, 1)) * 40
+        );
+        score += (matchedSkills.length / Math.max(skills.length, 1)) * 40;
 
         // Domain Match (30%)
-        if (job.title.toLowerCase().includes(domain.toLowerCase())) score += 30
+        if (job.title.toLowerCase().includes(domain.toLowerCase())) score += 30;
 
         // Location Match (10%)
-        if (resumeData.location && job.location.toLowerCase().includes(resumeData.location.toLowerCase())) score += 10
+        if (resume.location && job.location.toLowerCase().includes(resume.location.toLowerCase())) score += 10;
 
         // Experience Fit (20%)
-        const jobExp = parseInt(job.experience) || 0
-        const userExp = 2 // Hardcoded for demo/default, but could come from resume
-        if (userExp >= jobExp) score += 20
-        else if (userExp >= jobExp - 2) score += 10
+        const jobExp = parseInt(job.experience) || 0;
+        const userExp = 2; // Hardcoded for demo/default, but could come from resume
+        if (userExp >= jobExp) score += 20;
+        else if (userExp >= jobExp - 2) score += 10;
 
-        return Math.round(Math.min(score, 100))
-    }
+        return Math.round(Math.min(score, 100));
+    };
 
     const filteredJobs = jobs.filter(job => {
         const matchesSearch = job.title.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -295,7 +295,7 @@ export default function JobListing() {
                                                 key={f.id}
                                                 variant={filters.freshness === f.id ? "default" : "outline"}
                                                 className={`cursor-pointer px-3 py-1 text-[10px] font-black uppercase tracking-tighter transition-all ${filters.freshness === f.id ? "bg-blue-600 hover:bg-blue-700" : "hover:border-blue-400 text-slate-500 hover:text-blue-600 border-slate-200"}`}
-                                                onClick={() => setFilters(prev => ({ ...prev, freshness: f.id as any }))}
+                                                onClick={() => setFilters(prev => ({ ...prev, freshness: f.id as "all" | "24h" | "7d" | "30d" }))}
                                             >
                                                 {f.label}
                                             </Badge>

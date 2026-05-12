@@ -132,7 +132,7 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Team */}
+            {/* Team
             <section className="py-20">
                 <div className="container">
                     <h2 className="text-3xl font-bold text-center mb-12">Leadership Team</h2>
@@ -148,7 +148,7 @@ export default function AboutPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* CTA */}
             <section className="py-20 bg-primary text-primary-foreground">

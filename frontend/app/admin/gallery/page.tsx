@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Trash2, Image as ImageIcon, Loader2 } from "lucide-react"
+import { Plus, Trash2, Image as ImageIcon, Loader2, X, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import Image from "next/image"
+import api from "@/lib/api"
 
 interface GalleryImage {
     id: string
@@ -19,6 +20,7 @@ export default function GalleryPage() {
     const [newUrl, setNewUrl] = useState("")
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
     const { toast } = useToast()
 
     useEffect(() => {
@@ -27,8 +29,8 @@ export default function GalleryPage() {
 
     const fetchImages = async () => {
         try {
-            const res = await fetch("/api/admin/gallery")
-            const data = await res.json()
+            const res = await api.get("/admin/gallery")
+            const data = res.data
             if (Array.isArray(data)) {
                 setImages(data)
             }
@@ -39,21 +41,44 @@ export default function GalleryPage() {
         }
     }
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        if (!file.type.startsWith('image/')) {
+            toast({ title: "Error", description: "Please upload an image file", variant: "destructive" })
+            return
+        }
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        setIsUploading(true)
+        try {
+            const res = await api.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
+
+            if (res.data.url) {
+                setNewUrl(res.data.url)
+                toast({ title: "Success", description: "Image uploaded successfully" })
+            }
+        } catch (error) {
+            console.error('Upload error:', error)
+            toast({ title: "Error", description: "Failed to upload image", variant: "destructive" })
+        } finally {
+            setIsUploading(false)
+        }
+    }
+
     const handleAddImage = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!newUrl) return
 
         setSubmitting(true)
         try {
-            const res = await fetch("/api/admin/gallery", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: newUrl }),
-            })
-
-            if (!res.ok) throw new Error("Failed to add image")
-
-            const newImage = await res.json()
+            const res = await api.post("/admin/gallery", { url: newUrl })
+            const newImage = res.data
             setImages([...images, newImage])
             setNewUrl("")
             toast({ title: "Success", description: "Image added to gallery" })
@@ -68,12 +93,7 @@ export default function GalleryPage() {
         if (!confirm("Are you sure you want to delete this image?")) return
 
         try {
-            const res = await fetch(`/api/admin/gallery?id=${id}`, {
-                method: "DELETE",
-            })
-
-            if (!res.ok) throw new Error("Failed to delete")
-
+            await api.delete(`/admin/gallery?id=${id}`)
             setImages(images.filter(img => img.id !== id))
             toast({ title: "Success", description: "Image deleted" })
         } catch (_error) {
@@ -91,21 +111,90 @@ export default function GalleryPage() {
             </div>
 
             <Card>
-                <CardContent className="p-6">
-                    <form onSubmit={handleAddImage} className="flex gap-4 items-end">
-                        <div className="flex-1 space-y-2">
-                            <label className="text-sm font-medium">Image URL</label>
-                            <Input
-                                placeholder="https://example.com/image.jpg"
-                                value={newUrl}
-                                onChange={(e) => setNewUrl(e.target.value)}
-                            />
+                <CardHeader>
+                    <CardTitle className="text-xl">Add New Image</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div 
+                                className={`relative border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all
+                                    ${newUrl ? 'border-primary/50 bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50'}
+                                    ${isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                `}
+                            >
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                    onChange={handleImageUpload}
+                                    disabled={isUploading || submitting}
+                                />
+                                
+                                <div className="text-center space-y-2">
+                                    <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto">
+                                        {isUploading ? (
+                                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                                        ) : (
+                                            <Upload className="w-6 h-6 text-primary" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold">Click or drag to upload</p>
+                                        <p className="text-xs text-muted-foreground">PNG, JPG or GIF (max 5MB)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {newUrl && (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Image URL (Optional Preview)</label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={newUrl}
+                                            onChange={(e) => setNewUrl(e.target.value)}
+                                            placeholder="https://example.com/image.jpg"
+                                            className="text-xs"
+                                        />
+                                        <Button 
+                                            variant="outline" 
+                                            size="icon"
+                                            onClick={() => setNewUrl("")}
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <Button type="submit" disabled={submitting || !newUrl}>
-                            {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                            Add Image
-                        </Button>
-                    </form>
+
+                        <div className="flex flex-col justify-between">
+                            <div className="bg-muted rounded-xl aspect-video relative overflow-hidden border group">
+                                {newUrl ? (
+                                    <Image
+                                        src={newUrl}
+                                        alt="Preview"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground italic">
+                                        <ImageIcon className="w-8 h-8 mb-2 opacity-20" />
+                                        <span className="text-sm">Preview will appear here</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <Button 
+                                onClick={handleAddImage} 
+                                disabled={submitting || isUploading || !newUrl}
+                                className="w-full mt-4"
+                            >
+                                {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                                Add to Gallery
+                            </Button>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 

@@ -13,7 +13,7 @@ const createBlogSchema = z.object({
     tags: z.array(z.string()).optional(),
     category: z.string().optional(),
     status: z.enum(['DRAFT', 'IN_REVIEW', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
-    coverImage: z.string().url().optional().or(z.literal('')),
+    coverImage: z.string().optional().or(z.literal('')),
 });
 
 /**

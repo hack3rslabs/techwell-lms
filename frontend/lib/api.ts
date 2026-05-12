@@ -95,6 +95,7 @@ export interface CoursePayload {
     description: string;
     category: string;
     price: number;
+    duration?: number;
     discountPrice?: number;
     difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
     courseCode?: string;

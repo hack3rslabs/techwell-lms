@@ -138,7 +138,6 @@ export default function DashboardPage() {
 
     const handleTabChange = (newTab: TabType) => {
         setActiveTab(newTab)
-        router.push(`/dashboard?tab=${newTab}`, { scroll: false })
     }
     const [stats, setStats] = React.useState<{
         enrollments: number;
@@ -336,7 +335,7 @@ export default function DashboardPage() {
                 <div className="flex gap-1 mb-8 p-1.5 bg-muted/50 border border-border/50 rounded-xl overflow-x-auto">
                     {[
                         { id: 'overview', label: 'Overview', icon: TrendingUp },
-                        { id: 'learning', label: 'My Learning', icon: BookOpen },
+                        { id: 'learning', label: 'Courses', icon: BookOpen },
                         { id: 'messages', label: 'Messages', icon: MessageSquare },
                         { id: 'interviews', label: 'Interviews', icon: Video },
                         { id: 'applications', label: 'Applications', icon: Briefcase, count: applications.length },
@@ -521,7 +520,7 @@ export default function DashboardPage() {
                                         <div
                                             key={enrollment.id}
                                             className="bg-card border border-border p-0 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                                           
+                                            onClick={() => router.push(`/courses/${enrollment.course.id}/learn`)}
                                         >
                                             <div className="p-6 pb-2">
                                                 <div className="flex justify-between items-start">

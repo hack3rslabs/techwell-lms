@@ -3,11 +3,10 @@ import * as React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Mail, Phone, MapPin, Twitter, Linkedin, Youtube, Github, Instagram, ExternalLink } from 'lucide-react'
+import { Mail, Phone, MapPin, Twitter, Linkedin, Youtube, Instagram, ExternalLink } from 'lucide-react'
 
 export function Footer() {
     const pathname = usePathname()
-    const [_year, setYear] = React.useState(2024)
 
     if (pathname?.startsWith('/admin')) {
         return null
@@ -74,11 +73,11 @@ export function Footer() {
                                     AI Interview Prep
                                 </Link>
                             </li>
-                            <li>
+                            {/* <li>
                                 <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
                                     Plans & Pricing
                                 </Link>
-                            </li>
+                            </li> */}
                             <li>
                                 <Link href="/skillcast" className="text-muted-foreground hover:text-foreground transition-colors">
                                     Skillcast Episodes

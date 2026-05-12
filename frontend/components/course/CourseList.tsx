@@ -100,7 +100,7 @@ export default function CourseList() {
         <div className="container py-8">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-4xl font-extrabold tracking-tight mb-2">Explore AI-Adaptive Courses</h1>
+                <h1 className="text-4xl font-extrabold tracking-tight mb-2">Explore Courses</h1>
                 <p className="text-xl text-muted-foreground">
                     Master the most in-demand tech skills with our personalized learning paths.
                 </p>
@@ -205,9 +205,16 @@ export default function CourseList() {
                                 </div>
                             <CardHeader className="pb-2">
                                 <div className="flex items-center justify-between mb-3">
-                                    <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md ${getDifficultyColor(course.difficulty)}`}>
-                                        {course.difficulty}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md ${getDifficultyColor(course.difficulty)}`}>
+                                            {course.difficulty}
+                                        </span>
+                                        {course.duration > 0 && (
+                                            <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                                {course.duration} {course.duration === 1 ? 'Hour' : 'Hours'}
+                                            </span>
+                                        )}
+                                    </div>
                                     <span className="text-xs font-semibold text-primary/70">{course.category}</span>
                                 </div>
                                 <CardTitle className="text-xl line-clamp-1 group-hover:text-primary transition-colors">{course.title}</CardTitle>

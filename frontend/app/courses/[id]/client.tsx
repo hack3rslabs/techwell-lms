@@ -17,7 +17,8 @@ import {
     Loader2,
     ArrowLeft,
     CreditCard,
-    XCircle
+    XCircle,
+    ChevronDown
 } from 'lucide-react'
 import {
     Dialog,
@@ -122,6 +123,7 @@ export default function CourseDetailClient() {
     const [isLoading, setIsLoading] = React.useState(true)
     const [isEnrolling, setIsEnrolling] = React.useState(false)
     const [expandedModules, setExpandedModules] = React.useState<string[]>([])
+    const [showCurriculum, setShowCurriculum] = React.useState(true)
     const [purchaseType, setPurchaseType] = React.useState<'COURSE_ONLY' | 'BUNDLE'>('COURSE_ONLY');
     React.useEffect(() => {
         const fetchCourseData = async () => {
@@ -468,6 +470,12 @@ export default function CourseDetailClient() {
 
                         <div className="flex items-center gap-6 text-sm text-muted-foreground">
                             
+                            {course.duration > 0 && (
+                                <div className="flex items-center gap-2">
+                                    <PlayCircle className="h-4 w-4" />
+                                    <span>{course.duration} {course.duration === 1 ? 'Hour' : 'Hours'}</span>
+                                </div>
+                            )}
                             {course.instructor && (
                                 <div className="flex items-center gap-2">
                                     <GraduationCap className="h-4 w-4" />
@@ -491,46 +499,64 @@ export default function CourseDetailClient() {
                         )}
                     </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Course Curriculum</CardTitle>
-                            <CardDescription>
-                                {course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0} lessons
-                            </CardDescription>
+                    <Card className="overflow-hidden">
+                        <CardHeader 
+                            className="cursor-pointer hover:bg-muted/30 transition-colors select-none"
+                            onClick={() => setShowCurriculum(!showCurriculum)}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>Course Curriculum</CardTitle>
+                                    <CardDescription>
+                                        {course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0} lessons
+                                    </CardDescription>
+                                </div>
+                                <div className={`p-2 rounded-full transition-transform duration-300 ${showCurriculum ? 'rotate-180 bg-muted' : ''}`}>
+                                    <ChevronDown className="h-5 w-5" />
+                                </div>
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                            {course.modules && course.modules.length > 0 ? (
-                                <div className="space-y-4">
+                        {showCurriculum && (
+                            <CardContent className="animate-in fade-in slide-in-from-top-1 duration-300">
+                                {course.modules && course.modules.length > 0 ? (
+                                    <div className="space-y-4">
                                     {course.modules.map((module) => (
                                         <div key={module.id} className="border rounded-lg">
                                             <button
                                                 onClick={() => toggleModule(module.id)}
-                                                className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                                                className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-all duration-200"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-sm font-bold text-primary border border-primary/20 group-hover:bg-primary group-hover:text-white transition-colors">
                                                         {module.orderIndex + 1}
                                                     </div>
                                                     <div className="text-left">
-                                                        <h4 className="font-medium">{module.title}</h4>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {module.lessons?.length || 0} lessons
+                                                        <h4 className="font-bold text-base leading-tight">{module.title}</h4>
+                                                        <p className="text-xs text-muted-foreground mt-1 font-medium">
+                                                            {module.lessons?.length || 0} lessons • {module.lessons?.reduce((acc, l) => acc + (l.duration || 0), 0) || 0}m total
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <span className="text-muted-foreground">
-                                                    {expandedModules.includes(module.id) ? '−' : '+'}
-                                                </span>
+                                                <div className={`p-2 rounded-full hover:bg-background transition-transform duration-300 ${expandedModules.includes(module.id) ? 'rotate-180 bg-background shadow-sm' : ''}`}>
+                                                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                                                </div>
                                             </button>
                                             {expandedModules.includes(module.id) && module.lessons && (
-                                                <div className="border-t px-4 py-2">
-                                                    {module.lessons.map((lesson) => (
-                                                        <div key={lesson.id} className="flex items-center justify-between py-2 text-sm">
+                                                <div className="border-t bg-muted/20 px-4 py-2 divide-y divide-border/50">
+                                                    {module.lessons.map((lesson, lIdx) => (
+                                                        <div key={lesson.id} className="flex items-center justify-between py-3 px-2 text-sm hover:bg-background/50 rounded-lg transition-colors group">
                                                             <div className="flex items-center gap-3">
-                                                                <PlayCircle className="h-4 w-4 text-muted-foreground" />
-                                                                <span>{lesson.title}</span>
+                                                                <div className="h-6 w-6 rounded-full bg-background border flex items-center justify-center text-[10px] font-bold text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
+                                                                    {lIdx + 1}
+                                                                </div>
+                                                                <PlayCircle className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                                <span className="font-medium">{lesson.title}</span>
                                                             </div>
-                                                            <span className="text-muted-foreground">{lesson.duration}m</span>
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-1 rounded border border-border/50">
+                                                                    {lesson.duration}m
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -544,6 +570,7 @@ export default function CourseDetailClient() {
                                 </p>
                             )}
                         </CardContent>
+                        )}
                     </Card>
                 </div>
 
@@ -646,11 +673,15 @@ export default function CourseDetailClient() {
                             <div className="space-y-3 text-sm">
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                    <span>Full lifetime access</span>
+                                    <span>Hands-on projects </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                                     <span>Certificate of completion</span>
+                                </div>
+                                 <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                    <span>Practical Exercises</span>
                                 </div>
                                 {purchaseType === 'BUNDLE' && (
                                     <div className="flex items-center gap-2 font-medium text-purple-700">

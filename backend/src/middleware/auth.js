@@ -55,6 +55,8 @@ const authenticate = async (req, res, next) => {
 
         // Format permissions for easier lookup
         const rolePermissions = {};
+        const legacyPermissions = user.permissions || []; // Keep existing ones
+        
         if (user.systemRole && user.systemRole.rolePermissions) {
             user.systemRole.rolePermissions.forEach(rp => {
                 rolePermissions[rp.feature.code] = {
@@ -62,12 +64,27 @@ const authenticate = async (req, res, next) => {
                     canWrite: rp.canWrite,
                     isDisabled: rp.isDisabled
                 };
+                
+                // Backward compatibility: Add feature code to legacy permissions array
+                if (!rp.isDisabled && (rp.canRead || rp.canWrite)) {
+                    if (!legacyPermissions.includes(rp.feature.code)) {
+                        legacyPermissions.push(rp.feature.code);
+                    }
+                }
             });
         }
+        
+        // Add specific legacy aliases if needed
+        if (rolePermissions['COURSES'] && !legacyPermissions.includes('MANAGE_COURSES')) legacyPermissions.push('MANAGE_COURSES');
+        if (rolePermissions['USERS'] && !legacyPermissions.includes('MANAGE_USERS')) legacyPermissions.push('MANAGE_USERS');
+        if (rolePermissions['TICKETS'] && !legacyPermissions.includes('MANAGE_TICKETS')) legacyPermissions.push('MANAGE_TICKETS');
+        if (rolePermissions['SETTINGS'] && !legacyPermissions.includes('MANAGE_SETTINGS')) legacyPermissions.push('MANAGE_SETTINGS');
+        if (rolePermissions['FINANCE'] && !legacyPermissions.includes('VIEW_FINANCE')) legacyPermissions.push('VIEW_FINANCE');
 
         req.user = {
             ...user,
-            rolePermissions
+            rolePermissions,
+            permissions: legacyPermissions
         };
         next();
     } catch (error) {

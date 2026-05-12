@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Search, Edit, Trash2 } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Upload, Image as ImageIcon, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
@@ -57,6 +57,7 @@ export default function BlogManagerPage() {
 
     const [showModal, setShowModal] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
 
     const [search, setSearch] = useState('')
 
@@ -113,6 +114,44 @@ export default function BlogManagerPage() {
             category: blog.category || ''
         })
         setShowModal(true)
+    }
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Basic validation
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file')
+            return
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size should be less than 5MB')
+            return
+        }
+
+        const formDataUpload = new FormData()
+        formDataUpload.append('file', file)
+
+        setIsUploading(true)
+        try {
+            const res = await api.post('/upload', formDataUpload, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+
+            if (res.data.url) {
+                setFormData(prev => ({ ...prev, coverImage: res.data.url }))
+                toast.success('Image uploaded successfully')
+            }
+        } catch (error) {
+            console.error('Upload error:', error)
+            toast.error('Failed to upload image')
+        } finally {
+            setIsUploading(false)
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -423,11 +462,73 @@ export default function BlogManagerPage() {
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium">Cover Image URL</label>
-                                <Input
-                                    value={formData.coverImage}
-                                    onChange={e => setFormData({ ...formData, coverImage: e.target.value })}
-                                />
+                                <label className="text-sm font-medium">Cover Image</label>
+                                <div className="mt-1 flex flex-col space-y-4">
+                                    {formData.coverImage ? (
+                                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border bg-muted">
+                                            <img
+                                                src={formData.coverImage}
+                                                alt="Cover preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="icon"
+                                                className="absolute top-2 right-2 h-8 w-8"
+                                                onClick={() => setFormData({ ...formData, coverImage: '' })}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center space-y-2 bg-muted/30 hover:bg-muted/50 transition-colors">
+                                            <div className="p-3 rounded-full bg-primary/10">
+                                                <ImageIcon className="h-6 w-6 text-primary" />
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-sm font-medium">Click to upload banner</p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG or GIF (max 5MB)</p>
+                                            </div>
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                className="absolute inset-0 opacity-0 cursor-pointer h-full"
+                                                onChange={handleImageUpload}
+                                                disabled={isUploading}
+                                            />
+                                            {isUploading && (
+                                                <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-lg">
+                                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {formData.coverImage && (
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                value={formData.coverImage}
+                                                readOnly
+                                                className="text-xs bg-muted"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    const input = document.createElement('input')
+                                                    input.type = 'file'
+                                                    input.accept = 'image/*'
+                                                    input.onchange = (e: any) => handleImageUpload(e)
+                                                    input.click()
+                                                }}
+                                            >
+                                                Change
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-2 md:col-span-2">

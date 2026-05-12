@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -160,11 +159,12 @@ export default function EmployerRequestDialog() {
       })
       setErrors({})
       setIsOpen(false)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[EmployerRequest] Error:', error)
-      console.error('[EmployerRequest] Error Response:', error.response?.data)
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      console.error('[EmployerRequest] Error Response:', err.response?.data)
       
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to submit employer request'
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to submit employer request'
       toast({
         title: 'Error',
         description: errorMessage,
@@ -187,7 +187,7 @@ export default function EmployerRequestDialog() {
         <DialogHeader>
           <DialogTitle>Request Employer to Post Jobs</DialogTitle>
           <DialogDescription>
-            Tell us about the employer you'd like to see posting jobs on TechWell
+            Tell us about the employer you&apos;d like to see posting jobs on TechWell
           </DialogDescription>
         </DialogHeader>
 

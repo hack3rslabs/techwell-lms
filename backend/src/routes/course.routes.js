@@ -114,6 +114,7 @@ const createCourseSchema = z.object({
     thumbnail: z.string().optional(),
     category: z.string().min(2),
     difficulty: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']).default('BEGINNER'),
+    duration: z.number().min(0).default(0),
     price: z.number().min(0).default(0),
     discountPrice: z.number().min(0).default(0),
     courseCode: z.string().optional(),
@@ -177,7 +178,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
 router.get('/', optionalAuth, async (req, res, next) => {
     try {
         console.log('[COURSES GET] Fetching courses...');
-        const { category, difficulty, search, page = 1, limit = 12 } = req.query;
+        const { category, difficulty, search, page, limit } = req.query;
 
         const where = {};
 
@@ -218,8 +219,8 @@ router.get('/', optionalAuth, async (req, res, next) => {
                         }
                     }
                 },
-                skip: (Number(page) - 1) * Number(limit),
-                take: Number(limit),
+                // skip: (Number(page) - 1) * Number(limit),
+                // take: Number(limit),
                 orderBy: { createdAt: 'desc' }
             }),
             prisma.course.count({ where })

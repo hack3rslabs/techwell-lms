@@ -242,7 +242,7 @@ router.patch('/:id/approve', authenticate, checkPermission('USERS'), async (req,
  * @desc    Permanently delete user (Super Admin only)
  * @access  Private/SuperAdmin
  */
-router.delete('/:id', authenticate, checkPermission('ALL'), async (req, res, next) => {
+router.delete('/:id', authenticate, authorize('SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { id } = req.params;
 

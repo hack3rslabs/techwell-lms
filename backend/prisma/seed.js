@@ -188,6 +188,8 @@ async function main() {
         { code: 'CERTIFICATES', name: 'Certificates', module: 'ADMIN' },
         { code: 'REPORTS', name: 'Reports & Analytics', module: 'ADMIN' },
         { code: 'SYSTEM_LOGS', name: 'System Logs', module: 'ADMIN' },
+        { code: 'MANAGE_LIBRARY', name: 'Library Management', module: 'ADMIN' },
+        { code: 'PROJECTS', name: 'Project Management', module: 'ADMIN' },
     ];
 
     for (const p of permissions) {

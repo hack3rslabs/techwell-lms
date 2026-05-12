@@ -13,10 +13,10 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  */
 router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN', 'STAFF'), async (req, res, next) => {
     try {
-        const permissions = req.user.permissions || [];
+        const rolePermissions = req.user.rolePermissions || {};
         const rules = {
-            viewFinance: req.user.role === 'SUPER_ADMIN' || permissions.includes('VIEW_FINANCE'),
-            manageUsers: req.user.role === 'SUPER_ADMIN' || permissions.includes('MANAGE_USERS'),
+            viewFinance: req.user.role === 'SUPER_ADMIN' || (rolePermissions['FINANCE'] && rolePermissions['FINANCE'].canRead),
+            manageUsers: req.user.role === 'SUPER_ADMIN' || (rolePermissions['USERS'] && rolePermissions['USERS'].canRead),
             // Basic stats are visible to all staff
         };
 
@@ -78,7 +78,7 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
  * @desc    Get courses pending review or in specific status
  * @access  Private/Admin
  */
-router.get('/courses/pending', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
+router.get('/courses/pending', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const { status = 'IN_REVIEW' } = req.query;
 
@@ -107,7 +107,7 @@ router.get('/courses/pending', authenticate, checkPermission('SYSTEM_LOGS'), asy
  * @desc    Approve a course and set to PUBLISHED
  * @access  Private/Admin
  */
-router.patch('/courses/:id/approve', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
+router.patch('/courses/:id/approve', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
@@ -133,7 +133,7 @@ router.patch('/courses/:id/approve', authenticate, checkPermission('SYSTEM_LOGS'
  * @desc    Reject a course and send it back to DRAFT
  * @access  Private/Admin
  */
-router.patch('/courses/:id/reject', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
+router.patch('/courses/:id/reject', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
@@ -161,7 +161,7 @@ router.patch('/courses/:id/reject', authenticate, checkPermission('SYSTEM_LOGS')
  * @desc    Archive a published course
  * @access  Private/Admin
  */
-router.patch('/courses/:id/archive', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
+router.patch('/courses/:id/archive', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -184,7 +184,7 @@ router.patch('/courses/:id/archive', authenticate, checkPermission('SYSTEM_LOGS'
  * @desc    Create a Staff or Institute Admin user with specific permissions
  * @access  Private/Admin
  */
-router.post('/staff', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
+router.post('/staff', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const { name, email, password, role, permissions, phone } = req.body;
 

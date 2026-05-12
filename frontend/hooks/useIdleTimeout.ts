@@ -40,12 +40,9 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
     const isAuthRef = useRef(isAuthenticated);
     const warningStartTimeRef = useRef<number | null>(null);
 
-    // Keep isAuthRef in sync and reset warning when logging out
+    // Keep isAuthRef in sync
     useEffect(() => {
         isAuthRef.current = isAuthenticated;
-        if (!isAuthenticated) {
-            setIsWarning(false);
-        }
     }, [isAuthenticated]);
 
     const clearAllTimers = useCallback(() => {
@@ -55,6 +52,12 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
         warningTimerRef.current = null;
         logoutTimerRef.current = null;
         countdownIntervalRef.current = null;
+        
+        // Use functional update to avoid dependency on isWarning
+        setIsWarning(prev => {
+            if (prev) return false;
+            return prev;
+        });
     }, []);
 
     const startCountdown = useCallback(() => {
@@ -71,17 +74,12 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
 
     const triggerLogout = useCallback(() => {
         clearAllTimers();
-        setIsWarning(false);
         onLogout();
         router.push('/login?reason=idle');
     }, [clearAllTimers, onLogout, router]);
 
     const startTimers = useCallback(() => {
         clearAllTimers();
-        setIsWarning(prev => {
-            if (prev) return false;
-            return prev;
-        });
 
         // Warning timer at 9 minutes
         warningTimerRef.current = setTimeout(() => {
@@ -113,7 +111,18 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
 
     useEffect(() => {
         if (!isAuthenticated) {
-            clearAllTimers();
+            // Cleanup logic when not authenticated
+            if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+            if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+            warningTimerRef.current = null;
+            logoutTimerRef.current = null;
+            countdownIntervalRef.current = null;
+            
+            // Only set if needed to avoid lint warning and cascading renders
+            if (isWarningRef.current) {
+                setTimeout(() => setIsWarning(false), 0);
+            }
             return;
         }
 
@@ -131,12 +140,16 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
         });
 
         return () => {
-            clearAllTimers();
+            // Cleanup on unmount or re-auth
+            if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+            if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+            
             ACTIVITY_EVENTS.forEach((event) => {
                 window.removeEventListener(event, handleActivity);
             });
         };
-    }, [isAuthenticated, clearAllTimers, resetTimer, startTimers]);
+    }, [isAuthenticated, resetTimer, startTimers]);
 
     return { isWarning, remainingSeconds, resetTimer };
 }

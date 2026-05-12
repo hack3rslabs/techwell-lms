@@ -3,10 +3,11 @@ const prisma = new PrismaClient();
 
 async function main() {
     try {
+        const count = await prisma.course.count();
+        console.log('Total courses:', count);
         const courses = await prisma.course.findMany({
-            take: 5,
             orderBy: { createdAt: 'desc' },
-            select: { id: true, title: true, bannerUrl: true, thumbnail: true }
+            select: { id: true, title: true, isPublished: true }
         });
         console.log(JSON.stringify(courses, null, 2));
     } catch (e) {

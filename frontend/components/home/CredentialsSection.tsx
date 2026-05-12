@@ -11,7 +11,7 @@ const trustLogos = [
     { name: "UCO Bank", src: "/images/trust/uco bank logo.png", width: 140, height: 70 },
     { name: "Skill India", src: "/images/trust/skillindia.png", width: 140, height: 70 },
     { name: "NCS", src: "/images/trust/ministry-of-labour-NCS.svg", width: 140, height: 70 },
-    { name: "MSME", src: "/images/trust/msme.png", width: 140, height: 70 },
+    // { name: "MSME", src: "/images/trust/msme.png", width: 140, height: 70 },
     { name: "ISO", src: "/images/trust/iso.png", width: 100, height: 100 },
 ]
 
