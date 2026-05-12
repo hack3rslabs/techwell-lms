@@ -64,6 +64,11 @@ router.put('/roles/:id', authenticate, checkPermission('SETTINGS'), async (req, 
         const existingRole = await prisma.systemRole.findUnique({ where: { id } });
         if (!existingRole) return res.status(404).json({ error: 'Role not found' });
         
+        // Safety check: Protect Super Admin permissions
+        if (existingRole.name.toUpperCase() === 'SUPER_ADMIN' || existingRole.name.toUpperCase() === 'SUPER ADMIN') {
+            return res.status(403).json({ error: 'Super Admin permissions are protected and cannot be modified via API' });
+        }
+        
         // Safety check: Don't allow renaming system roles via this endpoint
         // only description and permissions are allowed.
 

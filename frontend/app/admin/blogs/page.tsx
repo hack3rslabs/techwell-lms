@@ -169,7 +169,7 @@ export default function BlogManagerPage() {
                 coverImage: formData.coverImage,
                 category: formData.category,
                 tags: formData.tags
-                    ? formData.tags.split(',').map(t => t.trim())
+                    ? formData.tags.split(',').map(t => t.trim()).filter(t => t !== "")
                     : []
             }
 
@@ -191,14 +191,12 @@ export default function BlogManagerPage() {
 
             fetchBlogs()
 
-        } catch {
-
-            toast.error('Failed to save blog')
-
+        } catch (error: any) {
+            console.error('Save blog error:', error)
+            const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to save blog'
+            toast.error(errorMessage)
         } finally {
-
             setIsSubmitting(false)
-
         }
     }
 
@@ -465,24 +463,51 @@ export default function BlogManagerPage() {
                                 <label className="text-sm font-medium">Cover Image</label>
                                 <div className="mt-1 flex flex-col space-y-4">
                                     {formData.coverImage ? (
-                                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border bg-muted">
+                                        <div 
+                                            className="relative w-full aspect-video rounded-lg overflow-hidden border bg-muted cursor-pointer group"
+                                            onClick={() => {
+                                                const input = document.createElement('input')
+                                                input.type = 'file'
+                                                input.accept = 'image/*'
+                                                input.onchange = (e: any) => handleImageUpload(e)
+                                                input.click()
+                                            }}
+                                        >
                                             <img
                                                 src={formData.coverImage}
                                                 alt="Cover preview"
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                             />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <div className="flex flex-col items-center text-white">
+                                                    <Upload className="h-6 w-6 mb-2" />
+                                                    <span className="text-xs font-medium">Click to change</span>
+                                                </div>
+                                            </div>
                                             <Button
                                                 type="button"
                                                 variant="destructive"
                                                 size="icon"
-                                                className="absolute top-2 right-2 h-8 w-8"
-                                                onClick={() => setFormData({ ...formData, coverImage: '' })}
+                                                className="absolute top-2 right-2 h-8 w-8 z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setFormData({ ...formData, coverImage: '' });
+                                                }}
                                             >
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     ) : (
-                                        <div className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center space-y-2 bg-muted/30 hover:bg-muted/50 transition-colors">
+                                        <div 
+                                            className="relative border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center space-y-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                                            onClick={() => {
+                                                const input = document.createElement('input')
+                                                input.type = 'file'
+                                                input.accept = 'image/*'
+                                                input.onchange = (e: any) => handleImageUpload(e)
+                                                input.click()
+                                            }}
+                                        >
                                             <div className="p-3 rounded-full bg-primary/10">
                                                 <ImageIcon className="h-6 w-6 text-primary" />
                                             </div>
@@ -490,13 +515,6 @@ export default function BlogManagerPage() {
                                                 <p className="text-sm font-medium">Click to upload banner</p>
                                                 <p className="text-xs text-muted-foreground">PNG, JPG or GIF (max 5MB)</p>
                                             </div>
-                                            <Input
-                                                type="file"
-                                                accept="image/*"
-                                                className="absolute inset-0 opacity-0 cursor-pointer h-full"
-                                                onChange={handleImageUpload}
-                                                disabled={isUploading}
-                                            />
                                             {isUploading && (
                                                 <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-lg">
                                                     <Loader2 className="h-6 w-6 animate-spin text-primary" />

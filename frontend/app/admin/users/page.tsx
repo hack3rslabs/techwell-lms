@@ -185,6 +185,11 @@ export default function AdminUsersPage() {
     const handleSaveRole = async () => {
         try {
             if (!newRoleData.name) return toast({ title: "Role name is required", variant: "destructive" });
+
+            const upperName = newRoleData.name.toUpperCase();
+            if (upperName === 'SUPER ADMIN' || upperName === 'SUPER_ADMIN') {
+                return toast({ title: "Super Admin permissions are protected and cannot be modified", variant: "destructive" });
+            }
             if (isEditingRole && roleToEditId) {
                 await rbacApi.updateRole(roleToEditId, newRoleData);
                 toast({ title: "Role updated" });
@@ -319,7 +324,11 @@ export default function AdminUsersPage() {
                                 <td className="p-4 text-xs text-muted-foreground">{role.description || "Custom role"}</td>
                                 <td className="p-4 text-right">
                                     <div className="flex justify-end gap-1">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditRoleModal(role)}><Edit2 className="h-4 w-4" /></Button>
+                                        {(role.name.toUpperCase() !== 'SUPER ADMIN' && role.name.toUpperCase() !== 'SUPER_ADMIN') && (
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditRoleModal(role)}>
+                                                <Edit2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                         {!role.isSystem && (
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => { setRoleToDelete(role); setIsDeleteRoleOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
                                         )}

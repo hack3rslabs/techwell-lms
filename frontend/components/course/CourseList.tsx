@@ -203,7 +203,7 @@ export default function CourseList() {
                                         />
                                     )}
                                 </div>
-                            <CardHeader className="pb-2">
+                            <CardHeader className="pb-0">
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md ${getDifficultyColor(course.difficulty)}`}>
@@ -221,7 +221,7 @@ export default function CourseList() {
                                 <CardDescription className="line-clamp-2 text-sm leading-relaxed">{course.description}</CardDescription>
                             </CardHeader>
 
-                            <CardFooter className="pt-4 border-t border-border/10 flex items-center justify-between bg-muted/5">
+                            <CardFooter className="pt-1 border-t border-border/10 flex items-center justify-between bg-muted/5">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Price</span>
                                     <span className="text-sm font-black text-gray-500 line-through">

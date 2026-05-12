@@ -310,23 +310,7 @@ export default function JobListing() {
                                 </div>
                             </CardContent>
                         </Card>
-
-                        <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-8 rounded-3xl text-center space-y-6 shadow-2xl relative overflow-hidden group border border-slate-800">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl -translate-y-12 translate-x-12" />
-                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto ring-1 ring-white/20">
-                                <Sparkles className="h-8 w-8 text-blue-400 animate-pulse" />
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="font-black text-white text-xl tracking-tight leading-tight">Elevate Your Profile</h3>
-                                <p className="text-[13px] text-slate-400 font-medium">Use our Expert AI Resume Builder to stand out from the noise.</p>
-                            </div>
-                            <Button className="w-full h-12 bg-white text-slate-950 hover:bg-blue-50 font-black uppercase tracking-widest text-[11px] rounded-xl shadow-lg ring-1 ring-white/20 transition-all" asChild>
-                                <Link href="/resume-builder">Go to AI Builder</Link>
-                            </Button>
-                        </div>
                     </aside>
-
-                    {/* Middle Column: Major Job Feed */}
                     <main className="col-span-1 lg:col-span-6 space-y-8">
                         {resumeData && (
                             <section className="bg-blue-600/5 border border-blue-100 p-6 rounded-3xl relative overflow-hidden group">
@@ -397,13 +381,12 @@ export default function JobListing() {
                                 </Card>
                             ))
                         ) : filteredJobs.length === 0 ? (
-                            <Card className="p-20 text-center rounded-[3rem] border-dashed border-2 bg-white/50 border-slate-200">
+                            <Card className="p-20 text-center rounded-[3rem] border-dashed border-2 ">
                                 <div className="mx-auto w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
-                                    <Search className="h-10 w-10 text-slate-400" />
+                                   
                                 </div>
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">System Empty</h3>
-                                <p className="text-slate-500 font-medium max-w-sm mx-auto mt-2">Adjust your filters or try global keywords for broader reach.</p>
-                                <Button variant="outline" className="mt-8 font-black uppercase tracking-widest text-[10px]" onClick={() => setFilters({ ...filters, search: "" })}>Clear Parameters</Button>
+                                
+                                <p className="text-slate-500 font-medium max-w-sm mx-auto mt-2">No jobs are matched with your criteria</p>
                             </Card>
                         ) : (
                             <div className="grid gap-6">
@@ -491,8 +474,6 @@ export default function JobListing() {
                             </div>
                         )}
                     </main>
-
-                    {/* Right Column: AI Intelligence & Insights */}
                     <aside className="hidden lg:flex lg:col-span-3 flex-col gap-6 sticky top-32">
                         {resumeData ? (
                             <Card className="border-none bg-gradient-to-br from-blue-700 to-indigo-900 text-white rounded-3xl overflow-hidden shadow-2xl relative">
@@ -554,52 +535,12 @@ export default function JobListing() {
                                         </div>
                                     </div>
 
-                                    <Button className="w-full bg-white text-blue-900 border-none hover:bg-blue-50 font-black uppercase tracking-widest text-[10px] h-12 rounded-2xl shadow-xl mt-4" asChild>
+                                    {/* <Button className="w-full bg-white text-blue-900 border-none hover:bg-blue-50 font-black uppercase tracking-widest text-[10px] h-12 rounded-2xl shadow-xl mt-4" asChild>
                                         <Link href="/profile">View Deep Insights</Link>
-                                    </Button>
+                                    </Button> */}
                                 </CardContent>
                             </Card>
-                        ) : (
-                            <Card className="border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 text-center rounded-[2.5rem]">
-                                <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm mb-6 ring-1 ring-slate-100">
-                                    <Target className="h-8 w-8 text-slate-300" />
-                                </div>
-                                <h3 className="font-black text-slate-900 text-lg leading-tight mb-2 uppercase tracking-tight">AI Matching Missing</h3>
-                                <p className="text-xs text-slate-500 font-medium mb-6">Complete your professional resume to unlock compatibility scores and roadmap insights.</p>
-                                <Button className="w-full bg-blue-600 hover:bg-blue-700 font-black text-[10px] uppercase tracking-widest rounded-xl text-white shadow-lg shadow-blue-100" asChild>
-                                    <Link href="/resume-builder">Initialize Engine</Link>
-                                </Button>
-                            </Card>
-                        )}
-
-                        <Card className="border-slate-200/60 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/20">
-                            <CardHeader className="bg-slate-50/80 p-5 border-b border-slate-100">
-                                <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-900 flex items-center gap-2">
-                                    <TrendingUp className="w-4 h-4 text-blue-600" /> Trending Log
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <ScrollArea className="h-[300px]">
-                                    <div className="divide-y divide-slate-50">
-                                        {[
-                                            { title: "MERN Engineer", count: "124 Jobs", trend: "+12%" },
-                                            { title: "DevOps Lead", count: "89 Jobs", trend: "+8%" },
-                                            { title: "UI/UX Designer", count: "210 Jobs", trend: "+15%" },
-                                            { title: "Data Analyst", count: "156 Jobs", trend: "-2%" },
-                                            { title: "Product Manager", count: "45 Jobs", trend: "+20%" }
-                                        ].map((t, i) => (
-                                            <div key={i} className="p-5 hover:bg-slate-50/80 transition-colors cursor-pointer group">
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <span className="font-bold text-slate-700 text-sm group-hover:text-blue-600 transition-colors">{t.title}</span>
-                                                    <Badge variant="outline" className="text-[9px] font-black px-1.5 py-0 rounded bg-emerald-50 text-emerald-600 border-none">{t.trend}</Badge>
-                                                </div>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.count}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
-                            </CardContent>
-                        </Card>
+                        ) : null}
                     </aside>
                 </div>
             </div>

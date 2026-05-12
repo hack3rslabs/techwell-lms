@@ -51,6 +51,7 @@ export default function StudentLibraryPage() {
 
     // View Modal State
     const [viewResource, setViewResource] = useState<Resource | null>(null);
+    const [showPdf, setShowPdf] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -88,6 +89,7 @@ export default function StudentLibraryPage() {
 
     const handleView = async (resource: Resource) => {
         setViewResource(resource);
+        setShowPdf(false); // Reset showPdf when opening a new resource
         try {
             await libraryApi.trackView(resource.id);
         } catch (error) {
@@ -232,42 +234,49 @@ export default function StudentLibraryPage() {
             )}
 
             {/* View Modal */}
-            <Dialog open={!!viewResource} onOpenChange={() => setViewResource(null)}>
-                <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-                    <DialogHeader className="p-6 pb-2">
-                        <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                                {viewResource?.type === 'PDF' ? <FileText className="h-4 w-4 text-red-500" /> : <BookOpen className="h-4 w-4 text-blue-500" />}
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{viewResource?.type} Resource</span>
+            <Dialog open={!!viewResource} onOpenChange={(open) => { if(!open) setViewResource(null); }}>
+                <DialogContent className={`${showPdf ? 'max-w-6xl h-[95vh]' : 'max-w-2xl'} flex flex-col p-0 overflow-hidden transition-all duration-300`}>
+                    {!showPdf && (
+                        <DialogHeader className="p-6 pb-2">
+                            <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                    {viewResource?.type === 'PDF' ? <FileText className="h-4 w-4 text-red-500" /> : <BookOpen className="h-4 w-4 text-blue-500" />}
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{viewResource?.type} Resource</span>
+                                </div>
                             </div>
-                            
-                            {viewResource?.type === 'PDF' && (
-                                <a 
-                                    href={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${viewResource.fileUrl}`} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-[10px] flex items-center gap-1 text-primary hover:underline font-bold"
-                                >
-                                    Open in new tab <Plus className="h-3 w-3 rotate-45" />
-                                </a>
-                            )}
-                        </div>
-                        <DialogTitle className="text-2xl leading-tight">{viewResource?.title}</DialogTitle>
-                        <p className="text-sm text-muted-foreground mt-1">{viewResource?.description}</p>
-                    </DialogHeader>
+                            <DialogTitle className="text-2xl leading-tight">{viewResource?.title}</DialogTitle>
+                            <p className="text-sm text-muted-foreground mt-1">{viewResource?.description}</p>
+                        </DialogHeader>
+                    )}
 
-                    <div className="flex-1 overflow-y-auto p-6 pt-2 bg-muted/50">
+                    <div className={`flex-1 overflow-y-auto ${showPdf ? 'p-0' : 'p-6 pt-2'}`}>
                         {viewResource?.type === 'PDF' && (
-                            <div className="aspect-[4/5] w-full bg-white rounded-lg shadow-inner overflow-hidden border">
-                                <iframe 
-                                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${viewResource.fileUrl}`} 
-                                    className="w-full h-full border-none"
-                                    title={viewResource.title}
-                                />
+                            <div className="w-full h-full flex flex-col items-center justify-center">
+                                {!showPdf ? (
+                                    <div className="py-12 flex flex-col items-center text-center space-y-6">
+                                        
+                                        <Button 
+                                            size="lg" 
+                                            className="bg-red-600 hover:bg-red-700 text-white px-8 h-12 text-lg shadow-lg"
+                                            onClick={() => setShowPdf(true)}
+                                        >
+                                            <Eye className="mr-2 h-5 w-5" />
+                                            Open PDF
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-full min-h-[70vh] bg-white rounded-lg shadow-inner overflow-hidden border">
+                                        <iframe 
+                                            src={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${viewResource.fileUrl}#toolbar=0`} 
+                                            className="w-full h-full border-none"
+                                            title={viewResource.title}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         )}
                         {viewResource?.type === 'QA' && (
-                            <div className="space-y-6">
+                            <div className="space-y-6 mt-4">
                                 {(viewResource.content as any)?.questions?.map((qa: any, i: number) => (
                                     <div key={i} className="bg-background p-5 rounded-xl border border-primary/10 shadow-sm relative overflow-hidden group">
                                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary transition-colors"></div>

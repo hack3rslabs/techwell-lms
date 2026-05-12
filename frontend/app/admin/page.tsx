@@ -303,7 +303,7 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Sidebar / Quick Actions */}
-                        <div className="space-y-6">
+                        {/* <div className="space-y-6">
                             <Card className="h-full border-t-4 border-t-primary shadow-md">
                                 <CardHeader>
                                     <CardTitle>Quick Actions</CardTitle>
@@ -348,7 +348,7 @@ export default function AdminDashboard() {
                                     </Button>
                                 </CardContent>
                             </Card>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             )}

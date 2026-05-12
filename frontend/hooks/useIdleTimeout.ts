@@ -126,7 +126,7 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
             return;
         }
 
-        startTimers();
+        setTimeout(() => startTimers(), 0);
 
         const handleActivity = () => {
             // Only reset if warning is NOT showing (don't reset during warning countdown)

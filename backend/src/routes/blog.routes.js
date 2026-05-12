@@ -141,9 +141,14 @@ router.put('/:id', authenticate, checkPermission('BLOGS'), async (req, res, next
         // Only update fields present
 
         const updateData = { ...body };
-        if (updateData.status === 'PUBLISHED') updateData.publishedAt = new Date();
+        
+        // Remove fields that shouldn't be updated directly via body or cause issues
+        delete updateData.id;
+        delete updateData.authorId;
+        delete updateData.createdAt;
+        delete updateData.updatedAt;
 
-        // If title changed, update slug? Usually bad for SEO. Let's keep slug stable unless explicitly requested.
+        if (updateData.status === 'PUBLISHED') updateData.publishedAt = new Date();
 
         const blog = await prisma.blogPost.update({
             where: { id },

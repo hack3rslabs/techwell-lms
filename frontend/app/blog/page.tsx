@@ -187,7 +187,7 @@ export default function BlogPage() {
                   <div
                     className="h-48 w-full bg-cover bg-center rounded-t-lg"
                     style={{
-                      backgroundImage: `url(${post.coverImage})`
+                      backgroundImage: `url("${post.coverImage}")`
                     }}
                   />
 
@@ -198,85 +198,58 @@ export default function BlogPage() {
                 )}
 
                 <CardHeader>
-
                   {/* Meta */}
-
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-2">
-
                     {post.category && (
                       <Badge variant="secondary">
                         {post.category}
                       </Badge>
                     )}
-
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       {new Date(post.publishedAt || post.createdAt).toLocaleDateString()}
                     </span>
-
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {getReadingTime(post.content)}
                     </span>
-
                   </div>
 
                   {/* Title */}
-
                   <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
-
                     {post.title}
-
                   </CardTitle>
 
                   {/* Summary */}
-
                   <CardDescription className="line-clamp-2">
-
                     {post.summary || post.content.substring(0, 120)}...
-
                   </CardDescription>
-
                 </CardHeader>
 
                 <CardContent className="mt-auto pt-0">
-
                   {/* Tags */}
-
                   <div className="flex flex-wrap gap-2 mb-4">
-
                     {post.tags?.slice(0, 3).map((tag, i) => (
                       <Badge key={i} variant="outline">
                         <Tag className="h-3 w-3 mr-1" />
                         {tag}
                       </Badge>
                     ))}
-
                   </div>
 
                   {/* Footer */}
-
                   <div className="flex items-center justify-between text-sm text-muted-foreground pt-4 border-t">
-
                     <span className="flex items-center gap-1">
                       <User className="h-3 w-3" />
                       {post.author?.name || "Admin"}
                     </span>
-
                     <Link href={`/blog/${post.slug || post.id}`}>
-
                       <Button variant="ghost" size="sm">
-
                         Read
-
                         <ArrowRight className="h-4 w-4 ml-1" />
-
                       </Button>
-
                     </Link>
-
                   </div>
-
                 </CardContent>
 
               </Card>
