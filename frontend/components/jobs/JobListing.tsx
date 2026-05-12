@@ -43,12 +43,18 @@ interface Job {
     createdAt: string
 }
 
+interface Resume {
+    domain?: string;
+    technicalSkills?: string[];
+    location?: string;
+}
+
 export default function JobListing() {
     const { user, isAuthenticated } = useAuth()
     const router = useRouter()
     const [jobs, setJobs] = useState<Job[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [resumeData, setResumeData] = useState<unknown>(null)
+    const [resumeData, setResumeData] = useState<Resume | null>(null)
     const [recentSearches, setRecentSearches] = useState<string[]>([])
     const [filters, setFilters] = useState({
         search: "",
@@ -102,7 +108,7 @@ export default function JobListing() {
     }
 
     const calculateMatchScore = (job: Job) => {
-        const resume = resumeData as any;
+        const resume = resumeData;
         if (!resume) return 0;
         let score = 0;
         const skills = resume.technicalSkills || [];
