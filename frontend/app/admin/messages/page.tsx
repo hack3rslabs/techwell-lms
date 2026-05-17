@@ -1,11 +1,18 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import React, { useState, useEffect, useRef } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter
+} from '@/components/ui/dialog'
 import {
     Select,
     SelectContent,
@@ -14,623 +21,401 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from '@/components/ui/tabs'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import {
     Send,
     Loader2,
-    CheckCircle,
-    AlertCircle,
     MessageSquare,
     Users,
+    User,
+    Search,
     BookOpen,
-    Trash2,
-    Eye,
+    CheckCheck,
+    Check
 } from 'lucide-react'
+import { messagesApi, batchesApi, userApi } from '@/lib/api'
 import api from '@/lib/api'
 
-interface Message {
-    id: string
-    title: string
-    content: string
-    priority: string
-    sender: {
-        id: string
-        name: string
-        email: string
-        avatar?: string
-    }
-    recipients: Array<{
-        userId: string
-        isRead: boolean
-        readAt?: string
-    }>
-    createdAt: string
-    updatedAt: string
-}
-
-interface Batch {
-    id: string
-    name: string
-    courseId: string
-    course: {
-        title: string
-    }
-}
-
-interface Student {
+interface Participant {
     id: string
     name: string
     email: string
     avatar?: string
 }
 
+interface Message {
+    id: string
+    content: string
+    senderId: string
+    readBy: string[]
+    createdAt: string
+    sender?: Participant
+}
+
+interface Conversation {
+    id: string
+    name: string
+    subject: string
+    isGroup: boolean
+    updatedAt: string
+    otherParticipant: Participant
+    lastMessage: Message | null
+    unreadCount: number
+}
+
 export default function AdminMessagesPage() {
-    const [activeTab, setActiveTab] = useState('send-all')
+    const [conversations, setConversations] = useState<Conversation[]>([])
+    const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
     const [messages, setMessages] = useState<Message[]>([])
-    const [batches, setBatches] = useState<Batch[]>([])
-    const [students, setStudents] = useState<Student[]>([])
-    const [loading, setLoading] = useState(false)
-    const [messageLoading, setMessageLoading] = useState(false)
-    const [successMessage, setSuccessMessage] = useState('')
-    const [errorMessage, setErrorMessage] = useState('')
+    const [loadingConversations, setLoadingConversations] = useState(true)
+    const [loadingMessages, setLoadingMessages] = useState(false)
+    const [replyContent, setReplyContent] = useState('')
+    const [replying, setReplying] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
+    
+    // Broadcast Modal State
+    const [isBroadcastOpen, setIsBroadcastOpen] = useState(false)
+    const [broadcastType, setBroadcastType] = useState('ALL')
+    const [broadcastTarget, setBroadcastTarget] = useState<string[]>([])
+    const [broadcastSubject, setBroadcastSubject] = useState('')
+    const [broadcastContent, setBroadcastContent] = useState('')
+    const [broadcasting, setBroadcasting] = useState(false)
+    
+    const [batches, setBatches] = useState<any[]>([])
+    const [students, setStudents] = useState<any[]>([])
+    
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+    const [me, setMe] = useState<any>(null)
 
-    // Form states
-    const [title, setTitle] = useState('')
-    const [content, setContent] = useState('')
-    const [priority, setPriority] = useState('NORMAL')
-    const [selectedBatch, setSelectedBatch] = useState('')
-    const [selectedStudent, setSelectedStudent] = useState('')
-
-    // Fetch sent messages
     useEffect(() => {
-        fetchMessages()
-        fetchBatches()
-        fetchStudents()
+        userApi.getMe().then(res => setMe(res.data.user)).catch(console.error)
+        fetchConversations()
+        
+        // Polling for new messages every 10 seconds
+        const interval = setInterval(() => {
+            fetchConversations(false)
+            if (activeConversation) {
+                fetchMessages(activeConversation.id, false)
+            }
+        }, 10000)
+        return () => clearInterval(interval)
     }, [])
 
-    const fetchMessages = async () => {
+    useEffect(() => {
+        if (activeConversation) {
+            fetchMessages(activeConversation.id)
+            messagesApi.markAsRead(activeConversation.id).catch(console.error)
+            // Mark locally as read
+            setConversations(prev => prev.map(c => c.id === activeConversation.id ? { ...c, unreadCount: 0 } : c))
+        }
+    }, [activeConversation])
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, [messages])
+
+    const fetchConversations = async (showLoading = true) => {
+        if (showLoading) setLoadingConversations(true)
         try {
-            setLoading(true)
-            const response = await api.get('/messages')
-            setMessages(response.data.data || [])
+            const res = await messagesApi.getConversations({ search: searchQuery })
+            setConversations(res.data.data)
         } catch (error) {
-            console.error('Error fetching messages:', error)
-            setErrorMessage('Failed to fetch messages')
+            console.error('Failed to fetch conversations', error)
         } finally {
-            setLoading(false)
+            if (showLoading) setLoadingConversations(false)
         }
     }
 
-    const fetchBatches = async () => {
+    const fetchMessages = async (conversationId: string, showLoading = true) => {
+        if (showLoading) setLoadingMessages(true)
         try {
-            // Try to fetch batches from courses API
-            const response = await api.get('/courses?skip=0&take=100')
-            const coursesList = response.data.courses || []
-            // If we have course data, you could derive batches from it
-            setBatches(coursesList.map((course: any) => ({
-                id: course.id,
-                name: course.title,
-                courseId: course.id,
-                course: { title: course.title }
-            })) || [])
+            const res = await messagesApi.getConversationMessages(conversationId, { take: 100 })
+            setMessages(res.data.data)
         } catch (error) {
-            console.error('Error fetching batches/courses:', error)
-            setBatches([])
+            console.error('Failed to fetch messages', error)
+        } finally {
+            if (showLoading) setLoadingMessages(false)
         }
     }
 
-    const fetchStudents = async () => {
-        try {
-            // Try to fetch students from users API
-            const response = await api.get('/users?role=STUDENT&skip=0&take=100')
-            setStudents(response.data.users || response.data.data || [])
-        } catch (error) {
-            console.error('Error fetching students:', error)
-            setStudents([])
-        }
-    }
-
-    const resetForm = () => {
-        setTitle('')
-        setContent('')
-        setPriority('NORMAL')
-        setSelectedBatch('')
-        setSelectedStudent('')
-    }
-
-    const handleSendToAll = async (e: React.FormEvent) => {
+    const handleSendReply = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!title.trim() || !content.trim()) {
-            setErrorMessage('Title and content are required')
-            return
-        }
-
+        if (!replyContent.trim() || !activeConversation) return
+        
+        setReplying(true)
         try {
-            setMessageLoading(true)
-            const response = await api.post('/messages/send-to-all', {
-                title,
-                content,
-                priority
-            })
-            setSuccessMessage(`Message sent successfully to ${response.data.recipientsCount || 0} students`)
-            resetForm()
-            fetchMessages()
-            setTimeout(() => setSuccessMessage(''), 3000)
+            const res = await messagesApi.reply(activeConversation.id, { content: replyContent })
+            setMessages(prev => [...prev, res.data.data])
+            setReplyContent('')
+            fetchConversations(false)
         } catch (error) {
-            setErrorMessage('Failed to send message')
-            console.error(error)
+            console.error('Failed to send reply', error)
         } finally {
-            setMessageLoading(false)
+            setReplying(false)
         }
     }
 
-    const handleSendToBatch = async (e: React.FormEvent) => {
+    const fetchBroadcastOptions = async () => {
+        try {
+            const bRes = await batchesApi.getAll({ limit: 100 })
+            setBatches(bRes.data.batches)
+            
+            const uRes = await api.get('/users?role=STUDENT&limit=1000')
+            setStudents(uRes.data.users)
+        } catch (error) {
+            console.error('Failed to fetch options for broadcast', error)
+        }
+    }
+
+    useEffect(() => {
+        if (isBroadcastOpen) {
+            fetchBroadcastOptions()
+        }
+    }, [isBroadcastOpen])
+
+    const handleBroadcast = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!title.trim() || !content.trim() || !selectedBatch) {
-            setErrorMessage('Title, content, and batch are required')
-            return
-        }
-
+        if (!broadcastContent.trim()) return
+        
+        setBroadcasting(true)
         try {
-            setMessageLoading(true)
-            const response = await api.post('/messages/send-to-batch', {
-                title,
-                content,
-                batchId: selectedBatch,
-                priority
+            await messagesApi.broadcast({
+                targetType: broadcastType as any,
+                targetIds: broadcastTarget,
+                subject: broadcastSubject,
+                content: broadcastContent
             })
-            setSuccessMessage(`Message sent successfully to ${response.data.recipientsCount || 0} students in batch`)
-            resetForm()
-            fetchMessages()
-            setTimeout(() => setSuccessMessage(''), 3000)
+            setIsBroadcastOpen(false)
+            setBroadcastSubject('')
+            setBroadcastContent('')
+            setBroadcastTarget([])
+            fetchConversations()
+            alert('Broadcast sent successfully!')
         } catch (error) {
-            setErrorMessage('Failed to send message')
-            console.error(error)
+            console.error('Failed to broadcast', error)
+            alert('Failed to send broadcast')
         } finally {
-            setMessageLoading(false)
+            setBroadcasting(false)
         }
     }
 
-    const handleSendToStudent = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!title.trim() || !content.trim() || !selectedStudent) {
-            setErrorMessage('Title, content, and student are required')
-            return
-        }
-
-        try {
-            setMessageLoading(true)
-            await api.post('/messages/send-to-student', {
-                title,
-                content,
-                studentId: selectedStudent,
-                priority
-            })
-            setSuccessMessage('Message sent successfully to student')
-            resetForm()
-            fetchMessages()
-            setTimeout(() => setSuccessMessage(''), 3000)
-        } catch (error) {
-            setErrorMessage('Failed to send message')
-            console.error(error)
-        } finally {
-            setMessageLoading(false)
-        }
-    }
-
-    const handleDeleteMessage = async (messageId: string) => {
-        if (confirm('Are you sure you want to delete this message?')) {
-            try {
-                await api.delete(`/messages/${messageId}`)
-                setSuccessMessage('Message deleted successfully')
-                fetchMessages()
-                setTimeout(() => setSuccessMessage(''), 3000)
-            } catch (error) {
-                setErrorMessage('Failed to delete message')
-                console.error(error)
-            }
-        }
+    const handleToggleBroadcastTarget = (id: string) => {
+        setBroadcastTarget(prev => 
+            prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]
+        )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-            <div className="max-w-7xl mx-auto space-y-6">
-                {/* Header */}
+        <div className="max-w-7xl mx-auto space-y-4 p-4 lg:p-8 h-[calc(100vh-64px)] flex flex-col">
+            <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
                     <MessageSquare className="w-8 h-8 text-blue-600" />
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-900">Student Messages</h1>
-                        <p className="text-sl text-slate-600">Send instructions and announcements to students</p>
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Messages</h1>
+                        <p className="text-sm text-slate-600">Chat directly with students</p>
                     </div>
                 </div>
 
-                {/* Alerts */}
-                {successMessage && (
-                    <Card className="border-green-200 bg-green-50">
-                        <CardContent className="pt-6 flex items-center gap-3 text-green-700">
-                            <CheckCircle className="w-5 h-5" />
-                            <span>{successMessage}</span>
-                        </CardContent>
-                    </Card>
-                )}
+                <Dialog open={isBroadcastOpen} onOpenChange={setIsBroadcastOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="gap-2">
+                            <Send className="w-4 h-4" />
+                            New Broadcast
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Send Broadcast Message</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleBroadcast} className="space-y-4 mt-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">To:</label>
+                                <Select value={broadcastType} onValueChange={(val) => { setBroadcastType(val); setBroadcastTarget([]); }}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">All Students</SelectItem>
+                                        <SelectItem value="BATCH">Specific Batches</SelectItem>
+                                        <SelectItem value="STUDENT">Specific Students</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            {broadcastType === 'BATCH' && (
+                                <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-2 bg-slate-50 dark:bg-slate-900">
+                                    {batches.map(b => (
+                                        <div key={b.id} className="flex items-center space-x-2">
+                                            <input type="checkbox" id={`b-${b.id}`} checked={broadcastTarget.includes(b.id)} onChange={() => handleToggleBroadcastTarget(b.id)} />
+                                            <label htmlFor={`b-${b.id}`}>{b.name} ({b.batchCode})</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
-                {errorMessage && (
-                    <Card className="border-red-200 bg-red-50">
-                        <CardContent className="pt-6 flex items-center gap-3 text-red-700">
-                            <AlertCircle className="w-5 h-5" />
-                            <span>{errorMessage}</span>
-                        </CardContent>
-                    </Card>
-                )}
+                            {broadcastType === 'STUDENT' && (
+                                <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-2 bg-slate-50 dark:bg-slate-900">
+                                    {students.map(s => (
+                                        <div key={s.id} className="flex items-center space-x-2">
+                                            <input type="checkbox" id={`s-${s.id}`} checked={broadcastTarget.includes(s.id)} onChange={() => handleToggleBroadcastTarget(s.id)} />
+                                            <label htmlFor={`s-${s.id}`}>{s.name} ({s.email})</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
-                {/* Tabs */}
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="send-all" className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to All</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="send-batch" className="flex items-center gap-2">
-                            <BookOpen className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to Batch</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="send-student" className="flex items-center gap-2">
-                            <MessageSquare className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to Student</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="history" className="flex items-center gap-2">
-                            <Eye className="w-4 h-4" />
-                            <span className="hidden sm:inline">History</span>
-                        </TabsTrigger>
-                    </TabsList>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Subject (Optional):</label>
+                                <Input value={broadcastSubject} onChange={e => setBroadcastSubject(e.target.value)} placeholder="e.g. Assignment Deadline" />
+                            </div>
 
-                    {/* Send to All Tab */}
-                    <TabsContent value="send-all" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Send Message to All Students</CardTitle>
-                                <CardDescription>This message will be sent to all active students</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleSendToAll} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Title
-                                        </label>
-                                        <Input
-                                            placeholder="Message title"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            required
-                                        />
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Message:</label>
+                                <Textarea value={broadcastContent} onChange={e => setBroadcastContent(e.target.value)} placeholder="Type your message here..." rows={5} required />
+                            </div>
+
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setIsBroadcastOpen(false)}>Cancel</Button>
+                                <Button type="submit" disabled={broadcasting}>
+                                    {broadcasting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                                    Send
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            <div className="flex-1 flex gap-4 min-h-0">
+                {/* Left Sidebar - Conversations */}
+                <Card className="w-1/3 flex flex-col min-h-0">
+                    <div className="p-4 border-b">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search students..."
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value)
+                                    // Normally debounce, but we'll fetch on enter or rely on filtering if local
+                                }}
+                                onKeyDown={e => e.key === 'Enter' && fetchConversations()}
+                                className="pl-9"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-2">
+                        {loadingConversations ? (
+                            <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-blue-600" /></div>
+                        ) : conversations.length === 0 ? (
+                            <div className="text-center p-8 text-slate-500">No conversations found</div>
+                        ) : (
+                            conversations.map(conv => (
+                                <div
+                                    key={conv.id}
+                                    onClick={() => setActiveConversation(conv)}
+                                    className={`p-3 mb-1 rounded-lg cursor-pointer flex items-center gap-3 transition-colors ${
+                                        activeConversation?.id === conv.id ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-slate-50 dark:hover:bg-slate-900'
+                                    }`}
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 font-medium">
+                                        {conv.name?.charAt(0).toUpperCase()}
                                     </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Message Content
-                                        </label>
-                                        <Textarea
-                                            placeholder="Enter your message..."
-                                            value={content}
-                                            onChange={(e) => setContent(e.target.value)}
-                                            rows={6}
-                                            required
-                                        />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-baseline">
+                                            <h3 className="font-medium text-sm truncate dark:text-white">{conv.name}</h3>
+                                            <span className="text-xs text-slate-500 shrink-0">
+                                                {new Date(conv.updatedAt).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                        <p className={`text-xs truncate ${conv.unreadCount > 0 ? 'font-semibold text-slate-900 dark:text-white' : 'text-slate-500'}`}>
+                                            {conv.lastMessage?.content || 'No messages yet'}
+                                        </p>
                                     </div>
+                                    {conv.unreadCount > 0 && (
+                                        <div className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                                            {conv.unreadCount}
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </Card>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Priority
-                                        </label>
-                                        <Select value={priority} onValueChange={setPriority}>
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="LOW">Low</SelectItem>
-                                                <SelectItem value="NORMAL">Normal</SelectItem>
-                                                <SelectItem value="HIGH">High</SelectItem>
-                                                <SelectItem value="URGENT">Urgent</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                {/* Right Pane - Chat */}
+                <Card className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-black/20">
+                    {activeConversation ? (
+                        <>
+                            <div className="p-4 border-b bg-white dark:bg-slate-950 flex items-center gap-3 shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                                    {activeConversation.name?.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold dark:text-white">{activeConversation.name}</h3>
+                                    <p className="text-xs text-slate-500">{activeConversation.otherParticipant?.email}</p>
+                                </div>
+                            </div>
 
-                                    <Button
-                                        type="submit"
-                                        disabled={messageLoading}
-                                        className="w-full"
-                                    >
-                                        {messageLoading ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send to All Students
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Send to Batch Tab */}
-                    <TabsContent value="send-batch" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Send Message to Batch</CardTitle>
-                                <CardDescription>Send a message to all students in a specific batch</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleSendToBatch} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Select Batch
-                                        </label>
-                                        <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose a batch" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {batches.map((batch) => (
-                                                    <SelectItem key={batch.id} value={batch.id}>
-                                                        {batch.name} - {batch.course?.title}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Title
-                                        </label>
-                                        <Input
-                                            placeholder="Message title"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Message Content
-                                        </label>
-                                        <Textarea
-                                            placeholder="Enter your message..."
-                                            value={content}
-                                            onChange={(e) => setContent(e.target.value)}
-                                            rows={6}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Priority
-                                        </label>
-                                        <Select value={priority} onValueChange={setPriority}>
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="LOW">Low</SelectItem>
-                                                <SelectItem value="NORMAL">Normal</SelectItem>
-                                                <SelectItem value="HIGH">High</SelectItem>
-                                                <SelectItem value="URGENT">Urgent</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <Button
-                                        type="submit"
-                                        disabled={messageLoading || !selectedBatch}
-                                        className="w-full"
-                                    >
-                                        {messageLoading ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send to Batch
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Send to Individual Student Tab */}
-                    <TabsContent value="send-student" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Send Message to Individual Student</CardTitle>
-                                <CardDescription>Send a personal message to a specific student</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleSendToStudent} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Select Student
-                                        </label>
-                                        <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose a student" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {students.map((student) => (
-                                                    <SelectItem key={student.id} value={student.id}>
-                                                        {student.name} - {student.email}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Title
-                                        </label>
-                                        <Input
-                                            placeholder="Message title"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Message Content
-                                        </label>
-                                        <Textarea
-                                            placeholder="Enter your message..."
-                                            value={content}
-                                            onChange={(e) => setContent(e.target.value)}
-                                            rows={6}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Priority
-                                        </label>
-                                        <Select value={priority} onValueChange={setPriority}>
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="LOW">Low</SelectItem>
-                                                <SelectItem value="NORMAL">Normal</SelectItem>
-                                                <SelectItem value="HIGH">High</SelectItem>
-                                                <SelectItem value="URGENT">Urgent</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <Button
-                                        type="submit"
-                                        disabled={messageLoading || !selectedStudent}
-                                        className="w-full"
-                                    >
-                                        {messageLoading ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send to Student
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Message History Tab */}
-                    <TabsContent value="history" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Message History</CardTitle>
-                                <CardDescription>View and manage sent messages</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {loading ? (
-                                    <div className="flex items-center justify-center py-8">
-                                        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                                    </div>
-                                ) : messages.length === 0 ? (
-                                    <p className="text-center text-slate-500 py-8">No messages sent yet</p>
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                {loadingMessages ? (
+                                    <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-blue-600" /></div>
                                 ) : (
-                                    <div className="overflow-x-auto">
-                                        <Table>
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell>Title</TableCell>
-                                                    <TableCell>Sent By</TableCell>
-                                                    <TableCell>Recipients</TableCell>
-                                                    <TableCell>Read</TableCell>
-                                                    <TableCell>Priority</TableCell>
-                                                    <TableCell>Date</TableCell>
-                                                    <TableCell>Action</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {messages.map((message) => {
-                                                    const totalRecipients = message.recipients.length
-                                                    const readCount = message.recipients.filter(r => r.isRead).length
-                                                    return (
-                                                        <TableRow key={message.id}>
-                                                            <TableCell className="font-medium">{message.title}</TableCell>
-                                                            <TableCell>{message.sender.name}</TableCell>
-                                                            <TableCell>{totalRecipients}</TableCell>
-                                                            <TableCell>
-                                                                <Badge variant="outline">
-                                                                    {readCount}/{totalRecipients}
-                                                                </Badge>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <Badge
-                                                                    variant={
-                                                                        message.priority === 'URGENT'
-                                                                            ? 'destructive'
-                                                                            : message.priority === 'HIGH'
-                                                                            ? 'secondary'
-                                                                            : 'outline'
-                                                                    }
-                                                                >
-                                                                    {message.priority}
-                                                                </Badge>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {new Date(message.createdAt).toLocaleDateString()}
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() => handleDeleteMessage(message.id)}
-                                                                    className="text-red-600 hover:text-red-700"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </Button>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    )
-                                                })}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
+                                    messages.map((msg, idx) => {
+                                        const isMe = msg.senderId === me?.id
+                                        const showAvatar = idx === 0 || messages[idx - 1].senderId !== msg.senderId
+                                        return (
+                                            <div key={msg.id} className={`flex gap-2 max-w-[80%] ${isMe ? 'ml-auto flex-row-reverse' : ''}`}>
+                                                {showAvatar ? (
+                                                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-xs font-medium">
+                                                        {msg.sender?.name?.charAt(0).toUpperCase()}
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-8 h-8 shrink-0" /> // Spacer
+                                                )}
+                                                <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                                    <div className={`px-4 py-2 rounded-2xl ${
+                                                        isMe ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white dark:bg-slate-900 border rounded-tl-sm dark:text-white'
+                                                    }`}>
+                                                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 mt-1">
+                                                        <span className="text-[10px] text-slate-400">
+                                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                        {isMe && (
+                                                            msg.readBy?.includes(activeConversation.otherParticipant.id) 
+                                                                ? <CheckCheck className="w-3 h-3 text-blue-500" /> 
+                                                                : <Check className="w-3 h-3 text-slate-400" />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )
+                                    })
                                 )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            <div className="p-4 bg-white dark:bg-slate-950 border-t shrink-0">
+                                <form onSubmit={handleSendReply} className="flex gap-2">
+                                    <Input
+                                        value={replyContent}
+                                        onChange={e => setReplyContent(e.target.value)}
+                                        placeholder="Type your message..."
+                                        className="flex-1"
+                                    />
+                                    <Button type="submit" disabled={replying || !replyContent.trim()}>
+                                        {replying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                    </Button>
+                                </form>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8">
+                            <MessageSquare className="w-16 h-16 mb-4 opacity-20" />
+                            <p>Select a conversation to start messaging</p>
+                        </div>
+                    )}
+                </Card>
             </div>
         </div>
     )

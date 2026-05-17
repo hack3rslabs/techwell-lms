@@ -1,10 +1,11 @@
 const express = require('express');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../utils/database');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
+const fs = require('fs').promises;
+const path = require('path');
 
 const router = express.Router();
-const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 console.log('Loading Course Routes...');
 
@@ -127,8 +128,32 @@ const createCourseSchema = z.object({
     // Interview Integration
     hasInterviewPrep: z.boolean().default(false),
     interviewPrice: z.number().min(0).default(0),
-    bundlePrice: z.number().min(0).default(0)
+    bundlePrice: z.number().min(0).default(0),
+    suggestedCourseIds: z.array(z.string()).optional(),
+    mandatoryCourseIds: z.array(z.string()).optional()
 });
+
+/**
+ * Helper to extract unique uploaded file paths/URLs containing "/uploads/" from a string or object.
+ */
+function extractUploadFiles(value) {
+    if (!value) return [];
+    let strValue = '';
+    if (typeof value === 'string') {
+        strValue = value;
+    } else if (typeof value === 'object') {
+        try {
+            strValue = JSON.stringify(value);
+        } catch (e) {
+            return [];
+        }
+    } else {
+        return [];
+    }
+    const matches = strValue.match(/\/uploads\/[a-zA-Z0-9_\.\-\/]+/g);
+    if (!matches) return [];
+    return [...new Set(matches)];
+}
 
 /**
  * @route   DELETE /api/courses/:id
@@ -142,8 +167,20 @@ router.delete('/:id', authenticate, async (req, res, next) => {
         const userId = req.user.id;
         const userRole = req.user.role;
 
+        // Fetch course with its modules, lessons, and assignment submissions before deleting it
         const course = await prisma.course.findUnique({
-            where: { id: courseId }
+            where: { id: courseId },
+            include: {
+                modules: {
+                    include: {
+                        lessons: {
+                            include: {
+                                assignmentSubmissions: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!course) {
@@ -158,11 +195,62 @@ router.delete('/:id', authenticate, async (req, res, next) => {
             return res.status(403).json({ error: 'Access denied. You do not have permission to delete this course.' });
         }
 
+        // Collect all file paths to delete
+        const filesToDelete = new Set();
+        const addFiles = (value) => {
+            const extracted = extractUploadFiles(value);
+            extracted.forEach(file => filesToDelete.add(file));
+        };
+
+        // Course thumbnail and banner
+        addFiles(course.thumbnail);
+        addFiles(course.bannerUrl);
+
+        // Module and Lesson level files
+        if (course.modules) {
+            for (const mod of course.modules) {
+                if (mod.lessons) {
+                    for (const lesson of mod.lessons) {
+                        addFiles(lesson.videoUrl);
+                        addFiles(lesson.content);
+                        addFiles(lesson.resources);
+                        addFiles(lesson.settings);
+
+                        // Assignment submissions files
+                        if (lesson.assignmentSubmissions) {
+                            for (const submission of lesson.assignmentSubmissions) {
+                                addFiles(submission.fileUrl);
+                                addFiles(submission.content);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Delete the course record (cascade deletes modules, lessons, and assignment submissions from DB)
         await prisma.course.delete({
             where: { id: courseId }
         });
 
-        console.log(`[DEBUG] Course deleted successfully: ${courseId}`);
+        console.log(`[DEBUG] Course deleted from database successfully: ${courseId}`);
+
+        // Delete physical files from disk
+        for (const fileUrlOrPath of filesToDelete) {
+            const uploadsIndex = fileUrlOrPath.indexOf('uploads/');
+            if (uploadsIndex !== -1) {
+                const relativePath = fileUrlOrPath.substring(uploadsIndex);
+                const absolutePath = path.join(__dirname, '../../', relativePath);
+                try {
+                    await fs.access(absolutePath);
+                    await fs.unlink(absolutePath);
+                    console.log(`[DEBUG] Successfully deleted file: ${absolutePath}`);
+                } catch (err) {
+                    console.error(`[DEBUG] Error deleting associated file ${absolutePath}:`, err.message);
+                }
+            }
+        }
+
         res.json({ message: 'Course deleted successfully' });
     } catch (error) {
         console.error('[DEBUG] Delete course error:', error);
@@ -401,7 +489,9 @@ router.post('/', authenticate, async (req, res, next) => {
             ...validatedData,
             price: validatedData.price,
             discountPrice: validatedData.discountPrice,
-            instructorId: req.user.id
+            instructorId: req.user.id,
+            suggestedCourseIds: validatedData.suggestedCourseIds || [],
+            mandatoryCourseIds: validatedData.mandatoryCourseIds || []
         };
 
         // Remove undefined optional fields
@@ -468,7 +558,9 @@ router.put('/:id', authenticate, async (req, res, next) => {
             data: {
                 ...validatedData,
                 price: validatedData.price,
-                discountPrice: validatedData.discountPrice
+                discountPrice: validatedData.discountPrice,
+                suggestedCourseIds: validatedData.suggestedCourseIds,
+                mandatoryCourseIds: validatedData.mandatoryCourseIds
             }
         });
 

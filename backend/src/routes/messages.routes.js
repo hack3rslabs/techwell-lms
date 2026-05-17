@@ -1,31 +1,31 @@
 const express = require('express');
 const {
-  sendMessageToStudents,
-  sendMessageToBatch,
-  sendMessageToStudent,
-  getStudentMessages,
-  markMessageAsRead,
-  getUnreadCount,
-  getAllMessages,
-  deleteMessage
+  broadcastMessage,
+  getConversations,
+  getConversationMessages,
+  replyToConversation,
+  markConversationAsRead,
+  getUnreadCount
 } = require('../controllers/messages.controller');
-const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
 // All routes require authentication
 router.use(authenticate);
 
-// Student routes (allow all authenticated users)
-router.get('/my-messages', getStudentMessages);
+// Global unread count
 router.get('/unread-count', getUnreadCount);
-router.put('/:messageId/read', markMessageAsRead);
 
-// Admin routes (require admin/instructor role)
-router.post('/send-to-all', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToStudents);
-router.post('/send-to-batch', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToBatch);
-router.post('/send-to-student', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToStudent);
-router.get('/', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), getAllMessages);
-router.delete('/:messageId', authorize('ADMIN', 'SUPER_ADMIN', 'STAFF'), deleteMessage);
+// List conversations
+router.get('/conversations', getConversations);
+
+// Broadcast a message (Admin only)
+router.post('/broadcast', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), broadcastMessage);
+
+// Conversation specific operations
+router.get('/conversations/:id', getConversationMessages);
+router.post('/conversations/:id/reply', replyToConversation);
+router.put('/conversations/:id/read', markConversationAsRead);
 
 module.exports = router;

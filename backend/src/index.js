@@ -56,6 +56,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/batches', require('./routes/batch.routes'));
 app.use('/api/rbac', require('./routes/rbac.routes'));
 app.use('/api/leads', require('./routes/leads.routes'));
 app.use('/api/employers', require('./routes/employer.routes'));
@@ -93,6 +94,7 @@ app.use('/api/messages', require('./routes/messages.routes'));
 app.use('/api/course-categories', require('./routes/course-categories.routes'));
 app.use('/api/resume', require('./routes/resume.routes'));
 app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
+app.use('/api/coupons', require('./routes/coupon.routes'));
 
 // Health check
 app.get('/api/health', async (req, res) => {
@@ -149,3 +151,5 @@ server.listen(PORT, () => {
 });
 
 module.exports = app;
+
+// triggered restart

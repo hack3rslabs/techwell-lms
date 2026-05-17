@@ -4,6 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
     baseURL: API_URL,
+    timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -176,8 +177,8 @@ export const paymentApi = {
     getConfig: () => api.get('/payments/config'),
     updateConfig: (data: unknown) => api.put('/payments/config', data),
     // Send amount (in rupees) and optional currency; backend will create order and return orderId, keyId and amount (in paise)
-    createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY', amount?: number, currency = 'INR') =>
-        api.post('/payments/create-order', { courseId, type, amount, currency }),
+    createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY', amount?: number, currency = 'INR', additionalCourseIds: string[] = []) =>
+        api.post('/payments/create-order', { courseId, type, amount, currency, additionalCourseIds }),
     // Backend expects fields: razorpay_order_id, razorpay_payment_id, razorpay_signature
     verifyPayment: (data: unknown) => api.post('/payments/verify-payment', data),
     getOrderStatus: (orderId: string) => api.get(`/payments/order-status/${orderId}`),
@@ -402,6 +403,45 @@ export const galleryApi = {
     delete: (id: string) => api.delete('/gallery', { params: { id } }),
 };
 
+// Coupon API
+export const couponApi = {
+    getAll: () => api.get('/coupons'),
+    create: (data: {
+        couponName: string;
+        discountPercentage: number;
+        expiryDate: string;
+        courseIds: string[];
+    }) => api.post('/coupons', data),
+    update: (id: string, data: {
+        couponName?: string;
+        discountPercentage?: number;
+        expiryDate?: string;
+        courseIds?: string[];
+        isActive?: boolean;
+    }) => api.put(`/coupons/${id}`, data),
+    delete: (id: string) => api.delete(`/coupons/${id}`),
+    validate: (couponName: string, courseId: string, originalPrice: number) =>
+        api.post('/coupons/validate', { couponName, courseId, originalPrice }),
+};
+
+
+// Batch API
+export const batchesApi = {
+    getAll: (params?: { page?: number; limit?: number; search?: string }) => api.get('/batches', { params }),
+    getById: (id: string) => api.get(`/batches/${id}`),
+    create: (data: unknown) => api.post('/batches', data),
+    update: (id: string, data: unknown) => api.put(`/batches/${id}`, data),
+    delete: (id: string) => api.delete(`/batches/${id}`),
+};
+
+// Messages API
+export const messagesApi = {
+    getUnreadCount: () => api.get('/messages/unread-count'),
+    getConversations: (params?: { search?: string }) => api.get('/messages/conversations', { params }),
+    getConversationMessages: (id: string, params?: { skip?: number; take?: number }) => api.get(`/messages/conversations/${id}`, { params }),
+    broadcast: (data: { targetType: 'ALL' | 'BATCH' | 'STUDENT'; targetIds?: string[]; subject?: string; content: string; attachments?: unknown }) => api.post('/messages/broadcast', data),
+    reply: (id: string, data: { content: string; attachments?: unknown }) => api.post(`/messages/conversations/${id}/reply`, data),
+    markAsRead: (id: string) => api.put(`/messages/conversations/${id}/read`),
+};
 
 export default api;
-

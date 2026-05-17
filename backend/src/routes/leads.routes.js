@@ -1,5 +1,5 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../utils/database');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 const csv = require('csv-parser');
 const fs = require('fs');
@@ -8,7 +8,6 @@ const bcrypt = require('bcryptjs');
 const { sendEmail } = require('../utils/emailSender');
 
 const router = express.Router();
-const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 const upload = multer({ dest: 'uploads/temp/' });
 
 /**

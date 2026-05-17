@@ -24,6 +24,7 @@ import {
     Image as ImageIcon,
     CreditCard,
     Code2,
+    Tag,
     type LucideIcon
 } from "lucide-react"
 
@@ -61,10 +62,12 @@ export function AdminSidebar({ className }: SidebarProps) {
         { label: "Projects", icon: Code2, href: "/admin/projects", permission: "PROJECTS" },
         { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES" },
         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "USERS" },
+        { label: "Batches", icon: Users, href: "/admin/students/batches", permission: "USERS" },
         { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "USERS" },
         { label: "All Leads", icon: Magnet, href: "/admin/leads", permission: "LEADS", showLeadCounts: true },
         // { label: "Finance", icon: FileText, href: "/admin/finance", permission: "FINANCE" },
         { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "FINANCE" },
+        { label: "Coupons", icon: Tag, href: "/admin/coupons", permission: "FINANCE" },
         { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS" },
         { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "COURSES" },
         { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "COURSES" },

@@ -113,7 +113,7 @@ router.put('/config', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (re
 // POST /api/payments/create-order (Generic for User Checkout)
 router.post('/create-order', authenticate, async (req, res) => {
     try {
-        const { amount, currency = "INR", courseId } = req.body;
+        const { amount, currency = "INR", courseId, additionalCourseIds = [] } = req.body;
 
         if (!courseId) {
             return res.status(400).json({ error: "courseId is required" });
@@ -205,7 +205,8 @@ router.post('/create-order', authenticate, async (req, res) => {
                     currency: currency,
                     status: 'PENDING',
                     userId: req.user.id,
-                    courseId: courseId
+                    courseId: courseId,
+                    additionalCourseIds: additionalCourseIds
                 }
             });
 
@@ -271,61 +272,49 @@ router.post('/verify-payment', authenticate, async (req, res) => {
                 }
             });
 
-            const [course, user] = await Promise.all([
-                prisma.course.findUnique({
-                    where: { id: payment.courseId },
-                    select: { title: true }
-                }),
-                prisma.user.findUnique({
-                    where: { id: payment.userId },
-                    select: {
-                        name: true,
-                        email: true,
-                        phone: true,
-                        qualification: true,
-                        college: true,
-                        dob: true
-                    }
-                })
-            ]);
+            // Auto-enroll user in ALL courses in the bundle
+            const allCourseIds = [payment.courseId, ...(payment.additionalCourseIds || [])];
+            
+            for (const cId of allCourseIds) {
+                const [courseData, userData] = await Promise.all([
+                    prisma.course.findUnique({ where: { id: cId }, select: { title: true } }),
+                    prisma.user.findUnique({ where: { id: payment.userId } })
+                ]);
 
-            if (user?.email) {
-                const successNote = `Payment successful for course: ${course?.title || payment.courseId}`;
-                // Always create a new lead record for each enrollment as requested
-                await prisma.lead.create({
-                    data: {
-                        name: user.name || 'Techwell Student',
-                        email: user.email,
-                        phone: user.phone || null,
-                        qualification: user.qualification || null,
-                        college: user.college || null,
-                        dob: user.dob || null,
-                        source: 'Course Enrollment',
-                        status: 'CONVERTED',
-                        notes: successNote,
-                        courseId: payment.courseId,
-                        courseName: course?.title || 'Unknown Course'
+                if (userData?.email) {
+                    const successNote = `Payment successful for course: ${courseData?.title || cId}`;
+                    await prisma.lead.create({
+                        data: {
+                            name: userData.name || 'Techwell Student',
+                            email: userData.email,
+                            phone: userData.phone || null,
+                            qualification: userData.qualification || null,
+                            college: userData.college || null,
+                            dob: userData.dob || null,
+                            source: 'Course Enrollment',
+                            status: 'CONVERTED',
+                            notes: successNote,
+                            courseId: cId,
+                            courseName: courseData?.title || 'Unknown Course'
+                        }
+                    });
+                }
+
+                await prisma.enrollment.upsert({
+                    where: {
+                        userId_courseId: {
+                            userId: payment.userId,
+                            courseId: cId
+                        }
+                    },
+                    update: { status: 'ACTIVE' },
+                    create: {
+                        userId: payment.userId,
+                        courseId: cId,
+                        status: 'ACTIVE'
                     }
                 });
             }
-
-            // Auto-enroll user in the course - Use upsert to ensure status is updated to ACTIVE even if record exists
-            await prisma.enrollment.upsert({
-                where: {
-                    userId_courseId: {
-                        userId: payment.userId,
-                        courseId: payment.courseId
-                    }
-                },
-                update: { 
-                    status: 'ACTIVE' 
-                },
-                create: {
-                    userId: payment.userId,
-                    courseId: payment.courseId,
-                    status: 'ACTIVE'
-                }
-            });
 
             return res.json({ success: true, message: "Payment verified and enrollment created" });
         } else {

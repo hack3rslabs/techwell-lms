@@ -1,6 +1,6 @@
 const express = require('express');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../utils/database');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
 const multer = require('multer');
@@ -8,7 +8,6 @@ const path = require('path');
 const fs = require('fs');
 
 const router = express.Router();
-const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 
 

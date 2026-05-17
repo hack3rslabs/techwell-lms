@@ -2,10 +2,9 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../utils/database');
 
 const router = express.Router();
-const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 // Validation schemas
 const registerSchema = z.object({

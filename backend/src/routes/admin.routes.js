@@ -1,10 +1,9 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../utils/database');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const { z } = require('zod');
 const router = express.Router();
-const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 /**
  * @route   GET /api/admin/stats

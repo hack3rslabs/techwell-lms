@@ -56,7 +56,9 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                         jobRoles: c.jobRoles || [],
                         courseType: c.courseType || 'RECORDED',
                         hasInterviewPrep: c.hasInterviewPrep || false,
-                        interviewPrice: Number(c.interviewPrice) || 0
+                        interviewPrice: Number(c.interviewPrice) || 0,
+                        suggestedCourseIds: c.suggestedCourseIds || [],
+                        mandatoryCourseIds: c.mandatoryCourseIds || []
                     })
                     if (c.modules) {
                         setModules(c.modules)
@@ -84,6 +86,8 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         // Course Types
         courseType: 'RECORDED' as 'RECORDED' | 'LIVE' | 'HYBRID',
         hasInterviewPrep: false,
+        suggestedCourseIds: [] as string[],
+        mandatoryCourseIds: [] as string[],
         interviewPrice: 0
     })
 
@@ -111,10 +115,16 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
 
     // Load categories from API
     const [dbCategories, setDbCategories] = React.useState<{ id: string; name: string; icon: string | null }[]>([])
+    const [allCourses, setAllCourses] = React.useState<{ id: string; title: string }[]>([])
+
     React.useEffect(() => {
         courseCategoryApi.getAll()
             .then(res => setDbCategories(res.data.categories || []))
             .catch(() => setDbCategories([]))
+
+        courseApi.getAll()
+            .then(res => setAllCourses(res.data.courses || []))
+            .catch(() => setAllCourses([]))
     }, [])
 
     // Handlers
@@ -160,14 +170,14 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         setIsLoading(true)
         try {
             console.log('[DEBUG] Starting course save process...');
-            
+
             // Upload banner file first if selected
             let finalImageUrl = basicData.bannerUrl;
             if (bannerFile) {
                 console.log('[DEBUG] Uploading new image file:', bannerFile.name);
                 const formData = new FormData();
                 formData.append('file', bannerFile);
-                
+
                 // Debug FormData
                 for (const [key, value] of formData.entries()) {
                     console.log(`[DEBUG] FormData entry: ${key}=${value instanceof File ? value.name : value}`);
@@ -194,6 +204,8 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                 bannerUrl: finalImageUrl || undefined,
                 thumbnail: finalImageUrl || undefined,
                 jobRoles: cleanJobRoles,
+                suggestedCourseIds: basicData.suggestedCourseIds,
+                mandatoryCourseIds: basicData.mandatoryCourseIds,
                 courseType: basicData.courseType as 'RECORDED' | 'LIVE' | 'HYBRID',
                 hasInterviewPrep: basicData.hasInterviewPrep,
                 interviewPrice: Number(basicData.interviewPrice) || 0,
@@ -468,7 +480,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                         This image will be displayed at the top of the course page. Use high-quality visuals to attract students.
                                     </p>
                                 </div>
-                                
+
                                 {(bannerPreview || basicData.bannerUrl) && (
                                     <div className="mt-4 relative rounded-xl overflow-hidden border shadow-sm group">
                                         <Image
@@ -602,8 +614,62 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                             placeholder="Add-on price for interview prep"
                                         />
                                     </div>
+
                                 )}
                             </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Suggested Courses</label>
+                                    <div className="border rounded-md p-3 max-h-40 overflow-y-auto bg-muted/20">
+                                        {allCourses.length > 0 ? (
+                                            allCourses.map(course => (
+                                                <label key={course.id} className="flex items-center space-x-2 text-sm cursor-pointer p-1 hover:bg-muted/30 rounded">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-gray-300"
+                                                        checked={basicData.suggestedCourseIds.includes(course.id)}
+                                                        onChange={(e) => {
+                                                            const ids = e.target.checked
+                                                                ? [...basicData.suggestedCourseIds, course.id]
+                                                                : basicData.suggestedCourseIds.filter(id => id !== course.id);
+                                                            setBasicData({ ...basicData, suggestedCourseIds: ids });
+                                                        }}
+                                                    />
+                                                    <span>{course.title}</span>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <p className="text-xs text-muted-foreground">No courses available</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Mandatory Courses</label>
+                                    <div className="border rounded-md p-3 max-h-40 overflow-y-auto bg-muted/20">
+                                        {allCourses.length > 0 ? (
+                                            allCourses.map(course => (
+                                                <label key={course.id} className="flex items-center space-x-2 text-sm cursor-pointer p-1 hover:bg-muted/30 rounded">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-gray-300"
+                                                        checked={basicData.mandatoryCourseIds.includes(course.id)}
+                                                        onChange={(e) => {
+                                                            const ids = e.target.checked
+                                                                ? [...basicData.mandatoryCourseIds, course.id]
+                                                                : basicData.mandatoryCourseIds.filter(id => id !== course.id);
+                                                            setBasicData({ ...basicData, mandatoryCourseIds: ids });
+                                                        }}
+                                                    />
+                                                    <span>{course.title}</span>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <p className="text-xs text-muted-foreground">No courses available</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
 
                             <div className="flex justify-end pt-4">
                                 <Button type="submit" disabled={isLoading}>

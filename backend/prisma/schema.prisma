@@ -59,6 +59,7 @@ model User {
   conversations          Conversation[]         @relation("UserConversations")
   notifications          Notification[]
   resume                 Resume?
+  batchStudents          BatchStudent[]
 }
 
 model SystemRole {
@@ -135,6 +136,8 @@ model Course {
   duration             Int                 @default(0)
   price                Decimal             @default(0)
   discountPrice        Decimal             @default(0)
+  suggestedCourseIds   String[]            @default([])
+  mandatoryCourseIds   String[]            @default([])
   courseCode           String?             @unique
   jobRoles             Json?
   bannerUrl            String?
@@ -202,6 +205,19 @@ model Batch {
   institute     Institute?     @relation(fields: [instituteId], references: [id])
   instructor    User           @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   enrollments   Enrollment[]
+  batchCode     String?        @unique
+  students      BatchStudent[]
+}
+
+model BatchStudent {
+  id        String   @id @default(cuid())
+  batchId   String
+  userId    String
+  createdAt DateTime @default(now())
+  batch     Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, userId])
 }
 
 model Announcement {
@@ -476,6 +492,7 @@ model Payment {
   status    String   @default("PENDING")
   userId    String
   courseId  String
+  additionalCourseIds String[] @default([])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -528,6 +545,7 @@ model ForumComment {
 model Conversation {
   id           String    @id @default(cuid())
   name         String?
+  subject      String?
   isGroup      Boolean   @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -567,6 +585,7 @@ model Message {
   senderId       String
   content        String
   readBy         Json?
+  attachments    Json?
   createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
@@ -1408,4 +1427,15 @@ model Notification {
   createdAt DateTime @default(now())
   meeting   Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Coupon {
+  id                 String   @id @default(cuid())
+  couponName         String   @unique
+  discountPercentage Int
+  expiryDate         DateTime
+  courseIds          String[] @default([])
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
