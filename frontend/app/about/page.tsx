@@ -35,7 +35,7 @@ export default function AboutPage() {
                 <div className="container text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border shadow-sm mb-6 animate-fade-in-up">
                         <Calendar className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium">Techwell Founded in 2015</span>
+                        <span className="text-sm font-medium">Techwell Founded in 2014</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">
                         Transforming Tech Education with AI
