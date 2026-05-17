@@ -181,13 +181,11 @@ router.get('/', optionalAuth, async (req, res, next) => {
 
         const where = {};
 
-        // If NOT admin, only show published
-        // But if admin, they might want to see all?
-        // Actually, the public (students) use this endpoint. 
-        // Admin usually wants a separate endpoint or a flag.
-        // Let's keep this as public catalog mostly, but allows admins to see all if they pass ?all=true?
-        // Or better: Admins use a different way? 
-        // "AdminCoursesPage" uses this endpoint.
+        // Robust parsing of page and limit to prevent NaN values crashing Prisma
+        let pageNum = parseInt(page, 10);
+        let limitNum = parseInt(limit, 10);
+        if (isNaN(pageNum) || pageNum < 1) pageNum = 1;
+        if (isNaN(limitNum) || limitNum < 1) limitNum = 12;
 
         const isAdmin = req.user && ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
 
@@ -195,16 +193,24 @@ router.get('/', optionalAuth, async (req, res, next) => {
             where.isPublished = true;
         }
 
-        if (category) where.category = category;
-        if (difficulty) where.difficulty = difficulty;
-        if (search) {
+        // Clean query parameters to avoid Prisma database errors
+        if (category && category !== 'ALL' && category !== 'undefined' && category !== 'null' && category.trim() !== '') {
+            where.category = category;
+        }
+
+        const validDifficulties = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
+        if (difficulty && validDifficulties.includes(difficulty.toUpperCase())) {
+            where.difficulty = difficulty.toUpperCase();
+        }
+
+        if (search && search.trim() !== '') {
             where.OR = [
                 { title: { contains: search, mode: 'insensitive' } },
                 { description: { contains: search, mode: 'insensitive' } }
             ];
         }
 
-        console.log('[COURSES GET] Query params:', { category, difficulty, search, page, limit });
+        console.log('[COURSES GET] Query params:', { category, difficulty, search, pageNum, limitNum });
         console.log('[COURSES GET] Where clause:', where);
 
         const [courses, total] = await Promise.all([
@@ -218,8 +224,8 @@ router.get('/', optionalAuth, async (req, res, next) => {
                         }
                     }
                 },
-                skip: (Number(page) - 1) * Number(limit),
-                take: Number(limit),
+                skip: (pageNum - 1) * limitNum,
+                take: limitNum,
                 orderBy: { createdAt: 'desc' }
             }),
             prisma.course.count({ where })
@@ -229,25 +235,31 @@ router.get('/', optionalAuth, async (req, res, next) => {
 
         let coursesWithEnrollment = courses;
         if (req.user && courses.length > 0) {
-            const courseIds = courses.map(c => c.id);
-            const enrollments = await prisma.enrollment.findMany({
-                where: {
-                    userId: req.user.id,
-                    courseId: { in: courseIds }
-                },
-                include: { course: { select: { id: true, price: true } } }
-            });
+            try {
+                const courseIds = courses.map(c => c.id);
+                const enrollments = await prisma.enrollment.findMany({
+                    where: {
+                        userId: req.user.id,
+                        courseId: { in: courseIds }
+                    },
+                    include: { course: { select: { id: true, price: true } } }
+                });
 
-            const enrolledCourseIds = new Set(
-                enrollments
-                    .filter(e => ['ACTIVE', 'COMPLETED'].includes(e.status))
-                    .map(e => e.courseId)
-            );
+                const enrolledCourseIds = new Set(
+                    enrollments
+                        .filter(e => ['ACTIVE', 'COMPLETED'].includes(e.status))
+                        .map(e => e.courseId)
+                );
 
-            coursesWithEnrollment = courses.map((c) => ({
-                ...c,
-                isEnrolled: enrolledCourseIds.has(c.id)
-            }));
+                coursesWithEnrollment = courses.map((c) => ({
+                    ...c,
+                    isEnrolled: enrolledCourseIds.has(c.id)
+                }));
+            } catch (enrollErr) {
+                console.error('[COURSES GET] Failed to fetch enrollments for user:', enrollErr);
+                // Fallback gracefully without crash if database enrollment relation check fails
+                coursesWithEnrollment = courses.map((c) => ({ ...c, isEnrolled: false }));
+            }
         } else {
             coursesWithEnrollment = courses.map((c) => ({ ...c, isEnrolled: false }));
         }
@@ -255,10 +267,10 @@ router.get('/', optionalAuth, async (req, res, next) => {
         res.json({
             courses: coursesWithEnrollment,
             pagination: {
-                page: Number(page),
-                limit: Number(limit),
+                page: pageNum,
+                limit: limitNum,
                 total,
-                pages: Math.ceil(total / Number(limit))
+                pages: Math.ceil(total / limitNum)
             }
         });
     } catch (error) {
