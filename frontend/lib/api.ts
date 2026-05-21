@@ -97,6 +97,7 @@ export interface CoursePayload {
     price: number;
     discountPrice?: number;
     difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+    duration?: number;
     courseCode?: string;
     bannerUrl?: string;
     thumbnail?: string;
@@ -109,7 +110,7 @@ export interface CoursePayload {
 
 // Course API
 export const courseApi = {
-    getAll: (params?: { category?: string; search?: string; page?: number }) =>
+    getAll: (params?: { category?: string; search?: string; page?: number; limit?: number }) =>
         api.get('/courses', { params }),
     getById: (id: string) => api.get(`/courses/${id}`),
     create: (data: CoursePayload) =>

@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import Image from "next/image"
+import api, { uploadApi } from "@/lib/api"
+import { getFullImageUrl } from "@/lib/image-utils"
 
 interface GalleryImage {
     id: string
@@ -16,8 +18,9 @@ interface GalleryImage {
 
 export default function GalleryPage() {
     const [images, setImages] = useState<GalleryImage[]>([])
-    const [newUrl, setNewUrl] = useState("")
+    const [selectedImageUrl, setSelectedImageUrl] = useState("")
     const [loading, setLoading] = useState(true)
+    const [uploading, setUploading] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const { toast } = useToast()
 
@@ -27,8 +30,8 @@ export default function GalleryPage() {
 
     const fetchImages = async () => {
         try {
-            const res = await fetch("/api/admin/gallery")
-            const data = await res.json()
+            const res = await api.get("/admin/gallery")
+            const data = res.data
             if (Array.isArray(data)) {
                 setImages(data)
             }
@@ -41,21 +44,14 @@ export default function GalleryPage() {
 
     const handleAddImage = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!newUrl) return
+        if (!selectedImageUrl) return
 
         setSubmitting(true)
         try {
-            const res = await fetch("/api/admin/gallery", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: newUrl }),
-            })
-
-            if (!res.ok) throw new Error("Failed to add image")
-
-            const newImage = await res.json()
+            const res = await api.post("/admin/gallery", { url: selectedImageUrl })
+            const newImage = res.data
             setImages([...images, newImage])
-            setNewUrl("")
+            setSelectedImageUrl("")
             toast({ title: "Success", description: "Image added to gallery" })
         } catch (_error) {
             toast({ title: "Error", description: "Failed to add image", variant: "destructive" })
@@ -68,16 +64,36 @@ export default function GalleryPage() {
         if (!confirm("Are you sure you want to delete this image?")) return
 
         try {
-            const res = await fetch(`/api/admin/gallery?id=${id}`, {
-                method: "DELETE",
-            })
-
-            if (!res.ok) throw new Error("Failed to delete")
-
+            await api.delete("/admin/gallery", { params: { id } })
             setImages(images.filter(img => img.id !== id))
             toast({ title: "Success", description: "Image deleted" })
         } catch (_error) {
             toast({ title: "Error", description: "Failed to delete image", variant: "destructive" })
+        }
+    }
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        if (!file.type.startsWith("image/")) {
+            toast({ title: "Error", description: "Please select an image file", variant: "destructive" })
+            return
+        }
+
+        const formData = new FormData()
+        formData.append("file", file)
+
+        setUploading(true)
+        try {
+            const res = await uploadApi.upload(formData)
+            setSelectedImageUrl(res.data.url)
+            toast({ title: "Success", description: "Image uploaded" })
+        } catch (_error) {
+            toast({ title: "Error", description: "Failed to upload image", variant: "destructive" })
+        } finally {
+            setUploading(false)
+            e.target.value = ""
         }
     }
 
@@ -94,14 +110,26 @@ export default function GalleryPage() {
                 <CardContent className="p-6">
                     <form onSubmit={handleAddImage} className="flex gap-4 items-end">
                         <div className="flex-1 space-y-2">
-                            <label className="text-sm font-medium">Image URL</label>
+                            <label className="text-sm font-medium">Gallery Image</label>
                             <Input
-                                placeholder="https://example.com/image.jpg"
-                                value={newUrl}
-                                onChange={(e) => setNewUrl(e.target.value)}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                disabled={uploading}
                             />
+                            {uploading && <p className="text-xs text-muted-foreground">Uploading image...</p>}
+                            {selectedImageUrl && (
+                                <div className="relative h-32 w-32 overflow-hidden rounded-md border">
+                                    <Image
+                                        src={getFullImageUrl(selectedImageUrl)}
+                                        alt="Selected gallery image"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
+                            )}
                         </div>
-                        <Button type="submit" disabled={submitting || !newUrl}>
+                        <Button type="submit" disabled={submitting || uploading || !selectedImageUrl}>
                             {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
                             Add Image
                         </Button>
@@ -117,7 +145,7 @@ export default function GalleryPage() {
                 ) : images.map((image) => (
                     <div key={image.id} className="group relative aspect-square bg-muted rounded-lg overflow-hidden border">
                         <Image
-                            src={image.url}
+                            src={getFullImageUrl(image.url)}
                             alt={image.caption || "Gallery Image"}
                             fill
                             className="object-cover transition-transform group-hover:scale-105"

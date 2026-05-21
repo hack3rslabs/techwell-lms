@@ -208,6 +208,16 @@ router.patch('/:id/status', authenticate, checkPermission('USERS'), async (req, 
     try {
         const { isActive } = req.body;
         if (req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot change your own status' });
+
+        const targetUser = await prisma.user.findUnique({
+            where: { id: req.params.id },
+            select: { role: true }
+        });
+        if (!targetUser) return res.status(404).json({ error: 'User not found' });
+        if (targetUser.role === 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Super Admin users are protected and cannot be edited.' });
+        }
+
         const user = await prisma.user.update({
             where: { id: req.params.id },
             data: { isActive: Boolean(isActive) },
@@ -257,6 +267,9 @@ router.delete('/:id', authenticate, checkPermission('ALL'), async (req, res, nex
 
         if (!userToDelete) {
             return res.status(404).json({ error: 'User not found' });
+        }
+        if (userToDelete.role === 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Super Admin users are protected and cannot be deleted.' });
         }
 
         // Use a transaction to ensure all related data is cleaned up in the correct order
@@ -442,6 +455,15 @@ router.put('/:id/permissions', authenticate, checkPermission('USERS'), async (re
         // Ensure user is not disabling themselves
         if (id === req.user.id && (isActive === false || role !== 'SUPER_ADMIN')) {
            return res.status(400).json({ error: 'You cannot downgrade or deactivate your own account.' });
+        }
+
+        const targetUser = await prisma.user.findUnique({
+            where: { id },
+            select: { role: true }
+        });
+        if (!targetUser) return res.status(404).json({ error: 'User not found' });
+        if (targetUser.role === 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Super Admin users are protected and cannot be edited.' });
         }
 
         const user = await prisma.user.update({

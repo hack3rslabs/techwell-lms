@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import api from '@/lib/api'
+import Image from 'next/image'
+import api, { uploadApi } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import { getFullImageUrl } from '@/lib/image-utils'
 
 interface Blog {
     id: string
@@ -57,6 +59,7 @@ export default function BlogManagerPage() {
 
     const [showModal, setShowModal] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isUploadingCover, setIsUploadingCover] = useState(false)
 
     const [search, setSearch] = useState('')
 
@@ -160,6 +163,31 @@ export default function BlogManagerPage() {
 
             setIsSubmitting(false)
 
+        }
+    }
+
+    const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file')
+            return
+        }
+
+        const uploadFormData = new FormData()
+        uploadFormData.append('file', file)
+
+        setIsUploadingCover(true)
+        try {
+            const res = await uploadApi.upload(uploadFormData)
+            setFormData(prev => ({ ...prev, coverImage: res.data.url }))
+            toast.success('Cover image uploaded')
+        } catch {
+            toast.error('Failed to upload cover image')
+        } finally {
+            setIsUploadingCover(false)
+            e.target.value = ''
         }
     }
 
@@ -423,11 +451,35 @@ export default function BlogManagerPage() {
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium">Cover Image URL</label>
+                                <label className="text-sm font-medium">Banner Image</label>
                                 <Input
-                                    value={formData.coverImage}
-                                    onChange={e => setFormData({ ...formData, coverImage: e.target.value })}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleCoverImageChange}
+                                    disabled={isUploadingCover}
                                 />
+                                {isUploadingCover && (
+                                    <p className="text-xs text-muted-foreground">Uploading image...</p>
+                                )}
+                                {formData.coverImage && (
+                                    <div className="space-y-2">
+                                        <Image
+                                            src={getFullImageUrl(formData.coverImage)}
+                                            alt="Selected blog banner"
+                                            width={960}
+                                            height={320}
+                                            className="h-40 w-full rounded-md border object-cover"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setFormData({ ...formData, coverImage: '' })}
+                                        >
+                                            Remove Image
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-2 md:col-span-2">

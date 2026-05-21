@@ -74,11 +74,11 @@ export function Footer() {
                                     AI Interview Prep
                                 </Link>
                             </li>
-                            <li>
+                            {/* <li>
                                 <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
                                     Plans & Pricing
                                 </Link>
-                            </li>
+                            </li> */}
                             <li>
                                 <Link href="/skillcast" className="text-muted-foreground hover:text-foreground transition-colors">
                                     Skillcast Episodes
