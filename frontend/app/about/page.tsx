@@ -20,12 +20,7 @@ const values = [
     { icon: GraduationCap, title: 'Innovation', description: 'Leveraging AI to personalize every learning journey.' },
 ]
 
-const team = [
-    { name: 'Rahul Sharma', role: 'CEO & Founder', image: null },
-    { name: 'Priya Patel', role: 'CTO', image: null },
-    { name: 'Amit Kumar', role: 'Head of Education', image: null },
-    { name: 'Sneha Reddy', role: 'Head of AI', image: null },
-]
+
 
 export default function AboutPage() {
     return (
@@ -133,7 +128,7 @@ export default function AboutPage() {
             </section>
 
             {/* Team */}
-            <section className="py-20">
+            {/* <section className="py-20">
                 <div className="container">
                     <h2 className="text-3xl font-bold text-center mb-12">Leadership Team</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -148,10 +143,10 @@ export default function AboutPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* CTA */}
-            <section className="py-20 bg-primary text-primary-foreground">
+            {/* <section className="py-20 bg-primary text-primary-foreground">
                 <div className="container text-center">
                     <h2 className="text-3xl font-bold mb-4">Ready to Start Your Journey?</h2>
                     <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
@@ -163,7 +158,7 @@ export default function AboutPage() {
                         </Button>
                     </Link>
                 </div>
-            </section>
+            </section> */}
         </div>
     )
 }

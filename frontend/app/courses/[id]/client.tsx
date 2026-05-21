@@ -27,6 +27,12 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -152,6 +158,9 @@ export default function CourseDetailClient() {
         phone: user?.phone || '',
         qualification: ''
     })
+    const openInterestForm = () => {
+    setShowRequestDialog(true)
+      }
 
     React.useEffect(() => {
         if (user) {
@@ -382,9 +391,10 @@ export default function CourseDetailClient() {
                     <Image
                         src={getFullImageUrl(course.bannerUrl)}
                         alt={`${course.title} Banner`}
+                        onClick={openInterestForm}
                         fill
                         unoptimized
-                        className="object-cover transition-all duration-700 group-hover:scale-[1.03] z-10"
+                        className="object-cover transition-all duration-700 group-hover:scale-[1.03] z-10 cursor-pointer rounded-xl"
                         priority
                         onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -408,6 +418,9 @@ export default function CourseDetailClient() {
                             )}
                             <span className={`text-xs px-3 py-1 rounded-full ${getDifficultyColor(course.difficulty)}`}>
                                 {course.difficulty}
+                            </span>
+                            <span className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                {course.duration || 0} hrs
                             </span>
                             <span className="text-sm text-muted-foreground">{course.category}</span>
 
@@ -491,60 +504,88 @@ export default function CourseDetailClient() {
                         )}
                     </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Course Curriculum</CardTitle>
-                            <CardDescription>
-                                {course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0} lessons
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {course.modules && course.modules.length > 0 ? (
-                                <div className="space-y-4">
-                                    {course.modules.map((module) => (
-                                        <div key={module.id} className="border rounded-lg">
-                                            <button
-                                                onClick={() => toggleModule(module.id)}
-                                                className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                                                        {module.orderIndex + 1}
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <h4 className="font-medium">{module.title}</h4>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {module.lessons?.length || 0} lessons
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <span className="text-muted-foreground">
-                                                    {expandedModules.includes(module.id) ? '−' : '+'}
-                                                </span>
-                                            </button>
-                                            {expandedModules.includes(module.id) && module.lessons && (
-                                                <div className="border-t px-4 py-2">
-                                                    {module.lessons.map((lesson) => (
-                                                        <div key={lesson.id} className="flex items-center justify-between py-2 text-sm">
-                                                            <div className="flex items-center gap-3">
-                                                                <PlayCircle className="h-4 w-4 text-muted-foreground" />
-                                                                <span>{lesson.title}</span>
-                                                            </div>
-                                                            <span className="text-muted-foreground">{lesson.duration}m</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                   <Card>
+    <CardHeader>
+        <CardTitle>Course Curriculum</CardTitle>
+    </CardHeader>
+
+    <CardContent>
+        {course.modules && course.modules.length > 0 ? (
+            <Accordion
+                type="single"
+                collapsible
+                className="w-full"
+            >
+                <AccordionItem
+                    value="course-curriculum"
+                    className="border rounded-xl px-4"
+                >
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center justify-between w-full pr-4">
+                            <span className="font-medium">
+                                View Curriculum
+                            </span>
+
+                            <span className="text-sm text-muted-foreground">
+                                {course.modules.length} Modules
+                            </span>
+                        </div>
+                    </AccordionTrigger>
+
+                    <AccordionContent>
+                        <div className="space-y-4 pt-2">
+                            {course.modules.map((module) => (
+                                <div
+                                    key={module.id}
+                                    className="border rounded-lg p-4"
+                                >
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                                            {module.orderIndex + 1}
                                         </div>
-                                    ))}
+
+                                        <div>
+                                            <h4 className="font-medium">
+                                                {module.title}
+                                            </h4>
+
+                                           
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        {module.lessons?.map((lesson) => (
+                                            <div
+                                                key={lesson.id}
+                                                className="flex items-center justify-between text-sm border rounded-md px-3 py-2"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <PlayCircle className="h-4 w-4 text-muted-foreground" />
+
+                                                    <span>
+                                                        {lesson.title}
+                                                    </span>
+                                                </div>
+
+                                                <span className="text-muted-foreground">
+                                                    {lesson.duration}m
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            ) : (
-                                <p className="text-muted-foreground text-center py-8">
-                                    Curriculum coming soon
-                                </p>
-                            )}
-                        </CardContent>
-                    </Card>
+                            ))}
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        ) : (
+            <p className="text-muted-foreground text-center py-8">
+                Curriculum coming soon
+            </p>
+        )}
+    </CardContent>
+</Card>
                 </div>
 
                 <div className="lg:col-span-1">
@@ -638,7 +679,7 @@ export default function CourseDetailClient() {
                                         ) : (
                                             <CreditCard className="mr-2 h-5 w-5" />
                                         )}
-                                        {isEnrolling ? 'Processing...' : (currentPrice === 0 ? 'Enroll for Free' : `Buy ${purchaseType === 'BUNDLE' ? 'Bundle' : 'Now'}`)}
+                                        {isEnrolling ? 'Processing...' : (currentPrice === 0 ? 'Enroll for Free' : `Enroll ${purchaseType === 'BUNDLE' ? 'Bundle' : 'Now'}`)}
                                     </Button>
                                 </div>
                             )}
@@ -646,8 +687,13 @@ export default function CourseDetailClient() {
                             <div className="space-y-3 text-sm">
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                    <span>Full lifetime access</span>
+                                    <span>Learn from industry experts</span>
                                 </div>
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                    <span>Practical projects for real-world skills</span>
+                                </div>
+                                
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                                     <span>Certificate of completion</span>

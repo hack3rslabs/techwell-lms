@@ -60,7 +60,8 @@ export default function CourseList() {
                 setIsLoading(true)
                 const response = await courseApi.getAll({
                     search: search || undefined,
-                    category: category || undefined
+                    category: category || undefined,
+                    limit: 1000
                 })
                 if (!abortController.signal.aborted) {
                     setCourses(response.data.courses || [])
@@ -211,10 +212,15 @@ export default function CourseList() {
                                     )}
                                 </div>
                             <CardHeader className="pb-2">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md ${getDifficultyColor(course.difficulty)}`}>
-                                        {course.difficulty}
-                                    </span>
+                                <div className="flex items-center justify-between gap-3 mb-3">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md ${getDifficultyColor(course.difficulty)}`}>
+                                            {course.difficulty}
+                                        </span>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                            {course.duration || 0} hrs
+                                        </span>
+                                    </div>
                                     <span className="text-xs font-semibold text-primary/70">{course.category}</span>
                                 </div>
                                 <CardTitle className="text-xl line-clamp-1 group-hover:text-primary transition-colors">{course.title}</CardTitle>

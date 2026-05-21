@@ -8,6 +8,9 @@ export const getFullImageUrl = (path?: string | null): string => {
 
     // Handle full URLs (http or https)
     if (path.startsWith("http://") || path.startsWith("https://")) {
+        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && path.includes('localhost')) {
+            return path.replace('localhost', window.location.hostname);
+        }
         return path;
     }
 

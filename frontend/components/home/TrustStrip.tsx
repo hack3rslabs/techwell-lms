@@ -8,7 +8,6 @@ const trustLogos = [
     { name: "UCO Bank", src: "/images/trust/uco bank logo.png", width: 120, height: 60 },
     { name: "Skill India", src: "/images/trust/skillindia.png", width: 120, height: 60 },
     { name: "NCS", src: "/images/trust/ministry-of-labour-NCS.svg", width: 120, height: 60 },
-    { name: "MSME", src: "/images/trust/msme.png", width: 120, height: 60 },
     { name: "ISO", src: "/images/trust/iso.png", width: 80, height: 80 },
 ]
 

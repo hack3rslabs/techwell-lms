@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import api from '@/lib/api'
 import DOMPurify from 'isomorphic-dompurify'
+import { getFullImageUrl } from '@/lib/image-utils'
 
 interface BlogPost {
     id: string
@@ -77,6 +78,11 @@ export default function BlogPostPage() {
     const readingTime = Math.ceil(textLength / wordsPerMinute)
 
     const sanitizedContent = DOMPurify.sanitize(post.content)
+        .split(/\n+/)
+        .map(paragraph => paragraph.trim())
+        .filter(Boolean)
+        .map(paragraph => `<p>${paragraph}</p>`)
+        .join('')
 
     return (
         <article className="min-h-screen py-12">
@@ -95,7 +101,7 @@ export default function BlogPostPage() {
                 {post.coverImage && (
                     <div className="relative aspect-video w-full mb-8 overflow-hidden rounded-xl border">
                         <Image
-                            src={post.coverImage}
+                            src={getFullImageUrl(post.coverImage)}
                             alt={post.title}
                             width={800}
                             height={450}

@@ -50,6 +50,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                         price: Number(c.price) || 0,
                         discountPrice: Number(c.discountPrice) || 0,
                         difficulty: c.difficulty,
+                        duration: Number(c.duration) || 0,
                         courseCode: c.courseCode || '',
                         bannerUrl: c.bannerUrl || '',
                         jobRoles: c.jobRoles || [],
@@ -76,6 +77,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         price: 0,
         discountPrice: 0,
         difficulty: 'BEGINNER',
+        duration: 0,
         courseCode: '',
         bannerUrl: '',
         jobRoles: [] as string[],
@@ -106,6 +108,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
     const [modules, setModules] = React.useState<Module[]>([])
     const [aiTopic, setAiTopic] = React.useState('')
     const [isGenerating, setIsGenerating] = React.useState(false)
+    const [expandedModuleIndexes, setExpandedModuleIndexes] = React.useState<number[]>([])
 
     // Load categories from API
     const [dbCategories, setDbCategories] = React.useState<{ id: string; name: string; icon: string | null }[]>([])
@@ -185,6 +188,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                 description: basicData.description,
                 category: basicData.category,
                 difficulty: basicData.difficulty as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED',
+                duration: Number(basicData.duration) || 0,
                 price: Number(basicData.price) || 0,
                 discountPrice: Number(basicData.discountPrice) || 0,
                 courseCode: basicData.courseCode || undefined,
@@ -252,7 +256,8 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                 courseCode: res.data.courseData.courseCode,
                 bannerUrl: res.data.courseData.bannerUrl,
                 jobRoles: res.data.courseData.jobRoles || [],
-                difficulty: res.data.courseData.difficulty
+                difficulty: res.data.courseData.difficulty,
+                duration: Number(res.data.courseData.duration) || prev.duration
             }))
             // Replace modules with generated ones
             setModules(res.data.courseData.modules)
@@ -265,14 +270,22 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
     }
 
     const handleAddModule = () => {
+        const nextIndex = modules.length
         const newModule: Module = {
             title: 'New Module',
             description: 'Module description',
-            orderIndex: modules.length,
+            orderIndex: nextIndex,
             isPublished: false,
             lessons: []
         }
         setModules([...modules, newModule])
+        setExpandedModuleIndexes(prev => [...prev, nextIndex])
+    }
+
+    const toggleModuleEditor = (idx: number) => {
+        setExpandedModuleIndexes(prev =>
+            prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+        )
     }
 
     const handleUpdateModule = (idx: number, updates: Partial<Module>) => {
@@ -286,6 +299,9 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         // Update orderIndex for remaining modules
         newModules.forEach((m, i) => { m.orderIndex = i })
         setModules(newModules)
+        setExpandedModuleIndexes(prev =>
+            prev.filter(i => i !== idx).map(i => (i > idx ? i - 1 : i))
+        )
     }
 
     const handleAddLesson = (moduleIdx: number) => {
@@ -377,7 +393,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Category</label>
                                     <select
@@ -420,6 +436,17 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                         <option value="INTERMEDIATE">Intermediate</option>
                                         <option value="ADVANCED">Advanced</option>
                                     </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Course Duration (hours)</label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="0.5"
+                                        value={basicData.duration}
+                                        onChange={e => setBasicData({ ...basicData, duration: Number(e.target.value) })}
+                                        placeholder="e.g. 24"
+                                    />
                                 </div>
                             </div>
 
@@ -656,6 +683,25 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                 <div className="space-y-4">
                                     {modules.map((mod, idx) => (
                                         <div key={idx} className="border rounded-lg p-4 bg-card">
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleModuleEditor(idx)}
+                                                className="w-full flex items-center justify-between gap-3 text-left"
+                                            >
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
+                                                    <div className="min-w-0">
+                                                        <div className="font-medium truncate">{mod.title || `Module ${idx + 1}`}</div>
+                                                        <div className="text-xs text-muted-foreground">{mod.lessons.length} lessons</div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="secondary">{expandedModuleIndexes.includes(idx) ? 'Hide' : 'Edit'}</Badge>
+                                                    <span className="text-muted-foreground">{expandedModuleIndexes.includes(idx) ? '-' : '+'}</span>
+                                                </div>
+                                            </button>
+                                            {expandedModuleIndexes.includes(idx) && (
+                                                <div className="mt-4">
                                             <div className="flex items-center justify-between mb-3">
                                                 <div className="flex items-center gap-3 flex-1">
                                                     <GripVertical className="h-5 w-5 text-muted-foreground" />
@@ -795,6 +841,8 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                                     </div>
                                                 ))}
                                             </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -842,6 +890,10 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                             <div>
                                 <span className="text-muted-foreground">Difficulty:</span>
                                 <p className="font-medium">{basicData.difficulty}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Duration:</span>
+                                <p className="font-medium">{basicData.duration || 0} hours</p>
                             </div>
                             <div>
                                 <span className="text-muted-foreground">Modules:</span>

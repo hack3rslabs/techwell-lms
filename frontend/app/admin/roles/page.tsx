@@ -57,6 +57,10 @@ interface RolePermission {
     isDisabled: boolean
 }
 
+const isSuperAdminRole = (roleName?: string) => {
+    return (roleName || "").replace(/[^a-z0-9]/gi, "").toUpperCase() === "SUPERADMIN"
+}
+
 export default function RolesAndUsersPage() {
     const router = useRouter()
     const { user: currentUser, hasPermission, canWrite, isLoading: authLoading } = useAuth()
@@ -214,6 +218,8 @@ export default function RolesAndUsersPage() {
     }
 
     const openEditRoleModal = (role: Role) => {
+        if (isSuperAdminRole(role.name)) return;
+
         setIsEditingRole(true);
         setRoleToEditId(role.id);
         setNewRoleData({
@@ -286,10 +292,12 @@ export default function RolesAndUsersPage() {
                                     <td className="p-4 text-right">
                                         <div className="flex justify-end gap-1">
                                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/admin/users/${user.id}`)}><Eye className="h-4 w-4" /></Button>
-                                            <Button variant="ghost" size="icon" className={`h-8 w-8 ${user.isActive ? 'text-red-500' : 'text-green-500'}`} onClick={() => toggleUserStatus(user.id, user.isActive)}>
-                                                {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                                            </Button>
-                                            {canWrite('USERS') && user.id !== currentUser?.id && (
+                                            {!isSuperAdminRole(user.systemRole?.name || user.role) && (
+                                                <Button variant="ghost" size="icon" className={`h-8 w-8 ${user.isActive ? 'text-red-500' : 'text-green-500'}`} onClick={() => toggleUserStatus(user.id, user.isActive)}>
+                                                    {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                                                </Button>
+                                            )}
+                                            {canWrite('USERS') && user.id !== currentUser?.id && !isSuperAdminRole(user.systemRole?.name || user.role) && (
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:bg-red-500/10" onClick={() => { setUserToDelete(user); setIsDeleteUserOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
                                             )}
                                         </div>
@@ -326,9 +334,11 @@ export default function RolesAndUsersPage() {
                                 <td className="p-4 text-xs text-muted-foreground">{role.description || "Custom role"}</td>
                                 <td className="p-4 text-right">
                                     <div className="flex justify-end gap-1">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditRoleModal(role)}>
-                                            <Edit2 className="h-4 w-4" />
-                                        </Button>
+                                        {!isSuperAdminRole(role.name) && (
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditRoleModal(role)}>
+                                                <Edit2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>

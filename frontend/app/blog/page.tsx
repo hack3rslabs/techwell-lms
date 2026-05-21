@@ -5,14 +5,12 @@ import Link from "next/link"
 import {
   Calendar,
   User,
-  ArrowRight,
   Search,
   Tag,
   Loader2,
   Clock
 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -24,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import api from "@/lib/api"
+import { getFullImageUrl } from "@/lib/image-utils"
 
 interface BlogPost {
   id: string
@@ -175,111 +174,105 @@ export default function BlogPage() {
 
             {posts.length > 0 ? posts.map((post) => (
 
-              <Card
+              <Link
                 key={post.id}
-                className="hover:shadow-xl transition-all duration-300 group flex flex-col h-full"
+                href={`/blog/${post.slug || post.id}`}
+                className="block h-full"
               >
+                <Card
+                  className="hover:shadow-xl transition-all duration-300 group flex flex-col h-full cursor-pointer"
+                >
 
-                {/* Cover Image */}
+                  {/* Cover Image */}
 
-                {post.coverImage ? (
+                  {post.coverImage ? (
 
-                  <div
-                    className="h-48 w-full bg-cover bg-center rounded-t-lg"
-                    style={{
-                      backgroundImage: `url(${post.coverImage})`
-                    }}
-                  />
+                    <div
+                      className="h-48 w-full bg-cover bg-center rounded-t-lg"
+                      style={{
+                        backgroundImage: `url(${getFullImageUrl(post.coverImage)})`
+                      }}
+                    />
 
-                ) : (
+                  ) : (
 
-                  <div className="h-48 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-t-lg" />
+                    <div className="h-48 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-t-lg" />
 
-                )}
+                  )}
 
-                <CardHeader>
+                  <CardHeader>
 
-                  {/* Meta */}
+                    {/* Meta */}
 
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-2">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-2">
 
-                    {post.category && (
-                      <Badge variant="secondary">
-                        {post.category}
-                      </Badge>
-                    )}
+                      {post.category && (
+                        <Badge variant="secondary">
+                          {post.category}
+                        </Badge>
+                      )}
 
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(post.publishedAt || post.createdAt).toLocaleDateString()}
-                    </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(post.publishedAt || post.createdAt).toLocaleDateString()}
+                      </span>
 
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {getReadingTime(post.content)}
-                    </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {getReadingTime(post.content)}
+                      </span>
 
-                  </div>
+                    </div>
 
-                  {/* Title */}
+                    {/* Title */}
 
-                  <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
 
-                    {post.title}
+                      {post.title}
 
-                  </CardTitle>
+                    </CardTitle>
 
-                  {/* Summary */}
+                    {/* Summary */}
 
-                  <CardDescription className="line-clamp-2">
+                    <CardDescription className="line-clamp-2">
 
-                    {post.summary || post.content.substring(0, 120)}...
+                      {post.summary || post.content.substring(0, 120)}...
 
-                  </CardDescription>
+                    </CardDescription>
 
-                </CardHeader>
+                  </CardHeader>
 
-                <CardContent className="mt-auto pt-0">
+                  <CardContent className="mt-auto pt-0">
 
-                  {/* Tags */}
+                    {/* Tags */}
 
-                  <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-2 mb-4">
 
-                    {post.tags?.slice(0, 3).map((tag, i) => (
-                      <Badge key={i} variant="outline">
-                        <Tag className="h-3 w-3 mr-1" />
-                        {tag}
-                      </Badge>
-                    ))}
+                      {post.tags?.slice(0, 3).map((tag, i) => (
+                        <Badge key={i} variant="outline">
+                          <Tag className="h-3 w-3 mr-1" />
+                          {tag}
+                        </Badge>
+                      ))}
 
-                  </div>
+                    </div>
 
-                  {/* Footer */}
+                    {/* Footer */}
 
-                  <div className="flex items-center justify-between text-sm text-muted-foreground pt-4 border-t">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground pt-4 border-t">
 
-                    <span className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      {post.author?.name || "Admin"}
-                    </span>
+                      <span className="flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        {post.author?.name || "Admin"}
+                      </span>
 
-                    <Link href={`/blog/${post.slug || post.id}`}>
+                    </div>
 
-                      <Button variant="ghost" size="sm">
+                  </CardContent>
 
-                        Read
+                </Card>
 
-                        <ArrowRight className="h-4 w-4 ml-1" />
-
-                      </Button>
-
-                    </Link>
-
-                  </div>
-
-                </CardContent>
-
-              </Card>
+              </Link>
 
             )) : (
 

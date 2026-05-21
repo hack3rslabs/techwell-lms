@@ -17,6 +17,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Loader2, ArrowLeft, Mail, Calendar, Shield, Activity, Save } from "lucide-react"
 
+const isSuperAdminRole = (roleName?: string) => {
+    return (roleName || "").replace(/[^a-z0-9]/gi, "").toUpperCase() === "SUPERADMIN"
+}
+
 export default function User360Page() {
     const { id } = useParams()
     const router = useRouter()
@@ -136,6 +140,11 @@ export default function User360Page() {
     }
 
     const saveRBAC = async () => {
+        if (user && isSuperAdminRole(user.role)) {
+            alert("Super Admin access is protected and cannot be edited.");
+            return;
+        }
+
         setIsSavingObject(true);
         try {
             await userApi.updatePermissions(id as string, {
@@ -161,6 +170,8 @@ export default function User360Page() {
 
     if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-8 w-8" /></div>
     if (!user) return <div className="p-8">User not found</div>
+
+    const isProtectedSuperAdmin = isSuperAdminRole(user.role)
 
     return (
         <div className="space-y-6">
@@ -242,10 +253,14 @@ export default function User360Page() {
                                             </CardTitle>
                                             <CardDescription>Granular Read/Write overrides.</CardDescription>
                                         </div>
-                                        <Button onClick={saveRBAC} disabled={isSavingObject} className="gap-2">
-                                            {isSavingObject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                            Save 
-                                        </Button>
+                                        {isProtectedSuperAdmin ? (
+                                            <Badge variant="outline" className="border-orange-200 text-orange-600">Protected</Badge>
+                                        ) : (
+                                            <Button onClick={saveRBAC} disabled={isSavingObject} className="gap-2">
+                                                {isSavingObject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                                Save 
+                                            </Button>
+                                        )}
                                     </div>
                                 </CardHeader>
                                 <CardContent className="space-y-8 pb-10">
@@ -257,14 +272,14 @@ export default function User360Page() {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-sm font-medium">{editedIsActive ? "Active" : "Disabled"}</span>
-                                                <Switch checked={editedIsActive} onCheckedChange={setEditedIsActive} />
+                                                <Switch checked={editedIsActive} onCheckedChange={setEditedIsActive} disabled={isProtectedSuperAdmin} />
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label>Primary Role</Label>
-                                                <Select value={editedRole} onValueChange={setEditedRole}>
+                                                <Select value={editedRole} onValueChange={setEditedRole} disabled={isProtectedSuperAdmin}>
                                                     <SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger>
                                                     <SelectContent>
                                                         {ROLES_LIST.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
@@ -275,59 +290,7 @@ export default function User360Page() {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between border-b pb-2">
-                                            <h3 className="text-md font-semibold">Granular Module Matrix</h3>
-                                            <div className="flex items-center gap-2">
-                                                <Label htmlFor="allAccess" className="text-sm font-semibold text-orange-600 cursor-pointer">OVERRIDE (ALL)</Label>
-                                                <Switch id="allAccess" checked={editedPermissions.includes('ALL')} onCheckedChange={handleAllWildcard} />
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="rounded-md border overflow-hidden">
-                                            <div className="bg-muted px-4 py-3 grid grid-cols-12 gap-4 items-center">
-                                                <div className="col-span-5 font-semibold text-sm">System Module</div>
-                                                <div className="col-span-7 font-semibold text-sm">Access Designation</div>
-                                            </div>
-                                            <div className="divide-y relative">
-                                                {editedPermissions.includes('ALL') && (
-                                                    <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                                                        <Badge variant="outline" className="bg-background text-orange-600 py-1.5 px-3 border-orange-200">
-                                                            ALL PERMISSIONS INHERITED
-                                                        </Badge>
-                                                    </div>
-                                                )}
-                                                {RBAC_MODULES.map((module) => {
-                                                    return (
-                                                        <div key={module.id} className="px-4 py-4 grid grid-cols-12 gap-4 items-center hover:bg-muted/30 transition-colors">
-                                                            <div className="col-span-4 flex flex-col">
-                                                                <span className="font-semibold text-sm">{module.label}</span>
-                                                                <span className="text-[10px] text-muted-foreground hidden lg:block">{module.desc}</span>
-                                                            </div>
-                                                            <div className="col-span-8">
-                                                                <RadioGroup 
-                                                                    className="flex flex-col sm:flex-row gap-4 sm:gap-6" 
-                                                                    value={getModuleRadioValue(module.id)}
-                                                                    onValueChange={(v) => handleRadioChange(module.id, v)}
-                                                                >
-                                                                    <div className="flex items-center space-x-2">
-                                                                        <RadioGroupItem value="allow" id={`allow-${module.id}`} />
-                                                                        <Label htmlFor={`allow-${module.id}`} className="cursor-pointer text-sm font-medium">Allow (Full)</Label>
-                                                                    </div>
-                                                                    <div className="flex items-center space-x-2">
-                                                                        <RadioGroupItem value="view" id={`view-${module.id}`} />
-                                                                        <Label htmlFor={`view-${module.id}`} className="cursor-pointer text-sm">View Only</Label>
-                                                                    </div>
-                                                                    <div className="flex items-center space-x-2">
-                                                                        <RadioGroupItem value="deny" id={`deny-${module.id}`} />
-                                                                        <Label htmlFor={`deny-${module.id}`} className="cursor-pointer text-sm text-destructive">Deny / Hidden</Label>
-                                                                    </div>
-                                                                </RadioGroup>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        </div>
+                                    
                                     </div>
                                 </CardContent>
                             </Card>
