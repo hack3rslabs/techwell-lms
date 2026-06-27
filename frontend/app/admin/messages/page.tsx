@@ -91,7 +91,7 @@ export default function AdminMessagesPage() {
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
     const [priority, setPriority] = useState('NORMAL')
-    const [selectedBatch, setSelectedBatch] = useState('')
+    const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>([])
     const [selectedStudent, setSelectedStudent] = useState('')
 
     // Fetch sent messages
@@ -116,18 +116,10 @@ export default function AdminMessagesPage() {
 
     const fetchBatches = async () => {
         try {
-            // Try to fetch batches from courses API
-            const response = await api.get('/courses?skip=0&take=100')
-            const coursesList = response.data.courses || []
-            // If we have course data, you could derive batches from it
-            setBatches(coursesList.map((course: any) => ({
-                id: course.id,
-                name: course.title,
-                courseId: course.id,
-                course: { title: course.title }
-            })) || [])
+            const response = await api.get('/batches')
+            setBatches(response.data || [])
         } catch (error) {
-            console.error('Error fetching batches/courses:', error)
+            console.error('Error fetching batches:', error)
             setBatches([])
         }
     }
@@ -147,7 +139,7 @@ export default function AdminMessagesPage() {
         setTitle('')
         setContent('')
         setPriority('NORMAL')
-        setSelectedBatch('')
+        setSelectedBatchIds([])
         setSelectedStudent('')
     }
 
@@ -179,8 +171,8 @@ export default function AdminMessagesPage() {
 
     const handleSendToBatch = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!title.trim() || !content.trim() || !selectedBatch) {
-            setErrorMessage('Title, content, and batch are required')
+        if (!title.trim() || !content.trim() || selectedBatchIds.length === 0) {
+            setErrorMessage('Title, content, and at least one batch are required')
             return
         }
 
@@ -189,10 +181,10 @@ export default function AdminMessagesPage() {
             const response = await api.post('/messages/send-to-batch', {
                 title,
                 content,
-                batchId: selectedBatch,
+                batchIds: selectedBatchIds,
                 priority
             })
-            setSuccessMessage(`Message sent successfully to ${response.data.recipientsCount || 0} students in batch`)
+            setSuccessMessage(`Message sent successfully to ${response.data.recipientsCount || 0} students in selected batches`)
             resetForm()
             fetchMessages()
             setTimeout(() => setSuccessMessage(''), 3000)
@@ -381,20 +373,30 @@ export default function AdminMessagesPage() {
                                 <form onSubmit={handleSendToBatch} className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Select Batch
+                                            Select Batches
                                         </label>
-                                        <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose a batch" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {batches.map((batch) => (
-                                                    <SelectItem key={batch.id} value={batch.id}>
-                                                        {batch.name} - {batch.course?.title}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <div className="border rounded-md max-h-48 overflow-y-auto p-2 bg-white">
+                                            {batches.length === 0 ? (
+                                                <p className="text-sm text-muted-foreground p-2">No batches found.</p>
+                                            ) : batches.map(batch => (
+                                                <label key={batch.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded cursor-pointer">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="w-4 h-4 rounded border-slate-300"
+                                                        checked={selectedBatchIds.includes(batch.id)}
+                                                        onChange={(e) => {
+                                                            if(e.target.checked) {
+                                                                setSelectedBatchIds([...selectedBatchIds, batch.id])
+                                                            } else {
+                                                                setSelectedBatchIds(selectedBatchIds.filter(id => id !== batch.id))
+                                                            }
+                                                        }}
+                                                    />
+                                                    <span className="text-sm font-medium">{batch.name}</span>
+                                                    <span className="text-xs text-muted-foreground ml-auto">{batch.course?.title}</span>
+                                                </label>
+                                            ))}
+                                        </div>
                                     </div>
 
                                     <div>
@@ -441,7 +443,7 @@ export default function AdminMessagesPage() {
 
                                     <Button
                                         type="submit"
-                                        disabled={messageLoading || !selectedBatch}
+                                        disabled={messageLoading || selectedBatchIds.length === 0}
                                         className="w-full"
                                     >
                                         {messageLoading ? (

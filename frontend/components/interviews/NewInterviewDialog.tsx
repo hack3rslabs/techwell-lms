@@ -79,6 +79,7 @@ export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange
         jobDescription: '',
         resumeFile: null as File | null,
         resumeUrl: '',
+        aiAvatarUrl: '',
         panelCount: 1,
         type: 'INSTANT'
     })
@@ -112,8 +113,9 @@ export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange
                 panelCount: 1,
                 duration: formData.duration,
                 technology: formData.technology,
-                selectedAvatars: ['tech-1']
-            })
+                selectedAvatars: ['tech-1'],
+                aiAvatarUrl: formData.aiAvatarUrl || null
+            } as any)
 
             const interviewId = response.data.interview.id
             if (setIsOpen) setIsOpen(false)
@@ -274,6 +276,16 @@ export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange
                                                 </div>
                                             )}
                                         </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Custom AI Avatar Image URL (Optional)</Label>
+                                        <Input
+                                            placeholder="https://example.com/avatar.png"
+                                            value={formData.aiAvatarUrl}
+                                            onChange={(e) => updateFormData('aiAvatarUrl', e.target.value)}
+                                        />
+                                        <p className="text-xs text-muted-foreground">Provide an image URL to replace the default AI emoji.</p>
                                     </div>
                                 </div>
                             )}

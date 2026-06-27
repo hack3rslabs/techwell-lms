@@ -64,7 +64,14 @@ router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER'), asyn
         const application = await prisma.jobApplication.findUnique({
             where: { id },
             include: {
-                applicant: { select: { id: true, name: true, email: true, avatar: true, phone: true } },
+                applicant: { 
+                    select: { 
+                        id: true, name: true, email: true, avatar: true, phone: true,
+                        enrollments: {
+                            include: { course: { select: { title: true, difficulty: true } } }
+                        }
+                    } 
+                },
                 job: { select: { title: true, employerId: true } }
             }
         });
@@ -620,6 +627,210 @@ router.get('/analytics', authenticate, authorize('EMPLOYER'), async (req, res, n
             },
             jobStats: jobStats.slice(0, 20)
         });
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+// ============= TALENT POOL SOURCING =============
+
+/**
+ * @route   GET /api/ats/talent-pool
+ * @desc    Search the Techwell student talent pool
+ * @access  Private (Employer)
+ */
+router.get('/talent-pool', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+    try {
+        const { search, skills, minAiScore } = req.query;
+
+        let whereClause = {
+            role: 'STUDENT',
+            candidateProfile: {
+                isNot: null
+            }
+        };
+
+        if (search) {
+            whereClause.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { candidateProfile: { skills: { hasSome: [search] } } }
+            ];
+        }
+
+        // Fetch students with their learning progress and interview scores
+        let students = await prisma.user.findMany({
+            where: whereClause,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                candidateProfile: {
+                    select: { skills: true, resumeUrl: true, expectedCTC: true, interestedRole: true }
+                },
+                enrollments: {
+                    select: {
+                        progress: true,
+                        status: true,
+                        course: { select: { title: true, difficulty: true } }
+                    }
+                },
+                interviews: {
+                    where: { status: 'COMPLETED' },
+                    select: {
+                        evaluation: { select: { overallScore: true, technicalScore: true } },
+                        role: true,
+                        domain: true
+                    }
+                }
+            },
+            take: 50 // Limit for performance
+        });
+
+        // Filter and map logic
+        students = students.map(student => {
+            // Calculate avg AI Score
+            let avgScore = 0;
+            if (student.interviews.length > 0) {
+                const total = student.interviews.reduce((acc, curr) => acc + (curr.evaluation?.overallScore || 0), 0);
+                avgScore = Math.round(total / student.interviews.length);
+            }
+
+            return {
+                id: student.id,
+                name: student.name,
+                email: student.email,
+                avatar: student.avatar,
+                skills: student.candidateProfile?.skills || [],
+                resumeUrl: student.candidateProfile?.resumeUrl,
+                expectedCTC: student.candidateProfile?.expectedCTC,
+                interestedRole: student.candidateProfile?.interestedRole,
+                enrollments: student.enrollments,
+                avgAiScore: avgScore,
+                interviewCount: student.interviews.length
+            };
+        });
+
+        // Apply score filter if requested
+        if (minAiScore) {
+            const min = parseInt(minAiScore);
+            students = students.filter(s => s.avgAiScore >= min);
+        }
+
+        res.json({ talent: students });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/ats/talent-pool/:id
+ * @desc    Get single student profile from talent pool
+ * @access  Private (Employer)
+ */
+router.get('/talent-pool/:id', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const student = await prisma.user.findUnique({
+            where: { id, role: 'STUDENT' },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+                candidateProfile: {
+                    select: { skills: true, resumeUrl: true, expectedCTC: true, interestedRole: true, category: true, education: true, passedOutYear: true }
+                },
+                enrollments: {
+                    select: {
+                        progress: true,
+                        status: true,
+                        course: { select: { title: true, difficulty: true } }
+                    }
+                },
+                interviews: {
+                    where: { status: 'COMPLETED' },
+                    select: {
+                        id: true,
+                        role: true,
+                        domain: true,
+                        difficulty: true,
+                        createdAt: true,
+                        evaluation: { select: { overallScore: true, technicalScore: true } }
+                    }
+                }
+            }
+        });
+
+        if (!student) {
+            return res.status(404).json({ error: 'Student not found in talent pool' });
+        }
+
+        res.json(student);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// ============= LIVE INTERVIEW AI COPILOT =============
+
+/**
+ * @route   POST /api/ats/interviews/live-analysis
+ * @desc    Get real-time suggestions based on live transcript
+ * @access  Private (Employer)
+ */
+router.post('/interviews/live-analysis', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+    try {
+        const { transcript } = req.body;
+        
+        if (!transcript || transcript.length < 10) {
+            return res.json({
+                techScore: 50,
+                commScore: 50,
+                suggestions: []
+            });
+        }
+
+        // Prompt Gemini to analyze the live transcript chunk
+        const prompt = `
+        You are an AI Interview Copilot assisting a recruiter. 
+        Read the following live interview transcript between a Recruiter and Candidate.
+        Provide a real-time assessment.
+        Output MUST be strict JSON:
+        {
+          "techScore": 0-100 (evaluate candidate's technical responses),
+          "commScore": 0-100 (evaluate communication clarity),
+          "suggestions": [
+             { "type": "Probing" | "Icebreaker" | "Red Flag", "text": "Short actionable suggestion for recruiter" }
+          ]
+        }
+        
+        Transcript:
+        ${transcript}
+        `;
+
+        try {
+            const aiResponse = await generateContent(prompt, { responseMimeType: "application/json" });
+            const result = JSON.parse(aiResponse);
+            
+            // Limit to max 2 suggestions at a time
+            if (result.suggestions && result.suggestions.length > 2) {
+                result.suggestions = result.suggestions.slice(0, 2);
+            }
+
+            res.json(result);
+        } catch (aiError) {
+            console.error("Live Analysis AI Error:", aiError);
+            // Fallback
+            res.json({
+                techScore: 65,
+                commScore: 75,
+                suggestions: [{ type: "Analysis", text: "Continue prompting the candidate for more details." }]
+            });
+        }
+
     } catch (error) {
         next(error);
     }

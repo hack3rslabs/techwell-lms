@@ -25,7 +25,9 @@ router.get('/public', async (req, res, next) => {
                 supportEmail: true,
                 phone: true,
                 address: true,
-                isMaintenanceMode: true
+                isMaintenanceMode: true,
+                showOurTeam: true,
+                enableRegistration: true
             }
         });
         res.json(settings);
@@ -53,7 +55,20 @@ router.get('/', authenticate, (req, res, next) => {
                 platformName: 'Techwell Academy'
             }
         });
-        res.json(settings);
+        
+        // Mask secrets before sending to frontend
+        const safeSettings = { ...settings };
+        const secretsToMask = [
+            'smtpPassword', 'razorpayKeySecret', 'zoomClientSecret',
+            'msTeamsClientSecret', 'stripeSecretKey', 'paypalSecretKey',
+            'whatsappApiToken', 'twilioAuthToken', 'n8nAuthToken',
+            'openaiApiKey', 'anthropicApiKey'
+        ];
+        secretsToMask.forEach(key => {
+            if (safeSettings[key]) safeSettings[key] = '***';
+        });
+        
+        res.json(safeSettings);
     } catch (error) {
         next(error);
     }
@@ -79,12 +94,28 @@ router.put('/', authenticate, async (req, res, next) => {
         delete data.id;
         delete data.updatedAt;
 
+        // Prevent overwriting secrets with mask string
+        const secretsToMask = [
+            'smtpPassword', 'razorpayKeySecret', 'zoomClientSecret',
+            'msTeamsClientSecret', 'stripeSecretKey', 'paypalSecretKey',
+            'whatsappApiToken', 'twilioAuthToken', 'n8nAuthToken',
+            'openaiApiKey', 'anthropicApiKey'
+        ];
+        secretsToMask.forEach(key => {
+            if (data[key] === '***') delete data[key];
+        });
+
         const settings = await prisma.systemSettings.update({
             where: { id: 'default' },
             data: data
         });
+        
+        const safeSettings = { ...settings };
+        secretsToMask.forEach(key => {
+            if (safeSettings[key]) safeSettings[key] = '***';
+        });
 
-        res.json({ message: 'Settings updated', settings });
+        res.json({ message: 'Settings updated', settings: safeSettings });
     } catch (error) {
         next(error);
     }

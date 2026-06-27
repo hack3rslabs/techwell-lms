@@ -69,13 +69,13 @@ export function GlobalSearch() {
     }
 
     return (
-        <div className="relative w-full max-w-sm ml-4 hidden md:block" ref={searchRef}>
+        <div className="relative hidden xl:block w-full max-w-xs 2xl:max-w-sm ml-2 2xl:ml-4" ref={searchRef}>
             <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                     type="search"
                     placeholder="Search courses, mentors..."
-                    className="pl-8 w-[250px] lg:w-[320px] bg-background"
+                    className="pl-8 w-[240px] 2xl:w-[320px] bg-background/90"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => { if (results) setIsOpen(true) }}

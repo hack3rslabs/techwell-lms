@@ -18,9 +18,10 @@ const createInterviewSchema = z.object({
     scheduledAt: z.string().optional().nullable(),
     duration: z.number().default(30),
     selectedAvatars: z.array(z.string()).optional(),
+    aiAvatarUrl: z.string().url().optional().nullable(),
+    linkedCourseId: z.string().optional(),
     technology: z.string().optional(),
-    resumeUrl: z.string().optional(),
-    jobDescription: z.string().optional()
+    resumeUrl: z.string().optional()
 });
 
 /**
@@ -126,6 +127,11 @@ router.get('/user/:userId', authenticate, authorize('EMPLOYER', 'RECRUITER', 'AD
  */
 router.get('/:id', authenticate, async (req, res, next) => {
     try {
+        // Guard: the stats/summary route must be declared before /:id to avoid conflict
+        if (req.params.id === 'stats') {
+            return res.status(400).json({ error: 'Use /stats/summary endpoint' });
+        }
+
         const { role, id: userId } = req.user;
         const interviewId = req.params.id;
 
@@ -141,12 +147,10 @@ router.get('/:id', authenticate, async (req, res, next) => {
             include: {
                 questions: {
                     orderBy: { order: 'asc' },
-                    include: {
-                        response: true
-                    }
+                    include: { response: true }
                 },
                 evaluation: true,
-                user: { select: { name: true, email: true, avatar: true } } // Include user details for recruiters
+                user: { select: { name: true, email: true, avatar: true } }
             }
         });
 
@@ -157,6 +161,39 @@ router.get('/:id', authenticate, async (req, res, next) => {
         res.json({ interview });
     } catch (error) {
         console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        next(error);
+    }
+});
+
+/**
+ * @route   PATCH /api/interviews/:id
+ * @desc    Update interview settings (duration, panel, technology) before starting
+ * @access  Private
+ */
+router.patch('/:id', authenticate, async (req, res, next) => {
+    try {
+        const interview = await prisma.interview.findFirst({
+            where: { id: req.params.id, userId: req.user.id }
+        });
+
+        if (!interview) {
+            return res.status(404).json({ error: 'Interview not found' });
+        }
+
+        const allowedUpdates = {};
+        if (req.body.duration !== undefined) allowedUpdates.duration = Number(req.body.duration);
+        if (req.body.technology !== undefined) allowedUpdates.technology = req.body.technology;
+        if (req.body.panelType !== undefined) allowedUpdates.panelType = req.body.panelType;
+        if (req.body.difficulty !== undefined) allowedUpdates.difficulty = req.body.difficulty;
+
+        const updated = await prisma.interview.update({
+            where: { id: req.params.id },
+            data: allowedUpdates
+        });
+
+        res.json({ interview: updated });
+    } catch (error) {
+        console.error(`[Interview PATCH Error]:`, error);
         next(error);
     }
 });
@@ -215,35 +252,35 @@ router.post('/', authenticate, async (req, res, next) => {
             select: { plan: true }
         });
 
-        // Limit FREE users to 2 interviews per month - BYPASSED FOR TESTING
-        /*
+        // Enforce Business & Pricing Strategy Limits
+        // FREE = Basic Plan
+        // PRO/ENTERPRISE = Premium Plan (Unlimited)
         if (user.plan === 'FREE') {
-            const startOfMonth = new Date();
-            startOfMonth.setDate(1);
-            startOfMonth.setHours(0, 0, 0, 0);
-
             const interviewCount = await prisma.interview.count({
-                where: {
-                    userId: userId,
-                    createdAt: {
-                        gte: startOfMonth
-                    }
-                }
+                where: { userId: userId }
             });
 
-            if (interviewCount >= 2) {
+            // If user has paid for individual interview credits, decrement one (Mock logic for pay-per-interview)
+            const userCredits = await prisma.userCredit?.findUnique({ where: { userId } }).catch(() => null);
+            if (userCredits && userCredits.interviewCredits > 0) {
+                await prisma.userCredit.update({
+                    where: { userId },
+                    data: { interviewCredits: { decrement: 1 } }
+                });
+            } else if (interviewCount >= 5) { // 5 is the default basic tier limit from Admin settings
                 return res.status(403).json({
-                    error: 'Monthly limit reached',
-                    message: 'Starter plan is limited to 2 AI interviews per month. Please upgrade to Pro for unlimited sessions.'
+                    error: 'Plan Limit Reached',
+                    message: 'Basic plan is limited to 5 AI Mock Interviews. Please upgrade to the Premium Plan (PRO) or purchase a single interview credit for unlimited sessions and advanced AI models.'
                 });
             }
         }
-        */
 
         const interview = await prisma.interview.create({
             data: {
                 ...validatedData,
-                userId: userId,
+                selectedAvatars: validatedData.selectedAvatars || [],
+                aiAvatarUrl: validatedData.aiAvatarUrl || null,
+                user: { connect: { id: req.user.id } },
                 status: 'SCHEDULED'
             }
         });
@@ -401,6 +438,45 @@ router.get('/job-interviews', authenticate, async (req, res, next) => {
     }
 });
 
+// ============= EMPLOYER ROUTES =============
+
+/**
+ * @route   GET /api/interviews/employer/candidate/:appId
+ * @desc    Get AI Mock Interviews for a specific candidate application
+ * @access  Private (Employer)
+ */
+router.get('/employer/candidate/:appId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+    try {
+        // Find application to get the applicant's User ID
+        const application = await prisma.jobApplication.findUnique({
+            where: { id: req.params.appId },
+            include: { job: true }
+        });
+
+        if (!application || !application.applicantId) {
+            return res.status(404).json({ error: 'Candidate or application not found' });
+        }
+
+        // Verify employer owns the job
+        if (application.job.employerId !== req.user.id && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Not authorized to view this candidate' });
+        }
+
+        const interviews = await prisma.interview.findMany({
+            where: { userId: application.applicantId, status: 'COMPLETED' },
+            orderBy: { createdAt: 'desc' },
+            include: {
+                evaluation: { select: { overallScore: true, technicalScore: true, communicationScore: true } }
+            }
+        });
+        
+        res.json({ interviews, candidateName: application.externalName });
+    } catch (error) {
+        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        next(error);
+    }
+});
+
 // ============= AI INTEGRATION =============
 
 /**
@@ -454,21 +530,32 @@ router.post('/:id/next-question', authenticate, async (req, res, next) => {
             return res.json({ message: 'Interview completed', completed: true });
         }
 
-        console.log(`[Interview API] Saving new question to DB: ${aiResponse.question.substring(0, 30)}...`);
-        // Store question in DB
+        console.log(`[Interview API] Saving new question to DB: ${aiResponse.question.substring(0, 60)}...`);
+        const nextOrder = (await prisma.interviewQuestion.count({ where: { interviewId: interview.id } })) + 1;
+
+        // Store question in DB (include phase metadata)
         const question = await prisma.interviewQuestion.create({
             data: {
                 interviewId: interview.id,
                 question: aiResponse.question,
                 type: aiResponse.type,
-                avatarId: aiResponse.avatarId,
-                avatarRole: aiResponse.avatarRole,
-                order: (await prisma.interviewQuestion.count({ where: { interviewId: interview.id } })) + 1
+                avatarId: aiResponse.avatarId || 'tech-lead',
+                avatarRole: aiResponse.avatarRole || 'Tech Lead',
+                order: nextOrder
             }
         });
 
-        console.log(`[Interview API] Success: next question generated: ${question.id}`);
-        res.json({ question });
+        // Attach runtime metadata (phase, topicArea) to the response without DB storage
+        const questionWithMeta = {
+            ...question,
+            phase: aiResponse.phase || 'TECHNICAL',
+            phaseLabel: aiResponse.phaseLabel || `Q${nextOrder}`,
+            topicArea: aiResponse.topicArea || null,
+            isFollowUp: aiResponse.isFollowUp || false
+        };
+
+        console.log(`[Interview API] Success: Q${nextOrder} [${aiResponse.phase}] generated`);
+        res.json({ question: questionWithMeta });
     } catch (error) {
         console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
         next(error);

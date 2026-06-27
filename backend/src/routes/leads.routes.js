@@ -6,6 +6,7 @@ const fs = require('fs');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const { sendEmail } = require('../utils/emailSender');
+const { sendDemoEmail, sendDemoWhatsApp } = require('../utils/notifications');
 
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
@@ -18,11 +19,33 @@ const upload = multer({ dest: 'uploads/temp/' });
  */
 router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        const { status, source, startDate, endDate, college, location } = req.query;
+        const { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName } = req.query;
 
         const where = {};
         if (status && status !== 'ALL') where.status = status;
         if (source && source !== 'ALL') where.source = source;
+        if (leadType && leadType !== 'ALL') where.leadType = leadType;
+        if (experienceLevel && experienceLevel !== 'ALL') where.experienceLevel = experienceLevel;
+        if (interestedRole) where.interestedRole = { contains: interestedRole, mode: 'insensitive' };
+        if (courseName) where.courseName = { contains: courseName, mode: 'insensitive' };
+        if (companyName) where.companyName = { contains: companyName, mode: 'insensitive' };
+        if (college) where.college = { contains: college, mode: 'insensitive' };
+        if (location) where.location = { contains: location, mode: 'insensitive' };
+        if (name) where.name = { contains: name, mode: 'insensitive' };
+        if (email) where.email = { contains: email, mode: 'insensitive' };
+        if (phone) where.phone = { contains: phone };
+        if (district) where.district = { contains: district, mode: 'insensitive' };
+        if (pinCode) where.pinCode = { contains: pinCode };
+        if (qualification) where.qualification = { contains: qualification, mode: 'insensitive' };
+        if (referralName) where.referralName = { contains: referralName, mode: 'insensitive' };
+        
+        // RBAC filtering
+        const canViewAll = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('VIEW_ALL_LEADS') || req.user.permissions.includes('ALL');
+        if (!canViewAll) {
+            where.assignedTo = req.user.email || req.user.name;
+        } else if (assignedTo && assignedTo !== 'ALL') {
+            where.assignedTo = assignedTo;
+        }
         if (college) where.college = { contains: college, mode: 'insensitive' };
         if (location) where.location = { contains: location, mode: 'insensitive' };
 
@@ -33,15 +56,28 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
             };
         }
 
-        const leads = await prisma.lead.findMany({
+        let leads = await prisma.lead.findMany({
             where,
             orderBy: { updatedAt: 'desc' },
             include: {
                 _count: {
                     select: { tasks: true }
+                },
+                demoSchedules: {
+                    orderBy: { scheduledAt: 'desc' }
                 }
             }
         });
+
+        const canSeeUnmasked = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('UNMASKED_LEADS') || req.user.permissions.includes('ALL');
+        
+        if (!canSeeUnmasked) {
+            leads = leads.map(l => {
+                let maskedPhone = l.phone ? '+91 ****' + l.phone.slice(-4) : l.phone;
+                let maskedEmail = l.email ? l.email.substring(0, 3) + '****@' + (l.email.split('@')[1] || '') : l.email;
+                return { ...l, phone: maskedPhone, email: maskedEmail, isMasked: true };
+            });
+        }
 
         res.json(leads);
     } catch (error) {
@@ -111,16 +147,73 @@ router.post('/mark-seen', authenticate, checkPermission('LEADS'), async (req, re
  */
 router.post('/capture', async (req, res, next) => {
     try {
-        const { name, email, phone, qualification, courseId, courseTitle } = req.body;
-        console.log('[Shared Interest→Leads] Received request:', { name, email, phone, qualification, courseId, courseTitle });
+        const { 
+            name, email, phone, qualification, courseId, courseTitle, 
+            inquiryType, subject, message,
+            source: inputSource, leadType: inputLeadType, location,
+            experienceLevel, currentCTC, expectedCTC, noticePeriod,
+            interestedRole, companyName, resumeUrl, skills, notes: inputNotes,
+            district, pinCode, referralName, campaignId
+        } = req.body;
+        console.log('[Shared Interest→Leads] Received request:', req.body);
 
         if (!name || !email) {
             console.warn('[Shared Interest→Leads] Missing required fields - Name or Email');
             return res.status(400).json({ error: 'Name and email are required' });
         }
 
-        const notes = courseTitle ? `Interested in course: ${courseTitle}` : 'General Inquiry';
+        let notes = inputNotes || (courseTitle ? `Interested in course: ${courseTitle}` : 'General Inquiry');
+        let source = inputSource || 'Website Interest';
+
+        if (inquiryType) {
+            source = inquiryType.toUpperCase();
+            notes = `[Inquiry Type: ${inquiryType}] Subject: ${subject || 'N/A'}\nMessage: ${message || 'N/A'}`;
+        }
+
         console.log('[Shared Interest→Leads] Creating lead with notes:', notes);
+
+        let leadType = inputLeadType || 'GENERAL';
+        if (courseId) leadType = 'TRAINING';
+        if (inquiryType === 'job') leadType = 'JOB_ENQUIRY';
+        if (inquiryType === 'software') leadType = 'SOFTWARE_REQUEST';
+        if (inquiryType === 'service') leadType = 'SERVICE_REQUEST';
+
+        // Check for deduplication
+        const existingLead = await prisma.lead.findFirst({
+            where: {
+                OR: [
+                    { email: email },
+                    { phone: phone || 'NONE_EXISTS' }
+                ]
+            }
+        });
+
+        if (existingLead) {
+            console.log('[Shared Interest→Leads] Lead exists. Updating notes instead of duplicate.');
+            const lead = await prisma.lead.update({
+                where: { id: existingLead.id },
+                data: {
+                    notes: `${existingLead.notes}\n\n[New ${leadType} Request] Source: ${source}\nNotes: ${notes}`,
+                    resumeUrl: resumeUrl || existingLead.resumeUrl,
+                    experienceLevel: experienceLevel || existingLead.experienceLevel,
+                    location: location || existingLead.location,
+                    interestedRole: interestedRole || existingLead.interestedRole,
+                    district: district || existingLead.district,
+                    pinCode: pinCode || existingLead.pinCode,
+                    referralName: referralName || existingLead.referralName,
+                    campaignId: campaignId || existingLead.campaignId
+                }
+            });
+            await prisma.leadActivityLog.create({
+                data: {
+                    leadId: lead.id,
+                    actionType: 'NEW_REQUEST_MERGED',
+                    notes: `A new request from ${source} was merged into this lead.`,
+                    performedBy: 'SYSTEM'
+                }
+            });
+            return res.status(200).json({ success: true, message: 'Existing lead updated', leadId: lead.id, leadStatus: lead.status });
+        }
 
         // Always create a new lead for every interest/enrollment as requested
         console.log('[Shared Interest→Leads] Creating new lead...');
@@ -130,14 +223,34 @@ router.post('/capture', async (req, res, next) => {
                 email,
                 phone: phone || null,
                 qualification: qualification || null,
-                source: 'Website Interest',
+                source,
+                leadType,
                 notes,
                 courseId: courseId || null,
                 courseName: courseTitle || null,
-                status: 'NEW'
+                status: 'NEW',
+                location: location || null,
+                experienceLevel: experienceLevel || null,
+                currentCTC: currentCTC || null,
+                expectedCTC: expectedCTC || null,
+                noticePeriod: noticePeriod || null,
+                interestedRole: interestedRole || null,
+                companyName: companyName || null,
+                resumeUrl: resumeUrl || null,
+                district: district || null,
+                pinCode: pinCode || null,
+                referralName: referralName || null,
+                campaignId: campaignId || null
             }
         });
-        console.log('[Shared Interest→Leads] Lead created successfully:', { id: lead.id, email: lead.email, course: courseTitle });
+        console.log('[Shared Interest→Leads] Lead created successfully:', { id: lead.id, email: lead.email, source });
+ 
+        // Trigger automated welcome WhatsApp alert if phone number is present
+        if (phone) {
+            const { sendWhatsAppMessage } = require('../utils/whatsappAgent');
+            sendWhatsAppMessage(phone, `Hi *${name}*! Thank you for expressing interest in *${courseTitle || 'Techwell Programs'}*. A career counselor will get in touch with you shortly on WhatsApp to help you get started. 🚀`)
+                .catch(err => console.error('[WhatsApp Auto-Reply Failed]:', err.message));
+        }
 
         // Auto-Reply (Lead Follow-up Automation)
         sendEmail({
@@ -174,28 +287,280 @@ router.post('/capture', async (req, res, next) => {
 });
 
 /**
+ * @route   POST /api/leads/demo
+ * @desc    Public endpoint to schedule a demo
+ * @access  Public
+ */
+router.post('/demo', async (req, res, next) => {
+    try {
+        const {
+            name, email, phone, courseName, courseId, scheduledAt,
+            qualification, college, yearOfPassout
+        } = req.body;
+
+        if (!name || !email || !phone || !scheduledAt) {
+            return res.status(400).json({ error: 'Name, email, phone, and scheduled time are required' });
+        }
+
+        const notes = `[Demo Scheduled]\nCourse: ${courseName || 'N/A'}\nTime: ${new Date(scheduledAt).toLocaleString()}\nYear of Passout: ${yearOfPassout || 'N/A'}`;
+
+        let lead = await prisma.lead.findFirst({
+            where: {
+                OR: [
+                    { email: email },
+                    { phone: phone }
+                ]
+            }
+        });
+
+        if (lead) {
+            lead = await prisma.lead.update({
+                where: { id: lead.id },
+                data: {
+                    notes: `${lead.notes}\n\n${notes}`,
+                    courseName: courseName || lead.courseName,
+                    courseId: courseId || lead.courseId,
+                    qualification: qualification || lead.qualification,
+                    college: college || lead.college
+                }
+            });
+        } else {
+            lead = await prisma.lead.create({
+                data: {
+                    name,
+                    email,
+                    phone,
+                    qualification: qualification || null,
+                    college: college || null,
+                    source: 'Demo Request',
+                    leadType: 'TRAINING',
+                    status: 'NEW',
+                    courseName: courseName || null,
+                    courseId: courseId || null,
+                    notes
+                }
+            });
+        }
+
+        // Try to create a DemoSchedule. Find a super admin to assign.
+        const defaultAdmin = await prisma.user.findFirst({
+            where: { role: 'SUPER_ADMIN' }
+        });
+
+        if (defaultAdmin) {
+            await prisma.demoSchedule.create({
+                data: {
+                    leadId: lead.id,
+                    assignedTo: defaultAdmin.id,
+                    scheduledAt: new Date(scheduledAt),
+                    notes: `Requested Course: ${courseName || 'Unknown'} | Year of Passout: ${yearOfPassout || 'N/A'}`
+                }
+            });
+        }
+
+        if (phone) {
+            const { sendWhatsAppMessage } = require('../utils/whatsappAgent');
+            sendWhatsAppMessage(phone, `Hi *${name}*! Your demo for *${courseName || 'Techwell Programs'}* has been scheduled for *${new Date(scheduledAt).toLocaleString()}*. Our team will share the meeting details shortly. 🚀`)
+                .catch(err => console.error('[WhatsApp Auto-Reply Failed]:', err.message));
+        }
+
+        res.status(200).json({ success: true, message: 'Demo scheduled successfully', leadId: lead.id });
+    } catch (error) {
+        console.error('[Shared Interest→Leads] Error:', error);
+        next(error);
+    }
+});
+
+/**
+ * @route   PUT /api/leads/:leadId/demo/:demoId/status
+ * @desc    Update demo schedule status
+ * @access  Private/Admin
+ */
+router.put('/:leadId/demo/:demoId/status', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const { leadId, demoId } = req.params;
+        const { status } = req.body; // SCHEDULED, COMPLETED, NO_SHOW, CANCELLED
+
+        const demo = await prisma.demoSchedule.update({
+            where: { id: demoId },
+            data: { status }
+        });
+
+        if (status === 'COMPLETED') {
+            await prisma.lead.update({
+                where: { id: leadId },
+                data: { status: 'CONTACTED' }
+            });
+        }
+
+        await prisma.leadActivityLog.create({
+            data: {
+                leadId: leadId,
+                actionType: 'DEMO_STATUS_UPDATED',
+                notes: `Demo status updated to ${status}.`,
+                performedBy: req.user.id
+            }
+        });
+
+        res.json({ success: true, demo });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PUT /api/leads/:leadId/demo/:demoId/meeting
+ * @desc    Assign meeting link to a demo and optionally send notifications
+ * @access  Private/Admin
+ */
+router.put('/:leadId/demo/:demoId/meeting', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const { leadId, demoId } = req.params;
+        const { meetingLink, sendEmail: shouldSendEmail, sendWhatsApp: shouldSendWhatsApp } = req.body;
+
+        if (!meetingLink) {
+            return res.status(400).json({ error: 'meetingLink is required' });
+        }
+
+        // 1. Update the demo schedule
+        const demo = await prisma.demoSchedule.update({
+            where: { id: demoId },
+            data: { meetingLink },
+            include: { lead: true }
+        });
+
+        // 2. Send Notifications if requested
+        const studentName = demo.lead.name;
+        const studentEmail = demo.lead.email;
+        const studentPhone = demo.lead.phone;
+        const scheduledTime = demo.scheduledAt;
+
+        let emailSent = false;
+        let whatsappSent = false;
+
+        if (shouldSendEmail && studentEmail) {
+            emailSent = await sendDemoEmail(studentName, studentEmail, scheduledTime, meetingLink);
+        }
+
+        if (shouldSendWhatsApp && studentPhone) {
+            whatsappSent = await sendDemoWhatsApp(studentName, studentPhone, scheduledTime, meetingLink);
+        }
+
+        // 3. Log Activity
+        let notificationNotes = 'Meeting link assigned.';
+        if (emailSent) notificationNotes += ' Email notification sent.';
+        if (whatsappSent) notificationNotes += ' WhatsApp notification sent.';
+
+        await prisma.leadActivityLog.create({
+            data: {
+                leadId: leadId,
+                actionType: 'DEMO_MEETING_LINK_SENT',
+                notes: notificationNotes,
+                performedBy: req.user.id
+            }
+        });
+
+        res.json({ success: true, demo, notifications: { emailSent, whatsappSent } });
+    } catch (error) {
+        console.error('[Demo Automation Error]', error);
+        next(error);
+    }
+});
+
+/**
  * @route   POST /api/leads
+
  * @desc    Create a new lead
  * @access  Private/Admin
  */
 router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        const { name, email, phone, source, college, qualification, location, dob, notes } = req.body;
+        const { 
+            name, email, phone, source, leadType, college, qualification, location, dob, notes,
+            experienceLevel, currentCTC, expectedCTC, noticePeriod, interestedRole, companyName, skills, resumeUrl, courseName,
+            district, pinCode, referralName
+        } = req.body;
+
+        // Check for deduplication
+        if (email || phone) {
+            const existingLead = await prisma.lead.findFirst({
+                where: {
+                    OR: [
+                        { email: email || 'NONE_EXISTS' },
+                        { phone: phone || 'NONE_EXISTS' }
+                    ]
+                }
+            });
+
+            if (existingLead) {
+                const updatedNotes = `${existingLead.notes || ''}\n\n[New ${leadType || 'GENERAL'} Request] Source: ${source}\nNotes: ${notes || ''}`;
+                
+                const lead = await prisma.lead.update({
+                    where: { id: existingLead.id },
+                    data: {
+                        notes: updatedNotes,
+                        // Optionally update existing lead with new extended fields if they were missing before
+                        experienceLevel: experienceLevel || existingLead.experienceLevel,
+                        currentCTC: currentCTC || existingLead.currentCTC,
+                        expectedCTC: expectedCTC || existingLead.expectedCTC,
+                        noticePeriod: noticePeriod || existingLead.noticePeriod,
+                        interestedRole: interestedRole || existingLead.interestedRole,
+                        companyName: companyName || existingLead.companyName,
+                        resumeUrl: resumeUrl || existingLead.resumeUrl,
+                        courseName: courseName || existingLead.courseName,
+                        district: district || existingLead.district,
+                        pinCode: pinCode || existingLead.pinCode,
+                        referralName: referralName || existingLead.referralName,
+                        // If skills are provided, we could merge them, but for simplicity, we overwrite or keep existing
+                        skills: skills && skills.length > 0 ? skills : existingLead.skills
+                    }
+                });
+                await prisma.leadActivityLog.create({
+                    data: {
+                        leadId: lead.id,
+                        actionType: 'NEW_REQUEST_MERGED',
+                        notes: `A new manual request was merged into this lead.`,
+                        performedBy: req.user ? (req.user.name || req.user.email) : 'Public Form'
+                    }
+                });
+                return res.status(200).json(lead);
+            }
+        }
 
         const lead = await prisma.lead.create({
             data: {
                 name,
                 email,
                 phone,
-                source,
+                source: source || 'Website',
+                leadType: leadType || 'GENERAL',
                 college,
                 qualification,
                 location,
                 dob: dob ? new Date(dob) : null,
                 notes,
-                status: 'NEW'
+                status: 'NEW',
+                experienceLevel,
+                currentCTC,
+                expectedCTC,
+                noticePeriod,
+                interestedRole,
+                companyName,
+                skills: skills || [],
+                resumeUrl,
+                courseName,
+                district,
+                pinCode,
+                referralName
             }
         });
+
+        // Trigger WhatsApp welcome if phone is present
+        if (phone) {
+            const { sendWhatsAppMessage } = require('../utils/whatsappAgent');
+            sendWhatsAppMessage(phone, `Hi *${name}*! Welcome to Techwell LMS. A counselor has registered you as a career lead. Let us know how we can help you with courses or resume building. 📈`)
+                .catch(err => console.error('[WhatsApp Manual Register Failed]:', err.message));
+        }
 
         // Auto-Reply (Lead Follow-up Automation)
         if (email) {
@@ -237,6 +602,14 @@ router.put('/:id', authenticate, checkPermission('LEADS'), async (req, res, next
     try {
         const { status, assignedTo, notes, ...updateData } = req.body;
 
+        const existingLead = await prisma.lead.findUnique({
+            where: { id: req.params.id }
+        });
+
+        if (!existingLead) {
+            return res.status(404).json({ error: 'Lead not found' });
+        }
+
         const lead = await prisma.lead.update({
             where: { id: req.params.id },
             data: {
@@ -246,6 +619,33 @@ router.put('/:id', authenticate, checkPermission('LEADS'), async (req, res, next
                 notes
             }
         });
+
+        // Automation: Trigger messages on status change
+        if (status && status !== existingLead.status) {
+            const { sendWhatsAppMessage } = require('../utils/whatsappAgent');
+            const { sendEmail } = require('../utils/emailSender');
+
+            if (status === 'CONTACTED' && lead.phone) {
+                sendWhatsAppMessage(lead.phone, `Hi *${lead.name}*, our team tried reaching out regarding your inquiry. Please let us know a good time to connect! 📞`)
+                    .catch(err => console.error('[WhatsApp Automation Failed]:', err.message));
+            } else if (status === 'INTERESTED' && lead.email) {
+                sendEmail({
+                    to: lead.email,
+                    subject: 'Excited to have you interested in Techwell!',
+                    text: `Hi ${lead.name},\n\We are thrilled you are interested in Techwell! One of our senior counselors will be guiding you through the next steps shortly.\n\nBest Regards,\nTechwell Team`,
+                    html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                            <h2 style="color: #1469E2;">Hi ${lead.name}!</h2>
+                            <p>We are thrilled you are interested in Techwell!</p>
+                            <p>One of our senior counselors will be guiding you through the next steps shortly.</p>
+                            <br/>
+                            <p>Best Regards,<br/><strong>The Techwell Team</strong></p>
+                            </div>`
+                }).catch(err => console.error('[Email Automation Failed]:', err.message));
+            } else if (status === 'CONVERTED' && lead.phone) {
+                sendWhatsAppMessage(lead.phone, `Congratulations *${lead.name}*! 🎉 Welcome aboard. Let's get started on your journey. 🚀`)
+                    .catch(err => console.error('[WhatsApp Automation Failed]:', err.message));
+            }
+        }
 
         res.json(lead);
     } catch (error) {
@@ -270,14 +670,21 @@ router.post('/import', authenticate, checkPermission('LEADS'), upload.single('fi
         .on('end', async () => {
             try {
                 // Bulk create leads
-                // Expected CSV headers: Name, Email, Phone, Source, College, Location
+                // Supported CSV headers: Name, Email, Phone, Source, College, Location, Lead Type, Company Name, Qualification, Experience Level, Interested Role, Course Name
                 const leadsToCreate = results.map(row => ({
                     name: row.Name || row.name,
-                    email: row.Email || row.email,
-                    phone: row.Phone || row.phone,
+                    email: row.Email || row.email || null,
+                    phone: row.Phone || row.phone || null,
                     source: row.Source || row.source || 'Imported',
-                    college: row.College || row.college,
-                    location: row.Location || row.location,
+                    college: row.College || row.college || null,
+                    location: row.Location || row.location || null,
+                    leadType: row['Lead Type'] || row.leadType || row.lead_type || 'GENERAL',
+                    companyName: row['Company Name'] || row.companyName || row.company_name || null,
+                    qualification: row.Qualification || row.qualification || null,
+                    experienceLevel: row['Experience Level'] || row.experienceLevel || row.experience_level || null,
+                    interestedRole: row['Interested Role'] || row.interestedRole || row.interested_role || null,
+                    courseName: row['Course Name'] || row.courseName || row.course_name || null,
+                    notes: row.Notes || row.notes || null,
                     status: 'NEW'
                 }));
 
@@ -627,6 +1034,105 @@ router.post('/:id/convert', authenticate, checkPermission('LEADS'), async (req, 
 
         res.status(200).json({ message: 'Lead converted to Student successfully', user: newUser });
 
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/leads/stats/conversion
+ * @desc    Get lead conversion stats by source and status
+ * @access  Private
+ */
+router.get('/stats/conversion', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const sourceStats = await prisma.lead.groupBy({
+            by: ['source'],
+            _count: { id: true },
+            _sum: { revenueGenerated: true }
+        });
+
+        const statusStats = await prisma.lead.groupBy({
+            by: ['status'],
+            _count: { id: true }
+        });
+
+        return res.status(200).json({ sourceStats, statusStats });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/leads/:id/activity
+ * @desc    Get activity logs for a lead
+ * @access  Private
+ */
+router.get('/:id/activity', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const logs = await prisma.leadActivityLog.findMany({
+            where: { leadId: req.params.id },
+            orderBy: { createdAt: 'desc' }
+        });
+        const reminders = await prisma.followUpReminder.findMany({
+            where: { leadId: req.params.id },
+            orderBy: { remindAt: 'asc' }
+        });
+        return res.status(200).json({ logs, reminders });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/leads/:id/activity
+ * @desc    Log counselor/lead activity (CALL, NOTE, etc.)
+ * @access  Private
+ */
+router.post('/:id/activity', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const { actionType, notes } = req.body;
+        if (!actionType || !notes) {
+            return res.status(400).json({ error: 'Action type and notes are required' });
+        }
+
+        const log = await prisma.leadActivityLog.create({
+            data: {
+                leadId: req.params.id,
+                actionType,
+                notes,
+                performedBy: req.user.name || req.user.email
+            }
+        });
+
+        return res.status(201).json({ message: 'Activity logged successfully', log });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/leads/:id/reminder
+ * @desc    Schedule a follow-up reminder
+ * @access  Private
+ */
+router.post('/:id/reminder', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const { title, remindAt } = req.body;
+        if (!title || !remindAt) {
+            return res.status(400).json({ error: 'Title and remindAt are required' });
+        }
+
+        const reminder = await prisma.followUpReminder.create({
+            data: {
+                leadId: req.params.id,
+                title,
+                remindAt: new Date(remindAt),
+                isCompleted: false
+            }
+        });
+
+        return res.status(201).json({ message: 'Reminder scheduled successfully', reminder });
     } catch (error) {
         next(error);
     }

@@ -302,11 +302,19 @@ router.post('/verify-payment', authenticate, async (req, res) => {
                         dob: user.dob || null,
                         source: 'Course Enrollment',
                         status: 'CONVERTED',
+                        lifecycleStage: 'ENROLLED',
+                        revenueGenerated: payment.amount || 0,
                         notes: successNote,
                         courseId: payment.courseId,
                         courseName: course?.title || 'Unknown Course'
                     }
                 });
+
+                if (user.phone) {
+                    const { sendWhatsAppMessage } = require('../utils/whatsappAgent');
+                    sendWhatsAppMessage(user.phone, `Hi *${user.name}*! Thank you for enrolling in *${course?.title || 'your Techwell Course'}*. Your payment of Rs. *${payment.amount}* was processed successfully. Head over to the portal to start learning! 🎓`)
+                        .catch(err => console.error('[WhatsApp Payment Notice Failed]:', err.message));
+                }
             }
 
             // Auto-enroll user in the course - Use upsert to ensure status is updated to ACTIVE even if record exists
@@ -384,5 +392,24 @@ router.get('/order-status/:orderId', authenticate, async (req, res) => {
     }
 });
 
+
+// GET /api/payments/my-payments
+router.get('/my-payments', authenticate, async (req, res) => {
+    try {
+        const payments = await prisma.payment.findMany({
+            where: { userId: req.user.id },
+            include: {
+                course: {
+                    select: { title: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json({ success: true, data: payments });
+    } catch (error) {
+        console.error("Fetch Student Payments Error:", error);
+        res.status(500).json({ error: "Failed to fetch payment history" });
+    }
+});
 
 module.exports = router;

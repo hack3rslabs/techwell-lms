@@ -2,9 +2,14 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backendDir = Join-Path $repoRoot 'backend'
-$postgresServiceName = 'postgresql-x64-18'
 $dbHost = 'localhost'
 $dbPort = 5432
+$npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
+
+if (-not $npmCommand) {
+    Write-Host "[Techwell] npm.cmd not found. Install Node.js and try again." -ForegroundColor Red
+    exit 1
+}
 
 function Write-Step([string]$Message) {
     Write-Host "[Techwell] $Message" -ForegroundColor Cyan
@@ -24,6 +29,28 @@ function Test-IsAdmin {
 if (-not (Test-Path $backendDir)) {
     Fail "Backend folder not found at $backendDir"
 }
+
+$envPath = Join-Path $backendDir '.env'
+if (Test-Path $envPath) {
+    $databaseUrlLine = Get-Content $envPath | Where-Object { $_ -match '^DATABASE_URL=' } | Select-Object -First 1
+    if ($databaseUrlLine) {
+        $databaseUrl = $databaseUrlLine.Split('=', 2)[1].Trim().Trim('"')
+        try {
+            $parsedUrl = [Uri]($databaseUrl -replace '^postgres(ql)?://', 'http://')
+            if ($parsedUrl.Host) { $dbHost = $parsedUrl.Host }
+            if ($parsedUrl.Port -gt 0) { $dbPort = $parsedUrl.Port }
+        } catch {
+            Write-Step "Could not parse DATABASE_URL from $envPath. Falling back to $dbHost`:$dbPort."
+        }
+    }
+}
+
+$postgresService = Get-Service | Where-Object { $_.Name -like 'postgres*' } | Select-Object -First 1
+if (-not $postgresService) {
+    Fail "PostgreSQL service was not found. Install PostgreSQL or set the correct service name."
+}
+
+$postgresServiceName = $postgresService.Name
 
 try {
     $service = Get-Service -Name $postgresServiceName -ErrorAction Stop
@@ -81,19 +108,19 @@ if (-not $dbReady) {
 Push-Location $backendDir
 try {
     Write-Step "Generating Prisma client..."
-    npm run db:generate
+    & $npmCommand.Source run db:generate
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     Write-Step "Applying Prisma schema..."
-    npm run db:push
+    & $npmCommand.Source run db:push
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     Write-Step "Seeding baseline users and courses..."
-    npm run db:seed
+    & $npmCommand.Source run db:seed
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     Write-Step "Starting backend on http://localhost:5000 ..."
-    npm run dev
+    & $npmCommand.Source run dev
 } finally {
     Pop-Location
 }

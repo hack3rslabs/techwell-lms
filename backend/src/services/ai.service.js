@@ -113,11 +113,127 @@ class AIService {
         }
     }
 
+    // ─── Standard HR Question Bank ───────────────────────────────────────────
+    HR_OPENING_QUESTIONS = [
+        "Tell me about yourself and walk me through your background.",
+        "Why are you interested in this role and what excites you most about it?",
+        "What are your top 3 key strengths and how do they relate to this position?",
+        "What motivates you in your career and keeps you driven?",
+        "Why should we hire you? What value can you bring to this team?"
+    ];
+
+    HR_CLOSING_QUESTIONS = [
+        "What is your biggest professional achievement so far?",
+        "Where do you see yourself in the next 3 to 5 years?",
+        "What are your salary expectations (current CTC and expected CTC)?",
+        "What is your notice period and when can you join?",
+        "Do you have any questions for us, the interviewer?"
+    ];
+
     /**
-     * Generate the next question based on context using Gemini
+     * Determine the interview phase based on question count and max questions
+     * Phase: OPENING (first 5 HR), TECHNICAL (middle), CLOSING (last 5 HR)
+     */
+    getInterviewPhase(questionCount, maxQuestions) {
+        const OPENING_COUNT = 5;
+        const CLOSING_COUNT = 5;
+        const technicalCount = Math.max(0, maxQuestions - OPENING_COUNT - CLOSING_COUNT);
+
+        if (questionCount < OPENING_COUNT) {
+            return { phase: 'OPENING', indexInPhase: questionCount };
+        } else if (questionCount < OPENING_COUNT + technicalCount) {
+            return { phase: 'TECHNICAL', indexInPhase: questionCount - OPENING_COUNT };
+        } else {
+            return { phase: 'CLOSING', indexInPhase: questionCount - OPENING_COUNT - technicalCount };
+        }
+    }
+
+    /**
+     * Get max questions based on interview duration (stored in interview.duration field)
+     * 15min=5, 30min=10, 45min=15, 60min=20
+     */
+    getMaxQuestionsFromDuration(duration) {
+        if (duration <= 15) return 5;
+        if (duration <= 30) return 10;
+        if (duration <= 45) return 15;
+        return 20;
+    }
+
+    /**
+     * Provider Factory: Routes AI generation to OpenAI, Ollama, or Gemini
+     * based on user plan and available environment keys.
+     */
+    async generateWithAIProvider(prompt, interview = null, isEval = false) {
+        const plan = interview?.user?.plan || 'FREE';
+        const useOpenAI = process.env.OPENAI_API_KEY && (plan === 'PRO' || plan === 'ENTERPRISE' || isEval);
+        const useOllama = process.env.OLLAMA_URL && plan === 'FREE';
+
+        // 1. OpenAI (GPT-4o) for Premium Users or Evaluation
+        if (useOpenAI) {
+            console.log("[AI Provider Factory] Routing to OpenAI (GPT-4o)");
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini', // Using mini for speed/cost balance, can be gpt-4o
+                        messages: [{ role: 'system', content: prompt }],
+                        response_format: { type: "json_object" },
+                        temperature: 0.7
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.choices[0].message.content;
+                } else {
+                    console.error("[AI Provider] OpenAI API Error:", await response.text());
+                }
+            } catch (err) {
+                console.error("[AI Provider] OpenAI Fetch Error:", err);
+            }
+        }
+
+        // 2. Ollama (Local) for Free Users if configured
+        if (useOllama) {
+            console.log("[AI Provider Factory] Routing to local Ollama");
+            try {
+                const response = await fetch(`${process.env.OLLAMA_URL}/api/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: process.env.OLLAMA_MODEL || 'llama3',
+                        prompt: prompt,
+                        stream: false,
+                        format: 'json'
+                    })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.response;
+                }
+            } catch (err) {
+                console.error("[AI Provider] Ollama Fetch Error:", err);
+            }
+        }
+
+        // 3. Fallback to Gemini (Flash for Basic, Pro for Premium)
+        const geminiModel = (plan === 'PRO' || plan === 'ENTERPRISE') ? "gemini-1.5-pro" : "gemini-1.5-flash";
+        console.log(`[AI Provider Factory] Routing to Gemini (${geminiModel})`);
+        const generativeModel = genAI.getGenerativeModel({ model: geminiModel });
+        const result = await generativeModel.generateContent(prompt);
+        return (await result.response).text();
+    }
+
+    /**
+     * Generate the next question based on structured phase engine
+     * Phase: OPENING HR → TECHNICAL (adaptive) → CLOSING HR
      */
     async generateNextQuestion(interviewId, previousResponse = null) {
-        let isHrRound = false; // Define here to avoid ReferenceError in catch block
+        let phase = 'TECHNICAL';
         try {
             console.log(`[generateNextQuestion] Starting for interview: ${interviewId}`);
 
@@ -125,7 +241,11 @@ class AIService {
                 where: { id: interviewId },
                 include: {
                     questions: {
-                        include: { response: true }
+                        include: { response: true },
+                        orderBy: { order: 'asc' }
+                    },
+                    user: {
+                        select: { plan: true }
                     }
                 }
             });
@@ -141,22 +261,54 @@ class AIService {
                 score: q.response?.score
             }));
 
-            const settings = await prisma.interviewSettings.findFirst() || {
-                adaptiveDifficulty: true,
-                escalationThreshold: 75,
-                initialDifficulty: 'INTERMEDIATE',
-                maxQuestions: 10,
-                hrQuestionRatio: 3
-            };
+            // Determine max questions from duration
+            const maxQuestions = this.getMaxQuestionsFromDuration(interview.duration || 30);
+            console.log(`[generateNextQuestion] Q#${questionCount + 1} of ${maxQuestions} (${interview.duration}min)`);
 
-            if (questionCount >= settings.maxQuestions) {
+            if (questionCount >= maxQuestions) {
                 return null; // End Interview
             }
 
-            let difficulty = interview.difficulty;
+            // Determine phase
+            const phaseInfo = this.getInterviewPhase(questionCount, maxQuestions);
+            phase = phaseInfo.phase;
+            const indexInPhase = phaseInfo.indexInPhase;
+
+            console.log(`[generateNextQuestion] Phase: ${phase}, Index: ${indexInPhase}`);
+
+            // ── OPENING PHASE: Use fixed HR bank questions ──────────────────
+            if (phase === 'OPENING') {
+                const hrQuestion = this.HR_OPENING_QUESTIONS[indexInPhase] ||
+                    "Tell me about your background and experience.";
+                return {
+                    question: hrQuestion,
+                    type: 'HR',
+                    avatarRole: 'HR Manager',
+                    avatarId: 'hr-manager',
+                    phase: 'OPENING',
+                    phaseLabel: `Opening Q${indexInPhase + 1}/5`
+                };
+            }
+
+            // ── CLOSING PHASE: Use fixed closing HR questions ───────────────
+            if (phase === 'CLOSING') {
+                const hrQuestion = this.HR_CLOSING_QUESTIONS[indexInPhase] ||
+                    "Do you have any questions for us?";
+                return {
+                    question: hrQuestion,
+                    type: 'HR',
+                    avatarRole: 'HR Manager',
+                    avatarId: 'hr-manager',
+                    phase: 'CLOSING',
+                    phaseLabel: `Closing Q${indexInPhase + 1}/5`
+                };
+            }
+
+            // ── TECHNICAL PHASE: AI-generated adaptive questions ────────────
+            let difficulty = interview.difficulty || 'INTERMEDIATE';
             // Adaptive Difficulty Logic
-            if (settings.adaptiveDifficulty && previousResponse && previousResponse.score !== undefined) {
-                if (previousResponse.score >= settings.escalationThreshold) {
+            if (previousResponse && previousResponse.score !== undefined) {
+                if (previousResponse.score >= 75) {
                     if (difficulty === 'BEGINNER') difficulty = 'INTERMEDIATE';
                     else if (difficulty === 'INTERMEDIATE') difficulty = 'ADVANCED';
                 } else if (previousResponse.score < 50) {
@@ -165,81 +317,68 @@ class AIService {
                 }
             }
 
-            isHrRound = (questionCount + 1) % settings.hrQuestionRatio === 0;
-            const avatarRole = isHrRound ? 'HR' : 'Technical';
-
-            // Try gemini-1.5-flash, fallback to gemini-pro if needed
-            let generativeModel;
-            try {
-                // Use a stable model name
-                generativeModel = genAI.getGenerativeModel({ model: "gemini-pro" });
-                console.log("[generateNextQuestion] Using gemini-pro model");
-            } catch (e) {
-                console.warn("[generateNextQuestion] Failed to get gemini-pro, trying gemini-1.5-flash");
-                generativeModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            }
-
             // Extract resume text
             let resumeText = "";
             if (interview.resumeUrl) {
                 try {
-                    console.log(`[generateNextQuestion] Extracting text from resume: ${interview.resumeUrl}`);
                     const extracted = await this.extractTextFromPDF(interview.resumeUrl);
                     resumeText = extracted || "";
                 } catch (pdfError) {
                     console.error(`[generateNextQuestion] PDF Extraction failed:`, pdfError);
-                    resumeText = "Error extracting resume text.";
                 }
             }
 
-            const prompt = `You are an AI Technical Interviewer designed to conduct a dynamic and adaptive interview session.
-Interview Duration: 30 minutes total.
-Current Progress: Question ${questionCount + 1} of ${settings.maxQuestions}.
-Candidate Role: ${interview.role}
-Target Technology: ${interview.technology || interview.domain}
-Current Difficulty: ${difficulty}
+            // Determine if this is an HR behavioral question mid-tech round
+            const technicalQuestionIndex = indexInPhase + 1;
+            const isHrBehavioral = technicalQuestionIndex % 4 === 0; // Every 4th tech question = behavioral
+            const questionType = isHrBehavioral ? 'BEHAVIORAL' : 'TECHNICAL';
+            const avatarRole = isHrBehavioral ? 'HR Manager' : 'Tech Lead';
 
-RULES:
-1. STRICTLY avoid repeating any question or concept already covered.
-2. COVER a wide range of topics relevant to the candidate's skills and resume.
-3. ADJUST difficulty dynamically based on previous answers.
-4. MIX different types of questions:
-   - Conceptual questions
-   - Coding/problem-solving questions
-   - Scenario-based questions
-   - Real-world application questions
+            const prompt = `You are an expert AI interviewer conducting a structured technical interview.
 
-RESUME CONTEXT:
-${resumeText || "No resume provided."}
+INTERVIEW CONTEXT:
+- Candidate Role: ${interview.role}
+- Domain/Industry: ${interview.domain}
+- Core Technologies/Skills: ${interview.technology || interview.domain}
+- Current Difficulty: ${difficulty}
+- Interview Phase: TECHNICAL (Question ${technicalQuestionIndex} of the technical round)
+- Question Type Needed: ${questionType}
 
-QUESTION HISTORY (DO NOT REPEAT CONCEPTS FROM THESE):
+CANDIDATE RESUME CONTEXT:
+${resumeText || "No resume uploaded — generate questions based on the stated role and technologies."}
+
+PREVIOUS QUESTION ASKED: "${previousResponse?.question?.question || 'None'}"
+CANDIDATE'S EXACT ANSWER TO PREVIOUS QUESTION: "${previousResponse?.answer || 'None'}"
+
+PREVIOUS QUESTIONS HISTORY (DO NOT REPEAT THESE TOPICS):
 ${existingQuestions.map((q, i) => `${i + 1}. [${q.type}] ${q.text} (Score: ${q.score || 'N/A'})`).join('\n')}
 
-PREVIOUS FEEDBACK: "${previousResponse?.briefFeedback || 'None'}"
+PREVIOUS ANSWER BRIEF FEEDBACK: "${previousResponse?.briefFeedback || 'None'}"
 
 TASK:
-Generate exactly ONE (1) NEW interview question.
-If it's a technical round, focus on ${interview.technology || interview.domain}. 
-If it's an HR round (${isHrRound}), focus on behavioral/scenario traits.
-
-Return ONLY a JSON object in this format:
-{
-    "question": "The question text",
-    "type": "TECHNICAL" | "BEHAVIORAL" | "SITUATIONAL" | "HR" | "CODING",
-    "avatarRole": "${avatarRole}",
-    "difficulty": "${difficulty}"
+${isHrBehavioral
+    ? `Generate ONE behavioral/situational question relevant to the candidate's role. 
+       Focus on: teamwork, handling pressure, problem solving, taking initiative, or handling failure.
+       Example: "Describe a time when you had to solve a complex problem under tight deadlines..."`
+    : `Decide whether to ask a NEW topic, or a FOLLOW-UP question based on the candidate's exact answer provided above.
+       - Ask a FOLLOW-UP if their answer lacked depth, or if they mentioned a specific technology/scenario that warrants deeper probing. Keep follow-ups conversational (e.g. "You mentioned using Redis. How did you handle cache invalidation in that scenario?").
+       - Ask a NEW topic if they perfectly answered the previous question, or if you have already asked a follow-up.
+       - If asking a NEW topic, cover one of these areas (pick the LEAST covered so far): Core concepts, Problem-solving, System design, Best practices, Real-world scenarios.
+       - Technology focus: ${interview.technology || interview.domain}`
 }
-Note: 
-- Use "TECHNICAL" for conceptual or coding questions.
-- Use "BEHAVIORAL" or "SITUATIONAL" for behavioral/scenario questions.
-- Use "CODING" ONLY if the question explicitly requires writing code.`;
 
-            console.log(`[generateNextQuestion] Prompting Gemini for interview: ${interviewId}`);
-            const result = await generativeModel.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
-            
-            console.log(`[generateNextQuestion] Gemini raw response: ${text.substring(0, 100)}...`);
+Return ONLY a valid JSON object:
+{
+    "question": "The exact question text here",
+    "type": "${questionType}",
+    "avatarRole": "${avatarRole}",
+    "difficulty": "${difficulty}",
+    "topicArea": "Brief label of topic covered (e.g. 'React Hooks', 'System Design', 'Teamwork')",
+    "isFollowUp": true/false
+}`;
+
+            console.log(`[generateNextQuestion] Requesting AI Generation for ${phase} phase`);
+            const text = await this.generateWithAIProvider(prompt, interview);
 
             // Robust JSON extraction
             let jsonStr = text.trim();
@@ -251,36 +390,40 @@ Note:
             }
 
             const aiResponse = JSON.parse(jsonStr);
-            console.log(`[generateNextQuestion] Parsed AI response successfully`);
+            console.log(`[generateNextQuestion] Generated TECHNICAL Q: ${aiResponse.question?.substring(0, 60)}...`);
 
-            // Map types to valid enum values to prevent Prisma errors
+            // Map types to valid Prisma enum values
             const typeMap = {
-                'CONCEPTUAL': 'TECHNICAL',
-                'REAL_WORLD': 'TECHNICAL',
-                'SCENARIO': 'SITUATIONAL',
-                'TECHNICAL': 'TECHNICAL',
-                'BEHAVIORAL': 'BEHAVIORAL',
-                'SITUATIONAL': 'SITUATIONAL',
-                'HR': 'HR',
-                'CODING': 'CODING'
+                'CONCEPTUAL': 'TECHNICAL', 'REAL_WORLD': 'TECHNICAL', 'SCENARIO': 'SITUATIONAL',
+                'TECHNICAL': 'TECHNICAL', 'BEHAVIORAL': 'BEHAVIORAL', 'SITUATIONAL': 'SITUATIONAL',
+                'HR': 'HR', 'CODING': 'CODING'
             };
-            const finalType = typeMap[aiResponse.type?.toUpperCase()] || (isHrRound ? 'BEHAVIORAL' : 'TECHNICAL');
+            const finalType = typeMap[aiResponse.type?.toUpperCase()] || 'TECHNICAL';
 
             return {
                 question: aiResponse.question,
                 type: finalType,
                 avatarRole: aiResponse.avatarRole || avatarRole,
-                avatarId: isHrRound ? 'hr-1' : 'tech-1',
-                difficulty: aiResponse.difficulty || difficulty
+                avatarId: isHrBehavioral ? 'hr-manager' : 'tech-lead',
+                difficulty: aiResponse.difficulty || difficulty,
+                phase: 'TECHNICAL',
+                phaseLabel: aiResponse.isFollowUp ? `Follow-up Q${technicalQuestionIndex}` : `Technical Q${technicalQuestionIndex}`,
+                topicArea: aiResponse.topicArea || interview.technology || interview.domain,
+                isFollowUp: aiResponse.isFollowUp || false
             };
         } catch (error) {
             console.error(`[generateNextQuestion] Error:`, error);
-            // Fallback that is safe from ReferenceErrors
             return {
-                question: "Tell me about a challenging technical problem you solved recently.",
-                type: isHrRound ? 'BEHAVIORAL' : 'SITUATIONAL',
-                avatarRole: 'Technical',
-                avatarId: 'tech-1',
+                question: phase === 'CLOSING'
+                    ? "Do you have any questions for us?"
+                    : phase === 'OPENING'
+                    ? "Tell me about yourself and your background."
+                    : "Tell me about a challenging technical problem you solved recently.",
+                type: (phase === 'OPENING' || phase === 'CLOSING') ? 'HR' : 'SITUATIONAL',
+                avatarRole: (phase === 'OPENING' || phase === 'CLOSING') ? 'HR Manager' : 'Tech Lead',
+                avatarId: (phase === 'OPENING' || phase === 'CLOSING') ? 'hr-manager' : 'tech-lead',
+                phase: phase,
+                phaseLabel: phase,
                 difficulty: 'INTERMEDIATE'
             };
         }
@@ -329,9 +472,9 @@ Return ONLY a JSON object:
     "missingKeywords": []
 }`;
 
-            const result = await model.generateContent(prompt);
-            const resText = (await result.response).text().trim().replace(/```json|```/gi, '');
-            return JSON.parse(resText);
+            const resText = await this.generateWithAIProvider(prompt, null, true);
+            const jsonText = resText.trim().replace(/```json|```/gi, '');
+            return JSON.parse(jsonText);
         } catch (error) {
             console.error("Evaluation Error:", error);
             return {

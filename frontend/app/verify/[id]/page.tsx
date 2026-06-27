@@ -23,6 +23,7 @@ import {
     Loader2
 } from 'lucide-react'
 import api from '@/lib/api'
+import { CertificateTemplate } from '@/components/CertificateTemplate'
 
 interface CertificateData {
     id: string
@@ -39,6 +40,8 @@ interface CertificateData {
     signatoryTitle?: string
     instituteName?: string
     instituteLogoUrl?: string
+    stampUrl?: string
+    stampPosition?: string
 }
 
 export default function VerifyCertificatePage() {
@@ -103,203 +106,11 @@ export default function VerifyCertificatePage() {
     // Download as PDF using browser print
     const handleDownloadPDF = async () => {
         if (!certificate) return
-        setIsExporting(true)
-
-        try {
-            // Create a printable version
-            const printWindow = window.open('', '_blank')
-            if (!printWindow) {
-                alert('Please allow pop-ups to download the certificate')
-                setIsExporting(false)
-                return
-            }
-
-            const certHtml = generateCertificateHTML(certificate, getVerificationUrl())
-            printWindow.document.write(certHtml)
-            printWindow.document.close()
-
-            // Wait for content to load, then trigger print
-            printWindow.onload = () => {
-                printWindow.print()
-                printWindow.onafterprint = () => printWindow.close()
-            }
-        } catch (error) {
-            console.error('Failed to generate PDF:', error)
-            alert('Failed to generate PDF. Please try printing instead.')
-        } finally {
-            setIsExporting(false)
+        const printWindow = window.open(`/certificate/${certificate.uniqueId}?print=true`, '_blank')
+        if (!printWindow) {
+            alert('Please allow pop-ups to download the certificate')
         }
     }
-
-    // Generate certificate HTML for export
-    const generateCertificateHTML = (cert: CertificateData, verifyUrl: string) => `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Certificate - ${cert.uniqueId}</title>
-    <style>
-        @page { size: landscape; margin: 0; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Georgia', 'Times New Roman', serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .certificate-wrapper {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-        }
-        .certificate {
-            width: 900px;
-            padding: 50px;
-            border: 8px solid #1a365d;
-            border-radius: 4px;
-            background: linear-gradient(to bottom right, #ffffff 0%, #f8fafc 100%);
-            position: relative;
-        }
-        .certificate::before {
-            content: '';
-            position: absolute;
-            top: 15px; left: 15px; right: 15px; bottom: 15px;
-            border: 2px solid #cbd5e0;
-            border-radius: 2px;
-        }
-        .content { position: relative; z-index: 1; text-align: center; }
-        .logo { 
-            font-size: 28px; 
-            font-weight: bold; 
-            color: #1a365d; 
-            letter-spacing: 3px;
-            margin-bottom: 10px;
-        }
-        .divider { 
-            width: 150px; 
-            height: 3px; 
-            background: linear-gradient(90deg, transparent, #1a365d, transparent);
-            margin: 15px auto;
-        }
-        h1 { 
-            color: #1a365d; 
-            font-size: 42px; 
-            margin: 20px 0;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-        }
-        .subtitle { color: #4a5568; font-size: 16px; margin: 10px 0; }
-        .student-name { 
-            font-size: 38px; 
-            color: #2d3748; 
-            margin: 25px 0; 
-            font-style: italic;
-            border-bottom: 2px solid #e2e8f0;
-            display: inline-block;
-            padding: 0 30px 10px;
-        }
-        .course { font-size: 24px; color: #4a5568; margin: 20px 0; font-weight: 500; }
-        .grade-badge {
-            display: inline-block;
-            padding: 8px 25px;
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            color: white;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 15px 5px;
-        }
-        .score-badge {
-            display: inline-block;
-            padding: 8px 25px;
-            background: linear-gradient(135deg, #4299e1, #3182ce);
-            color: white;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 15px 5px;
-        }
-        .date { color: #718096; font-size: 14px; margin: 20px 0; }
-        .signature-section {
-            margin-top: 40px;
-            display: inline-block;
-        }
-        .signature-line { 
-            width: 200px; 
-            border-top: 2px solid #1a365d; 
-            margin-top: 60px;
-        }
-        .signature-name { font-weight: bold; color: #2d3748; margin-top: 10px; }
-        .signature-title { color: #718096; font-size: 12px; }
-        .verify-section {
-            margin-top: 30px;
-            padding: 15px;
-            background: #f7fafc;
-            border-radius: 8px;
-            font-size: 11px;
-            color: #718096;
-        }
-        .verify-section strong { color: #4a5568; }
-        .seal {
-            position: absolute;
-            bottom: 40px;
-            right: 60px;
-            width: 100px;
-            height: 100px;
-            border: 3px solid #d4af37;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #d4af37;
-            font-weight: bold;
-            font-size: 12px;
-            text-align: center;
-        }
-        @media print {
-            body { background: white; padding: 0; }
-            .certificate-wrapper { box-shadow: none; padding: 0; }
-        }
-    </style>
-</head>
-<body>
-    <div class="certificate-wrapper">
-        <div class="certificate">
-            <div class="content">
-                <div class="logo">${cert.instituteName || 'TECHWELL ACADEMY'}</div>
-                <div class="divider"></div>
-                <h1>Certificate</h1>
-                <p class="subtitle">OF COMPLETION</p>
-                <div class="divider"></div>
-                <p class="subtitle">This is to certify that</p>
-                <div class="student-name">${cert.studentName}</div>
-                <p class="subtitle">has successfully completed the course</p>
-                <div class="course">"${cert.courseName}"</div>
-                <div>
-                    ${cert.grade ? `<span class="grade-badge">Grade: ${cert.grade}</span>` : ''}
-                    ${cert.score ? `<span class="score-badge">Score: ${cert.score}%</span>` : ''}
-                </div>
-                <p class="date">Issued on ${new Date(cert.issueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                ${cert.signatoryName ? `
-                    <div class="signature-section">
-                        <div class="signature-line"></div>
-                        <div class="signature-name">${cert.signatoryName}</div>
-                        <div class="signature-title">${cert.signatoryTitle || ''}</div>
-                    </div>
-                ` : ''}
-                <div class="verify-section">
-                    <strong>Certificate ID:</strong> ${cert.uniqueId}<br>
-                    <strong>Verify at:</strong> ${verifyUrl}
-                </div>
-            </div>
-            <div class="seal">VERIFIED<br>✓</div>
-        </div>
-    </div>
-</body>
-</html>`
 
     // Share functions
     const handleShareLinkedIn = () => {
@@ -368,47 +179,14 @@ export default function VerifyCertificatePage() {
                     <>
                         {/* Certificate Display */}
                         <Card className="mb-6 print:shadow-none print:border-0" ref={certificateRef}>
-                            <CardContent className="py-12 text-center">
-                                <div className="inline-flex items-center gap-2 text-primary mb-4">
-                                    <Shield className="h-5 w-5" />
-                                    <span className="font-medium">{certificate.instituteName || 'Techwell Academy'}</span>
-                                </div>
-
-                                <h1 className="text-3xl font-bold text-primary mb-6">Certificate of Completion</h1>
-
-                                <p className="text-muted-foreground mb-2">This is to certify that</p>
-                                <h2 className="text-2xl font-semibold mb-4">{certificate.studentName}</h2>
-
-                                <p className="text-muted-foreground mb-2">has successfully completed</p>
-                                <h3 className="text-xl font-medium mb-4">{certificate.courseName}</h3>
-
-                                <div className="flex items-center justify-center gap-4 mb-6">
-                                    {certificate.grade && (
-                                        <Badge className="text-lg px-4 py-1 bg-green-600">Grade: {certificate.grade}</Badge>
-                                    )}
-                                    {certificate.score && (
-                                        <Badge variant="outline" className="text-lg px-4 py-1">Score: {certificate.score}%</Badge>
-                                    )}
-                                </div>
-
-                                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-8">
-                                    <Calendar className="h-4 w-4" />
-                                    <span>Issued on {new Date(certificate.issueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                                </div>
-
-                                {certificate.signatoryName && (
-                                    <div className="border-t pt-6">
-                                        <div className="inline-block border-t-2 border-primary/30 pt-2">
-                                            <p className="font-semibold">{certificate.signatoryName}</p>
-                                            <p className="text-sm text-muted-foreground">{certificate.signatoryTitle}</p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="mt-8 p-4 bg-muted/50 rounded-lg print:hidden">
-                                    <p className="text-sm text-muted-foreground">
-                                        Certificate ID: <code className="font-mono">{certificate.uniqueId}</code>
-                                    </p>
+                            <CardContent className="py-12 px-6 flex justify-center">
+                                <div className="transform scale-[0.65] sm:scale-75 md:scale-90 lg:scale-100 origin-top">
+                                    <CertificateTemplate 
+                                        certificate={certificate} 
+                                        logoUrl={certificate.instituteLogoUrl} 
+                                        stampUrl={certificate.stampUrl}
+                                        stampPosition={certificate.stampPosition}
+                                    />
                                 </div>
                             </CardContent>
                         </Card>

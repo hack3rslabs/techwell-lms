@@ -1,0 +1,234 @@
+"use client"
+
+import * as React from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Loader2, Clock, Calendar, Target, TrendingUp, Users, Inbox, PhoneCall, History, CheckCircle, AlertCircle } from 'lucide-react'
+import api from '@/lib/api'
+import { useAuth } from '@/lib/auth-context'
+import { StaffCheckInBanner } from '@/components/admin/StaffCheckInBanner'
+import { Badge } from '@/components/ui/badge'
+
+export default function StaffDashboardPage() {
+    const { user } = useAuth()
+    const [isLoading, setIsLoading] = React.useState(true)
+    const [goals, setGoals] = React.useState<any[]>([])
+    const [calendarData, setCalendarData] = React.useState<any>({ 
+        todayTasks: [], tomorrowTasks: [], adminAssignedTasks: [],
+        demos: [], todayReminders: [], assignedLeads: [], recentFollowUps: [],
+        pendingWorksCount: 0, overdueTasks: [], overdueReminders: []
+    })
+
+    React.useEffect(() => {
+        fetchData()
+    }, [])
+
+    const fetchData = async () => {
+        try {
+            const [goalsRes, calRes] = await Promise.all([
+                api.get('/staff/goals/current'),
+                api.get('/staff/calendar')
+            ])
+            setGoals(goalsRes.data)
+            setCalendarData(calRes.data)
+        } catch (error) {
+            console.error('Failed to fetch staff data', error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    if (isLoading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center mb-2">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Counselling & Tele-Sales Hub</h1>
+                    <p className="text-muted-foreground">Manage your assigned leads, follow-ups, and daily targets.</p>
+                </div>
+            </div>
+
+            {/* Global Check-in Banner */}
+            <StaffCheckInBanner />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* Goal Board */}
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5 text-blue-500"/> Smart Goal Board</CardTitle>
+                        <CardDescription>Your performance targets for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {goals.length === 0 ? (
+                            <div className="text-center py-6 text-muted-foreground text-sm">No goals assigned for this month. Ask your manager to set targets.</div>
+                        ) : (
+                            goals.map((goal, i) => {
+                                const percent = Math.min(100, Math.round((goal.achievedValue / goal.targetValue) * 100))
+                                let color = "bg-blue-500"
+                                if (percent >= 100) color = "bg-green-500"
+                                else if (percent > 50) color = "bg-yellow-500"
+                                else color = "bg-red-500"
+                                
+                                return (
+                                    <div key={i} className="space-y-2">
+                                        <div className="flex justify-between text-sm font-medium">
+                                            <span className="flex items-center gap-2">
+                                                {goal.goalType === 'REVENUE' ? <TrendingUp className="h-4 w-4 text-muted-foreground"/> : <Users className="h-4 w-4 text-muted-foreground"/>}
+                                                {goal.goalType} Target
+                                            </span>
+                                            <span>
+                                                {goal.goalType === 'REVENUE' ? '₹' : ''}{goal.achievedValue} / {goal.targetValue} ({percent}%)
+                                            </span>
+                                        </div>
+                                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                            <div className={`h-full ${color}`} style={{ width: `${percent}%` }}></div>
+                                        </div>
+                                    </div>
+                                )
+                            })
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Inbox & Pending Works */}
+                <Card className="border-red-200">
+                    <CardHeader className="bg-red-50 rounded-t-xl pb-4">
+                        <CardTitle className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-red-700"><Inbox className="h-5 w-5"/> Pending Works</div>
+                            <Badge variant="destructive">{calendarData.pendingWorksCount}</Badge>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-4 max-h-[300px] overflow-y-auto custom-scrollbar">
+                        {calendarData.overdueReminders.map((r: any, i: number) => (
+                            <div key={`or-${i}`} className="p-3 bg-red-50 border border-red-100 rounded-md text-sm">
+                                <p className="font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3"/> Missed Follow-up</p>
+                                <p className="font-medium mt-1">{r.lead?.name}</p>
+                                <p className="text-muted-foreground text-xs">{new Date(r.reminderDate).toLocaleDateString()}</p>
+                            </div>
+                        ))}
+                        {calendarData.overdueTasks.map((t: any, i: number) => (
+                            <div key={`ot-${i}`} className="p-3 bg-red-50 border border-red-100 rounded-md text-sm">
+                                <p className="font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3"/> Overdue Task</p>
+                                <p className="font-medium mt-1">{t.title}</p>
+                                {t.dueDate && <p className="text-muted-foreground text-xs">{new Date(t.dueDate).toLocaleDateString()}</p>}
+                            </div>
+                        ))}
+                        {calendarData.pendingWorksCount === 0 && (
+                            <p className="text-sm text-center text-muted-foreground py-4">All caught up! No pending works.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Assigned Leads */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><PhoneCall className="h-5 w-5 text-indigo-500"/> Leads to Call Today</CardTitle>
+                        <CardDescription>Recently assigned leads waiting for outreach</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar">
+                        {calendarData.assignedLeads.map((l: any, i: number) => (
+                            <div key={`al-${i}`} className="flex justify-between items-center p-3 border rounded-md hover:bg-slate-50 transition">
+                                <div>
+                                    <p className="font-medium text-sm text-indigo-700">{l.name}</p>
+                                    <p className="text-xs text-muted-foreground">{l.phone}</p>
+                                </div>
+                                <Badge variant="outline" className="text-[10px]">{l.status}</Badge>
+                            </div>
+                        ))}
+                        {calendarData.assignedLeads.length === 0 && (
+                            <p className="text-sm text-center text-muted-foreground py-4">No active leads assigned.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Today's Schedule */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5 text-emerald-500"/> Today's Schedule</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 max-h-[350px] overflow-y-auto custom-scrollbar">
+                        {calendarData.demos.map((d: any, i: number) => (
+                            <div key={`d-${i}`} className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md text-sm">
+                                <p className="text-[10px] font-bold text-blue-600 uppercase">Demo</p>
+                                <p className="font-medium">{d.lead?.name}</p>
+                                <p className="text-muted-foreground text-xs">{new Date(d.scheduledAt).toLocaleTimeString()}</p>
+                            </div>
+                        ))}
+                        {calendarData.todayReminders.map((r: any, i: number) => (
+                            <div key={`tr-${i}`} className="p-3 bg-orange-50 border-l-4 border-orange-500 rounded-md text-sm">
+                                <p className="text-[10px] font-bold text-orange-600 uppercase">Follow-up</p>
+                                <p className="font-medium">{r.lead?.name}</p>
+                                <p className="text-muted-foreground text-xs">{new Date(r.reminderDate).toLocaleTimeString()}</p>
+                            </div>
+                        ))}
+                        {calendarData.todayTasks.map((t: any, i: number) => (
+                            <div key={`tt-${i}`} className="p-3 bg-slate-50 border-l-4 border-slate-500 rounded-md text-sm">
+                                <p className="text-[10px] font-bold text-slate-500 uppercase">Task</p>
+                                <p className="font-medium">{t.title}</p>
+                            </div>
+                        ))}
+                        {(calendarData.demos.length + calendarData.todayReminders.length + calendarData.todayTasks.length) === 0 && (
+                            <p className="text-sm text-center text-muted-foreground py-4">Schedule is clear for today.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Follow-up History */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><History className="h-5 w-5 text-slate-500"/> Recent Activity</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar">
+                        {calendarData.recentFollowUps.map((log: any, i: number) => (
+                            <div key={`rf-${i}`} className="p-3 bg-slate-50 rounded-md text-sm">
+                                <p className="font-medium">{log.lead?.name}</p>
+                                <p className="text-xs text-muted-foreground">{log.action}</p>
+                                <p className="text-[10px] text-slate-400 mt-1">{new Date(log.timestamp).toLocaleString()}</p>
+                            </div>
+                        ))}
+                        {calendarData.recentFollowUps.length === 0 && (
+                            <p className="text-sm text-center text-muted-foreground py-4">No recent activities.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Tomorrow & Admin Tasks */}
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle>Upcoming & Admin Assigned</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-600 mb-3 border-b pb-2">Admin Assigned Tasks</h4>
+                                <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                                    {calendarData.adminAssignedTasks.map((t: any, i: number) => (
+                                        <div key={`aat-${i}`} className="p-2 border rounded text-sm bg-purple-50 border-purple-100">
+                                            <p className="font-medium text-purple-800">{t.title}</p>
+                                            <p className="text-xs text-purple-600 mt-1">Assigned by {t.creator?.name || 'Admin'}</p>
+                                        </div>
+                                    ))}
+                                    {calendarData.adminAssignedTasks.length === 0 && <p className="text-xs text-muted-foreground">No tasks assigned by Admin.</p>}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-600 mb-3 border-b pb-2">Tomorrow's Tasks</h4>
+                                <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                                    {calendarData.tomorrowTasks.map((t: any, i: number) => (
+                                        <div key={`tomt-${i}`} className="p-2 border rounded text-sm bg-blue-50 border-blue-100">
+                                            <p className="font-medium text-blue-800">{t.title}</p>
+                                        </div>
+                                    ))}
+                                    {calendarData.tomorrowTasks.length === 0 && <p className="text-xs text-muted-foreground">No tasks for tomorrow yet.</p>}
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+            </div>
+        </div>
+    )
+}

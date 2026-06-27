@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import api, { interviewApi, userApi } from '@/lib/api'
+import api, { interviewApi, userApi, analyticsApi } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,6 +50,7 @@ interface Course {
 }
 
 import { InstituteSwitcher } from '@/components/admin/InstituteSwitcher'
+import { StaffCheckInBanner } from '@/components/admin/StaffCheckInBanner'
 
 export default function AdminDashboard() {
     const router = useRouter()
@@ -65,7 +66,8 @@ export default function AdminDashboard() {
         courses: 0,
         enrollments: 0,
         interviews: 0,
-        revenue: 0
+        revenue: 0,
+        analytics: null as any
     })
 
     const [isLoading, setIsLoading] = React.useState(true)
@@ -92,10 +94,11 @@ export default function AdminDashboard() {
         const fetchData = async () => {
             try {
                 // Fetch basic lists AND real stats
-                const [usersRes, coursesRes, statsRes] = await Promise.allSettled([
+                const [usersRes, coursesRes, statsRes, analyticsRes] = await Promise.allSettled([
                     hasPermission('USERS') ? api.get('/users') : Promise.resolve({ data: { users: [] } }),
                     hasPermission('COURSES') ? api.get('/courses') : Promise.resolve({ data: { courses: [] } }),
-                    userApi.getAdminStats() // This endpoint uses authorize() so it's safer
+                    userApi.getAdminStats(),
+                    analyticsApi.getDashboard()
                 ])
 
                 if (usersRes.status === 'fulfilled') {
@@ -104,9 +107,16 @@ export default function AdminDashboard() {
                 if (coursesRes.status === 'fulfilled') {
                     setCourses(coursesRes.value.data.courses || [])
                 }
+                
+                // Merge old stats and new analytics if available
+                let updatedStats = { ...stats };
                 if (statsRes.status === 'fulfilled') {
-                    setStats(statsRes.value.data)
+                    updatedStats = { ...updatedStats, ...statsRes.value.data };
                 }
+                if (analyticsRes.status === 'fulfilled') {
+                    updatedStats.analytics = analyticsRes.value.data;
+                }
+                setStats(updatedStats);
 
             } catch (error) {
                 console.error('Failed to fetch data:', error)
@@ -162,10 +172,9 @@ export default function AdminDashboard() {
         return null;
     }
 
-    // ... existing imports
-
     return (
         <div className="space-y-8">
+            <StaffCheckInBanner />
             {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -182,11 +191,9 @@ export default function AdminDashboard() {
 
                     {/* Placeholder for DateRangePicker */}
                     <Button variant="outline">Last 30 Days</Button>
-                    <AdminReportModal>
-                        <Button>
-                            <BarChart3 className="mr-2 h-4 w-4" /> Generate Report
-                        </Button>
-                    </AdminReportModal>
+                    <Button onClick={() => router.push('/admin/reports')}>
+                        <BarChart3 className="mr-2 h-4 w-4" /> Analytics & Reports
+                    </Button>
                 </div>
             </div>
 
@@ -344,6 +351,15 @@ export default function AdminDashboard() {
                                         <div>
                                             <div className="font-semibold">Train AI Model</div>
                                             <div className="text-xs text-muted-foreground">Update interview knowledge</div>
+                                        </div>
+                                    </Button>
+                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/reports')}>
+                                        <div className="bg-green-100 p-2 rounded-full mr-3">
+                                            <BarChart3 className="h-4 w-4 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold">Analytics & Reports</div>
+                                            <div className="text-xs text-muted-foreground">View business insights</div>
                                         </div>
                                     </Button>
                                 </CardContent>

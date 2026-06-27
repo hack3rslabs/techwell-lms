@@ -10,7 +10,8 @@ type Props = {
 // In a real app, use `fetch` with caching or a direct DB call if using Server Actions/RSC
 async function getCourse(id: string) {
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${id}`, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+        const res = await fetch(`${apiUrl}/courses/${id}`, {
             // Revalidate every hour
             next: { revalidate: 3600 }
         })
@@ -40,11 +41,12 @@ export async function generateMetadata(
     const previousImages = (await parent).openGraph?.images || []
 
     return {
-        title: course.title,
-        description: course.description?.slice(0, 160) || "Learn with Techwell",
+        title: course.seoTitle || course.title,
+        description: course.metaDescription || course.description?.slice(0, 160) || "Learn with Techwell",
+        keywords: course.targetKeywords?.length > 0 ? course.targetKeywords.join(', ') : `${course.title}, Techwell, Course, Training`,
         openGraph: {
-            title: course.title,
-            description: course.description?.slice(0, 160),
+            title: course.seoTitle || course.title,
+            description: course.metaDescription || course.description?.slice(0, 160),
             images: course.thumbnail ? [course.thumbnail, ...previousImages] : previousImages,
             type: 'article',
             publishedTime: course.createdAt,
@@ -52,8 +54,8 @@ export async function generateMetadata(
         },
         twitter: {
             card: "summary_large_image",
-            title: course.title,
-            description: course.description?.slice(0, 160),
+            title: course.seoTitle || course.title,
+            description: course.metaDescription || course.description?.slice(0, 160),
             images: course.thumbnail ? [course.thumbnail] : [],
         }
     }
@@ -63,21 +65,17 @@ export default async function CoursePage({ params }: Props) {
     const { id } = await params
     const course = await getCourse(id)
 
-    // Handle course not found case gracefully (or let client handle loading if we returned null but client fetches too? 
-    // Actually client generally re-fetches or we could pass initial data. 
-    // For now we just render client component which handles its own fetching, 
-    // but the JSON-LD script will only be present if we successfully fetched here.)
-
+    // Handle course not found case gracefully
     if (!course) {
         return <CourseDetailClient />
     }
 
-    // JSON-LD Structured Data
-    const jsonLd = {
+    // JSON-LD Structured Data for Course
+    const courseSchema = {
         '@context': 'https://schema.org',
         '@type': 'Course',
         name: course.title,
-        description: course.description,
+        description: course.metaDescription || course.description,
         provider: {
             '@type': 'Organization',
             name: 'Techwell',
@@ -99,12 +97,35 @@ export default async function CoursePage({ params }: Props) {
         }
     }
 
+    // JSON-LD Structured Data for FAQPage (if faqs exist)
+    let faqSchema = null
+    if (course.faqs && Array.isArray(course.faqs) && course.faqs.length > 0) {
+        faqSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: course.faqs.map((faq: any) => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: faq.answer
+                }
+            }))
+        }
+    }
+
     return (
         <>
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
             />
+            {faqSchema && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+                />
+            )}
             <CourseDetailClient />
         </>
     )

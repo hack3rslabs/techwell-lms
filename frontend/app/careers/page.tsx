@@ -1,10 +1,25 @@
-"use client"
-
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Briefcase, MapPin, Clock, ArrowRight, Users, Rocket, Heart, Coffee } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://techwell.co.in'
+
+export const metadata: Metadata = {
+    title: 'Careers at Techwell | Join Our Team & Build the Future of Tech Education',
+    description: 'Explore open positions at Techwell. We\'re hiring Full-Stack Engineers, AI/ML Engineers, Designers, and more. Remote-friendly. Join us to revolutionize tech education.',
+    keywords: ['Techwell Careers', 'Jobs at Techwell', 'Tech Jobs India', 'EdTech Startup Jobs', 'Software Engineer Jobs Bangalore'],
+    alternates: { canonical: `${BASE_URL}/careers` },
+    openGraph: {
+        title: 'Careers at Techwell | Help Us Build the Future of Learning',
+        description: 'Join a passionate team building AI-powered tech education. Open roles in Engineering, AI/ML, and Design.',
+        url: `${BASE_URL}/careers`,
+        type: 'website',
+        images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Careers at Techwell' }],
+    },
+}
 
 const openPositions = [
     {
@@ -83,41 +98,15 @@ export default function CareersPage() {
                 {/* Open Positions */}
                 <h2 className="text-3xl font-bold mb-8">Open Positions</h2>
                 <div className="space-y-4 mb-16">
-                    {openPositions.map((job) => (
-                        <Card key={job.id} className="hover:shadow-lg transition-shadow">
-                            <CardContent className="py-6">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <h3 className="text-xl font-bold">{job.title}</h3>
-                                            <Badge variant="secondary">{job.department}</Badge>
-                                        </div>
-                                        <p className="text-muted-foreground mb-3">{job.description}</p>
-                                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                            <span className="flex items-center gap-1">
-                                                <MapPin className="h-4 w-4" />
-                                                {job.location}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="h-4 w-4" />
-                                                {job.type}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Briefcase className="h-4 w-4" />
-                                                {job.experience}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <Link href={`/contact?job=${encodeURIComponent(job.title)}`}>
-                                        <Button className="gap-2">
-                                            Apply Now
-                                            <ArrowRight className="h-4 w-4" />
-                                        </Button>
-                                    </Link>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    <Card className="border-dashed border-2">
+                        <CardContent className="py-12 text-center">
+                            <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="text-xl font-bold mb-2">No Openings at the Moment</h3>
+                            <p className="text-muted-foreground max-w-md mx-auto">
+                                We don&apos;t have any active job openings right now. However, we are always looking for talented minds. Submit your resume below for future consideration!
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* No Match CTA */}

@@ -186,6 +186,11 @@ router.patch('/courses/:id/archive', authenticate, checkPermission('SYSTEM_LOGS'
  */
 router.post('/staff', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
+        // Strictly protect staff creation: Only SUPER_ADMIN and ADMIN are authorized
+        if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
+            return res.status(403).json({ error: 'Access Denied: Only Admins and Super Admins are authorized to create staff users.' });
+        }
+
         const { name, email, password, role, permissions, phone } = req.body;
 
         // Basic validation
@@ -269,6 +274,23 @@ router.get('/enrollments', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAF
             orderBy: { enrolledAt: 'desc' }
         });
         res.json({ enrollments });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PATCH /api/admin/enrollments/:id/status
+ * @desc    Update enrollment status
+ */
+router.patch('/enrollments/:id/status', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res, next) => {
+    try {
+        const { status } = req.body;
+        const enrollment = await prisma.enrollment.update({
+            where: { id: req.params.id },
+            data: { status }
+        });
+        res.json({ enrollment });
     } catch (error) {
         next(error);
     }
@@ -387,7 +409,7 @@ router.get('/students', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF')
  */
 router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
-        const { search, action, entityType, page = 1, limit = 50 } = req.query;
+        const { search, action, entityType, startDate, endDate, role, severity, ipAddress, page = 1, limit = 50 } = req.query;
         const skip = (Number(page) - 1) * Number(limit);
 
         const where = {};
@@ -400,6 +422,24 @@ router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (r
             where.entityType = entityType;
         }
 
+        if (startDate || endDate) {
+            where.timestamp = {};
+            if (startDate) where.timestamp.gte = new Date(startDate);
+            if (endDate) where.timestamp.lte = new Date(endDate);
+        }
+
+        if (role) {
+            where.userRole = role;
+        }
+
+        if (severity) {
+            where.severity = severity;
+        }
+
+        if (ipAddress) {
+            where.ipAddress = { contains: ipAddress, mode: 'insensitive' };
+        }
+
         if (search) {
             where.OR = [
                 { performedBy: { contains: search, mode: 'insensitive' } },
@@ -408,14 +448,19 @@ router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (r
             ];
         }
 
-        const [logs, total] = await Promise.all([
+        const [logs, total, severityGroups] = await Promise.all([
             prisma.auditLog.findMany({
                 where,
                 orderBy: { timestamp: 'desc' },
                 skip,
                 take: Number(limit)
             }),
-            prisma.auditLog.count({ where })
+            prisma.auditLog.count({ where }),
+            prisma.auditLog.groupBy({
+                by: ['severity'],
+                _count: true,
+                where
+            })
         ]);
         
         // We need to resolve the user names for 'performedBy' since performedBy is a string ID
@@ -439,8 +484,23 @@ router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (r
             user: userMap[log.performedBy] || { name: log.performedBy, email: 'SYSTEM' } // fallback mapping
         }));
 
+        // Format summary
+        const summary = {
+            INFO: 0,
+            WARNING: 0,
+            CRITICAL: 0,
+            TOTAL: total
+        };
+
+        severityGroups.forEach(group => {
+            if (summary[group.severity] !== undefined) {
+                summary[group.severity] = group._count;
+            }
+        });
+
         res.json({
             logs: mappedLogs,
+            summary,
             pagination: {
                 total,
                 page: Number(page),
@@ -477,6 +537,183 @@ router.get('/transactions', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
     } catch (error) {
         console.error("Fetch All Payments Error:", error);
         res.status(500).json({ error: "Failed to fetch transactions" });
+    }
+});
+
+/**
+ * @route   POST /api/admin/reports/generate
+ * @desc    Dynamic BI Report Generator
+ * @access  Private/Admin
+ */
+router.post('/reports/generate', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const { dataset, dimension, metric, startDate, endDate } = req.body;
+
+        const dateFilter = {};
+        if (startDate && endDate) {
+            dateFilter.gte = new Date(startDate);
+            dateFilter.lte = new Date(endDate);
+        }
+
+        let data = [];
+        let summary = { total: 0 };
+
+        // ---------------- LEADS ----------------
+        if (dataset === 'LEADS') {
+            const where = { createdAt: Object.keys(dateFilter).length ? dateFilter : undefined };
+            summary.total = await prisma.lead.count({ where });
+
+            if (dimension === 'STATUS') {
+                const grouped = await prisma.lead.groupBy({
+                    by: ['status'],
+                    _count: true,
+                    where
+                });
+                data = grouped.map(g => ({ name: g.status, value: g._count }));
+            } 
+            else if (dimension === 'SOURCE') {
+                const grouped = await prisma.lead.groupBy({
+                    by: ['source'],
+                    _count: true,
+                    where
+                });
+                data = grouped.map(g => ({ name: g.source, value: g._count }));
+            }
+            else if (dimension === 'DATE') {
+                // Grouping by Date in JS for simplicity
+                const leads = await prisma.lead.findMany({ where, select: { createdAt: true } });
+                const dateMap = {};
+                leads.forEach(l => {
+                    const date = l.createdAt.toISOString().split('T')[0];
+                    dateMap[date] = (dateMap[date] || 0) + 1;
+                });
+                data = Object.keys(dateMap).sort().map(k => ({ name: k, value: dateMap[k] }));
+            }
+        }
+
+        // ---------------- REVENUE ----------------
+        else if (dataset === 'REVENUE') {
+            const where = { 
+                createdAt: Object.keys(dateFilter).length ? dateFilter : undefined,
+                status: 'SUCCESS'
+            };
+            const sumAgg = await prisma.payment.aggregate({ _sum: { amount: true }, where });
+            summary.total = sumAgg._sum.amount || 0;
+
+            if (dimension === 'DATE') {
+                const payments = await prisma.payment.findMany({ where, select: { createdAt: true, amount: true } });
+                const dateMap = {};
+                payments.forEach(p => {
+                    const date = p.createdAt.toISOString().split('T')[0];
+                    dateMap[date] = (dateMap[date] || 0) + Number(p.amount);
+                });
+                data = Object.keys(dateMap).sort().map(k => ({ name: k, value: dateMap[k] }));
+            }
+            else if (dimension === 'COURSE') {
+                const payments = await prisma.payment.findMany({ where, include: { course: true } });
+                const courseMap = {};
+                payments.forEach(p => {
+                    const cName = p.course?.title || 'Unknown';
+                    courseMap[cName] = (courseMap[cName] || 0) + Number(p.amount);
+                });
+                data = Object.keys(courseMap).map(k => ({ name: k, value: courseMap[k] }));
+            }
+        }
+
+        // ---------------- ENROLLMENTS ----------------
+        else if (dataset === 'ENROLLMENTS') {
+            const where = { enrolledAt: Object.keys(dateFilter).length ? dateFilter : undefined };
+            summary.total = await prisma.enrollment.count({ where });
+
+            if (dimension === 'STATUS') {
+                const grouped = await prisma.enrollment.groupBy({ by: ['status'], _count: true, where });
+                data = grouped.map(g => ({ name: g.status, value: g._count }));
+            }
+            else if (dimension === 'COURSE') {
+                const enrollments = await prisma.enrollment.findMany({ where, include: { course: true } });
+                const courseMap = {};
+                enrollments.forEach(e => {
+                    const cName = e.course?.title || 'Unknown';
+                    courseMap[cName] = (courseMap[cName] || 0) + 1;
+                });
+                data = Object.keys(courseMap).map(k => ({ name: k, value: courseMap[k] }));
+            }
+            else if (dimension === 'DATE') {
+                const enrolls = await prisma.enrollment.findMany({ where, select: { enrolledAt: true } });
+                const dateMap = {};
+                enrolls.forEach(e => {
+                    const date = e.enrolledAt.toISOString().split('T')[0];
+                    dateMap[date] = (dateMap[date] || 0) + 1;
+                });
+                data = Object.keys(dateMap).sort().map(k => ({ name: k, value: dateMap[k] }));
+            }
+        }
+
+        // ---------------- TASKS ----------------
+        else if (dataset === 'TASKS') {
+            const where = { createdAt: Object.keys(dateFilter).length ? dateFilter : undefined };
+            summary.total = await prisma.task.count({ where });
+
+            if (dimension === 'STATUS') {
+                const grouped = await prisma.task.groupBy({ by: ['status'], _count: true, where });
+                data = grouped.map(g => ({ name: g.status, value: g._count }));
+            }
+            else if (dimension === 'PRIORITY') {
+                const grouped = await prisma.task.groupBy({ by: ['priority'], _count: true, where });
+                data = grouped.map(g => ({ name: g.priority, value: g._count }));
+            }
+        }
+
+        // ---------------- PAYROLL ----------------
+        else if (dataset === 'PAYROLL') {
+            const where = { createdAt: Object.keys(dateFilter).length ? dateFilter : undefined };
+            const sumAgg = await prisma.staffPayroll.aggregate({ _sum: { netAmount: true }, where });
+            summary.total = sumAgg._sum.netAmount || 0;
+
+            if (dimension === 'STATUS') {
+                const grouped = await prisma.staffPayroll.groupBy({ by: ['status'], _count: true, where });
+                data = grouped.map(g => ({ name: g.status, value: g._count }));
+            }
+            else if (dimension === 'DATE') {
+                const payrolls = await prisma.staffPayroll.findMany({ where, select: { createdAt: true, netAmount: true } });
+                const dateMap = {};
+                payrolls.forEach(p => {
+                    const date = p.createdAt.toISOString().split('T')[0];
+                    dateMap[date] = (dateMap[date] || 0) + Number(p.netAmount);
+                });
+                data = Object.keys(dateMap).sort().map(k => ({ name: k, value: dateMap[k] }));
+            }
+        }
+
+        // ---------------- ATTENDANCE ----------------
+        else if (dataset === 'ATTENDANCE') {
+            const where = { createdAt: Object.keys(dateFilter).length ? dateFilter : undefined };
+            summary.total = await prisma.staffAttendance.count({ where });
+
+            if (dimension === 'STATUS') {
+                const grouped = await prisma.staffAttendance.groupBy({ by: ['status'], _count: true, where });
+                data = grouped.map(g => ({ name: g.status, value: g._count }));
+            }
+            else if (dimension === 'DATE') {
+                const attendances = await prisma.staffAttendance.findMany({ where, select: { createdAt: true } });
+                const dateMap = {};
+                attendances.forEach(a => {
+                    const date = a.createdAt.toISOString().split('T')[0];
+                    dateMap[date] = (dateMap[date] || 0) + 1;
+                });
+                data = Object.keys(dateMap).sort().map(k => ({ name: k, value: dateMap[k] }));
+            }
+        }
+
+        res.json({
+            dataset,
+            dimension,
+            summary,
+            data
+        });
+
+    } catch (error) {
+        next(error);
     }
 });
 

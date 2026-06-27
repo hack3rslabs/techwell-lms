@@ -27,10 +27,17 @@ import {
     Building2,
     CheckCircle2,
     RefreshCw,
-    MessageSquare
+    MessageSquare,
+    CreditCard,
+    Activity,
+    Target,
+    Users
 } from 'lucide-react'
 import { NewInterviewDialog } from '@/components/interviews/NewInterviewDialog'
 import { StudentMessages } from '@/components/messages/StudentMessages'
+import { StudentPayments } from '@/components/dashboard/StudentPayments'
+import { StudentLogs } from '@/components/dashboard/StudentLogs'
+import { StudentReferrals } from '@/components/dashboard/StudentReferrals'
 
 interface Enrollment {
     id: string
@@ -123,8 +130,8 @@ export default function DashboardPage() {
     const searchParams = useSearchParams()
     const tabParam = searchParams.get('tab')
 
-    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume'
-    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume']
+    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume' | 'payments' | 'logs' | 'referrals'
+    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume', 'payments', 'logs', 'referrals']
 
     const [activeTab, setActiveTab] = React.useState<TabType>('overview')
 
@@ -137,8 +144,12 @@ export default function DashboardPage() {
         }
     }, [tabParam])
 
-    const handleTabChange = (newTab: TabType) => {
-        setActiveTab(newTab)
+    const handleTabChange = (newTab: TabType | 'jobs') => {
+        if (newTab === 'jobs') {
+            router.push('/jobs')
+            return
+        }
+        setActiveTab(newTab as TabType)
         router.push(`/dashboard?tab=${newTab}`, { scroll: false })
     }
     const [stats, setStats] = React.useState<{
@@ -335,12 +346,16 @@ export default function DashboardPage() {
                         { id: 'messages', label: 'Messages', icon: MessageSquare },
                         { id: 'interviews', label: 'Interviews', icon: Video },
                         { id: 'applications', label: 'Applications', icon: Briefcase, count: applications.length },
+                        { id: 'jobs', label: 'Find Jobs', icon: Target },
                         { id: 'certificates', label: 'Certificates', icon: Award, count: certificates.length },
                         { id: 'resume', label: 'AI Resume', icon: FileText },
+                        { id: 'payments', label: 'Payment History', icon: CreditCard },
+                        { id: 'logs', label: 'Activity Logs', icon: Activity },
+                        { id: 'referrals', label: 'Refer & Earn', icon: Users },
                     ].map((tab) => (
                         <button
                             key={tab.id}
-                            onClick={() => handleTabChange(tab.id as TabType)}
+                            onClick={() => handleTabChange(tab.id as any)}
                             className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === tab.id
                                 ? 'bg-primary text-white shadow-lg shadow-primary/25'
                                 : 'text-muted-foreground hover:bg-background hover:text-foreground'
@@ -919,6 +934,21 @@ export default function DashboardPage() {
                                      </Button>
                                 </div>
                             </div>
+                        )}
+
+                        {/* PAYMENTS TAB */}
+                        {activeTab === 'payments' && (
+                            <StudentPayments />
+                        )}
+
+                        {/* LOGS TAB */}
+                        {activeTab === 'logs' && (
+                            <StudentLogs />
+                        )}
+
+                        {/* REFERRALS TAB */}
+                        {activeTab === 'referrals' && (
+                            <StudentReferrals />
                         )}
                     </div>
                 )}

@@ -1,0 +1,56 @@
+model StaffAttendance {
+  id           String   @id @default(cuid())
+  userId       String
+  date         DateTime @db.Date
+  checkInTime  DateTime
+  checkOutTime DateTime?
+  totalHours   Float?
+  status       String   @default("PRESENT") // PRESENT, ABSENT, LEAVE
+  location     String?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model DemoSchedule {
+  id          String   @id @default(cuid())
+  leadId      String
+  assignedTo  String
+  scheduledAt DateTime
+  status      String   @default("SCHEDULED") // SCHEDULED, COMPLETED, NO_SHOW, CANCELLED
+  meetingLink String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignee    User     @relation("AssignedDemoTo", fields: [assignedTo], references: [id], onDelete: Cascade)
+}
+
+model StaffGoal {
+  id            String   @id @default(cuid())
+  userId        String
+  goalType      String   // REVENUE, ENROLLMENTS, CALLS
+  targetValue   Float
+  achievedValue Float    @default(0)
+  month         Int
+  year          Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, goalType, month, year])
+}
+
+model FollowUpTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  type        String   // WHATSAPP, EMAIL, SCRIPT
+  category    String   // Initial Contact, Follow-up, Discount Offer, etc.
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

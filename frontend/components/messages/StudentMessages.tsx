@@ -197,7 +197,7 @@ export function StudentMessages() {
                                                     </Badge>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                    <span className="font-medium">{msg.sender.name}</span>
+                                                    <span className="font-medium">{msg.sender?.name || 'Admin'}</span>
                                                     <span>•</span>
                                                     <div className="flex items-center gap-1">
                                                         <Clock className="w-3 h-3" />

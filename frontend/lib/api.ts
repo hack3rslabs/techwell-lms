@@ -60,6 +60,10 @@ export const authApi = {
     login: (data: { email: string; password: string }) =>
         api.post('/auth/login', data),
     refresh: () => api.post('/auth/refresh'),
+    setup2FA: () => api.post('/auth/2fa/setup'),
+    enable2FA: (data: { code: string }) => api.post('/auth/2fa/enable', data),
+    disable2FA: () => api.post('/auth/2fa/disable'),
+    verify2FA: (data: { code: string; tempToken: string; trustDevice?: boolean }) => api.post('/auth/2fa/verify', data),
 };
 
 // User API
@@ -81,10 +85,25 @@ export const employerApi = {
 };
 
 export const uploadApi = {
-    upload: (formData: FormData) => api.post('/upload', formData, {
+    upload: (data: FormData) => api.post<{ url: string }>('/upload', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
 };
+
+export const gdprApi = {
+    getPreferences: () => api.get('/gdpr/preferences'),
+    updatePreferences: (data: { subscribedToNewsletter: boolean }) => api.post('/gdpr/preferences', data),
+    requestDeletion: () => api.post('/gdpr/delete-request'),
+};
+
+export const referralApi = {
+    getMe: () => api.get('/referrals/me'),
+    generateCode: () => api.post('/referrals/generate'),
+    applyReferral: (data: { code: string }) => api.post('/referrals/apply', data),
+    getAdminStats: () => api.get('/referrals/stats'),
+};
+
+
 
 export const searchApi = {
     global: (query: string) => api.get('/search', { params: { q: query } })
@@ -105,12 +124,30 @@ export interface CoursePayload {
     courseType?: 'RECORDED' | 'LIVE' | 'HYBRID';
     hasInterviewPrep?: boolean;
     interviewPrice?: number;
+    jobPrep?: boolean;
+    fakeEnrolledCount?: number;
+    fakeRating?: number;
+    benefits?: unknown;
+    specialOffers?: unknown;
+    requireAdmissionFee?: boolean;
+    admissionFee?: number;
+    slug?: string;
+    seoTitle?: string;
+    metaDescription?: string;
+    targetKeywords?: string[];
+    faqs?: { question: string; answer: string }[];
+    careerOpportunities?: unknown;
+    salaryInsights?: unknown;
+    projects?: unknown;
+    prerequisites?: unknown;
+    learningOutcomes?: unknown;
+    toolsCovered?: string[];
     [key: string]: unknown;
 }
 
 // Course API
 export const courseApi = {
-    getAll: (params?: { category?: string; search?: string; page?: number; limit?: number }) =>
+    getAll: (params?: { category?: string; search?: string; page?: number; limit?: number; jobPrep?: boolean }) =>
         api.get('/courses', { params }),
     getById: (id: string) => api.get(`/courses/${id}`),
     create: (data: CoursePayload) =>
@@ -205,6 +242,8 @@ export const certificateApi = {
         defaultValidityMonths?: number | null;
         instituteName?: string;
         instituteLogoUrl?: string;
+        stampUrl?: string;
+        stampPosition?: string;
     }) => api.put('/certificates/admin/settings', data),
 
     // Templates
@@ -316,6 +355,7 @@ export const leadApi = {
     getCounts: () => api.get('/leads/counts'),
     create: (data: unknown) => api.post('/leads', data),
     capture: (data: unknown) => api.post('/leads/capture', data),
+    captureDemo: (data: unknown) => api.post('/leads/demo', data),
     markSeen: () => api.post('/leads/mark-seen'),
     update: (id: string, data: unknown) => api.put(`/leads/${id}`, data),
     delete: (id: string) => api.delete(`/leads/${id}`),
@@ -344,6 +384,7 @@ export const liveClassApi = {
 
 // Analytics API
 export const analyticsApi = {
+    getDashboard: () => api.get('/analytics/dashboard'),
     getInterviewStats: () => api.get('/analytics/interviews'),
     getBenchmark: () => api.get('/analytics/benchmark'),
 };
@@ -402,6 +443,14 @@ export const galleryApi = {
     delete: (id: string) => api.delete('/gallery', { params: { id } }),
 };
 
+
+// Coupon API
+export const couponApi = {
+    getAll: () => api.get('/coupons'),
+    create: (data: { code: string; discountPercent: number; expiryDate: string; courseIds: string[]; usageLimit?: number | null }) => api.post('/coupons', data),
+    delete: (id: string) => api.delete(`/coupons/${id}`),
+    validate: (data: { code: string; courseId: string }) => api.post('/coupons/validate', data),
+};
 
 export default api;
 

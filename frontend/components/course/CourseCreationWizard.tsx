@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input'
 import Image from "next/image"
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Wand2, Plus, GripVertical, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Loader2, Wand2, Plus, GripVertical, CheckCircle, ArrowRight, ArrowLeft, X } from 'lucide-react'
 import { VideoUpload } from '@/components/admin/VideoUpload'
 import { getFullImageUrl } from '@/lib/image-utils'
+import { RichTextEditor } from '@/components/ui/RichTextEditor'
 
 interface CourseCreationWizardProps {
     redirectPath: string
@@ -56,7 +57,23 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                         jobRoles: c.jobRoles || [],
                         courseType: c.courseType || 'RECORDED',
                         hasInterviewPrep: c.hasInterviewPrep || false,
-                        interviewPrice: Number(c.interviewPrice) || 0
+                        interviewPrice: Number(c.interviewPrice) || 0,
+                        jobPrep: c.jobPrep || false,
+                        fakeEnrolledCount: Number(c.fakeEnrolledCount) || 0,
+                        fakeRating: Number(c.fakeRating) || 4.5,
+                        requireAdmissionFee: c.requireAdmissionFee ?? true,
+                        admissionFee: Number(c.admissionFee) ?? 1000,
+                        slug: c.slug || '',
+                        seoTitle: c.seoTitle || '',
+                        metaDescription: c.metaDescription || '',
+                        targetKeywords: c.targetKeywords || [],
+                        faqs: c.faqs || [],
+                        careerOpportunities: c.careerOpportunities || [],
+                        salaryInsights: c.salaryInsights || [],
+                        projects: c.projects || [],
+                        prerequisites: c.prerequisites || [],
+                        learningOutcomes: c.learningOutcomes || [],
+                        toolsCovered: c.toolsCovered || []
                     })
                     if (c.modules) {
                         setModules(c.modules)
@@ -68,7 +85,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
             fetchCourse()
         }
     }, [initialCourseId])
-
+ 
     // Step 1 Data
     const [basicData, setBasicData] = React.useState({
         title: '',
@@ -84,7 +101,26 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         // Course Types
         courseType: 'RECORDED' as 'RECORDED' | 'LIVE' | 'HYBRID',
         hasInterviewPrep: false,
-        interviewPrice: 0
+        interviewPrice: 0,
+        jobPrep: false,
+        // New Features
+        fakeEnrolledCount: 0,
+        fakeRating: 4.5,
+        requireAdmissionFee: true,
+        admissionFee: 1000,
+        // SEO Fields
+        slug: '',
+        seoTitle: '',
+        metaDescription: '',
+        targetKeywords: [] as string[],
+        faqs: [] as { question: string, answer: string }[],
+        // SEO Content Fields (Phase 2)
+        careerOpportunities: [] as { role: string; description: string }[],
+        salaryInsights: [] as { role: string; min: string; max: string; average: string }[],
+        projects: [] as { title: string; description: string; duration: string }[],
+        prerequisites: [] as string[],
+        learningOutcomes: [] as string[],
+        toolsCovered: [] as string[],
     })
 
     // Step 2 Data (Curriculum)
@@ -181,6 +217,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
 
             // Clean jobRoles: remove empty strings
             const cleanJobRoles = Array.isArray(basicData.jobRoles) ? basicData.jobRoles.filter(Boolean) : [];
+            const cleanTargetKeywords = Array.isArray(basicData.targetKeywords) ? basicData.targetKeywords.filter(Boolean) : [];
 
             // Explicitly build payload with EXACT fields expected by backend
             const payload: CoursePayload = {
@@ -198,6 +235,22 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                 courseType: basicData.courseType as 'RECORDED' | 'LIVE' | 'HYBRID',
                 hasInterviewPrep: basicData.hasInterviewPrep,
                 interviewPrice: Number(basicData.interviewPrice) || 0,
+                jobPrep: basicData.jobPrep,
+                fakeEnrolledCount: Number(basicData.fakeEnrolledCount) || 0,
+                fakeRating: Number(basicData.fakeRating) || 4.5,
+                requireAdmissionFee: basicData.requireAdmissionFee,
+                admissionFee: Number(basicData.admissionFee) || 0,
+                slug: basicData.slug || undefined,
+                seoTitle: basicData.seoTitle || undefined,
+                metaDescription: basicData.metaDescription || undefined,
+                targetKeywords: cleanTargetKeywords,
+                faqs: basicData.faqs,
+                careerOpportunities: basicData.careerOpportunities,
+                salaryInsights: basicData.salaryInsights,
+                projects: basicData.projects,
+                prerequisites: basicData.prerequisites,
+                learningOutcomes: basicData.learningOutcomes,
+                toolsCovered: basicData.toolsCovered
             };
 
             console.log('[DEBUG] Final payload being sent to backend:', JSON.stringify(payload, null, 2));
@@ -384,12 +437,10 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Description</label>
-                                <Textarea
+                                <RichTextEditor
                                     value={basicData.description}
-                                    onChange={e => setBasicData({ ...basicData, description: e.target.value })}
+                                    onChange={(val: string) => setBasicData({ ...basicData, description: val })}
                                     placeholder="What will students learn?"
-                                    className="min-h-[100px]"
-                                    required
                                 />
                             </div>
 
@@ -515,26 +566,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Price (₹)</label>
-                                    <Input
-                                        type="number"
-                                        value={basicData.price}
-                                        onChange={e => setBasicData({ ...basicData, price: Number(e.target.value) })}
-                                        min="0"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Discount Price (₹)</label>
-                                    <Input
-                                        type="number"
-                                        value={basicData.discountPrice}
-                                        onChange={e => setBasicData({ ...basicData, discountPrice: Number(e.target.value) })}
-                                        min="0"
-                                    />
-                                </div>
-                            </div>
+                            {/* Price fields hidden as per user request */}
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Course Code</label>
@@ -604,7 +636,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                     </button>
                                 </div>
                                 {basicData.hasInterviewPrep && (
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 hidden">
                                         <label className="text-sm font-medium">Interview Prep Price (₹)</label>
                                         <Input
                                             type="number"
@@ -615,6 +647,297 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                         />
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Job Prep Integration */}
+                            <div className="space-y-3 pt-4 border-t">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <label className="text-sm font-medium">Job Placement & Assistance (Job Prep)</label>
+                                        <p className="text-xs text-muted-foreground">Toggle to flag this course as a Placement Assistance / Job Prep Program</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        aria-label="Toggle Job Prep"
+                                        onClick={() => setBasicData({ ...basicData, jobPrep: !basicData.jobPrep })}
+                                        className={`w-12 h-6 rounded-full transition-colors ${basicData.jobPrep ? 'bg-primary' : 'bg-muted'
+                                            } relative`}
+                                    >
+                                        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${basicData.jobPrep ? 'translate-x-7' : 'translate-x-1'
+                                            }`} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Marketing & Pricing Features */}
+                            <div className="space-y-4 pt-4 border-t">
+                                <h3 className="text-sm font-semibold">Marketing & Pricing Settings</h3>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Initial Enrolled Count (Fake Count)</label>
+                                        <Input
+                                            type="number"
+                                            value={basicData.fakeEnrolledCount}
+                                            onChange={e => setBasicData({ ...basicData, fakeEnrolledCount: Number(e.target.value) })}
+                                            min="0"
+                                            placeholder="e.g. 500"
+                                        />
+                                        <p className="text-[10px] text-muted-foreground">This number is added to actual enrollments to show public popularity.</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Initial Rating (Fake Rating)</label>
+                                        <Input
+                                            type="number"
+                                            value={basicData.fakeRating}
+                                            onChange={e => setBasicData({ ...basicData, fakeRating: Number(e.target.value) })}
+                                            min="0"
+                                            max="5"
+                                            step="0.1"
+                                            placeholder="e.g. 4.8"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between mt-2">
+                                    <div>
+                                        <label className="text-sm font-medium">Require Admission Fee</label>
+                                        <p className="text-xs text-muted-foreground">If enabled, students must pay an admission fee before enrolling.</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        aria-label="Toggle Admission Fee"
+                                        onClick={() => setBasicData({ ...basicData, requireAdmissionFee: !basicData.requireAdmissionFee })}
+                                        className={`w-12 h-6 rounded-full transition-colors ${basicData.requireAdmissionFee ? 'bg-primary' : 'bg-muted'
+                                            } relative`}
+                                    >
+                                        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${basicData.requireAdmissionFee ? 'translate-x-7' : 'translate-x-1'
+                                            }`} />
+                                    </button>
+                                </div>
+
+                                {basicData.requireAdmissionFee && (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Admission Fee Amount (₹)</label>
+                                        <Input
+                                            type="number"
+                                            value={basicData.admissionFee}
+                                            onChange={e => setBasicData({ ...basicData, admissionFee: Number(e.target.value) })}
+                                            min="0"
+                                            placeholder="e.g. 1000"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* SEO Settings (Phase 1) */}
+                            <div className="space-y-4 pt-6 border-t">
+                                <div>
+                                    <h3 className="text-lg font-medium">SEO & Meta Data</h3>
+                                    <p className="text-sm text-muted-foreground">Optimize your course for search engines</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">SEO URL (Slug) <span className="text-muted-foreground font-normal">(optional)</span></label>
+                                        <Input
+                                            value={basicData.slug}
+                                            onChange={e => setBasicData({ ...basicData, slug: e.target.value })}
+                                            placeholder="e.g. python-full-stack-development-course"
+                                        />
+                                        <p className="text-xs text-muted-foreground">Leave blank to auto-generate from title</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">SEO Title</label>
+                                        <Input
+                                            value={basicData.seoTitle}
+                                            onChange={e => setBasicData({ ...basicData, seoTitle: e.target.value })}
+                                            placeholder="e.g. Python Full Stack Development Course | Live Training"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Meta Description</label>
+                                    <Textarea
+                                        value={basicData.metaDescription}
+                                        onChange={e => setBasicData({ ...basicData, metaDescription: e.target.value })}
+                                        placeholder="Brief summary for search engine results..."
+                                        rows={3}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Target Keywords (comma separated)</label>
+                                    <Input
+                                        value={basicData.targetKeywords?.join(', ')}
+                                        onChange={e => setBasicData({ 
+                                            ...basicData, 
+                                            targetKeywords: e.target.value.split(',').map(k => k.trim()).filter(Boolean) 
+                                        })}
+                                        placeholder="e.g. python course, full stack training, web development"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium">Frequently Asked Questions (FAQ Schema)</label>
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => setBasicData({
+                                                ...basicData,
+                                                faqs: [...(basicData.faqs || []), { question: '', answer: '' }]
+                                            })}
+                                        >
+                                            <Plus className="h-4 w-4 mr-2" />
+                                            Add FAQ
+                                        </Button>
+                                    </div>
+                                    {basicData.faqs?.map((faq, index) => (
+                                        <div key={index} className="space-y-2 p-3 border rounded-md relative">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="absolute top-2 right-2 h-6 w-6 p-0 text-destructive"
+                                                onClick={() => {
+                                                    const newFaqs = [...basicData.faqs];
+                                                    newFaqs.splice(index, 1);
+                                                    setBasicData({ ...basicData, faqs: newFaqs });
+                                                }}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                            <Input
+                                                placeholder="Question"
+                                                value={faq.question}
+                                                onChange={e => {
+                                                    const newFaqs = [...basicData.faqs];
+                                                    newFaqs[index].question = e.target.value;
+                                                    setBasicData({ ...basicData, faqs: newFaqs });
+                                                }}
+                                                className="pr-8"
+                                            />
+                                            <Textarea
+                                                placeholder="Answer"
+                                                value={faq.answer}
+                                                onChange={e => {
+                                                    const newFaqs = [...basicData.faqs];
+                                                    newFaqs[index].answer = e.target.value;
+                                                    setBasicData({ ...basicData, faqs: newFaqs });
+                                                }}
+                                                rows={2}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* SEO Content Settings (Phase 2) */}
+                            <div className="space-y-6 pt-6 border-t">
+                                <div>
+                                    <h3 className="text-lg font-medium">Course Landing Page Content</h3>
+                                    <p className="text-sm text-muted-foreground">Add high-converting sections for your course landing page</p>
+                                </div>
+
+                                {/* Prerequisites */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Prerequisites</label>
+                                    <Textarea
+                                        value={basicData.prerequisites?.join('\n')}
+                                        onChange={e => setBasicData({ ...basicData, prerequisites: e.target.value.split('\n').filter(Boolean) })}
+                                        placeholder="Enter each prerequisite on a new line"
+                                        rows={3}
+                                    />
+                                </div>
+
+                                {/* Learning Outcomes */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Learning Outcomes</label>
+                                    <Textarea
+                                        value={basicData.learningOutcomes?.join('\n')}
+                                        onChange={e => setBasicData({ ...basicData, learningOutcomes: e.target.value.split('\n').filter(Boolean) })}
+                                        placeholder="Enter each outcome on a new line"
+                                        rows={4}
+                                    />
+                                </div>
+
+                                {/* Tools Covered */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Tools Covered</label>
+                                    <Textarea
+                                        value={basicData.toolsCovered?.join('\n')}
+                                        onChange={e => setBasicData({ ...basicData, toolsCovered: e.target.value.split('\n').filter(Boolean) })}
+                                        placeholder="Enter each tool on a new line (e.g. React, Docker, AWS)"
+                                        rows={3}
+                                    />
+                                </div>
+
+                                {/* Projects */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium">Hands-on Projects</label>
+                                        <Button 
+                                            type="button" variant="outline" size="sm"
+                                            onClick={() => setBasicData({ ...basicData, projects: [...(basicData.projects || []), { title: '', description: '', duration: '' }] })}
+                                        >
+                                            <Plus className="h-4 w-4 mr-2" /> Add Project
+                                        </Button>
+                                    </div>
+                                    {basicData.projects?.map((proj, index) => (
+                                        <div key={index} className="space-y-2 p-3 border rounded-md relative">
+                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 h-6 w-6 p-0 text-destructive"
+                                                onClick={() => { const newArr = [...basicData.projects]; newArr.splice(index, 1); setBasicData({ ...basicData, projects: newArr }); }}><X className="h-4 w-4" /></Button>
+                                            <Input placeholder="Project Title" value={proj.title} onChange={e => { const newArr = [...basicData.projects]; newArr[index].title = e.target.value; setBasicData({ ...basicData, projects: newArr }); }} className="pr-8" />
+                                            <Textarea placeholder="Project Description" value={proj.description} onChange={e => { const newArr = [...basicData.projects]; newArr[index].description = e.target.value; setBasicData({ ...basicData, projects: newArr }); }} rows={2} />
+                                            <Input placeholder="Duration (e.g. 2 weeks)" value={proj.duration} onChange={e => { const newArr = [...basicData.projects]; newArr[index].duration = e.target.value; setBasicData({ ...basicData, projects: newArr }); }} />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Career Opportunities */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium">Career Opportunities</label>
+                                        <Button 
+                                            type="button" variant="outline" size="sm"
+                                            onClick={() => setBasicData({ ...basicData, careerOpportunities: [...(basicData.careerOpportunities || []), { role: '', description: '' }] })}
+                                        >
+                                            <Plus className="h-4 w-4 mr-2" /> Add Role
+                                        </Button>
+                                    </div>
+                                    {basicData.careerOpportunities?.map((item, index) => (
+                                        <div key={index} className="space-y-2 p-3 border rounded-md relative flex gap-2">
+                                            <div className="flex-1 space-y-2">
+                                                <Input placeholder="Job Role (e.g. Software Engineer)" value={item.role} onChange={e => { const newArr = [...basicData.careerOpportunities]; newArr[index].role = e.target.value; setBasicData({ ...basicData, careerOpportunities: newArr }); }} />
+                                                <Input placeholder="Short Description" value={item.description} onChange={e => { const newArr = [...basicData.careerOpportunities]; newArr[index].description = e.target.value; setBasicData({ ...basicData, careerOpportunities: newArr }); }} />
+                                            </div>
+                                            <Button type="button" variant="ghost" size="sm" className="h-10 w-10 p-0 text-destructive self-start"
+                                                onClick={() => { const newArr = [...basicData.careerOpportunities]; newArr.splice(index, 1); setBasicData({ ...basicData, careerOpportunities: newArr }); }}><X className="h-4 w-4" /></Button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Salary Insights */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium">Salary Insights</label>
+                                        <Button 
+                                            type="button" variant="outline" size="sm"
+                                            onClick={() => setBasicData({ ...basicData, salaryInsights: [...(basicData.salaryInsights || []), { role: '', min: '', max: '', average: '' }] })}
+                                        >
+                                            <Plus className="h-4 w-4 mr-2" /> Add Insight
+                                        </Button>
+                                    </div>
+                                    {basicData.salaryInsights?.map((item, index) => (
+                                        <div key={index} className="space-y-2 p-3 border rounded-md relative grid grid-cols-2 gap-2">
+                                            <Button type="button" variant="ghost" size="sm" className="absolute -top-3 -right-3 h-6 w-6 p-0 bg-background border text-destructive rounded-full"
+                                                onClick={() => { const newArr = [...basicData.salaryInsights]; newArr.splice(index, 1); setBasicData({ ...basicData, salaryInsights: newArr }); }}><X className="h-4 w-4" /></Button>
+                                            <Input className="col-span-2" placeholder="Job Role (e.g. Full Stack Developer)" value={item.role} onChange={e => { const newArr = [...basicData.salaryInsights]; newArr[index].role = e.target.value; setBasicData({ ...basicData, salaryInsights: newArr }); }} />
+                                            <Input placeholder="Min (e.g. ₹4 LPA)" value={item.min} onChange={e => { const newArr = [...basicData.salaryInsights]; newArr[index].min = e.target.value; setBasicData({ ...basicData, salaryInsights: newArr }); }} />
+                                            <Input placeholder="Max (e.g. ₹12 LPA)" value={item.max} onChange={e => { const newArr = [...basicData.salaryInsights]; newArr[index].max = e.target.value; setBasicData({ ...basicData, salaryInsights: newArr }); }} />
+                                            <Input className="col-span-2" placeholder="Average (e.g. ₹6 LPA)" value={item.average} onChange={e => { const newArr = [...basicData.salaryInsights]; newArr[index].average = e.target.value; setBasicData({ ...basicData, salaryInsights: newArr }); }} />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
 
                             <div className="flex justify-end pt-4">
@@ -820,16 +1143,28 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                                                 <label className="text-xs font-medium">
                                                                     {lesson.type === 'PDF' ? 'PDF URL' : 'Content / Instructions'}
                                                                 </label>
-                                                                <Textarea
-                                                                    className="min-h-[100px]"
-                                                                    placeholder={lesson.type === 'PDF' ? 'Paste PDF link here...' : 'Write content details...'}
-                                                                    value={lesson.content || ''}
-                                                                    onChange={(e) => {
-                                                                        const newModules = [...modules]
-                                                                        newModules[idx].lessons[lIdx].content = e.target.value
-                                                                        setModules(newModules)
-                                                                    }}
-                                                                />
+                                                                {lesson.type === 'PDF' ? (
+                                                                    <Textarea
+                                                                        className="min-h-[100px]"
+                                                                        placeholder="Paste PDF link here..."
+                                                                        value={lesson.content || ''}
+                                                                        onChange={(e) => {
+                                                                            const newModules = [...modules]
+                                                                            newModules[idx].lessons[lIdx].content = e.target.value
+                                                                            setModules(newModules)
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    <RichTextEditor
+                                                                        value={lesson.content || ''}
+                                                                        onChange={(val: string) => {
+                                                                            const newModules = [...modules]
+                                                                            newModules[idx].lessons[lIdx].content = val
+                                                                            setModules(newModules)
+                                                                        }}
+                                                                        placeholder="Write lesson content here..."
+                                                                    />
+                                                                )}
                                                             </div>
                                                         )}
 
@@ -903,13 +1238,14 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                 <span className="text-muted-foreground">Total Lessons:</span>
                                 <p className="font-medium">{modules.reduce((acc, m) => acc + m.lessons.length, 0)}</p>
                             </div>
-                            <div>
-                                <span className="text-muted-foreground">Price:</span>
-                                <p className="font-medium">₹{basicData.price}</p>
-                            </div>
+                            {/* Price hidden from review as per user request */}
                             <div>
                                 <span className="text-muted-foreground">Interview Prep:</span>
                                 <p className="font-medium">{basicData.hasInterviewPrep ? 'Yes' : 'No'}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Job Prep:</span>
+                                <p className="font-medium">{basicData.jobPrep ? 'Yes' : 'No'}</p>
                             </div>
                         </div>
 
