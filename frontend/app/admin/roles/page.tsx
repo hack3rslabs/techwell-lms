@@ -96,7 +96,8 @@ export default function RolesAndUsersPage() {
             return
         }
         try {
-            const res = await api.get('/users')
+            // Only fetch staff/admin roles, explicitly exclude students
+            const res = await api.get('/users?role=SUPER_ADMIN,ADMIN,INSTRUCTOR,EMPLOYER,STAFF,INSTITUTE_ADMIN')
             setUsers(res.data.users || [])
         } catch (error) {
             console.error('Failed to fetch users:', error)

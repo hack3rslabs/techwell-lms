@@ -111,10 +111,10 @@ export default function GDPRPage() {
                         <CardContent className="pt-6">
                             <h2 className="text-xl font-bold text-primary mb-3">Exercise Your Rights</h2>
                             <p className="text-muted-foreground mb-4">Contact our Data Protection Officer:</p>
-                            <Link href="mailto:dpo@techwell.co.in">
+                            <Link href="mailto:info@techwell.co.in">
                                 <Button className="gap-2">
                                     <Mail className="h-4 w-4" />
-                                    dpo@techwell.co.in
+                                    info@techwell.co.in
                                 </Button>
                             </Link>
                             <p className="text-sm text-muted-foreground mt-4">

@@ -39,6 +39,9 @@ export function PermissionGuard({ children, featureCode }: PermissionGuardProps)
         if (path.startsWith("/admin/support") || path.startsWith("/admin/help-center")) return "TICKETS"
         if (path.startsWith("/admin/settings")) return "SETTINGS"
         if (path === "/admin") return "DASHBOARD"
+        if (path.startsWith("/admin/cms")) return "CMS"
+        if (path.startsWith("/admin/coupons")) return "CMS"
+        if (path.startsWith("/admin/transactions")) return "FINANCE"
         return null
     }
 

@@ -64,55 +64,65 @@ exports.sendMessageToStudents = async (req, res) => {
   }
 };
 
-// Send message to specific batch
+// Send message to specific batches
 exports.sendMessageToBatch = async (req, res) => {
   try {
-    const { title, content, batchId, priority = 'NORMAL' } = req.body;
+    const { title, content, batchIds, priority = 'NORMAL' } = req.body;
     const senderId = req.user.id;
 
-    if (!title || !content || !batchId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Title, content, and batchId are required'
-      });
+    if (!title || !content || !batchIds || !Array.isArray(batchIds) || batchIds.length === 0) {
+      // Fallback for older single batchId just in case
+      if (req.body.batchId) {
+          batchIds = [req.body.batchId];
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Title, content, and an array of batchIds are required'
+        });
+      }
     }
 
-    // Verify batch exists
-    const batch = await prisma.batch.findUnique({
-      where: { id: batchId }
+    // Verify batches exist
+    const batches = await prisma.batch.findMany({
+      where: { id: { in: batchIds } }
     });
 
-    if (!batch) {
+    if (batches.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Batch not found'
+        message: 'No batches found'
       });
     }
+
+    const batchNames = batches.map(b => b.name).join(', ');
 
     // Create the admin message
     const adminMessage = await prisma.adminMessage.create({
       data: {
         title,
-        content: `[Batch: ${batch.name}]\n${content}`,
+        content: `[Batches: ${batchNames}]\n${content}`,
         priority,
         senderId,
         isPublished: true
       }
     });
 
-    // Get all enrolled students in this batch
+    // Get all enrolled students in these batches
     const batchStudents = await prisma.enrollment.findMany({
       where: {
-        batchId: batchId,
+        batchId: { in: batchIds },
         status: 'ACTIVE'
       },
       select: { userId: true }
     });
 
+    // Create unique recipients to avoid duplicates if a student is in multiple batches
+    const uniqueUserIds = [...new Set(batchStudents.map(e => e.userId))];
+
     // Create recipients for each student
-    const recipients = batchStudents.map(enrollment => ({
+    const recipients = uniqueUserIds.map(userId => ({
       messageId: adminMessage.id,
-      userId: enrollment.userId,
+      userId: userId,
       isRead: false
     }));
 

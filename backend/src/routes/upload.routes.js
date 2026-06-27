@@ -72,4 +72,29 @@ router.post('/', authenticate, upload.single('file'), (req, res) => {
     }
 });
 
+/**
+ * @route   POST /api/upload/public-resume
+ * @desc    Public upload for resumes from career guide
+ * @access  Public
+ */
+router.post('/public-resume', upload.single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+        console.log('[DEBUG] Public Resume uploaded:', req.file);
+
+        // Return full URL for frontend
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+
+        res.json({
+            message: 'Resume uploaded successfully',
+            url: fileUrl
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;

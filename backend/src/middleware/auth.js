@@ -16,7 +16,7 @@ const authenticate = async (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
         const user = await prisma.user.findUnique({
             where: { id: decoded.userId },
@@ -67,6 +67,7 @@ const authenticate = async (req, res, next) => {
 
         req.user = {
             ...user,
+            permissions: Array.isArray(user.permissions) ? user.permissions : [],
             rolePermissions
         };
         next();
@@ -159,7 +160,7 @@ const optionalAuth = async (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
         const user = await prisma.user.findUnique({
             where: { id: decoded.userId },
@@ -167,12 +168,16 @@ const optionalAuth = async (req, res, next) => {
                 id: true,
                 email: true,
                 name: true,
-                role: true
+                role: true,
+                permissions: true
             }
         });
 
         if (user) {
-            req.user = user;
+            req.user = {
+                ...user,
+                permissions: Array.isArray(user.permissions) ? user.permissions : []
+            };
         }
 
         next();

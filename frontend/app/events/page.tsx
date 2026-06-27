@@ -1,0 +1,376 @@
+"use client"
+
+import * as React from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Calendar, Clock, MapPin, Video, Users, ArrowRight, Loader2 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import api from '@/lib/api'
+
+export default function EventsPage() {
+    const searchParams = useSearchParams()
+    
+    const [events, setEvents] = React.useState<any[]>([])
+    const [ads, setAds] = React.useState<any[]>([])
+    const [isLoadingEvents, setIsLoadingEvents] = React.useState(true)
+
+    const [selectedEvent, setSelectedEvent] = React.useState<any>(null)
+    const [isModalOpen, setIsModalOpen] = React.useState(false)
+    const [isLoading, setIsLoading] = React.useState(false)
+    const [isSuccess, setIsSuccess] = React.useState(false)
+
+    // Base form data
+    const [formData, setFormData] = React.useState({
+        name: '',
+        email: '',
+        phone: '',
+        college: '',
+        district: '',
+        pinCode: '',
+        referralName: ''
+    })
+
+    // Custom form data object to capture dynamic fields
+    const [customFormData, setCustomFormData] = React.useState<Record<string, string>>({})
+
+    const fetchEvents = React.useCallback(async () => {
+        setIsLoadingEvents(true)
+        try {
+            const [eventsRes, adsRes] = await Promise.all([
+                api.get('/events'),
+                api.get('/ads/active')
+            ])
+            const fetchedEvents = eventsRes.data || []
+            setEvents(fetchedEvents)
+            const fetchedAds = adsRes.data.ads || []
+            setAds(fetchedAds)
+
+            // Record views for fetched ads asynchronously
+            fetchedAds.forEach((ad: any) => {
+                api.post(`/ads/${ad.id}/view`).catch(console.error)
+            })
+            
+            // Handle QR Code ?register=[id] parameter
+            const registerId = searchParams.get('register')
+            if (registerId) {
+                const eventToRegister = fetchedEvents.find((e: any) => e.id === registerId)
+                if (eventToRegister) {
+                    handleRegisterClick(eventToRegister)
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch events or ads:', error)
+        } finally {
+            setIsLoadingEvents(false)
+        }
+    }, [searchParams])
+
+    React.useEffect(() => {
+        fetchEvents()
+    }, [fetchEvents])
+
+    const handleRegisterClick = (event: any) => {
+        setSelectedEvent(event)
+        setIsSuccess(false)
+        setCustomFormData({}) // Reset custom form state
+        setIsModalOpen(true)
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+
+        try {
+            await api.post('/leads/capture', {
+                ...formData,
+                leadType: 'EVENT',
+                source: `Event: ${selectedEvent?.title}`,
+                // Pass custom form fields as stringified JSON in the notes field
+                notes: `Event ID: ${selectedEvent?.id} | Custom Responses: ${JSON.stringify(customFormData)}`
+            })
+            setIsSuccess(true)
+            setFormData({
+                name: '',
+                email: '',
+                phone: '',
+                college: '',
+                district: '',
+                pinCode: '',
+                referralName: ''
+            })
+            setCustomFormData({})
+        } catch (error) {
+            console.error('Registration failed:', error)
+            alert('Failed to register. Please try again later.')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const renderCustomField = (field: any) => {
+        const id = `custom-${field.name}`
+        const value = customFormData[field.name] || ''
+        const onChange = (e: any) => setCustomFormData({ ...customFormData, [field.name]: e.target.value })
+
+        if (field.type === 'textarea') {
+            return (
+                <div key={id} className="space-y-2">
+                    <Label htmlFor={id}>{field.label} {field.required && '*'}</Label>
+                    <Textarea id={id} required={field.required} value={value} onChange={onChange} />
+                </div>
+            )
+        }
+        
+        return (
+            <div key={id} className="space-y-2">
+                <Label htmlFor={id}>{field.label} {field.required && '*'}</Label>
+                <Input 
+                    id={id} 
+                    type={field.type === 'url' ? 'url' : field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'} 
+                    required={field.required} 
+                    value={value} 
+                    onChange={onChange} 
+                />
+            </div>
+        )
+    }
+
+    return (
+        <div className="min-h-screen bg-slate-50 dark:bg-[#030712] pt-24 pb-20">
+            {/* Header */}
+            <div className="bg-indigo-900/10 dark:bg-indigo-500/5 border-b border-indigo-500/10 py-16">
+                <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <Badge className="bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border-none mb-6">Explore What's Next</Badge>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white mb-6">
+                        Events & <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-teal-400">Webinars</span>
+                    </h1>
+                    <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                        Level up your skills, connect with industry leaders, and secure your career with our exclusive upcoming events.
+                    </p>
+                </div>
+            </div>
+
+            {/* Main Content Layout */}
+            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Ads Sidebar */}
+                    <div className="hidden lg:flex flex-col gap-6 lg:col-span-2">
+                        {ads.filter(ad => ['LEFT_1', 'LEFT_2', 'LEFT_SIDEBAR'].includes(ad.position)).map(ad => (
+                            <a key={ad.id} href={ad.targetUrl || '#'} target="_blank" rel="noopener noreferrer" onClick={() => api.post(`/ads/${ad.id}/click`).catch(console.error)} className="block w-full rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ad-attention-grab">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={ad.imageUrl} alt={ad.title} className="w-full object-cover group-hover:scale-105 transition-transform" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                                {(ad.businessName || ad.contactInfo) && (
+                                    <div className="p-3 text-xs bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
+                                        {ad.businessName && <div className="font-semibold text-slate-800 dark:text-slate-200">{ad.businessName}</div>}
+                                        {ad.contactInfo && <div className="text-slate-500 dark:text-slate-400 mt-1">{ad.contactInfo}</div>}
+                                    </div>
+                                )}
+                            </a>
+                        ))}
+                    </div>
+
+                    {/* Events Feed */}
+                    <div className="lg:col-span-8 space-y-6">
+                    {isLoadingEvents ? (
+                        <div className="py-20 text-center">
+                            <Loader2 className="w-10 h-10 animate-spin mx-auto text-indigo-500 mb-4" />
+                            <p className="text-muted-foreground text-lg">Loading events...</p>
+                        </div>
+                    ) : events.length === 0 ? (
+                        <div className="py-20 text-center bg-white dark:bg-[#0B1121] rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <Calendar className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-700 mb-4" />
+                            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No Upcoming Events</h3>
+                            <p className="text-slate-500 dark:text-slate-400">Stay tuned! We are planning something awesome.</p>
+                        </div>
+                    ) : (
+                        events.map((event) => {
+                            const eventDate = new Date(event.date)
+                            return (
+                                <div key={event.id} className="group bg-white dark:bg-[#0B1121] rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 hover:shadow-xl transition-all duration-300">
+                                    {event.imageUrl && (
+                                        <div className="w-full h-48 md:h-64 rounded-xl overflow-hidden mb-6">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                                        </div>
+                                    )}
+                                    <div className="flex flex-col md:flex-row gap-6">
+                                    {/* Date Block */}
+                                    <div className="flex-shrink-0 w-32 h-32 bg-indigo-50 dark:bg-indigo-950/30 rounded-xl flex flex-col items-center justify-center border border-indigo-100 dark:border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-300">
+                                        <span className="text-sm font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-100">
+                                            {eventDate.toLocaleString('default', { month: 'short' })}
+                                        </span>
+                                        <span className="text-4xl font-black my-1">{eventDate.getDate()}</span>
+                                        <span className="text-xs font-semibold">{eventDate.getFullYear()}</span>
+                                    </div>
+
+                                    {/* Details */}
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <Badge variant="outline" className="text-xs border-indigo-200 dark:border-indigo-800">{event.type}</Badge>
+                                            {event.status === 'Registration Open' && (
+                                                <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                    {event.status}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-500 transition-colors">{event.title}</h3>
+                                        {event.description && (
+                                            <p className="text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{event.description}</p>
+                                        )}
+                                        
+                                        <div className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-400 mt-auto">
+                                            <div className="flex items-center gap-1.5">
+                                                <Clock className="w-4 h-4" />
+                                                {event.time}
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                {event.type.includes('Offline') ? <MapPin className="w-4 h-4" /> : <Video className="w-4 h-4" />}
+                                                {event.location}
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Users className="w-4 h-4" />
+                                                {Math.max(0, event.seatsTotal - event.seatsBooked)} Seats Left
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action */}
+                                    <div className="flex-shrink-0 flex items-center justify-end mt-4 md:mt-0 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/60 pt-4 md:pt-0 md:pl-6">
+                                        <Button 
+                                            onClick={() => handleRegisterClick(event)}
+                                            disabled={event.status === 'Completed'}
+                                            className="w-full md:w-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-105 transition-transform rounded-xl"
+                                        >
+                                            {event.status === 'Completed' ? 'Completed' : 'Register Now'}
+                                            {event.status !== 'Completed' && <ArrowRight className="w-4 h-4 ml-2" />}
+                                        </Button>
+                                    </div>
+                                    </div>
+                                </div>
+                            )
+                        })
+                    )}
+                    </div>
+
+                    {/* Right Ads Sidebar */}
+                    <div className="hidden lg:flex flex-col gap-6 lg:col-span-2">
+                        {ads.filter(ad => ['RIGHT_1', 'RIGHT_2', 'RIGHT_SIDEBAR'].includes(ad.position)).map(ad => (
+                            <a key={ad.id} href={ad.targetUrl || '#'} target="_blank" rel="noopener noreferrer" onClick={() => api.post(`/ads/${ad.id}/click`).catch(console.error)} className="block w-full rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ad-attention-grab">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={ad.imageUrl} alt={ad.title} className="w-full object-cover group-hover:scale-105 transition-transform" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                                {(ad.businessName || ad.contactInfo) && (
+                                    <div className="p-3 text-xs bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
+                                        {ad.businessName && <div className="font-semibold text-slate-800 dark:text-slate-200">{ad.businessName}</div>}
+                                        {ad.contactInfo && <div className="text-slate-500 dark:text-slate-400 mt-1">{ad.contactInfo}</div>}
+                                    </div>
+                                )}
+                            </a>
+                        ))}
+                    </div>
+
+                    {/* Mobile Ads (Stacked at bottom) */}
+                    {ads.length > 0 && (
+                        <div className="flex lg:hidden flex-col gap-6 pt-8 border-t border-slate-200 dark:border-slate-800">
+                            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider text-center">Featured</h3>
+                            {ads.map(ad => (
+                                <a key={ad.id} href={ad.targetUrl || '#'} target="_blank" rel="noopener noreferrer" onClick={() => api.post(`/ads/${ad.id}/click`).catch(console.error)} className="block w-full rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ad-attention-grab">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={ad.imageUrl} alt={ad.title} className="w-full object-cover group-hover:scale-105 transition-transform" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                                    {(ad.businessName || ad.contactInfo) && (
+                                        <div className="p-3 text-xs bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
+                                            {ad.businessName && <div className="font-semibold text-slate-800 dark:text-slate-200">{ad.businessName}</div>}
+                                            {ad.contactInfo && <div className="text-slate-500 dark:text-slate-400 mt-1">{ad.contactInfo}</div>}
+                                        </div>
+                                    )}
+                                </a>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Registration Modal */}
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Register for {selectedEvent?.title}</DialogTitle>
+                        <DialogDescription>
+                            Fill out the form below to secure your spot.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {isSuccess ? (
+                        <div className="py-6 text-center space-y-4">
+                            <div className="mx-auto w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
+                                <Users className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400">Registration Successful!</h3>
+                            <p className="text-muted-foreground text-sm">We have sent the event details to your email and WhatsApp.</p>
+                            <Button onClick={() => setIsModalOpen(false)} className="w-full mt-4">Close</Button>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Full Name *</Label>
+                                    <Input id="name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone">Mobile Number *</Label>
+                                    <Input id="phone" required placeholder="+91" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email Address *</Label>
+                                <Input id="email" type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="college">College / University</Label>
+                                <Input id="college" value={formData.college} onChange={e => setFormData({...formData, college: e.target.value})} />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="district">District</Label>
+                                    <Input id="district" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="pinCode">Pin Code</Label>
+                                    <Input id="pinCode" value={formData.pinCode} onChange={e => setFormData({...formData, pinCode: e.target.value})} />
+                                </div>
+                            </div>
+
+                            {/* Dynamic Custom Fields Rendering */}
+                            {selectedEvent?.customFormFields?.map((field: any) => renderCustomField(field))}
+
+                            <div className="space-y-2">
+                                <Label htmlFor="referralName">Referral Name (Optional)</Label>
+                                <Input id="referralName" placeholder="Did someone refer you?" value={formData.referralName} onChange={e => setFormData({...formData, referralName: e.target.value})} />
+                            </div>
+
+                            <Button type="submit" className="w-full" disabled={isLoading}>
+                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Complete Registration
+                            </Button>
+                        </form>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+        </div>
+    )
+}

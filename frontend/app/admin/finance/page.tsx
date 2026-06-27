@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Plus, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { Plus, TrendingUp, TrendingDown, DollarSign, Download } from 'lucide-react'
 import api from '@/lib/api'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import * as XLSX from 'xlsx'
 
 export default function FinancePage() {
     const [stats, setStats] = React.useState({ totalIncome: 0, totalExpenses: 0, profit: 0 })
@@ -58,6 +59,24 @@ export default function FinancePage() {
         }
     }
 
+    const handleExportExcel = () => {
+        try {
+            const dataToExport = expenses.map(exp => ({
+                'Title': exp.title,
+                'Category': exp.category,
+                'Date': format(new Date(exp.date), 'dd MMM yyyy'),
+                'Amount': exp.amount
+            }))
+            const ws = XLSX.utils.json_to_sheet(dataToExport)
+            const wb = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(wb, ws, "Expenses")
+            XLSX.writeFile(wb, `Expenses_Export_${new Date().toISOString().split('T')[0]}.xlsx`)
+            toast.success("Exported to Excel successfully")
+        } catch (error) {
+            toast.error("Failed to export to Excel")
+        }
+    }
+
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Financial Overview</h1>
@@ -100,9 +119,14 @@ export default function FinancePage() {
             {/* Expenses */}
             <div className="flex justify-between items-center mt-8">
                 <h2 className="text-xl font-semibold">Expense Tracker</h2>
-                <Button onClick={() => setIsAddOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" /> Add Expense
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleExportExcel} disabled={expenses.length === 0}>
+                        <Download className="h-4 w-4 mr-2" /> Export Excel
+                    </Button>
+                    <Button onClick={() => setIsAddOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" /> Add Expense
+                    </Button>
+                </div>
             </div>
 
             <Card>

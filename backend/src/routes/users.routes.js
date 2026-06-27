@@ -110,6 +110,24 @@ router.get('/me', authenticate, async (req, res, next) => {
 });
 
 /**
+ * @route   GET /api/users/my-logs
+ * @desc    Get current user activity logs
+ * @access  Private
+ */
+router.get('/my-logs', authenticate, async (req, res, next) => {
+    try {
+        const logs = await prisma.auditLog.findMany({
+            where: { performedBy: req.user.id },
+            orderBy: { timestamp: 'desc' },
+            take: 100
+        });
+        res.json({ success: true, data: logs });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   PUT /api/users/me
  * @desc    Update current user profile
  * @access  Private
@@ -137,7 +155,13 @@ router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) =
     try {
         const { page = 1, limit = 20, role, search } = req.query;
         const where = {};
-        if (role) where.role = role;
+        if (role) {
+            if (role.includes(',')) {
+                where.role = { in: role.split(',') };
+            } else {
+                where.role = role;
+            }
+        }
         if (search) {
             where.OR = [
                 { name: { contains: search, mode: 'insensitive' } },
@@ -367,6 +391,11 @@ router.get('/fix-live-permissions', async (req, res) => {
  */
 router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
+        // Strictly protect user creation: Only SUPER_ADMIN and ADMIN are authorized
+        if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
+            return res.status(403).json({ error: 'Access Denied: Only Admins and Super Admins are authorized to directly create users.' });
+        }
+
         const validatedData = createUserSchema.parse(req.body);
         const bcrypt = require('bcryptjs');
 
@@ -451,6 +480,11 @@ router.put('/:id/permissions', authenticate, checkPermission('USERS'), async (re
     try {
         const { id } = req.params;
         const { role, isActive, permissions } = req.body;
+
+        // Strictly protect role and permission changes: Only SUPER_ADMIN and ADMIN are authorized
+        if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
+            return res.status(403).json({ error: 'Access Denied: Only Admins and Super Admins are authorized to change roles or permissions.' });
+        }
         
         // Ensure user is not disabling themselves
         if (id === req.user.id && (isActive === false || role !== 'SUPER_ADMIN')) {

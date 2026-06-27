@@ -1,9 +1,18 @@
-"use client"
-
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FileText, Check, X, AlertTriangle, CreditCard, RefreshCw, Calendar, XCircle, ArrowLeft, Mail } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://techwell.co.in'
+
+export const metadata: Metadata = {
+    title: 'Terms of Service | Techwell User Agreement',
+    description: 'Read Techwell\'s Terms of Service. Learn about permitted use, subscription policies, and user responsibilities. Techwell is for practice purposes only.',
+    keywords: ['Techwell Terms of Service', 'User Agreement', 'Platform Rules', 'Learning Platform Terms'],
+    alternates: { canonical: `${BASE_URL}/terms` },
+    robots: { index: true, follow: false },
+}
 
 export default function TermsPage() {
     return (
@@ -111,7 +120,7 @@ export default function TermsPage() {
                                 </div>
                                 <div className="bg-muted/50 rounded-xl p-4 border">
                                     <RefreshCw className="h-6 w-6 text-purple-500 mb-2" />
-                                    <p className="text-sm text-muted-foreground">30-day money-back guarantee</p>
+                                    <p className="text-sm text-muted-foreground">Custom Enterprise SLAs available</p>
                                 </div>
                                 <div className="bg-muted/50 rounded-xl p-4 border">
                                     <Calendar className="h-6 w-6 text-orange-500 mb-2" />
@@ -147,10 +156,10 @@ export default function TermsPage() {
                                 Contact
                             </h2>
                             <p className="text-muted-foreground mb-4">For questions about these Terms:</p>
-                            <Link href="mailto:legal@techwell.co.in">
+                            <Link href="mailto:info@techwell.co.in">
                                 <Button variant="outline" className="gap-2">
                                     <Mail className="h-4 w-4" />
-                                    legal@techwell.co.in
+                                    info@techwell.co.in
                                 </Button>
                             </Link>
                         </CardContent>

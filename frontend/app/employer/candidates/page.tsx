@@ -349,6 +349,12 @@ export default function EmployerCandidatesPage() {
                                                 >
                                                     <Eye className="mr-2 h-4 w-4 text-gray-400" /> View Profile
                                                 </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => router.push(`/employer/dashboard/ats/candidate/${candidate.applicationId}/ai-history`)}
+                                                    className="cursor-pointer text-gray-700 font-medium rounded-lg"
+                                                >
+                                                    <Star className="mr-2 h-4 w-4 text-purple-500" /> AI Mock History
+                                                </DropdownMenuItem>
                                                 <DropdownMenuSeparator className="bg-gray-100" />
                                                 <DropdownMenuItem
                                                     onClick={() => router.push(`/employer/jobs/${candidate.jobId}`)}

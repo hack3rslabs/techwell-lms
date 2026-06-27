@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Eye, EyeOff, Loader2, Check, X, Mail } from 'lucide-react'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import { toast } from 'sonner'
 
 export default function RegisterPage() {
     const router = useRouter()
@@ -68,8 +69,12 @@ export default function RegisterPage() {
         setIsLoading(true)
 
         try {
-            await register(email, password, name, dob, qualification, college)
+            const result = await register(email, password, name, dob, qualification, college)
             setStep('otp')
+            if (result?.devOtp) {
+                setOtpValue(result.devOtp)
+                toast.success(`[DEV MODE] OTP Auto-filled: ${result.devOtp}`)
+            }
             setTimeLeft(60) // 60 seconds before resend is allowed
         } catch (err: unknown) {
             const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Registration failed. Please try again.'
@@ -91,7 +96,7 @@ export default function RegisterPage() {
         setIsLoading(true)
         try {
             await verifyOtp(email, otpValue)
-            router.push('/dashboard')
+            router.push('/setup-2fa')
         } catch (err: unknown) {
             const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Custom invalid OTP.'
             setError(errorMessage)
@@ -103,9 +108,15 @@ export default function RegisterPage() {
     const handleResendOtp = async () => {
         setError('')
         try {
-            await resendOtp(email)
-            setTimeLeft(60)
-            setOtpValue('')
+            const result = await resendOtp(email)
+            if (result?.devOtp) {
+                setOtpValue(result.devOtp)
+                toast.success(`[DEV MODE] OTP Resent Auto-filled: ${result.devOtp}`)
+            } else {
+                toast.success('A new OTP has been sent to your email.')
+                setTimeLeft(60)
+                setOtpValue('')
+            }
         } catch (err: unknown) {
             const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to resend OTP.'
             setError(errorMessage)

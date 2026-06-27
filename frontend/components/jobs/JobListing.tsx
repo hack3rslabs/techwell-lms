@@ -45,7 +45,7 @@ interface Job {
 }
 
 export default function JobListing() {
-    const { user, isAuthenticated } = useAuth()
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth()
     const router = useRouter()
     const [jobs, setJobs] = useState<Job[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -62,10 +62,16 @@ export default function JobListing() {
     })
 
     useEffect(() => {
-        fetchJobs()
-        if (isAuthenticated) fetchResume()
-        loadRecentSearches()
-    }, [isAuthenticated])
+        if (!authLoading && !isAuthenticated) {
+            router.push('/login')
+            return
+        }
+        if (isAuthenticated) {
+            fetchJobs()
+            fetchResume()
+            loadRecentSearches()
+        }
+    }, [isAuthenticated, authLoading, router])
 
     const fetchResume = async () => {
         try {
@@ -136,6 +142,12 @@ export default function JobListing() {
         const matchesType = filters.type.length === 0 || filters.type.includes(job.type)
         const matchesLocation = filters.location === "" || job.location.toLowerCase().includes(filters.location.toLowerCase())
         
+        // Experience Filter (Naukri-style logic: show jobs requiring this experience or less)
+        const jobExpText = job.experience || "0"
+        const jobExpMatch = jobExpText.match(/\d+/)
+        const jobExp = jobExpMatch ? parseInt(jobExpMatch[0]) : 0
+        const matchesExperience = filters.experience === 0 || jobExp <= filters.experience
+
         // Advanced Filters
         const jobSalary = parseInt(job.salary.replace(/[^0-9]/g, '')) || 0
         const matchesSalary = jobSalary === 0 || (jobSalary >= filters.salaryRange[0] * 100000 && jobSalary <= filters.salaryRange[1] * 100000)
@@ -147,7 +159,7 @@ export default function JobListing() {
         else if (filters.freshness === "7d") matchesFreshness = (now.getTime() - jobDate.getTime()) <= 7 * 24 * 60 * 60 * 1000
         else if (filters.freshness === "30d") matchesFreshness = (now.getTime() - jobDate.getTime()) <= 30 * 24 * 60 * 60 * 1000
 
-        return matchesSearch && matchesType && matchesLocation && matchesSalary && matchesFreshness
+        return matchesSearch && matchesType && matchesLocation && matchesExperience && matchesSalary && matchesFreshness
     })
 
     const toggleTypeFilter = (type: string) => {
@@ -164,33 +176,98 @@ export default function JobListing() {
             {/* Header / Global Search */}
             <div className="bg-white dark:bg-slate-900 border-b sticky top-0 z-50 shadow-sm backdrop-blur-md bg-opacity-80">
                 <div className="container py-6">
-                    <div className="flex flex-col md:flex-row gap-4 max-w-6xl mx-auto items-center">
-                        <div className="relative flex-1 group w-full">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                            <Input
-                                className="pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white transition-all text-lg shadow-inner-sm"
-                                placeholder="Skills, designations, companies..."
+                    <div className="flex flex-col md:flex-row gap-0 max-w-6xl mx-auto items-center bg-white md:rounded-full shadow-lg p-2 border border-slate-200">
+                        <div className="relative flex-1 w-full border-b md:border-b-0 md:border-r border-slate-200 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500" />
+                            <input
+                                className="pl-12 pr-4 h-14 w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
+                                placeholder="Skills, designations, companies"
                                 value={filters.search}
                                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                                 onKeyDown={(e) => e.key === 'Enter' && addRecentSearch(filters.search)}
                             />
                         </div>
-                        <div className="relative w-full md:w-1/3 group">
-                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                            <Input
-                                className="pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white transition-all text-lg shadow-inner-sm"
-                                placeholder="City or remote"
+                        <div className="relative w-full md:w-[220px] border-b md:border-b-0 md:border-r border-slate-200 group">
+                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500" />
+                            <select
+                                className="pl-12 pr-4 h-14 w-full bg-transparent outline-none text-slate-700 appearance-none cursor-pointer font-medium"
+                                value={filters.experience}
+                                onChange={(e) => setFilters(prev => ({ ...prev, experience: parseInt(e.target.value) }))}
+                            >
+                                <option value={0}>Select experience</option>
+                                <option value={0}>Fresher (0 Years)</option>
+                                <option value={1}>1 Year</option>
+                                <option value={2}>2 Years</option>
+                                <option value={3}>3 Years</option>
+                                <option value={4}>4 Years</option>
+                                <option value={5}>5 Years</option>
+                                <option value={6}>6 Years</option>
+                                <option value={7}>7+ Years</option>
+                                <option value={10}>10+ Years</option>
+                            </select>
+                        </div>
+                        <div className="relative w-full md:w-[250px] group">
+                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500" />
+                            <input
+                                className="pl-12 pr-4 h-14 w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
+                                placeholder="Location or remote"
                                 value={filters.location}
                                 onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
                             />
                         </div>
-                        <Button size="lg" className="h-14 px-10 text-lg font-bold bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]">
-                            Find Jobs
+                        <Button size="lg" className="h-14 w-full md:w-auto px-10 text-lg font-bold bg-blue-600 hover:bg-blue-700 md:rounded-full rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] md:ml-2 mt-2 md:mt-0 shadow-lg shadow-blue-200 dark:shadow-none">
+                            Search
+                        </Button>
+                    </div>
+
+                    {/* Compact Filter Bar */}
+                    <div className="flex flex-wrap items-center gap-3 max-w-6xl mx-auto mt-4 pb-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2 flex items-center gap-1"><Filter className="w-3 h-3"/> Smart Filters:</span>
+                        
+                        <select 
+                            className="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 rounded-full px-4 py-2 outline-none cursor-pointer hover:border-blue-300 transition-colors"
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if(val === "all") setFilters(prev => ({ ...prev, salaryRange: [0, 100] }));
+                                else setFilters(prev => ({ ...prev, salaryRange: [parseInt(val.split('-')[0]), parseInt(val.split('-')[1])] }));
+                            }}
+                        >
+                            <option value="all">Any Salary</option>
+                            <option value="0-5">Up to ₹5 LPA</option>
+                            <option value="5-10">₹5 - ₹10 LPA</option>
+                            <option value="10-20">₹10 - ₹20 LPA</option>
+                            <option value="20-100">₹20 LPA +</option>
+                        </select>
+
+                        <select 
+                            className="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 rounded-full px-4 py-2 outline-none cursor-pointer hover:border-blue-300 transition-colors"
+                            onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value ? [e.target.value] : [] }))}
+                        >
+                            <option value="">Any Work Type</option>
+                            <option value="FULL_TIME">Full Time</option>
+                            <option value="PART_TIME">Part Time</option>
+                            <option value="REMOTE">Remote</option>
+                            <option value="INTERNSHIP">Internship</option>
+                        </select>
+
+                        <select 
+                            className="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 rounded-full px-4 py-2 outline-none cursor-pointer hover:border-blue-300 transition-colors"
+                            onChange={(e) => setFilters(prev => ({ ...prev, freshness: e.target.value as any }))}
+                            value={filters.freshness}
+                        >
+                            <option value="all">Any Time</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                        </select>
+
+                        <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full ml-auto" onClick={() => setFilters({ search: "", type: [], location: "", experience: 0, salaryRange: [0, 100], freshness: "all", industry: [] })}>
+                            Clear Filters
                         </Button>
                     </div>
 
                     {recentSearches.length > 0 && (
-                        <div className="mt-4 max-w-6xl mx-auto flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+                        <div className="mt-2 max-w-6xl mx-auto flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
                             <span className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 shrink-0">
                                 <History className="w-3 h-3" /> Recent:
                             </span>
@@ -212,116 +289,8 @@ export default function JobListing() {
             <div className="container py-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
-                    {/* Left Sidebar: Advanced Meta-Filters */}
-                    <aside className="hidden lg:flex lg:col-span-3 flex-col gap-6 sticky top-32">
-                        <Card className="border-slate-200/60 shadow-xl shadow-slate-200/40 overflow-hidden rounded-2xl">
-                            <div className="bg-slate-50 p-4 border-b flex justify-between items-center">
-                                <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest flex items-center gap-2">
-                                    <ListFilter className="h-4 w-4 text-blue-600" /> Filter Log
-                                </h3>
-                                <Button variant="ghost" className="text-[10px] h-6 px-2 hover:bg-red-50 hover:text-red-600 font-bold uppercase transition-colors" onClick={() => setFilters({ search: "", type: [], location: "", experience: 0, salaryRange: [0, 50], freshness: "all", industry: [] })}>
-                                    Reset
-                                </Button>
-                            </div>
-                            <CardContent className="p-6 space-y-8">
-                                <div className="space-y-4">
-                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-tight">Experience Year</h4>
-                                    <div className="px-2">
-                                        <Slider 
-                                            max={20} 
-                                            step={1} 
-                                            value={[filters.experience]} 
-                                            onValueChange={(val) => setFilters(prev => ({ ...prev, experience: val[0] }))}
-                                            className="cursor-pointer"
-                                        />
-                                        <div className="flex justify-between mt-2 font-black text-[10px] text-slate-500 uppercase tracking-tighter">
-                                            <span>Fresher</span>
-                                            <span>20+ Yrs</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <Separator className="bg-slate-100" />
-
-                                <div className="space-y-4">
-                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-tight">Salary Range (LPA)</h4>
-                                    <div className="px-2">
-                                        <Slider 
-                                            max={100} 
-                                            step={5} 
-                                            value={filters.salaryRange} 
-                                            onValueChange={(val) => setFilters(prev => ({ ...prev, salaryRange: val }))}
-                                        />
-                                        <div className="flex justify-between mt-2 font-black text-[10px] text-slate-500 tracking-tighter uppercase">
-                                            <span>₹{filters.salaryRange[0]}L</span>
-                                            <span>₹{filters.salaryRange[1]}L+</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <Separator className="bg-slate-100" />
-
-                                <div className="space-y-4">
-                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-tight">Work Design</h4>
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {['FULL_TIME', 'Part_Time', 'Remote', 'Internship'].map((mode) => (
-                                            <div key={mode} className="flex items-center space-x-3 group cursor-pointer" onClick={() => toggleTypeFilter(mode.toUpperCase())}>
-                                                <Checkbox
-                                                    id={mode}
-                                                    checked={filters.type.includes(mode.toUpperCase())}
-                                                    onCheckedChange={() => toggleTypeFilter(mode.toUpperCase())}
-                                                    className="border-slate-300"
-                                                />
-                                                <label className="text-[13px] font-bold text-slate-600 group-hover:text-blue-600 cursor-pointer transition-colors">
-                                                    {mode.replace('_', ' ')}
-                                                </label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                
-                                <Separator className="bg-slate-100" />
-
-                                <div className="space-y-4">
-                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-tight">Freshness</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {[
-                                            { id: 'all', label: 'All Jobs' },
-                                            { id: '24h', label: 'Last 24h' },
-                                            { id: '7d', label: 'Last 7d' },
-                                            { id: '30d', label: 'Last 30d' }
-                                        ].map((f) => (
-                                            <Badge 
-                                                key={f.id}
-                                                variant={filters.freshness === f.id ? "default" : "outline"}
-                                                className={`cursor-pointer px-3 py-1 text-[10px] font-black uppercase tracking-tighter transition-all ${filters.freshness === f.id ? "bg-blue-600 hover:bg-blue-700" : "hover:border-blue-400 text-slate-500 hover:text-blue-600 border-slate-200"}`}
-                                                onClick={() => setFilters(prev => ({ ...prev, freshness: f.id as any }))}
-                                            >
-                                                {f.label}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-8 rounded-3xl text-center space-y-6 shadow-2xl relative overflow-hidden group border border-slate-800">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl -translate-y-12 translate-x-12" />
-                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto ring-1 ring-white/20">
-                                <Sparkles className="h-8 w-8 text-blue-400 animate-pulse" />
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="font-black text-white text-xl tracking-tight leading-tight">Elevate Your Profile</h3>
-                                <p className="text-[13px] text-slate-400 font-medium">Use our Expert AI Resume Builder to stand out from the noise.</p>
-                            </div>
-                            <Button className="w-full h-12 bg-white text-slate-950 hover:bg-blue-50 font-black uppercase tracking-widest text-[11px] rounded-xl shadow-lg ring-1 ring-white/20 transition-all" asChild>
-                                <Link href="/resume-builder">Go to AI Builder</Link>
-                            </Button>
-                        </div>
-                    </aside>
-
                     {/* Middle Column: Major Job Feed */}
-                    <main className="col-span-1 lg:col-span-6 space-y-8">
+                    <main className="col-span-1 lg:col-span-9 space-y-8">
                         {resumeData && (
                             <section className="bg-blue-600/5 border border-blue-100 p-6 rounded-3xl relative overflow-hidden group">
                                 <div className="absolute -right-12 -top-12 w-48 h-48 bg-blue-400/10 rounded-full blur-3xl" />
@@ -488,7 +457,7 @@ export default function JobListing() {
 
                     {/* Right Column: AI Intelligence & Insights */}
                     <aside className="hidden lg:flex lg:col-span-3 flex-col gap-6 sticky top-32">
-                        {resumeData ? (
+                        {false && (resumeData ? (
                             <Card className="border-none bg-gradient-to-br from-blue-700 to-indigo-900 text-white rounded-3xl overflow-hidden shadow-2xl relative">
                                 <div className="absolute inset-0 bg-grid-white/5" />
                                 <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/20 to-transparent" />
@@ -564,7 +533,7 @@ export default function JobListing() {
                                     <Link href="/resume-builder">Initialize Engine</Link>
                                 </Button>
                             </Card>
-                        )}
+                        ))}
 
                         <Card className="border-slate-200/60 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/20">
                             <CardHeader className="bg-slate-50/80 p-5 border-b border-slate-100">
