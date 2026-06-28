@@ -66,6 +66,19 @@ export const authApi = {
     verify2FA: (data: { code: string; tempToken: string; trustDevice?: boolean }) => api.post('/auth/2fa/verify', data),
 };
 
+export const consultancyApi = {
+    // Public Endpoints
+    verifyInvitation: (token: string) => api.get(`/consultancy/public/invite/${token}`),
+    submitAgreement: (token: string, data: any) => api.post(`/consultancy/public/invite/${token}/submit`, data),
+    
+    // Admin Endpoints
+    getDashboardStats: () => api.get('/consultancy/dashboard'),
+    getInvitations: (status?: string) => api.get('/consultancy/invitations', { params: { status } }),
+    createInvitation: (data: { name: string, email: string, phone?: string, customTerms?: string, jobRole?: string, feePercentage?: string }) => api.post('/consultancy/invitations', data),
+    updateInvitation: (id: string, data: { name: string, email: string, phone?: string, customTerms?: string, jobRole?: string, feePercentage?: string }) => api.put(`/consultancy/invitations/${id}`, data),
+    updateCandidateStatus: (id: string, status: string) => api.patch(`/consultancy/candidates/${id}/status`, { status })
+}
+
 // User API
 export const userApi = {
     getMe: () => api.get('/users/me'),
@@ -94,6 +107,11 @@ export const gdprApi = {
     getPreferences: () => api.get('/gdpr/preferences'),
     updatePreferences: (data: { subscribedToNewsletter: boolean }) => api.post('/gdpr/preferences', data),
     requestDeletion: () => api.post('/gdpr/delete-request'),
+};
+
+export const gdprAdminApi = {
+    getRequests: () => api.get('/admin/gdpr/requests'),
+    processRequest: (id: string, action: 'PROCESS' | 'CANCEL') => api.patch(`/admin/gdpr/requests/${id}`, { action }),
 };
 
 export const referralApi = {

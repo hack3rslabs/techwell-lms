@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Eye, EyeOff, Loader2, Check, X, Mail } from 'lucide-react'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { toast } from 'sonner'
+import { TermsAcceptModal } from '@/components/ui/TermsAcceptModal'
 
 export default function RegisterPage() {
     const router = useRouter()
@@ -28,8 +29,19 @@ export default function RegisterPage() {
     const [qualification, setQualification] = React.useState('')
     const [college, setCollege] = React.useState('')
     const [showPassword, setShowPassword] = React.useState(false)
+    const [termsAccepted, setTermsAccepted] = React.useState(false)
+    const [captchaAnswer, setCaptchaAnswer] = React.useState('')
+    const [captchaNumbers, setCaptchaNumbers] = React.useState({ num1: 0, num2: 0 })
     const [isLoading, setIsLoading] = React.useState(false)
     const [error, setError] = React.useState('')
+
+    React.useEffect(() => {
+        // Generate random numbers between 1 and 10 for simple math captcha
+        setCaptchaNumbers({
+            num1: Math.floor(Math.random() * 10) + 1,
+            num2: Math.floor(Math.random() * 10) + 1
+        })
+    }, [])
 
     React.useEffect(() => {
         if (isAuthenticated) {
@@ -63,6 +75,16 @@ export default function RegisterPage() {
 
         if (!passwordChecks.match) {
             setError('Passwords do not match')
+            return
+        }
+
+        if (!termsAccepted) {
+            setError('You must accept the Terms and Conditions and Privacy Policy to register.')
+            return
+        }
+
+        if (parseInt(captchaAnswer) !== (captchaNumbers.num1 + captchaNumbers.num2)) {
+            setError('Incorrect security captcha. Please solve the math problem correctly.')
             return
         }
 
@@ -356,7 +378,35 @@ export default function RegisterPage() {
                                 </div>
                             </div>
 
-                            <Button type="submit" className="w-full py-6 text-lg font-semibold shadow-lg hover:shadow-primary/20 transition-all active:scale-[0.98]" disabled={isLoading}>
+                            <div className="flex flex-col items-start gap-2 mt-4">
+                                <label className="text-xs text-muted-foreground leading-tight">
+                                    You must read and accept the complete Terms and Conditions and Privacy Policy, including the strict non-refundable policies and data processing terms, before creating an account.
+                                </label>
+                                <TermsAcceptModal 
+                                    hasAccepted={termsAccepted} 
+                                    onAccept={() => setTermsAccepted(true)} 
+                                />
+                            </div>
+
+                            <div className="bg-muted/30 p-4 rounded-xl border border-muted/50 space-y-3">
+                                <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Security Verification</label>
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-background px-4 py-2 rounded-lg border font-mono font-bold">
+                                        {captchaNumbers.num1} + {captchaNumbers.num2} = ?
+                                    </div>
+                                    <Input 
+                                        type="number" 
+                                        placeholder="Answer" 
+                                        className="w-24 text-center font-mono"
+                                        value={captchaAnswer}
+                                        onChange={(e) => setCaptchaAnswer(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <p className="text-[10px] text-muted-foreground">Please solve this simple math problem to prove you are human and acknowledge the terms.</p>
+                            </div>
+
+                            <Button type="submit" className="w-full py-6 text-lg font-semibold shadow-lg hover:shadow-primary/20 transition-all active:scale-[0.98]" disabled={isLoading || !termsAccepted || !captchaAnswer}>
                                 {isLoading ? (
                                     <>
                                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />

@@ -73,7 +73,7 @@ export function Header() {
     return (
         <>
             {/* FIXED NAVBAR */}
-            <header className="fixed top-0 left-0 w-full z-50 border-b border-border/60 bg-background/88 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
+            <header className="fixed top-0 left-0 w-full z-[100] border-b border-border/60 bg-background/88 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
                 <div className="container flex h-18 min-h-[4.5rem] items-center justify-between gap-4">
 
                     {/* Logo + Search */}
@@ -116,7 +116,7 @@ export function Header() {
                                     </button>
 
                                     {/* Dropdown flyout */}
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-[22rem] bg-white/98 dark:bg-zinc-950/98 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-4 grid gap-3 z-50">
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-[22rem] bg-white/98 dark:bg-zinc-950/98 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-4 grid gap-3 z-[100]">
                                         <div className="flex items-center gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-900">
                                             {menu.icon}
                                             <Link href={menu.href} className="text-xs font-bold uppercase tracking-wider text-primary hover:underline flex items-center gap-0.5">
