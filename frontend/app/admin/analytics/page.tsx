@@ -18,7 +18,7 @@ import {
     Loader2, TrendingUp, Download, PieChart as PieChartIcon, BarChart as BarChartIcon, Activity, UploadCloud, FileSpreadsheet
 } from 'lucide-react'
 import api from '@/lib/api'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c'];
 
@@ -75,37 +75,50 @@ export default function AnalyticsBuilderPage() {
     }, [dataSource])
 
     // --- CUSTOM DATA GENERATOR ---
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         setIsLoading(true);
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            try {
-                const bstr = evt.target?.result;
-                const wb = XLSX.read(bstr, { type: 'binary' });
-                const wsname = wb.SheetNames[0];
-                const ws = wb.Sheets[wsname];
-                const data = XLSX.utils.sheet_to_json(ws);
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const arrayBuffer = await file.arrayBuffer();
+            await workbook.xlsx.load(arrayBuffer as any);
+            const ws = workbook.worksheets[0];
+            
+            if (ws) {
+                const data: any[] = [];
+                const cols: string[] = [];
+                
+                ws.getRow(1).eachCell((cell, colNumber) => {
+                    cols.push(cell.value ? cell.value.toString() : `Col${colNumber}`);
+                });
+                
+                ws.eachRow((row, rowNumber) => {
+                    if (rowNumber > 1) {
+                        const rowData: any = {};
+                        cols.forEach((colName, index) => {
+                            rowData[colName] = row.getCell(index + 1).value;
+                        });
+                        data.push(rowData);
+                    }
+                });
                 
                 if (data.length > 0) {
                     setCustomRawData(data);
-                    const cols = Object.keys(data[0] as object);
                     setCustomColumns(cols);
                     setCustomDimension(cols[0] || '');
                     setCustomMetricCol(cols[1] || cols[0] || '');
                     setReportData([]); // clear previous
                     setSummaryTotal(0);
                 }
-            } catch (error) {
-                console.error("Error parsing Excel:", error);
-                alert("Failed to parse the uploaded file.");
-            } finally {
-                setIsLoading(false);
             }
-        };
-        reader.readAsBinaryString(file);
+        } catch (error) {
+            console.error("Error parsing Excel:", error);
+            alert("Failed to parse the uploaded file.");
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     const generateCustomReport = () => {
@@ -145,22 +158,37 @@ export default function AnalyticsBuilderPage() {
     }
 
     // --- EXPORT TO EXCEL (.XLSX) ---
-    const exportToExcel = () => {
+    const exportToExcel = async () => {
         if (!reportData.length) return;
         
-        const worksheet = XLSX.utils.json_to_sheet(reportData.map(d => ({
+        const dataToExport = reportData.map(d => ({
             Label: d.name,
             Value: d.value
-        })));
+        }));
         
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "AnalyticsReport");
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("AnalyticsReport");
+        
+        if (dataToExport && dataToExport.length > 0) {
+            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(dataToExport);
+        }
         
         const filename = dataSource === 'SYSTEM' 
             ? `Analytics_${dataset}_by_${dimension}.xlsx`
             : `Custom_Analytics_${customDimension}.xlsx`;
             
-        XLSX.writeFile(workbook, filename);
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
     }
 
     const renderChart = () => {

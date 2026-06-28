@@ -1,12 +1,12 @@
 import React, { useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css'; // Import Quill styles
+import 'react-quill-new/dist/quill.snow.css'; // Import Quill styles
 import { uploadApi } from '@/lib/api';
 
 // Dynamically import ReactQuill to prevent SSR issues
 const ReactQuill = dynamic(
     async () => {
-        const { default: RQ } = await import('react-quill');
+        const { default: RQ } = await import('react-quill-new');
         // A functional component wrapper is needed to forward refs if we needed to, 
         // but dynamic handles the basic component
         return function ForwardedQuill(props: any) {

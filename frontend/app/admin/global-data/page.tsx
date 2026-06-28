@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Download, Search, Filter, Loader2, Database, ArrowRight } from 'lucide-react'
 import api from '@/lib/api'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
 
@@ -98,10 +98,26 @@ export default function GlobalDataPage() {
                 Date: format(new Date(item.createdAt), 'dd MMM yyyy')
             }))
             
-            const ws = XLSX.utils.json_to_sheet(dataToExport)
-            const wb = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(wb, ws, "GlobalData")
-            XLSX.writeFile(wb, `GlobalData_Export_${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
+            
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("GlobalData");
+        
+        if (dataToExport && dataToExport.length > 0) {
+            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(dataToExport);
+        }
+        
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `GlobalData_Export_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
             toast.success("Exported successfully")
         } catch (error) {
             toast.error("Failed to export")

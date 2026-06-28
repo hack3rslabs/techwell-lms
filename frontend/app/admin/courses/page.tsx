@@ -12,7 +12,7 @@ import {
     Search, Filter, Eye, EyeOff, PencilLine, TrendingUp,
     ChevronLeft, ChevronRight, RefreshCw, Download
 } from 'lucide-react'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { courseApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import Image from 'next/image'
@@ -186,10 +186,26 @@ export default function AdminCoursesPage() {
                 Enrollments: c._count?.enrollments || 0,
                 Modules: c._count?.modules || 0
             }))
-            const ws = XLSX.utils.json_to_sheet(dataToExport)
-            const wb = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(wb, ws, "Courses")
-            XLSX.writeFile(wb, `Courses_Export_${new Date().toISOString().split('T')[0]}.xlsx`)
+            
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Courses");
+        
+        if (dataToExport && dataToExport.length > 0) {
+            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(dataToExport);
+        }
+        
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Courses_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
             toast.success("Exported to Excel successfully")
         } catch (error) {
             toast.error("Failed to export to Excel")

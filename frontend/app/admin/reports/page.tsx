@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2, Download, TrendingUp, DollarSign, Users, Upload, FileSpreadsheet } from "lucide-react"
 import { toast } from "sonner"
-import * as XLSX from "xlsx"
+import ExcelJS from 'exceljs'
 import {
     BarChart,
     Bar,
@@ -59,10 +59,26 @@ export default function ReportsPage() {
                 return
             }
 
-            const ws = XLSX.utils.json_to_sheet(exportData)
-            const wb = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(wb, ws, "CustomReport")
-            XLSX.writeFile(wb, `CustomReport_${customModule}_${new Date().toISOString().split('T')[0]}.xlsx`)
+            
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("CustomReport");
+        
+        if (exportData && exportData.length > 0) {
+            worksheet.columns = Object.keys(exportData[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(exportData);
+        }
+        
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `CustomReport_${customModule}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
             toast.success("Report exported to Excel successfully")
         } catch (error) {
             console.error("Failed to export report", error)
@@ -72,27 +88,40 @@ export default function ReportsPage() {
         }
     }
 
-    const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
         
         toast.info("Processing Excel Import...")
-        // Parsing logic for import can be added here
-        const reader = new FileReader()
-        reader.onload = (evt) => {
-            try {
-                const bstr = evt.target?.result
-                const wb = XLSX.read(bstr, { type: 'binary' })
-                const wsname = wb.SheetNames[0]
-                const ws = wb.Sheets[wsname]
-                const data = XLSX.utils.sheet_to_json(ws)
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const arrayBuffer = await file.arrayBuffer();
+            await workbook.xlsx.load(arrayBuffer as any);
+            const ws = workbook.worksheets[0];
+            
+            if (ws) {
+                const data: any[] = [];
+                const cols: string[] = [];
+                
+                ws.getRow(1).eachCell((cell, colNumber) => {
+                    cols.push(cell.value ? cell.value.toString() : `Col${colNumber}`);
+                });
+                
+                ws.eachRow((row, rowNumber) => {
+                    if (rowNumber > 1) {
+                        const rowData: any = {};
+                        cols.forEach((colName, index) => {
+                            rowData[colName] = row.getCell(index + 1).value;
+                        });
+                        data.push(rowData);
+                    }
+                });
                 console.log("Imported Data:", data)
                 toast.success(`Successfully parsed ${data.length} rows from Excel. Backend processing pending.`)
-            } catch (error) {
-                toast.error("Failed to parse Excel file")
             }
+        } catch (error) {
+            toast.error("Failed to parse Excel file")
         }
-        reader.readAsBinaryString(file)
     }
 
     const fetchReport = React.useCallback(async (type: string) => {

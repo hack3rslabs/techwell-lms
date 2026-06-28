@@ -11,7 +11,7 @@ import { Plus, TrendingUp, TrendingDown, DollarSign, Download } from 'lucide-rea
 import api from '@/lib/api'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 export default function FinancePage() {
     const [stats, setStats] = React.useState({ totalIncome: 0, totalExpenses: 0, profit: 0 })
@@ -67,10 +67,26 @@ export default function FinancePage() {
                 'Date': format(new Date(exp.date), 'dd MMM yyyy'),
                 'Amount': exp.amount
             }))
-            const ws = XLSX.utils.json_to_sheet(dataToExport)
-            const wb = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(wb, ws, "Expenses")
-            XLSX.writeFile(wb, `Expenses_Export_${new Date().toISOString().split('T')[0]}.xlsx`)
+            
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Expenses");
+        
+        if (dataToExport && dataToExport.length > 0) {
+            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(dataToExport);
+        }
+        
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Expenses_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
             toast.success("Exported to Excel successfully")
         } catch (error) {
             toast.error("Failed to export to Excel")

@@ -35,7 +35,7 @@ import {
     Phone
 } from 'lucide-react'
 import { exportToCSV } from '@/lib/export-utils'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import api, { leadApi } from '@/lib/api'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -480,10 +480,26 @@ export default function LeadsPage() {
                 Course: l.courseName || '',
                 Date: new Date(l.createdAt).toLocaleDateString()
             }))
-            const ws = XLSX.utils.json_to_sheet(dataToExport)
-            const wb = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(wb, ws, "Leads")
-            XLSX.writeFile(wb, `Leads_Export_${new Date().toISOString().split('T')[0]}.xlsx`)
+            
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Leads");
+        
+        if (dataToExport && dataToExport.length > 0) {
+            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(dataToExport);
+        }
+        
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Leads_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
             toast.success("Exported to Excel successfully")
         } catch (error) {
             toast.error("Failed to export to Excel")

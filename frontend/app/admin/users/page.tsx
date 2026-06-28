@@ -6,7 +6,7 @@ import api, { rbacApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, UserCheck, UserX, Loader2, Eye, Plus, Trash2, Shield, ShieldAlert, Edit2, Download } from 'lucide-react'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { exportToCSV } from '@/lib/export-utils'
@@ -191,10 +191,26 @@ export default function AdminUsersPage() {
                 Status: u.isActive ? 'ACTIVE' : 'LOCKED',
                 'Joined At': new Date(u.createdAt).toLocaleDateString()
             }))
-            const ws = XLSX.utils.json_to_sheet(dataToExport)
-            const wb = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(wb, ws, "Users")
-            XLSX.writeFile(wb, `Users_Export_${new Date().toISOString().split('T')[0]}.xlsx`)
+            
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Users");
+        
+        if (dataToExport && dataToExport.length > 0) {
+            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(dataToExport);
+        }
+        
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Users_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
             toast({ title: "Exported successfully" })
         } catch (error) {
             toast({ title: "Failed to export", variant: "destructive" })

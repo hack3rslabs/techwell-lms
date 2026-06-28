@@ -11,7 +11,7 @@ import api from "@/lib/api"
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
-import * as XLSX from "xlsx"
+import ExcelJS from 'exceljs'
 import { toast } from "sonner"
 import { Download, Trash2 } from "lucide-react"
 
@@ -31,10 +31,26 @@ export default function BatchesPage() {
                 'Students Enrolled': b._count?.enrollments || 0,
                 'Status': b.isActive ? 'Active' : 'Inactive',
             }))
-            const ws = XLSX.utils.json_to_sheet(dataToExport)
-            const wb = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(wb, ws, "Batches")
-            XLSX.writeFile(wb, `Batches_Export_${new Date().toISOString().split('T')[0]}.xlsx`)
+            
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Batches");
+        
+        if (dataToExport && dataToExport.length > 0) {
+            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(dataToExport);
+        }
+        
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Batches_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
             toast.success("Exported to Excel successfully")
         } catch (error) {
             toast.error("Failed to export to Excel")

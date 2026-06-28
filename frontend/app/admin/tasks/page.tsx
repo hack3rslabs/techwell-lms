@@ -18,7 +18,7 @@ import {
 import api from '@/lib/api'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 interface Comment {
     id: string
@@ -147,10 +147,26 @@ export default function TaskManagerPage() {
                 'Comments Count': task.comments?.length || 0,
             }))
             
-            const ws = XLSX.utils.json_to_sheet(exportData)
-            const wb = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(wb, ws, "Tasks Analytics")
-            XLSX.writeFile(wb, `Task_Analytics_Export_${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
+            
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Tasks Analytics");
+        
+        if (exportData && exportData.length > 0) {
+            worksheet.columns = Object.keys(exportData[0]).map(key => ({ header: key, key }));
+            worksheet.addRows(exportData);
+        }
+        
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Task_Analytics_Export_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
             toast.success("Exported successfully")
         } catch (error) {
             toast.error("Failed to export")
