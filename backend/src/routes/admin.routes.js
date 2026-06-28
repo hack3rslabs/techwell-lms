@@ -717,4 +717,63 @@ router.post('/reports/generate', authenticate, authorize('SUPER_ADMIN', 'ADMIN')
     }
 });
 
+/**
+ * @route   GET /api/admin/gdpr/requests
+ * @desc    Get all users who requested data deletion
+ * @access  Private/Admin
+ */
+router.get('/gdpr/requests', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const users = await prisma.user.findMany({
+            where: { deleteRequested: true },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                deleteRequestDate: true,
+                subscribedToNewsletter: true
+            },
+            orderBy: { deleteRequestDate: 'asc' }
+        });
+        res.json({ success: true, data: users });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PATCH /api/admin/gdpr/requests/:id
+ * @desc    Process a deletion request (mark inactive or delete)
+ * @access  Private/Admin
+ */
+router.patch('/gdpr/requests/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const { action } = req.body; // 'PROCESS' or 'CANCEL'
+        
+        if (action === 'PROCESS') {
+            await prisma.user.update({
+                where: { id: req.params.id },
+                data: {
+                    isActive: false,
+                    deleteRequested: false, // cleared
+                    email: `deleted_${Date.now()}_${req.params.id}@deleted.com`,
+                    name: 'Deleted User'
+                }
+            });
+        } else if (action === 'CANCEL') {
+            await prisma.user.update({
+                where: { id: req.params.id },
+                data: {
+                    deleteRequested: false,
+                    deleteRequestDate: null
+                }
+            });
+        }
+
+        res.json({ success: true, message: `Request ${action === 'PROCESS' ? 'processed' : 'cancelled'} successfully.` });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

@@ -506,8 +506,8 @@ export default function ProfilePage() {
                                     </h4>
                                     <p className="text-xs text-gray-500 max-w-md mt-1">
                                         {gdprPrefs.deleteRequested 
-                                            ? "Your account deletion request is currently being processed by administrators." 
-                                            : "Permanently delete your account, enrollments, and all associated personal data."}
+                                            ? "Your account deletion request is currently being processed by administrators. This process typically takes up to 3 business days." 
+                                            : "Permanently delete your account, enrollments, and all associated personal data. Please note that data deletion requests take up to 3 business days to be fully processed."}
                                     </p>
                                 </div>
                                 <div>

@@ -2003,3 +2003,102 @@ model ReferralReward {
   referrer        User     @relation("ReferrerRewards", fields: [referrerId], references: [id], onDelete: Cascade)
   referred        User     @relation("ReferredRewards", fields: [referredId], references: [id], onDelete: Cascade)
 }
+
+// -----------------------------------------------------------------------------
+// CONSULTANCY MODULE
+// -----------------------------------------------------------------------------
+
+enum ConsultancyStatus {
+  INVITED
+  PENDING_ACCEPTANCE
+  AGREEMENT_ACCEPTED
+  PROCESSING
+  INTERVIEW_SCHEDULED
+  OFFER_RELEASED
+  JOINED
+  COMPLETED
+  CLOSED
+}
+
+model ConsultancyInvitation {
+  id           String   @id @default(cuid())
+  email        String
+  name         String
+  phone        String?
+  status       ConsultancyStatus @default(INVITED)
+  token        String   @unique
+  expiresAt    DateTime
+  
+  // Dynamic fields
+  customTerms  String?  @db.Text
+  jobRole      String?
+  feePercentage String?
+  prefilledData Json?
+  
+  agreementId  String?  @unique
+  agreement    ConsultancyAgreement? @relation(fields: [agreementId], references: [id])
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ConsultancyAgreement {
+  id                  String   @id @default(cuid())
+  
+  // Identity
+  fullName            String
+  parentsName         String
+  dob                 DateTime?
+  gender              String?
+  aadhaarNumber       String?
+  panNumber           String?
+  passportPhotoUrl    String?
+  livePhotoUrl        String   
+  liveSelfieUrl       String?
+  
+  // Address
+  currentAddress      String?
+  permanentAddress    String?
+  city                String?
+  state               String?
+  pinCode             String?
+  
+  // Contact
+  mobileNumber        String?
+  alternateMobile     String?
+  emailAddress        String?
+  emergencyContactName String?
+  emergencyContactNum String?
+  
+  // Education
+  highestQualification String?
+  specialization       String?
+  collegeUniversity    String?
+  graduationYear       Int?
+  percentageCgpa       String?
+  
+  // Professional
+  experienceLevel      String?
+  currentCompany       String?
+  totalExperience      String?
+  relevantExperience   String?
+  currentCtc           String?
+  expectedCtc          String?
+  noticePeriod         String?
+  preferredLocations   String?
+  preferredJobRoles    String
+  preferredIndustry    String?
+  resumeUrl            String?
+  
+  // Audit & Verification
+  digitalSignatureUrl  String
+  agreementVersion     String
+  acceptedAt           DateTime
+  browserInfo          String?
+  ipAddress            String?
+  locationCoords       String?
+  
+  invitation           ConsultancyInvitation?
+  
+  createdAt            DateTime @default(now())
+}

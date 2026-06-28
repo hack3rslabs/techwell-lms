@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/accordion"
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { TermsAcceptModal } from '@/components/ui/TermsAcceptModal'
 
 interface RazorpayResponse {
     razorpay_payment_id: string
@@ -161,6 +162,7 @@ export default function CourseDetailClient() {
     const [showExitIntent, setShowExitIntent] = React.useState(false)
     const [hasTriggeredExitIntent, setHasTriggeredExitIntent] = React.useState(false)
     const [showCounselorMenu, setShowCounselorMenu] = React.useState(false)
+    const [termsAccepted, setTermsAccepted] = React.useState(false)
 
     React.useEffect(() => {
         const handleMouseLeave = (e: MouseEvent) => {
@@ -1125,12 +1127,19 @@ export default function CourseDetailClient() {
                                     </Button>
                                 ) : (
                                     <>
+                                        <div className="flex flex-col gap-2 pb-2">
+                                            <TermsAcceptModal 
+                                                hasAccepted={termsAccepted} 
+                                                onAccept={() => setTermsAccepted(true)} 
+                                            />
+                                        </div>
+
                                         {currentPrice > 0 ? (
                                             <Button 
                                                 className="w-full h-12 text-md font-bold shadow-lg shadow-primary/25 rounded-xl hover:scale-[1.02] transition-transform" 
                                                 size="lg" 
                                                 onClick={handleBuy} 
-                                                disabled={isEnrolling}
+                                                disabled={isEnrolling || !termsAccepted}
                                             >
                                                 {isEnrolling ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
                                                 {isEnrolling ? 'Processing...' : `Enroll Now at ₹${currentPrice}`}
@@ -1140,7 +1149,7 @@ export default function CourseDetailClient() {
                                                 className="w-full h-12 text-md font-bold shadow-lg shadow-primary/25 rounded-xl hover:scale-[1.02] transition-transform" 
                                                 size="lg" 
                                                 onClick={handleBuy} 
-                                                disabled={isEnrolling}
+                                                disabled={isEnrolling || !termsAccepted}
                                             >
                                                 {isEnrolling ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PlayCircle className="mr-2 h-5 w-5" />}
                                                 {isEnrolling ? 'Processing...' : 'Start Learning for Free'}
