@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // reactCompiler: true,
-  // output: "standalone",
+  output: "standalone",
   distDir: process.env.NEXT_DIST_DIR || ".next",
   turbopack: {},
 
