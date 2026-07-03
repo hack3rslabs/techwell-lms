@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { GraduationCap, Video, Building2, Handshake, ArrowRight, PlayCircle, School, MessageCircle, Send, Phone, CheckCircle2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from 'next/link'
@@ -16,24 +16,24 @@ export function Hero() {
     const slides = [
         {
             id: 1,
-            title: "Automated Course Training",
-            subtitle: "Live Instructor-Led LMS",
-            image: "/images/hero/ai_training_robot.png",
-            color: "from-blue-600 to-indigo-600"
+            title: "AI Interview Mastery",
+            subtitle: "Practice with realistic AI Avatars",
+            image: "/images/hero/ai_avatar_hr.png",
+            color: "from-purple-600 to-blue-600"
         },
         {
             id: 2,
-            title: "Apply Jobs Platform",
-            subtitle: "Guaranteed Placement Pipeline",
-            image: "/images/hero/ai_job_agent.png",
-            color: "from-emerald-500 to-teal-600"
+            title: "Business Suite Pro",
+            subtitle: "Complete CRM & HRMS Solutions",
+            image: "/images/hero/business_suite.png",
+            color: "from-amber-500 to-orange-600"
         },
         {
             id: 3,
-            title: "Software & IT Solutions",
-            subtitle: "Enterprise Software & Consulting",
-            image: "/images/hero/ai_software_hologram.png",
-            color: "from-indigo-600 to-purple-600"
+            title: "Career Acceleration",
+            subtitle: "From Campus to Corporate Success",
+            image: "/images/hero/placement_growth.png",
+            color: "from-green-500 to-emerald-600"
         }
     ]
 
@@ -43,75 +43,6 @@ export function Hero() {
         }, 5000)
         return () => clearInterval(timer)
     }, [slides.length])
-
-    interface HeroBox {
-        title: string
-        description: string
-        icon: React.ElementType
-        href: string
-        gradient: string
-        border: string
-        iconColor: string
-        cta: string
-        highlight?: boolean
-        external?: boolean
-    }
-
-    const _boxes: HeroBox[] = [
-        {
-            title: "Smart Learning",
-            description: "Adaptive AI courses Personalized for you.",
-            icon: GraduationCap,
-            href: "/courses",
-            gradient: "from-blue-500/20 to-cyan-500/20",
-            border: "group-hover:border-blue-500/50",
-            iconColor: "text-blue-500",
-            cta: "Start Learning"
-        },
-        {
-            title: "AI Interview Prep",
-            description: "Master interviews with real-time AI feedback.",
-            icon: Video,
-            href: "/interviews",
-            gradient: "from-purple-500/20 to-pink-500/20",
-            border: "group-hover:border-purple-500/50",
-            iconColor: "text-purple-500",
-            cta: "Practice Now",
-            highlight: true
-        },
-        {
-            title: "Campus to Corporate",
-            description: "Your bridge to a dream career.",
-            icon: School,
-            href: "https://campustest.techwell.co.in",
-            gradient: "from-green-500/20 to-emerald-500/20",
-            border: "group-hover:border-green-500/50",
-            iconColor: "text-green-500",
-            cta: "Launch Career",
-            external: true
-        },
-        {
-            title: "Business Suite",
-            description: "Powerful CRM & HRMS tools for growth.",
-            icon: Building2,
-            href: "https://products.techwell.co.in",
-            gradient: "from-amber-500/20 to-orange-500/20",
-            border: "group-hover:border-amber-500/50",
-            iconColor: "text-amber-500",
-            cta: "Explore Tools",
-            external: true
-        },
-        {
-            title: "Career Services",
-            description: "Expert counseling & placement support.",
-            icon: Handshake,
-            href: "/careers",
-            gradient: "from-teal-500/20 to-cyan-500/20",
-            border: "group-hover:border-teal-500/50",
-            iconColor: "text-teal-500",
-            cta: "Get Hired"
-        }
-    ]
 
     return (
         <div className="relative  bg-background min-h-screen flex flex-col justify-start pt-6">
@@ -136,21 +67,16 @@ export function Hero() {
                             >
                                 {/* Badge Removed as per request */}
 
-                                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6 leading-tight lg:leading-[1.1]">
-                                     Powering Your <br />
-                                     <span className={`text-transparent bg-clip-text bg-gradient-to-r ${slides[currentSlide].color} animate-gradient`}>
-                                         {currentSlide === 0 && "IT Skills & Training"}
-                                         {currentSlide === 1 && "Career Placement"}
-                                         {currentSlide === 2 && "Software Solutions"}
-                                     </span>
-                                     <br /> with {currentSlide === 0 ? "Live Trainers" : currentSlide === 1 ? "Top Recruiters" : "Tech Innovation"}
-                                 </h1>
+                                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6 leading-tight lg:leading-[1.1]">
+                                    AI-Powered IT Training &amp; Computer Course Institute in{" "}
+                                    <span className={`text-transparent bg-clip-text bg-gradient-to-r ${slides[currentSlide].color} animate-gradient`}>
+                                        Andhra Pradesh
+                                    </span>
+                                </h1>
 
-                                 <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light font-sans">
-                                     {currentSlide === 0 && "Learn full-stack engineering, cloud architectures, and databases. Build skills in live instructor-led batches simplified with smart AI tools."}
-                                     {currentSlide === 1 && "Prepare with AI mock interview simulators, build professional ATS resumes, and land opportunities with our 500+ global hiring partners."}
-                                     {currentSlide === 2 && "Empower your business with premium custom software engineering, CRM, HRMS, and IT consulting services tailored for growth."}
-                                 </p>
+                                <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
+                                    Launch your tech career with practical computer training, AI interview preparation and placement support. Join 15,000+ learners building job-ready skills.
+                                </p>
 
                                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-5 mb-14">
                                     <Link href="/register" passHref>
@@ -207,6 +133,7 @@ export function Hero() {
                                             src={slides[currentSlide].image}
                                             alt={slides[currentSlide].title}
                                             fill
+                                            sizes="(min-width: 1024px) 50vw, 100vw"
                                             className="object-cover"
                                             priority
                                         />
@@ -354,18 +281,18 @@ export function Hero() {
                             <a href="https://elearnstack.com/#menu1" target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10" aria-label="Campus to Career" />
                         </motion.div>
 
-                        {/* 8. Software & IT Solutions */}
+                        {/* 8. Business Suite */}
                         <motion.div
                             whileHover={{ y: -5 }}
-                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10 animate-fade-in"
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10"
                         >
                             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-colors">
                                 <Building2 className="h-6 w-6" />
                             </div>
-                            <h3 className="mb-2 text-xl font-bold text-foreground">Software & IT Solutions</h3>
-                            <p className="text-sm text-muted-foreground">Custom enterprise software development, CRM/ERP solutions, and corporate digital consultations.</p>
-                            <Link href="/contact?type=it-solutions" className="absolute inset-0 z-10" aria-label="Software & IT Solutions" />
+                            <h3 className="mb-2 text-xl font-bold text-foreground">Business Suite (MSME)</h3>
+                            <p className="text-sm text-muted-foreground">All-in-one ERP: GST Billing, CRM, HRMS, and Project Management.</p>
+                            <a href="https://www.twiis.in" target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10" aria-label="Business Suite" />
                         </motion.div>
                     </div>
                 </div>
@@ -408,7 +335,7 @@ function SupportWidget() {
     const options = [
         { icon: MessageCircle, label: "WhatsApp", href: "https://wa.me/911234567890", color: "bg-[#25D366]" },
         { icon: Send, label: "Telegram", href: "https://t.me/techwell", color: "bg-[#0088cc]" },
-        { icon: Phone, label: "Call Us", href: "tel:+917997473473", color: "bg-blue-500" },
+        { icon: Phone, label: "Call Us", href: "tel:+919876543210", color: "bg-blue-500" },
         { icon: MessageCircle, label: "AI Chat", href: "/chat", color: "bg-purple-600" }, // Placeholder for chatbot
     ];
 

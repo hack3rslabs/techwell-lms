@@ -7,7 +7,8 @@ const {
   markMessageAsRead,
   getUnreadCount,
   getAllMessages,
-  deleteMessage
+  deleteMessage,
+  sendMessageToCourse
 } = require('../controllers/messages.controller');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
@@ -24,6 +25,7 @@ router.put('/:messageId/read', markMessageAsRead);
 // Admin routes (require admin/instructor role)
 router.post('/send-to-all', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToStudents);
 router.post('/send-to-batch', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToBatch);
+router.post('/send-to-course', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToCourse);
 router.post('/send-to-student', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToStudent);
 router.get('/', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), getAllMessages);
 router.delete('/:messageId', authorize('ADMIN', 'SUPER_ADMIN', 'STAFF'), deleteMessage);

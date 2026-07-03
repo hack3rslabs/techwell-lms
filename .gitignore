@@ -14,11 +14,6 @@ node_modules/
 # Production
 /build
 /dist
-/.next
-.next/
-.next-check/
-.next-check2/
-out/
 
 # Misc
 .DS_Store

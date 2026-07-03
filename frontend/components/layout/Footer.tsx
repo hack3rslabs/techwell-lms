@@ -1,150 +1,206 @@
 "use client"
-
-import Link from "next/link"
-import Image from "next/image"
-import { usePathname } from "next/navigation"
-import { Mail, MapPin, Phone, Instagram, Linkedin, Youtube, ExternalLink, Star } from "lucide-react"
-
-const platformLinks = [
-    { label: "Browse Courses", href: "/courses" },
-    { label: "AI Interview Prep", href: "/interviews" },
-    { label: "Resume Builder", href: "/resume-builder" },
-    { label: "Jobs & Placements", href: "/jobs" },
-    { label: "Career Guide", href: "/career-guide" },
-    { label: "Student Verification", href: "/verify" },
-]
-
-const companyLinks = [
-    { label: "About Us", href: "/about" },
-    { label: "Events & Webinars", href: "/events" },
-    { label: "Services", href: "/services" },
-    { label: "Products", href: "/products" },
-    { label: "Partner Colleges", href: "/colleges" },
-    { label: "Client Stories", href: "/clients" },
-    { label: "Blog", href: "/blog" },
-]
-
-const policyLinks = [
-    { label: "Contact Us", href: "/contact" },
-    { label: "Support Center", href: "/support" },
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-    { label: "Cookies", href: "/cookies" },
-    { label: "GDPR", href: "/gdpr" },
-]
+import Link from 'next/link'
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
+import { Mail, Phone, MapPin, Twitter, Linkedin, Youtube, Instagram, ExternalLink } from 'lucide-react'
 
 export function Footer() {
     const pathname = usePathname()
 
-    if (pathname?.startsWith("/admin")) {
+    if (pathname?.startsWith('/admin')) {
         return null
     }
 
     return (
-        <footer className="mt-auto border-t border-border/60 bg-[linear-gradient(180deg,rgba(20,105,226,0.05),rgba(255,255,255,0))]">
-            <div className="container py-14">
-                <div className="grid gap-10 lg:grid-cols-[1.35fr_repeat(3,minmax(0,1fr))]">
-                    <div className="space-y-5">
-                        <Link href="/" className="relative flex h-10 w-[156px] items-center">
+        <footer className="bg-muted/50 border-t mt-auto">
+            <div className="container py-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {/* Brand */}
+                    <div className="space-y-4">
+                        <Link href="/" className="relative flex h-9 w-[140px] items-center">
                             <Image
                                 src="/logo-light.png"
                                 alt="Techwell"
-                                width={156}
-                                height={42}
-                                className="object-contain object-left dark:hidden"
+                                width={140}
+                                height={40}
+                                className="h-auto w-[140px] object-contain object-left dark:hidden"
                             />
                             <Image
                                 src="/logo-dark.png"
                                 alt="Techwell"
-                                width={156}
-                                height={42}
-                                className="hidden object-contain object-left dark:block"
+                                width={140}
+                                height={40}
+                                className="hidden h-auto w-[140px] object-contain object-left dark:block"
                             />
                         </Link>
-
-                        <p className="text-muted-foreground max-w-sm">
-                            Techwell empowers global businesses with elite IT Services & Software Solutions, while bridging the industry talent gap through world-class Corporate Training and Career Placement Solutions.
+                        <p className="text-sm text-muted-foreground">
+                            AI-powered learning and interview preparation platform.
+                            Launch your tech career with confidence.
                         </p>
-
-                        <div className="grid gap-3 text-sm text-muted-foreground">
-                            <a href="mailto:info@techwell.co.in" className="flex items-center gap-2 hover:text-foreground transition-colors">
-                                <Mail className="h-4 w-4 text-primary" />
-                                <span>info@techwell.co.in</span>
+                        <div className="flex gap-4">
+                            <a href="https://www.instagram.com/techwell_official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-primary transition-colors">
+                                <Instagram className="h-5 w-5" />
                             </a>
-                            <a href="tel:+917997473473" className="flex items-center gap-2 hover:text-foreground transition-colors">
-                                <Phone className="h-4 w-4 text-primary" />
-                                <span>+91 7997473473</span>
+                            <a href="https://www.linkedin.com/in/techwell-it" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-muted-foreground hover:text-primary transition-colors">
+                                <Linkedin className="h-5 w-5" />
                             </a>
-                            <div className="flex items-start gap-2">
-                                <MapPin className="mt-0.5 h-4 w-4 text-primary" />
-                                <span>India-based training and enterprise technology services</span>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3 pt-1">
-                            <a href="https://www.instagram.com/techwell_official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="rounded-full border border-border/70 p-2 text-muted-foreground transition-colors hover:text-primary">
-                                <Instagram className="h-4 w-4" />
+                            <a href="https://www.youtube.com/@techwellInstitutes/featured" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-muted-foreground hover:text-primary transition-colors">
+                                <Youtube className="h-5 w-5" />
                             </a>
-                            <a href="https://www.linkedin.com/in/techwell-it" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="rounded-full border border-border/70 p-2 text-muted-foreground transition-colors hover:text-primary">
-                                <Linkedin className="h-4 w-4" />
-                            </a>
-                            <a href="https://www.youtube.com/@techwellInstitutes/featured" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="rounded-full border border-border/70 p-2 text-muted-foreground transition-colors hover:text-primary">
-                                <Youtube className="h-4 w-4" />
-                            </a>
-                        </div>
-
-                        <div className="flex gap-3 pt-4">
-                            <a href="https://share.google/hEEd5G027yQXanCDt" target="_blank" rel="noopener noreferrer" className="flex flex-col items-start gap-1 p-2.5 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Google</span>
-                                <div className="flex text-amber-500">
-                                    <Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" />
-                                </div>
-                            </a>
-                            <a href="https://www.justdial.com/Srikakulam/Techwell-It-Solutions-Opposite-Psnmh-Schoolabove-Andhra-Bank-Atm-O-Arasavilli/9999P8942-8942-161117181501-G1M1_BZDET" target="_blank" rel="noopener noreferrer" className="flex flex-col items-start gap-1 p-2.5 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Justdial</span>
-                                <div className="flex text-amber-500">
-                                    <Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" />
-                                </div>
+                            <a href="#" aria-label="Twitter" className="text-muted-foreground hover:text-primary transition-colors">
+                                <Twitter className="h-5 w-5" />
                             </a>
                         </div>
                     </div>
 
-                    <FooterLinkGroup title="Platform" links={platformLinks} />
-                    <FooterLinkGroup title="Company" links={companyLinks} />
-                    <FooterLinkGroup title="Support" links={policyLinks} />
+                    {/* Explore */}
+                    <div>
+                        <h4 className="font-semibold mb-4">Explore</h4>
+                        <ul className="space-y-2 text-sm">
+                            <li>
+                                <Link href="/courses" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Browse Courses
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/projects" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Projects Market
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/interviews" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    AI Interview Prep
+                                </Link>
+                            </li>
+                            {/* <li>
+                                <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Plans & Pricing
+                                </Link>
+                            </li> */}
+                            <li>
+                                <Link href="/skillcast" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Skillcast Episodes
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/career-guide" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Career Guide
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/it-training-vizag" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    IT Training in Vizag
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/computer-courses-vijayawada" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Courses in Vijayawada
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/software-training-guntur" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Training in Guntur
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/student/library" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Library
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Company */}
+                    <div>
+                        <h4 className="font-semibold mb-4">Company</h4>
+                        <ul className="space-y-2 text-sm">
+                            <li>
+                                <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    About Us
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/social-service" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Social Service
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/jobs" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Careers
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/colleges" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Colleges
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Blog
+                                </Link>
+                            </li>
+                             <li>
+                                <Link href="/gallery" className="text-muted-foreground hover:text-foreground transition-colors">
+                                     Gallery
+                                </Link>
+                            </li>
+                            <li>
+                                <a href="https://elearnstack.com/daily_news" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Daily Updates
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Contact & Legal */}
+                    <div>
+                        <h4 className="font-semibold mb-4">Contact & Support</h4>
+                        <ul className="space-y-3 text-sm">
+                            <li className="flex items-start gap-2 text-muted-foreground">
+                                <MapPin className="h-4 w-4 mt-1 shrink-0" />
+                                <a
+                                    href="https://www.google.com/maps/place/Techwell(Twiis+Innovations)/@18.2899025,83.9033944,17z/data=!3m1!4b1!4m6!3m5!1s0x3a3c1517a45fc9e1:0x39c24e2311f003a!8m2!3d18.2899025!4d83.9033944!16s%2Fg%2F11c2j7m7xv?entry=ttu&g_ep=EgoyMDI2MDIxMS4wIKXMDSoASAFQAw%3D%3D"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-primary transition-colors leading-tight"
+                                >
+                                    Techwell HQ, Srikakulam<br />
+                                    Andhra Pradesh, India
+                                </a>
+                            </li>
+                            <li className="flex items-center gap-2 text-muted-foreground">
+                                <Phone className="h-4 w-4 shrink-0" />
+                                +91 7997473473
+                            </li>
+                            <li className="flex items-center gap-2 text-muted-foreground">
+                                <Mail className="h-4 w-4 shrink-0" />
+                                <span className="break-all">support@techwell.co.in</span>
+                            </li>
+                            <li className="pt-2 border-t mt-2">
+                                <Link href="/help" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                                    <ExternalLink className="h-3 w-3" /> Help Center
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                    Privacy Policy
+                                </Link>
+                                <span className="text-muted-foreground mx-2">•</span>
+                                <Link href="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                    Terms
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                    </div>
                 </div>
 
-                <div className="mt-10 flex flex-col gap-3 border-t border-border/60 pt-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-                    <p>© {new Date().getFullYear()} Techwell. All rights reserved.</p>
-                    <a href="https://elearnstack.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground transition-colors">
-                        <span>Explore Elearnstack</span>
-                        <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
+                <div className="border-t mt-12 pt-8 flex flex-col items-center gap-4 text-sm text-muted-foreground">
+                    <p className="text-center font-medium">&copy; {new Date().getFullYear()} Techwell. All rights reserved.</p>
                 </div>
-            </div>
-        </footer>
-    )
-}
-
-function FooterLinkGroup({
-    title,
-    links,
-}: {
-    title: string
-    links: Array<{ label: string; href: string }>
-}) {
-    return (
-        <div>
-            <h4 className="mb-4 text-sm font-semibold tracking-wide text-foreground">{title}</h4>
-            <ul className="space-y-3 text-sm">
-                {links.map((link) => (
-                    <li key={link.href}>
-                        <Link href={link.href} className="text-muted-foreground transition-colors hover:text-foreground">
-                            {link.label}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-        </div>
+            
+    
+    
+    </footer>
     )
 }

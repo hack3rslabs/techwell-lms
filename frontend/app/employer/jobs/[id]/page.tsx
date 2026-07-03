@@ -58,7 +58,7 @@ export default function ATSPipelinePage() {
     const fetchData = useCallback(async () => {
         try {
             const [jobRes, appsRes] = await Promise.all([
-                api.get(`/jobs/${jobId}`),
+                api.get(`/jobs/my/listings/${jobId}`),
                 api.get(`/ats/applications/${jobId}`)
             ])
             setJob(jobRes.data)

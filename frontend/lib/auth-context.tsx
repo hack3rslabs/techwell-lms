@@ -19,22 +19,20 @@ interface User {
     college?: string;
     phone?: string;
     hasUnlimitedInterviews?: boolean;
-    twoFactorEnabled?: boolean;
 }
 
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (email: string, password: string) => Promise<{ require2FA?: boolean; tempToken?: string } | void>;
-    register: (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => Promise<{ user: User, devOtp?: string }>;
+    login: (email: string, password: string) => Promise<void>;
+    register: (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string) => Promise<User>;
     verifyOtp: (email: string, otp: string) => Promise<void>;
-    resendOtp: (email: string) => Promise<{success: boolean, devOtp?: string}>;
+    resendOtp: (email: string) => Promise<{success: boolean}>;
     logout: () => void;
     refreshUser: () => Promise<void>;
     hasPermission: (permission: string) => boolean;
     canWrite: (permission: string) => boolean;
-    verify2FA: (code: string, tempToken: string, trustDevice?: boolean) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -65,14 +63,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loadUser();
     }, []);
 
-    const login = async (email: string, password: string): Promise<{ require2FA?: boolean; tempToken?: string } | void> => {
+    const login = async (email: string, password: string) => {
         const response = await authApi.login({ email, password });
-        if (response.data.require2FA) {
-            return {
-                require2FA: true,
-                tempToken: response.data.tempToken
-            };
-        }
         const { token, user } = response.data;
 
         localStorage.setItem('token', token);
@@ -80,33 +72,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
     };
 
-    const verify2FA = async (code: string, tempToken: string, trustDevice?: boolean) => {
-        const response = await authApi.verify2FA({ code, tempToken, trustDevice });
-        const { token, user, trustToken } = response.data;
-
-        if (trustToken && typeof window !== 'undefined') {
-            document.cookie = `trustToken=${trustToken}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
-        }
-
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        setUser(user);
-    };
-
-    const register = async (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string): Promise<{ user: User, devOtp?: string }> => {
-        const response = await authApi.register({ email, password, name, dob, qualification, college });
-        // Return a partial User object for type compatibility along with devOtp
+    const register = async (email: string, password: string, name: string, dob?: string, qualification?: string, college?: string): Promise<User> => {
+        await authApi.register({ email, password, name, dob, qualification, college });
+        // The backend now only sends { message: 'OTP sent...', email }
+        // We do NOT set user/token yet, we wait for OTP verification.
+        // Return a partial User object for type compatibility
         return {
-            user: {
-                id: '',
-                email,
-                name,
-                role: 'STUDENT',
-                dob,
-                qualification,
-                college,
-            },
-            devOtp: response.data.devOtp
+            id: '',
+            email,
+            name,
+            role: 'STUDENT',
+            dob,
+            qualification,
+            college,
         };
     };
 
@@ -189,7 +167,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 refreshUser,
                 hasPermission,
                 canWrite,
-                verify2FA,
             }}
         >
             {children}

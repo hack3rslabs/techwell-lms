@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, Calendar, User, Search, BrainCircuit } from 'lucide-react'
+import { Video, Calendar, Search, BrainCircuit } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { InterviewAnalytics } from '@/components/admin/InterviewAnalytics'

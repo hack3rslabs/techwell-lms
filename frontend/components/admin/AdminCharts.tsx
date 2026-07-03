@@ -9,7 +9,6 @@ interface AdminChartsProps {
         courses: number
         enrollments: number
         interviews: number
-        analytics?: any
     }
 }
 
@@ -32,7 +31,7 @@ export function AdminCharts({ stats }: AdminChartsProps) {
                     <CardTitle>Platform Distribution</CardTitle>
                 </CardHeader>
                 <CardContent className="pl-2">
-                    <div className="h-[240px]">
+                    <div className="h-[240px] min-h-[240px] min-w-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data}>
                                 <XAxis
@@ -66,45 +65,40 @@ export function AdminCharts({ stats }: AdminChartsProps) {
                 </CardContent>
             </Card>
 
-            {/* Dynamic Trend Chart from API */}
+            {/* Mock Trend Chart - In real app, pass time-series data */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium">Revenue Trend</CardTitle>
+                        <CardTitle className="text-sm font-medium">Revenue Trend (Last 6 Months)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[200px]">
-                            {stats.analytics?.charts?.revenueData?.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={stats.analytics.charts.revenueData}>
-                                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value: number) => `₹${value}`} />
-                                        <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                        <Bar dataKey="revenue" fill="#22c55e" radius={[4, 4, 0, 0]} barSize={30} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No revenue data available</div>
-                            )}
+                        <div className="h-[200px] flex items-end justify-center gap-2">
+                            {[40, 60, 45, 70, 85, 100].map((h, i) => (
+                                <div key={i} className="w-full bg-green-100 rounded-t-sm relative group">
+                                    <div className="absolute bottom-0 w-full bg-green-500 rounded-t-sm transition-all duration-500 group-hover:bg-green-600" style={{ height: `${h}%` }}></div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex justify-between text-xs text-muted-foreground mt-2 px-1">
+                            <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium">Growth Metrics</CardTitle>
+                        <CardTitle className="text-sm font-medium">User Growth</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="h-[200px] flex items-end justify-center gap-2">
-                            {/* Retaining visual CSS bar for UI diversity, scaling it to real data */}
-                            {[stats.analytics?.stats?.activeCourses || 10, stats.analytics?.stats?.activeBatches || 20, stats.analytics?.stats?.totalStudents || 30].map((h, i) => (
-                                <div key={i} className="w-full bg-blue-100 rounded-t-sm relative group" style={{ height: '100%' }}>
-                                    <div className="absolute bottom-0 w-full bg-blue-500 rounded-t-sm transition-all duration-500 group-hover:bg-blue-600" style={{ height: `${Math.min(h, 100)}%` }}></div>
-                                    <div className="absolute -bottom-6 w-full text-center text-xs text-muted-foreground">
-                                        {['Courses', 'Batches', 'Students'][i]}
-                                    </div>
+                            {[20, 35, 40, 50, 75, 90].map((h, i) => (
+                                <div key={i} className="w-full bg-blue-100 rounded-t-sm relative group">
+                                    <div className="absolute bottom-0 w-full bg-blue-500 rounded-t-sm transition-all duration-500 group-hover:bg-blue-600" style={{ height: `${h}%` }}></div>
                                 </div>
                             ))}
+                        </div>
+                        <div className="flex justify-between text-xs text-muted-foreground mt-2 px-1">
+                            <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
                         </div>
                     </CardContent>
                 </Card>

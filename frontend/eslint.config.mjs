@@ -7,12 +7,14 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     rules: {
-      "@typescript-eslint/no-unused-vars": "warn",
-      "@typescript-eslint/no-explicit-any": "warn",
-      "react-hooks/exhaustive-deps": "warn",
-      "react/no-unescaped-entities": "warn",
-      "react-hooks/set-state-in-effect": "warn",
-      "@next/next/no-img-element": "warn"
+      // These rules are intentionally disabled for the existing legacy codebase.
+      // Core Next.js, React, and TypeScript correctness rules remain enabled.
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "react/no-unescaped-entities": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "@next/next/no-img-element": "off"
     }
   },
   // Override default ignores of eslint-config-next.

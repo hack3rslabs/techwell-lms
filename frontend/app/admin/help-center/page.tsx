@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import React from 'react'
 import api from '@/lib/api'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -10,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { MessageSquare, Send, Loader2, Search } from 'lucide-react'
 import { toast } from 'sonner'
@@ -46,11 +47,8 @@ export default function HelpCenterPage() {
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('')
 
-    useEffect(() => {
-        fetchTickets()
-    }, [statusFilter])
 
-    const fetchTickets = async () => {
+    const fetchTickets = React.useCallback(async () => {
         setIsLoading(true)
         try {
             const params = new URLSearchParams()
@@ -62,7 +60,10 @@ export default function HelpCenterPage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [statusFilter])
+    useEffect(() => {
+        fetchTickets()
+    }, [statusFilter, fetchTickets])
 
     const openTicketDetail = async (ticketId: string) => {
         try {

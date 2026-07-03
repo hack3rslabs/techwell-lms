@@ -45,11 +45,6 @@ interface ApplicationDetail {
         email: string
         phone?: string
         avatar?: string
-        enrollments?: {
-            course: { title: string; difficulty: string }
-            progress: number
-            status: string
-        }[]
     }
     statusHistory?: HistoryEntry[]
     job?: {
@@ -400,38 +395,6 @@ export default function CandidateProfilePage() {
                                                 ))}
                                             </div>
                                         )}
-                                    </CardContent>
-                                </Card>
-                            )}
-
-                            {/* Techwell Learning Progress */}
-                            {applicant?.enrollments && applicant.enrollments.length > 0 && (
-                                <Card className="glass-card">
-                                    <CardHeader>
-                                        <CardTitle className="text-base flex items-center gap-2">
-                                            <BookOpen className="h-4 w-4 text-blue-500" /> Techwell Learning Progress
-                                        </CardTitle>
-                                        <CardDescription>Verified course completions from the Techwell platform.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        {applicant.enrollments.map((enrollment, idx) => (
-                                            <div key={idx} className="space-y-1">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="font-medium text-sm">{enrollment.course.title}</span>
-                                                    <span className="text-xs text-muted-foreground">{enrollment.progress}%</span>
-                                                </div>
-                                                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                                    <div 
-                                                        className={`h-full rounded-full transition-all duration-1000 ${enrollment.progress === 100 ? 'bg-green-500' : 'bg-blue-500'}`} 
-                                                        style={{ width: `${enrollment.progress}%` }} 
-                                                    />
-                                                </div>
-                                                <div className="flex justify-between items-center mt-1">
-                                                    <Badge variant="outline" className="text-[10px]">{enrollment.course.difficulty}</Badge>
-                                                    {enrollment.status === 'COMPLETED' && <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-none text-[10px]">Completed</Badge>}
-                                                </div>
-                                            </div>
-                                        ))}
                                     </CardContent>
                                 </Card>
                             )}

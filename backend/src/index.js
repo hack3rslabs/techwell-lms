@@ -9,7 +9,6 @@ const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
 const courseRoutes = require('./routes/course.routes');
 const interviewRoutes = require('./routes/interview.routes');
-const eventsRoutes = require('./routes/events.routes');
 const settingsRoutes = require('./routes/settings.routes');
 
 const app = express();
@@ -42,49 +41,37 @@ app.use('/uploads', express.static(uploadsPath, {
 
 app.use(cors({
     origin: function (origin, callback) {
-        const allowedOrigins = ['http://localhost:3000', 'http://192.168.29.183:3000', process.env.FRONTEND_URL];
+        const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.29.183:3000', process.env.FRONTEND_URL].filter(Boolean);
         if (!origin) return callback(null, true);
+        if (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+            return callback(null, true);
+        }
         if (allowedOrigins.indexOf(origin) === -1) return callback(new Error('CORS policy error'), false);
         return callback(null, true);
     },
     credentials: true
 }));
 
-const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Limit each IP to 1000 requests per windowMs
-    message: { error: 'Too many requests from this IP, please try again later.' },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-app.use(globalLimiter);
-
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/courses', courseRoutes);
-app.use('/api/events', require('./routes/events.routes'));
-app.use('/api/staff', require('./routes/staff.routes'));
-app.use('/api/admin', require('./routes/admin.routes'));
-app.use('/api/consultancy', require('./routes/consultancy.routes'));
-app.use('/api/gdpr', require('./routes/gdpr.routes'));
-app.use('/api/referrals', require('./routes/referrals.routes'));
 app.use('/api/rbac', require('./routes/rbac.routes'));
 app.use('/api/leads', require('./routes/leads.routes'));
-app.use('/api/messaging', require('./routes/messaging.routes'));
-app.use('/api/analytics', require('./routes/analytics.routes'));
-app.use('/api/ads', require('./routes/ads.routes'));
 app.use('/api/employers', require('./routes/employer.routes'));
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/payments', require('./routes/payment.routes'));
+app.use('/api/coupons', require('./routes/coupons.routes'));
 app.use('/api/finance', require('./routes/finance.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/upload', require('./routes/upload.routes'));
 app.use('/api/search', require('./routes/search.routes'));
+app.use('/api/analytics', require('./routes/analytics.routes'));
 app.use('/api/avatars', require('./routes/avatar.routes'));
 app.use('/api/knowledge-base', require('./routes/knowledge-base.routes'));
 app.use('/api/certificates', require('./routes/certificate.routes'));
@@ -109,20 +96,8 @@ app.use('/api/employer-requests', require('./routes/employer-requests.routes'));
 app.use('/api/messages', require('./routes/messages.routes'));
 app.use('/api/course-categories', require('./routes/course-categories.routes'));
 app.use('/api/resume', require('./routes/resume.routes'));
-app.use('/api/candidates', require('./routes/candidate.routes'));
 app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
-app.use('/api/services', require('./routes/service.routes'));
-app.use('/api/products', require('./routes/product.routes'));
-app.use('/api/clients', require('./routes/client.routes'));
-app.use('/api/team', require('./routes/team'));
-app.use('/api/batches', require('./routes/batch.routes'));
-app.use('/api/staff', require('./routes/staff.routes'));
-app.use('/api/sales/templates', require('./routes/templates.routes'));
-app.use('/api/internships', require('./routes/internships.routes'));
-app.use('/api/ats-checker', require('./routes/ats-checker.routes'));
-app.use('/api/linkedin', require('./routes/linkedin.routes'));
-app.use('/api/payroll', require('./routes/payroll.routes'));
-app.use('/api/admin/marketing', require('./routes/marketing.routes'));
+
 // Health check
 app.get('/api/health', async (req, res) => {
     const db = await getDatabaseHealth();
@@ -159,7 +134,7 @@ app.use((err, req, res, next) => {
 
         return res.status(400).json({
             error: errorMsg,
-            details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+            details: err.message,
             code: err.code
         });
     }
@@ -173,10 +148,8 @@ app.use((err, req, res, next) => {
 const http = require('http');
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
-if (process.env.NODE_ENV !== 'test') {
-    server.listen(PORT, () => {
-        console.log(`🚀 Techwell API running on http://localhost:${PORT}`);
-    });
-}
+server.listen(PORT, () => {
+    console.log(`🚀 Techwell API running on http://localhost:${PORT}`);
+});
 
 module.exports = app;

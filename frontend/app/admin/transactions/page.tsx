@@ -12,12 +12,28 @@ import {
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Download, Search, Filter } from "lucide-react"
+import { Loader2, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+
+interface PaymentTransaction {
+    id: string
+    orderId: string
+    amount: number
+    status: string
+    paymentMethod?: string
+    createdAt: string
+    user?: {
+        name?: string
+        email?: string
+    }
+    course?: {
+        title?: string
+    }
+    courses?: { id: string; title: string }[]
+}
 
 export default function TransactionsPage() {
-    const [payments, setPayments] = useState<any[]>([])
+    const [payments, setPayments] = useState<PaymentTransaction[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
 
@@ -39,6 +55,7 @@ export default function TransactionsPage() {
         payment.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.course?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        payment.paymentMethod?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.orderId?.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
@@ -90,6 +107,7 @@ export default function TransactionsPage() {
                                     <TableHead>Student</TableHead>
                                     <TableHead>Course</TableHead>
                                     <TableHead>Amount</TableHead>
+                                    <TableHead>Method</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Order ID</TableHead>
                                 </TableRow>
@@ -114,10 +132,15 @@ export default function TransactionsPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="max-w-[200px] truncate">
-                                                {payment.course?.title}
+                                                {payment.courses && payment.courses.length > 0 ? payment.courses.map((c, idx) => c.title).join(", ") : payment.course?.title}
                                             </TableCell>
                                             <TableCell>
                                                 {formatCurrency(payment.amount)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="font-medium">
+                                                    {payment.paymentMethod || 'ONLINE'}
+                                                </Badge>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge 
@@ -138,7 +161,7 @@ export default function TransactionsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center">
+                                        <TableCell colSpan={7} className="h-24 text-center">
                                             No transactions found.
                                         </TableCell>
                                     </TableRow>

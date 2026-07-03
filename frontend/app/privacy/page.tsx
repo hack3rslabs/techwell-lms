@@ -1,58 +1,189 @@
-import type { Metadata } from 'next'
+"use client"
+
 import Link from 'next/link'
-import { FileText, ArrowLeft, Mail } from 'lucide-react'
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://techwell.co.in'
-
-export const metadata: Metadata = {
-    title: 'Privacy Policy | Techwell',
-    description: 'Techwell Privacy Policy and Data Processing Terms.',
-    alternates: { canonical: `${BASE_URL}/privacy` },
-    robots: { index: true, follow: false },
-}
+import { Shield, Check, Lock, ShieldCheck, Database, ArrowLeft, Mail, User } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 export default function PrivacyPage() {
     return (
-        <div className="min-h-screen py-20 bg-background">
-            <div className="container max-w-5xl">
-                <div className="flex items-center gap-4 mb-8 border-b pb-6">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-primary" />
+        <div className="min-h-screen py-20">
+            <div className="container max-w-4xl">
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-12">
+                    <div className="h-14 w-14 rounded-xl bg-primary/20 flex items-center justify-center">
+                        <Shield className="h-7 w-7 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black uppercase tracking-tighter">Privacy Policy & Data Processing</h1>
-                        <p className="text-muted-foreground text-sm font-bold">Effective Date: August 1st, 2026 | Document Reference: TW-PRV-2026-01-A</p>
+                        <h1 className="text-4xl font-bold">Privacy Policy</h1>
+                        <p className="text-muted-foreground">Last Updated: February 1, 2026</p>
                     </div>
                 </div>
 
-                <div className="bg-muted/10 border border-border p-8 rounded-xl shadow-inner">
-                    <div className="text-[10px] leading-tight text-justify text-muted-foreground space-y-4 font-mono">
-                        <p className="uppercase font-bold text-foreground">THIS PRIVACY POLICY IS AN ELECTRONIC RECORD IN THE FORM OF AN ELECTRONIC CONTRACT FORMED UNDER THE INFORMATION TECHNOLOGY ACT, 2000 AND THE RULES MADE THEREUNDER. PLEASE READ THIS PRIVACY POLICY CAREFULLY.</p>
-                        
-                        <p><strong>1. PURPOSE OF DATA COLLECTION:</strong> We collect and process your personal data, including but not limited to your name, email address, phone number, educational qualifications, employment history, and platform usage metrics, exclusively for our internal business purposes. This includes utilizing your data to provide educational services, facilitate job assistance, generate analytical reports, enhance user experience, and market our own products directly to you.</p>
+                <div className="space-y-8">
+                    {/* Section 1 */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                <span className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">1</span>
+                                Introduction
+                            </h2>
+                            <p className="text-muted-foreground leading-relaxed">
+                                Techwell (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy
+                                explains how we collect, use, disclose, and safeguard your information when you use our
+                                AI-powered interview preparation and learning platform.
+                            </p>
+                        </CardContent>
+                    </Card>
 
-                        <p><strong>2. STRICT NON-SHARING WITH THIRD PARTIES:</strong> Techwell is firmly committed to protecting your privacy. We explicitly declare that we do not sell, rent, trade, or otherwise share your personally identifiable information (PII) with third-party advertisers, external marketing agencies, or unauthorized external entities. Your data remains strictly within the Techwell ecosystem and is only shared with trusted infrastructure partners (e.g., cloud hosting providers, payment gateways) solely for the purpose of facilitating the services you have requested, under strict confidentiality agreements.</p>
+                    {/* Section 2 */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                <span className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">2</span>
+                                Information We Collect
+                            </h2>
+                            <div className="space-y-6">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-primary mb-2">Personal Information</h3>
+                                    <ul className="space-y-2 text-muted-foreground">
+                                        <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Name and email address</li>
+                                        <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Profile information (resume, job preferences)</li>
+                                        <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Payment information (processed securely via Razorpay)</li>
+                                        <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Educational institution (for college partnerships)</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-purple-500 mb-2">Interview Data</h3>
+                                    <ul className="space-y-2 text-muted-foreground">
+                                        <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Audio recordings (processed for speech-to-text only)</li>
+                                        <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Video recordings (for camera-on practice sessions)</li>
+                                        <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Text responses and transcripts</li>
+                                        <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Performance scores and analytics</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <p><strong>3. REASONABLE SECURITY PRACTICES:</strong> As mandated by the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011, Techwell assumes responsibility for data security and employs reasonable technical, operational, and physical security controls to protect your data against unauthorized access, loss, or misuse. We utilize industry-standard encryption protocols and secure server architectures.</p>
+                    {/* Section 3 - GDPR */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                <span className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">3</span>
+                                GDPR Compliance
+                            </h2>
+                            <p className="text-muted-foreground mb-4">For users in the European Economic Area (EEA), we comply with the
+                                General Data Protection Regulation (GDPR). Your rights include:</p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-muted/50 rounded-xl p-4 border">
+                                    <h4 className="font-bold text-primary mb-1">Right to Access</h4>
+                                    <p className="text-sm text-muted-foreground">Request copies of your personal data</p>
+                                </div>
+                                <div className="bg-muted/50 rounded-xl p-4 border">
+                                    <h4 className="font-bold text-primary mb-1">Right to Rectification</h4>
+                                    <p className="text-sm text-muted-foreground">Request correction of inaccurate data</p>
+                                </div>
+                                <div className="bg-muted/50 rounded-xl p-4 border">
+                                    <h4 className="font-bold text-primary mb-1">Right to Erasure</h4>
+                                    <p className="text-sm text-muted-foreground">Request deletion of your personal data</p>
+                                </div>
+                                <div className="bg-muted/50 rounded-xl p-4 border">
+                                    <h4 className="font-bold text-primary mb-1">Right to Portability</h4>
+                                    <p className="text-sm text-muted-foreground">Request transfer of your data</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <p><strong>4. LIMITATION OF SECURITY GUARANTEE:</strong> Notwithstanding our commitment to maintaining reasonable security practices, it is widely acknowledged in the field of cybersecurity that no method of transmission over the Internet, or method of electronic storage, is flawlessly secure. Therefore, we explicitly state that while we strive to use commercially acceptable means to protect your Personal Data, we cannot and do not guarantee its absolute or 100% security. Users transmit data to our platform at their own risk, and Techwell shall not be held liable for any data breach, unauthorized access, or cyber-attack that circumvents our security measures despite our reasonable efforts.</p>
+                    {/* Section 4 - Data Security */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                <span className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">4</span>
+                                Data Security
+                            </h2>
+                            <p className="text-muted-foreground mb-4">We implement industry-standard security measures:</p>
+                            <div className="grid md:grid-cols-3 gap-4">
+                                <div className="text-center p-4">
+                                    <div className="h-12 w-12 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                        <Lock className="h-6 w-6 text-green-500" />
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">256-bit SSL/TLS Encryption</p>
+                                </div>
+                                <div className="text-center p-4">
+                                    <div className="h-12 w-12 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                        <ShieldCheck className="h-6 w-6 text-green-500" />
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">OWASP Top 10 Protection</p>
+                                </div>
+                                <div className="text-center p-4">
+                                    <div className="h-12 w-12 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                        <Database className="h-6 w-6 text-green-500" />
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">AES-256 Data Encryption</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <p><strong>5. DATA RETENTION AND DELETION:</strong> We will retain your personal information only for as long as is necessary for the purposes set out in this Privacy Policy. We will retain and use your information to the extent necessary to comply with our legal obligations (for example, if we are required to retain your data to comply with applicable tax/revenue laws), resolve disputes, and enforce our legal agreements and policies. You may request the deletion of your account at any time, subject to statutory retention requirements.</p>
+                    {/* Section 5 - Data Retention */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                <span className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">5</span>
+                                Data Retention
+                            </h2>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                    <span className="text-muted-foreground">Account data</span>
+                                    <span className="text-primary font-bold">Until deletion</span>
+                                </div>
+                                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                    <span className="text-muted-foreground">Interview recordings</span>
+                                    <span className="text-primary font-bold">90 days</span>
+                                </div>
+                                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                    <span className="text-muted-foreground">Analytics data</span>
+                                    <span className="text-primary font-bold">1 year (anonymized)</span>
+                                </div>
+                                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                    <span className="text-muted-foreground">Payment records</span>
+                                    <span className="text-primary font-bold">7 years (legal)</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <p><strong>6. USER CONSENT AND ACKNOWLEDGEMENT:</strong> By utilizing the Techwell platform, creating an account, or providing any personal information, you explicitly consent to the collection, storage, processing, and transfer of your personal data as outlined in this highly detailed privacy policy. You acknowledge that you have read this document in its entirety, regardless of the density of the text or the font size utilized, and you accept the terms governing our data processing responsibilities and the explicit limitations of our security guarantees.</p>
-                    </div>
+                    {/* Section 6 - Contact */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                <span className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">6</span>
+                                Contact Us
+                            </h2>
+                            <p className="text-muted-foreground mb-4">For privacy-related inquiries or to exercise your rights:</p>
+                            <div className="flex flex-wrap gap-4">
+                                <Link href="mailto:privacy@techwell.co.in">
+                                    <Button variant="outline" className="gap-2">
+                                        <Mail className="h-4 w-4" />
+                                        privacy@techwell.co.in
+                                    </Button>
+                                </Link>
+                                <Link href="mailto:dpo@techwell.co.in">
+                                    <Button variant="outline" className="gap-2">
+                                        <User className="h-4 w-4" />
+                                        Data Protection Officer
+                                    </Button>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
-                <div className="mt-8 text-center border-t border-border pt-6">
-                    <p className="text-xs text-muted-foreground mb-4">For privacy-related concerns or data deletion requests:</p>
-                    <Link href="mailto:info@techwell.co.in">
-                        <span className="inline-flex items-center gap-2 text-primary hover:underline text-sm font-bold">
-                            <Mail className="h-4 w-4" />
-                            info@techwell.co.in
-                        </span>
-                    </Link>
-                    <br /><br />
-                    <Link href="/" className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
+                {/* Back Link */}
+                <div className="mt-12 text-center">
+                    <Link href="/" className="inline-flex items-center gap-2 text-primary hover:underline">
                         <ArrowLeft className="h-4 w-4" /> Back to Home
                     </Link>
                 </div>

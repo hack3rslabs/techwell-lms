@@ -16,7 +16,7 @@ const authenticate = async (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         const user = await prisma.user.findUnique({
             where: { id: decoded.userId },
@@ -28,6 +28,11 @@ const authenticate = async (req, res, next) => {
                 permissions: true,
                 instituteId: true,
                 isActive: true,
+                employerProfile: {
+                    select: {
+                        status: true
+                    }
+                },
                 systemRole: {
                     select: {
                         name: true,
@@ -53,6 +58,10 @@ const authenticate = async (req, res, next) => {
             return res.status(403).json({ error: 'Account is deactivated' });
         }
 
+        if (user.role === 'EMPLOYER' && user.employerProfile?.status !== 'APPROVED') {
+            return res.status(403).json({ error: 'Employer account is not approved' });
+        }
+
         // Format permissions for easier lookup
         const rolePermissions = {};
         if (user.systemRole && user.systemRole.rolePermissions) {
@@ -67,7 +76,6 @@ const authenticate = async (req, res, next) => {
 
         req.user = {
             ...user,
-            permissions: Array.isArray(user.permissions) ? user.permissions : [],
             rolePermissions
         };
         next();
@@ -160,7 +168,7 @@ const optionalAuth = async (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         const user = await prisma.user.findUnique({
             where: { id: decoded.userId },
@@ -168,16 +176,12 @@ const optionalAuth = async (req, res, next) => {
                 id: true,
                 email: true,
                 name: true,
-                role: true,
-                permissions: true
+                role: true
             }
         });
 
         if (user) {
-            req.user = {
-                ...user,
-                permissions: Array.isArray(user.permissions) ? user.permissions : []
-            };
+            req.user = user;
         }
 
         next();

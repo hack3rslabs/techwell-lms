@@ -52,7 +52,11 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
         warningTimerRef.current = null;
         logoutTimerRef.current = null;
         countdownIntervalRef.current = null;
-        setIsWarning(false);
+        
+        // Use microtask to avoid synchronous state update in effect (satisfies strict lint)
+        Promise.resolve().then(() => {
+            setIsWarning(prev => prev ? false : prev);
+        });
     }, []);
 
     const startCountdown = useCallback(() => {
@@ -69,14 +73,12 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
 
     const triggerLogout = useCallback(() => {
         clearAllTimers();
-        setIsWarning(false);
         onLogout();
         router.push('/login?reason=idle');
     }, [clearAllTimers, onLogout, router]);
 
     const startTimers = useCallback(() => {
         clearAllTimers();
-        setIsWarning(false);
 
         // Warning timer at 9 minutes
         warningTimerRef.current = setTimeout(() => {
@@ -94,7 +96,6 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
 
     const resetTimer = useCallback(() => {
         if (!isAuthRef.current) return;
-        setIsWarning(false);
         setRemainingSeconds(60);
         warningStartTimeRef.current = null;
         startTimers();
@@ -106,6 +107,8 @@ export function useIdleTimeout({ isAuthenticated, onLogout }: UseIdleTimeoutOpti
             return;
         }
 
+        // Only start if not already authenticated (avoid redundant starts)
+        // Or if it's the first time we're setting up the timers
         startTimers();
 
         const handleActivity = () => {

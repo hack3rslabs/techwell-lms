@@ -188,10 +188,6 @@ async function main() {
         { code: 'CERTIFICATES', name: 'Certificates', module: 'ADMIN' },
         { code: 'REPORTS', name: 'Reports & Analytics', module: 'ADMIN' },
         { code: 'SYSTEM_LOGS', name: 'System Logs', module: 'ADMIN' },
-        { code: 'CMS', name: 'CMS Manager', module: 'Content' },
-        { code: 'TEAM_MANAGEMENT', name: 'Team Management', module: 'Content' },
-        { code: 'PRODUCTS', name: 'Product Catalog', module: 'Content' },
-        { code: 'SERVICES', name: 'Services Catalog', module: 'Content' },
     ];
 
     for (const p of permissions) {
@@ -251,16 +247,6 @@ async function main() {
             name: 'Employer',
             isSystem: true,
             permissions: ['WELCOME', 'DASHBOARD', 'USERS', 'COURSES']
-        },
-        {
-            name: 'Tele Sales',
-            isSystem: true,
-            permissions: ['WELCOME', 'DASHBOARD', 'LEADS']
-        },
-        {
-            name: 'Support',
-            isSystem: true,
-            permissions: ['WELCOME', 'DASHBOARD', 'TICKETS']
         }
     ];
 

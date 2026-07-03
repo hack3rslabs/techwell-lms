@@ -53,15 +53,13 @@ export default function AdminSkillcastPage() {
         thumbnail: ""
     })
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
-
     useEffect(() => {
         fetchSkillcasts()
     }, [])
 
     const fetchSkillcasts = async () => {
         try {
-            const res = await fetch(`${API_URL}/skillcasts`)
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/skillcasts`)
             if (res.ok) {
                 const data = await res.json()
                 setSkillcasts(Array.isArray(data) ? data : [])
@@ -78,8 +76,8 @@ export default function AdminSkillcastPage() {
         e.preventDefault()
         try {
             const url = editingItem
-                ? `${API_URL}/skillcasts/${editingItem.id}`
-                : `${API_URL}/skillcasts`
+                ? `${process.env.NEXT_PUBLIC_API_URL}/skillcasts/${editingItem.id}`
+                : `${process.env.NEXT_PUBLIC_API_URL}/skillcasts`
 
             const method = editingItem ? "PUT" : "POST"
 
@@ -113,7 +111,7 @@ export default function AdminSkillcastPage() {
 
         try {
             const token = localStorage.getItem("token")
-            const res = await fetch(`${API_URL}/skillcasts/${id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/skillcasts/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${token}`

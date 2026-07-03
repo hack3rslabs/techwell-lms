@@ -1,7 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -64,6 +63,7 @@ interface Message {
 interface Batch {
     id: string
     name: string
+    batchCode: string
     courseId: string
     course: {
         title: string
@@ -81,6 +81,7 @@ export default function AdminMessagesPage() {
     const [activeTab, setActiveTab] = useState('send-all')
     const [messages, setMessages] = useState<Message[]>([])
     const [batches, setBatches] = useState<Batch[]>([])
+    const [courses, setCourses] = useState<{ id: string; title: string }[]>([])
     const [students, setStudents] = useState<Student[]>([])
     const [loading, setLoading] = useState(false)
     const [messageLoading, setMessageLoading] = useState(false)
@@ -91,17 +92,13 @@ export default function AdminMessagesPage() {
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
     const [priority, setPriority] = useState('NORMAL')
-    const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>([])
+    const [selectedBatch, setSelectedBatch] = useState('')
+    const [selectedCourse, setSelectedCourse] = useState('')
     const [selectedStudent, setSelectedStudent] = useState('')
 
-    // Fetch sent messages
-    useEffect(() => {
-        fetchMessages()
-        fetchBatches()
-        fetchStudents()
-    }, [])
 
-    const fetchMessages = async () => {
+
+    const fetchMessages = useCallback(async () => {
         try {
             setLoading(true)
             const response = await api.get('/messages')
@@ -112,19 +109,30 @@ export default function AdminMessagesPage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [])
 
-    const fetchBatches = async () => {
+    const fetchBatches = useCallback(async () => {
         try {
-            const response = await api.get('/batches')
-            setBatches(response.data || [])
+            const { batchesApi } = await import('@/lib/api')
+            const response = await batchesApi.getAll({ limit: 100 })
+            setBatches(response.data.batches || [])
         } catch (error) {
             console.error('Error fetching batches:', error)
             setBatches([])
         }
-    }
+    }, [])
 
-    const fetchStudents = async () => {
+    const fetchCourses = useCallback(async () => {
+        try {
+            const { courseApi } = await import('@/lib/api')
+            const response = await courseApi.getAll()
+            setCourses(response.data.courses || [])
+        } catch (error) {
+            console.error('Error fetching courses:', error)
+        }
+    }, [])
+
+    const fetchStudents = useCallback(async () => {
         try {
             // Try to fetch students from users API
             const response = await api.get('/users?role=STUDENT&skip=0&take=100')
@@ -133,13 +141,21 @@ export default function AdminMessagesPage() {
             console.error('Error fetching students:', error)
             setStudents([])
         }
-    }
+    }, [])
+    // Fetch sent messages
+    useEffect(() => {
+        fetchMessages()
+        fetchBatches()
+        fetchCourses()
+        fetchStudents()
+    }, [fetchMessages, fetchBatches, fetchCourses, fetchStudents])
 
     const resetForm = () => {
         setTitle('')
         setContent('')
         setPriority('NORMAL')
-        setSelectedBatchIds([])
+        setSelectedBatch('')
+        setSelectedCourse('')
         setSelectedStudent('')
     }
 
@@ -152,7 +168,8 @@ export default function AdminMessagesPage() {
 
         try {
             setMessageLoading(true)
-            const response = await api.post('/messages/send-to-all', {
+            const { messagesApi } = await import('@/lib/api')
+            const response = await messagesApi.sendToAll({
                 title,
                 content,
                 priority
@@ -171,20 +188,49 @@ export default function AdminMessagesPage() {
 
     const handleSendToBatch = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!title.trim() || !content.trim() || selectedBatchIds.length === 0) {
-            setErrorMessage('Title, content, and at least one batch are required')
+        if (!title.trim() || !content.trim() || !selectedBatch) {
+            setErrorMessage('Title, content, and batch are required')
             return
         }
 
         try {
             setMessageLoading(true)
-            const response = await api.post('/messages/send-to-batch', {
+            const { messagesApi } = await import('@/lib/api')
+            const response = await messagesApi.sendToBatch({
                 title,
                 content,
-                batchIds: selectedBatchIds,
+                batchId: selectedBatch,
                 priority
             })
-            setSuccessMessage(`Message sent successfully to ${response.data.recipientsCount || 0} students in selected batches`)
+            setSuccessMessage(`Message sent successfully into batch`)
+            resetForm()
+            fetchMessages()
+            setTimeout(() => setSuccessMessage(''), 3000)
+        } catch (error) {
+            setErrorMessage('Failed to send message')
+            console.error(error)
+        } finally {
+            setMessageLoading(false)
+        }
+    }
+
+    const handleSendToCourse = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!title.trim() || !content.trim() || !selectedCourse) {
+            setErrorMessage('Title, content, and course are required')
+            return
+        }
+
+        try {
+            setMessageLoading(true)
+            const { messagesApi } = await import('@/lib/api')
+            const response = await messagesApi.sendToCourse({
+                title,
+                content,
+                courseId: selectedCourse,
+                priority
+            })
+            setSuccessMessage(`Message sent successfully to students in course`)
             resetForm()
             fetchMessages()
             setTimeout(() => setSuccessMessage(''), 3000)
@@ -205,7 +251,8 @@ export default function AdminMessagesPage() {
 
         try {
             setMessageLoading(true)
-            await api.post('/messages/send-to-student', {
+            const { messagesApi } = await import('@/lib/api')
+            await messagesApi.sendToStudent({
                 title,
                 content,
                 studentId: selectedStudent,
@@ -270,18 +317,22 @@ export default function AdminMessagesPage() {
 
                 {/* Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-5">
                         <TabsTrigger value="send-all" className="flex items-center gap-2">
                             <Users className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to All</span>
+                            <span className="hidden sm:inline">All Students</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="send-course" className="flex items-center gap-2">
+                            <BookOpen className="w-4 h-4" />
+                            <span className="hidden sm:inline">By Course</span>
                         </TabsTrigger>
                         <TabsTrigger value="send-batch" className="flex items-center gap-2">
-                            <BookOpen className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to Batch</span>
+                            <Users className="w-4 h-4" />
+                            <span className="hidden sm:inline">By Batch</span>
                         </TabsTrigger>
                         <TabsTrigger value="send-student" className="flex items-center gap-2">
                             <MessageSquare className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to Student</span>
+                            <span className="hidden sm:inline">Individual</span>
                         </TabsTrigger>
                         <TabsTrigger value="history" className="flex items-center gap-2">
                             <Eye className="w-4 h-4" />
@@ -362,41 +413,31 @@ export default function AdminMessagesPage() {
                         </Card>
                     </TabsContent>
 
-                    {/* Send to Batch Tab */}
-                    <TabsContent value="send-batch" className="space-y-4">
+                    {/* Send to Course Tab */}
+                    <TabsContent value="send-course" className="space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Send Message to Batch</CardTitle>
-                                <CardDescription>Send a message to all students in a specific batch</CardDescription>
+                                <CardTitle>Send Message to All Students in a Course</CardTitle>
+                                <CardDescription>Target all students currently enrolled in a specific course</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <form onSubmit={handleSendToBatch} className="space-y-4">
+                                <form onSubmit={handleSendToCourse} className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Select Batches
+                                            Select Course
                                         </label>
-                                        <div className="border rounded-md max-h-48 overflow-y-auto p-2 bg-white">
-                                            {batches.length === 0 ? (
-                                                <p className="text-sm text-muted-foreground p-2">No batches found.</p>
-                                            ) : batches.map(batch => (
-                                                <label key={batch.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        className="w-4 h-4 rounded border-slate-300"
-                                                        checked={selectedBatchIds.includes(batch.id)}
-                                                        onChange={(e) => {
-                                                            if(e.target.checked) {
-                                                                setSelectedBatchIds([...selectedBatchIds, batch.id])
-                                                            } else {
-                                                                setSelectedBatchIds(selectedBatchIds.filter(id => id !== batch.id))
-                                                            }
-                                                        }}
-                                                    />
-                                                    <span className="text-sm font-medium">{batch.name}</span>
-                                                    <span className="text-xs text-muted-foreground ml-auto">{batch.course?.title}</span>
-                                                </label>
-                                            ))}
-                                        </div>
+                                        <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Choose a course" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {courses.map((course) => (
+                                                    <SelectItem key={course.id} value={course.id}>
+                                                        {course.title}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
                                     <div>
@@ -443,7 +484,98 @@ export default function AdminMessagesPage() {
 
                                     <Button
                                         type="submit"
-                                        disabled={messageLoading || selectedBatchIds.length === 0}
+                                        disabled={messageLoading || !selectedCourse}
+                                        className="w-full"
+                                    >
+                                        {messageLoading ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Sending...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Send className="mr-2 h-4 w-4" />
+                                                Send to Course
+                                            </>
+                                        )}
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Send to Batch Tab */}
+                    <TabsContent value="send-batch" className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Send Message to Batch</CardTitle>
+                                <CardDescription>Send a message to all students in a specifically created batch</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleSendToBatch} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Select Batch
+                                        </label>
+                                        <Select value={selectedBatch} onValueChange={setSelectedBatch}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Choose a batch" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {batches.map((batch) => (
+                                                    <SelectItem key={batch.id} value={batch.id}>
+                                                        {batch.name} (#{batch.batchCode}) - {batch.course?.title}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Title
+                                        </label>
+                                        <Input
+                                            placeholder="Message title"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Message Content
+                                        </label>
+                                        <Textarea
+                                            placeholder="Enter your message..."
+                                            value={content}
+                                            onChange={(e) => setContent(e.target.value)}
+                                            rows={6}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Priority
+                                        </label>
+                                        <Select value={priority} onValueChange={setPriority}>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="LOW">Low</SelectItem>
+                                                <SelectItem value="NORMAL">Normal</SelectItem>
+                                                <SelectItem value="HIGH">High</SelectItem>
+                                                <SelectItem value="URGENT">Urgent</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <Button
+                                        type="submit"
+                                        disabled={messageLoading || !selectedBatch}
                                         className="w-full"
                                     >
                                         {messageLoading ? (
@@ -602,8 +734,8 @@ export default function AdminMessagesPage() {
                                                                         message.priority === 'URGENT'
                                                                             ? 'destructive'
                                                                             : message.priority === 'HIGH'
-                                                                            ? 'secondary'
-                                                                            : 'outline'
+                                                                                ? 'secondary'
+                                                                                : 'outline'
                                                                     }
                                                                 >
                                                                     {message.priority}

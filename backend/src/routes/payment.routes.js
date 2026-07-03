@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 const { PrismaClient } = require('@prisma/client');
 const crypto = require('crypto');
+const { findActiveCouponForCourse } = require('./coupons.routes');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
@@ -113,7 +114,7 @@ router.put('/config', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (re
 // POST /api/payments/create-order (Generic for User Checkout)
 router.post('/create-order', authenticate, async (req, res) => {
     try {
-        const { amount, currency = "INR", courseId } = req.body;
+        const { currency = "INR", courseId, type = 'COURSE_ONLY', couponName, amount, additionalCourseIds } = req.body;
 
         if (!courseId) {
             return res.status(400).json({ error: "courseId is required" });
@@ -125,6 +126,7 @@ router.post('/create-order', authenticate, async (req, res) => {
                 id: true,
                 isPublished: true,
                 price: true,
+                discountPrice: true,
                 bundlePrice: true
             }
         });
@@ -137,21 +139,47 @@ router.post('/create-order', authenticate, async (req, res) => {
             return res.status(400).json({ error: "Course is not available for payment" });
         }
 
-        const normalizedAmount = Number(amount);
-        if (Number.isNaN(normalizedAmount) || normalizedAmount < 0) {
+        const baseAmount = type === 'BUNDLE'
+            ? Number(course.bundlePrice || (Number(course.price) * 1.2))
+            : Number(course.discountPrice && Number(course.discountPrice) > 0 ? course.discountPrice : course.price);
+
+        if (!Number.isFinite(baseAmount) || baseAmount < 0) {
+            return res.status(400).json({ error: "Invalid course price" });
+        }
+
+        const sanitizedAdditionalCourseIds = Array.isArray(additionalCourseIds)
+            ? additionalCourseIds.filter(id => typeof id === 'string')
+            : [];
+
+        const amountOverride = Number.isFinite(Number(amount)) ? Number(amount) : null;
+        let normalizedAmount = amountOverride;
+        let appliedCoupon = null;
+        let discountAmount = 0;
+
+        if (couponName) {
+            appliedCoupon = await findActiveCouponForCourse(couponName, courseId);
+
+            if (!appliedCoupon) {
+                return res.status(400).json({ error: "Coupon is invalid, expired, or not applicable to this course" });
+            }
+
+            discountAmount = Number(((baseAmount * appliedCoupon.discountPercentage) / 100).toFixed(2));
+            if (normalizedAmount === null) {
+                normalizedAmount = Math.max(0, Number((baseAmount - discountAmount).toFixed(2)));
+            }
+        }
+
+        if (normalizedAmount === null) {
+            normalizedAmount = baseAmount;
+        }
+
+        if (!Number.isFinite(normalizedAmount) || normalizedAmount < 0) {
             return res.status(400).json({ error: "Invalid payment amount" });
         }
 
-        if (normalizedAmount === 0) {
-            const existingEnrollment = await prisma.enrollment.findUnique({
-                where: {
-                    userId_courseId: {
-                        userId: req.user.id,
-                        courseId
-                    }
-                }
-            });
+        normalizedAmount = Math.ceil(normalizedAmount);
 
+        if (normalizedAmount === 0) {
             // Use upsert for free enrollment to activate any existing pending/cancelled records
             await prisma.enrollment.upsert({
                 where: {
@@ -168,9 +196,33 @@ router.post('/create-order', authenticate, async (req, res) => {
                 }
             });
 
+            for (const additionalCourseId of sanitizedAdditionalCourseIds) {
+                await prisma.enrollment.upsert({
+                    where: {
+                        userId_courseId: {
+                            userId: req.user.id,
+                            courseId: additionalCourseId
+                        }
+                    },
+                    update: { status: 'ACTIVE' },
+                    create: {
+                        userId: req.user.id,
+                        courseId: additionalCourseId,
+                        status: 'ACTIVE'
+                    }
+                });
+            }
+
             return res.json({
                 gateway: 'FREE',
-                message: 'Free enrollment completed successfully.'
+                message: appliedCoupon ? 'Coupon applied. Free enrollment completed successfully.' : 'Free enrollment completed successfully.',
+                finalAmount: normalizedAmount,
+                discountAmount,
+                coupon: appliedCoupon ? {
+                    id: appliedCoupon.id,
+                    name: appliedCoupon.name,
+                    discountPercentage: appliedCoupon.discountPercentage
+                } : null
             });
         }
 
@@ -205,7 +257,8 @@ router.post('/create-order', authenticate, async (req, res) => {
                     currency: currency,
                     status: 'PENDING',
                     userId: req.user.id,
-                    courseId: courseId
+                    courseId: courseId,
+                    additionalCourseIds: sanitizedAdditionalCourseIds
                 }
             });
 
@@ -214,6 +267,13 @@ router.post('/create-order', authenticate, async (req, res) => {
                 orderId: order.id,
                 keyId: keyId,
                 amount: options.amount,
+                finalAmount: normalizedAmount,
+                discountAmount,
+                coupon: appliedCoupon ? {
+                    id: appliedCoupon.id,
+                    name: appliedCoupon.name,
+                    discountPercentage: appliedCoupon.discountPercentage
+                } : null,
                 currency: currency,
                 mode,
                 source
@@ -302,19 +362,11 @@ router.post('/verify-payment', authenticate, async (req, res) => {
                         dob: user.dob || null,
                         source: 'Course Enrollment',
                         status: 'CONVERTED',
-                        lifecycleStage: 'ENROLLED',
-                        revenueGenerated: payment.amount || 0,
                         notes: successNote,
                         courseId: payment.courseId,
                         courseName: course?.title || 'Unknown Course'
                     }
                 });
-
-                if (user.phone) {
-                    const { sendWhatsAppMessage } = require('../utils/whatsappAgent');
-                    sendWhatsAppMessage(user.phone, `Hi *${user.name}*! Thank you for enrolling in *${course?.title || 'your Techwell Course'}*. Your payment of Rs. *${payment.amount}* was processed successfully. Head over to the portal to start learning! 🎓`)
-                        .catch(err => console.error('[WhatsApp Payment Notice Failed]:', err.message));
-                }
             }
 
             // Auto-enroll user in the course - Use upsert to ensure status is updated to ACTIVE even if record exists
@@ -334,6 +386,23 @@ router.post('/verify-payment', authenticate, async (req, res) => {
                     status: 'ACTIVE'
                 }
             });
+
+            for (const additionalCourseId of payment.additionalCourseIds || []) {
+                await prisma.enrollment.upsert({
+                    where: {
+                        userId_courseId: {
+                            userId: payment.userId,
+                            courseId: additionalCourseId
+                        }
+                    },
+                    update: { status: 'ACTIVE' },
+                    create: {
+                        userId: payment.userId,
+                        courseId: additionalCourseId,
+                        status: 'ACTIVE'
+                    }
+                });
+            }
 
             return res.json({ success: true, message: "Payment verified and enrollment created" });
         } else {
@@ -392,24 +461,5 @@ router.get('/order-status/:orderId', authenticate, async (req, res) => {
     }
 });
 
-
-// GET /api/payments/my-payments
-router.get('/my-payments', authenticate, async (req, res) => {
-    try {
-        const payments = await prisma.payment.findMany({
-            where: { userId: req.user.id },
-            include: {
-                course: {
-                    select: { title: true }
-                }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
-        res.json({ success: true, data: payments });
-    } catch (error) {
-        console.error("Fetch Student Payments Error:", error);
-        res.status(500).json({ error: "Failed to fetch payment history" });
-    }
-});
 
 module.exports = router;

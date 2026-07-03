@@ -196,7 +196,7 @@ export default function ChatWidget() {
         } catch {
             setMessages(prev => [...prev, {
                 role: 'model',
-                text: "I'm having trouble connecting right now. Please try again or reach us at info@techwell.co.in."
+                text: "I'm having trouble connecting right now. Please try again or reach us at support@techwell.co.in."
             }])
         } finally {
             setIsThinking(false)

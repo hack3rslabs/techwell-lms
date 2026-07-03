@@ -44,14 +44,6 @@ const roles = [
     {
         name: 'Employer',
         permissions: ['WELCOME', 'DASHBOARD', 'USERS', 'COURSES']
-    },
-    {
-        name: 'Tele Sales',
-        permissions: ['WELCOME', 'DASHBOARD', 'LEADS']
-    },
-    {
-        name: 'Support',
-        permissions: ['WELCOME', 'DASHBOARD', 'TICKETS']
     }
 ];
 

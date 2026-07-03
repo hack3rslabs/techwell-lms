@@ -84,7 +84,7 @@ router.post('/', authenticate, async (req, res, next) => {
         if (!canManage) {
             return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks.' });
         }
-        const { title, description, priority, dueDate, leadId, assignedTo, goalType, targetValue, achievedValue } = req.body;
+        const { title, description, priority, dueDate, leadId, assignedTo } = req.body;
 
         const task = await prisma.task.create({
             data: {
@@ -95,10 +95,7 @@ router.post('/', authenticate, async (req, res, next) => {
                 leadId,
                 assignedTo: assignedTo || req.user.id,
                 createdBy: req.user.id,
-                status: 'PENDING',
-                goalType: goalType || null,
-                targetValue: targetValue ? parseFloat(targetValue) : null,
-                achievedValue: achievedValue ? parseFloat(achievedValue) : 0
+                status: 'PENDING'
             },
             include: {
                 assignee: { select: { id: true, name: true, avatar: true } }
@@ -123,7 +120,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
         if (!canManage) {
             return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks.' });
         }
-        const { status, priority, dueDate, assignedTo, description, goalType, targetValue, achievedValue } = req.body;
+        const { status, priority, dueDate, assignedTo, description } = req.body;
 
         const task = await prisma.task.update({
             where: { id: req.params.id },
@@ -132,10 +129,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
                 priority,
                 dueDate: dueDate ? new Date(dueDate) : undefined,
                 assignedTo,
-                description,
-                goalType,
-                targetValue: targetValue !== undefined ? parseFloat(targetValue) : undefined,
-                achievedValue: achievedValue !== undefined ? parseFloat(achievedValue) : undefined
+                description
             },
             include: {
                 assignee: { select: { id: true, name: true, avatar: true } }

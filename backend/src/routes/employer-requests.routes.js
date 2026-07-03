@@ -1,385 +1,365 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const router = express.Router();
+const { PrismaClient } = require('@prisma/client');
+const { z } = require('zod');
+const { authenticate, authorize } = require('../middleware/auth');
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
+const router = express.Router();
+const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+
+const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN'];
+const ACTIONABLE_STATUSES = ['PENDING', 'CANCELLED_APPROVAL'];
+const PERSONAL_EMAIL_DOMAINS = new Set([
+    'gmail.com',
+    'googlemail.com',
+    'yahoo.com',
+    'yahoo.co.in',
+    'hotmail.com',
+    'outlook.com',
+    'live.com',
+    'msn.com',
+    'aol.com',
+    'mail.com',
+    'icloud.com',
+    'me.com',
+    'proton.me',
+    'protonmail.com',
+    'yandex.com',
+    'zoho.com',
+]);
+
+const employerRequestSchema = z.object({
+    companyName: z.string().trim().min(2, 'Company name is required').max(160),
+    employerName: z.string().trim().min(2, 'Employer name is required').max(120),
+    email: z.string().trim().email('Invalid email format').transform(value => value.toLowerCase()),
+    phone: z.string().trim().min(7, 'Phone number is required').max(30),
+    website: z.union([z.string().trim().url('Website must be a valid URL'), z.literal('')]).optional(),
+    address: z.string().trim().min(5, 'Business address is required').max(500),
+    password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+    confirmPassword: z.string(),
+}).superRefine((data, ctx) => {
+    const domain = data.email.split('@')[1]?.toLowerCase();
+    if (!domain || PERSONAL_EMAIL_DOMAINS.has(domain)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['email'],
+            message: 'Please use a business email address.',
+        });
+    }
+
+    if (data.password !== data.confirmPassword) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['confirmPassword'],
+            message: 'Password and confirm password must match.',
+        });
+    }
 });
 
-// List of personal email domains to reject
-const PERSONAL_EMAIL_DOMAINS = [
-  'gmail.com',
-  'yahoo.com',
-  'hotmail.com',
-  'outlook.com',
-  'aol.com',
-  'mail.com',
-  'windows.live.com',
-  'yandex.com',
-  'protonmail.com',
-  'icloud.com',
-  'mail.ru',
-];
+function requestSelect() {
+    return {
+        id: true,
+        employerName: true,
+        companyName: true,
+        email: true,
+        phone: true,
+        website: true,
+        address: true,
+        status: true,
+        adminNotes: true,
+        rejectionReason: true,
+        approvedUserId: true,
+        createdAt: true,
+        updatedAt: true,
+    };
+}
 
-/**
- * Validate if email is a business email (not personal)
- * @param {string} email - Email to validate
- * @returns {boolean} - True if business email, false if personal
- */
-function isBusinessEmail(email) {
-  if (!email || !email.includes('@')) {
-    return false;
-  }
-
-  const domain = email.split('@')[1].toLowerCase();
-
-  // Reject if it's a known personal domain
-  if (PERSONAL_EMAIL_DOMAINS.includes(domain)) {
-    return false;
-  }
-
-  return true;
+function httpError(status, message) {
+    const error = new Error(message);
+    error.status = status;
+    return error;
 }
 
 /**
  * POST /api/employer-requests
- * Create a new employer request
- * Body: { name, designation, email, phone? }
+ * Public employer request submission. No login account is created here.
  */
-router.post('/', async (req, res) => {
-  try {
-    const { name, designation, email, phone } = req.body;
+router.post('/', async (req, res, next) => {
+    try {
+        const data = employerRequestSchema.parse(req.body);
 
-    // Validation
-    if (!name || !name.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name is required',
-      });
+        const [existingUser, existingRequest] = await Promise.all([
+            prisma.user.findFirst({
+                where: { email: { equals: data.email, mode: 'insensitive' } },
+                select: { id: true },
+            }),
+            prisma.employerRequest.findFirst({
+                where: { email: { equals: data.email, mode: 'insensitive' } },
+                select: { id: true },
+            }),
+        ]);
+
+        if (existingUser || existingRequest) {
+            return res.status(409).json({ success: false, message: 'Email already exists.' });
+        }
+
+        const passwordHash = await bcrypt.hash(data.password, 12);
+        const employerRequest = await prisma.employerRequest.create({
+            data: {
+                employerName: data.employerName,
+                companyName: data.companyName,
+                email: data.email,
+                phone: data.phone,
+                website: data.website || null,
+                address: data.address,
+                passwordHash,
+                status: 'PENDING',
+            },
+            select: requestSelect(),
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: 'Employer request submitted successfully. You can login after admin approval.',
+            data: employerRequest,
+        });
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({
+                success: false,
+                message: error.issues[0]?.message || 'Invalid employer request.',
+                details: error.issues,
+            });
+        }
+        if (error.code === 'P2002') {
+            return res.status(409).json({ success: false, message: 'Email already exists.' });
+        }
+        return next(error);
     }
-
-    if (!designation || !designation.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Designation is required',
-      });
-    }
-
-    if (!email || !email.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is required',
-      });
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid email format',
-      });
-    }
-
-    // Business email validation
-    if (!isBusinessEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please use your company email address. Personal email domains (Gmail, Yahoo, Outlook, etc.) are not accepted.',
-      });
-    }
-
-    // Check for duplicate pending request from same email
-    const existingRequest = await prisma.employerRequest.findFirst({
-      where: {
-        email: email.toLowerCase(),
-        status: 'PENDING',
-      },
-    });
-
-    if (existingRequest) {
-      return res.status(400).json({
-        success: false,
-        message: 'You already have a pending employer request. Please wait for admin approval.',
-      });
-    }
-
-    // Create the employer request
-    const employerRequest = await prisma.employerRequest.create({
-      data: {
-        name: name.trim(),
-        designation: designation.trim(),
-        email: email.toLowerCase(),
-        phone: phone ? phone.trim() : null,
-        status: 'PENDING',
-      },
-    });
-
-    console.log(`[Employer Request Created] ID: ${employerRequest.id}, Email: ${employerRequest.email}`);
-
-    res.status(201).json({
-      success: true,
-      message: 'Employer request submitted successfully. Admin will review and contact you soon.',
-      data: {
-        id: employerRequest.id,
-        status: employerRequest.status,
-      },
-    });
-  } catch (error) {
-    console.error('[Employer Request Error]:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to submit employer request',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-    });
-  }
 });
 
 /**
- * GET /api/employer-requests?status=PENDING
- * List employer requests (Admin only)
- * Query: ?status=PENDING|APPROVED|REJECTED (optional)
+ * GET /api/employer-requests
+ * Admin list. Requests are never deleted after an action.
  */
-router.get('/', async (req, res) => {
-  try {
-    const { status } = req.query;
+router.get('/', authenticate, authorize(...ADMIN_ROLES), async (req, res, next) => {
+    try {
+        const allowedStatuses = ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED_APPROVAL'];
+        const status = typeof req.query.status === 'string' ? req.query.status : null;
 
-    const where = status ? { status } : {};
+        if (status && !allowedStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid employer request status.' });
+        }
 
-    const requests = await prisma.employerRequest.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        name: true,
-        designation: true,
-        email: true,
-        phone: true,
-        status: true,
-        adminNotes: true,
-        rejectionReason: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+        const requests = await prisma.employerRequest.findMany({
+            where: status ? { status } : undefined,
+            orderBy: { createdAt: 'desc' },
+            select: requestSelect(),
+        });
 
-    res.json({
-      success: true,
-      data: requests,
-    });
-  } catch (error) {
-    console.error('[Employer Requests List Error]:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch employer requests',
-    });
-  }
+        return res.json({ success: true, data: requests });
+    } catch (error) {
+        return next(error);
+    }
 });
 
-/**
- * GET /api/employer-requests/:id
- * Get single employer request details
- */
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
+router.get('/:id', authenticate, authorize(...ADMIN_ROLES), async (req, res, next) => {
+    try {
+        const request = await prisma.employerRequest.findUnique({
+            where: { id: req.params.id },
+            select: requestSelect(),
+        });
 
-    const request = await prisma.employerRequest.findUnique({
-      where: { id },
-    });
+        if (!request) {
+            return res.status(404).json({ success: false, message: 'Employer request not found.' });
+        }
 
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'Employer request not found',
-      });
+        return res.json({ success: true, data: request });
+    } catch (error) {
+        return next(error);
     }
-
-    res.json({
-      success: true,
-      data: request,
-    });
-  } catch (error) {
-    console.error('[Get Employer Request Error]:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch employer request',
-    });
-  }
 });
 
 /**
  * PUT /api/employer-requests/:id/approve
- * Approve an employer request (Admin only)
- * This creates an EmployerProfile and user account
+ * Creates the employer account on first approval, or re-enables it after cancellation.
  */
-router.put('/:id/approve', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { adminNotes } = req.body;
+router.put('/:id/approve', authenticate, authorize(...ADMIN_ROLES), async (req, res, next) => {
+    try {
+        const adminNotes = typeof req.body.adminNotes === 'string' ? req.body.adminNotes.trim() : null;
 
-    const request = await prisma.employerRequest.findUnique({
-      where: { id },
-    });
+        const result = await prisma.$transaction(async tx => {
+            const request = await tx.employerRequest.findUnique({ where: { id: req.params.id } });
+            if (!request) throw httpError(404, 'Employer request not found.');
+            if (!ACTIONABLE_STATUSES.includes(request.status)) {
+                throw httpError(400, `Cannot approve a request with status ${request.status}.`);
+            }
 
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'Employer request not found',
-      });
+            let user = request.approvedUserId
+                ? await tx.user.findUnique({ where: { id: request.approvedUserId } })
+                : null;
+
+            if (!user) {
+                const emailOwner = await tx.user.findFirst({
+                    where: { email: { equals: request.email, mode: 'insensitive' } },
+                });
+                if (emailOwner) {
+                    throw httpError(409, 'Email already exists.');
+                }
+
+                user = await tx.user.create({
+                    data: {
+                        email: request.email,
+                        password: request.passwordHash,
+                        name: request.employerName,
+                        phone: request.phone,
+                        role: 'EMPLOYER',
+                        isActive: true,
+                        emailVerified: true,
+                    },
+                });
+            } else {
+                if (user.email !== request.email || user.role !== 'EMPLOYER') {
+                    throw httpError(409, 'Email already exists.');
+                }
+
+                user = await tx.user.update({
+                    where: { id: user.id },
+                    data: {
+                        password: request.passwordHash,
+                        name: request.employerName,
+                        phone: request.phone,
+                        isActive: true,
+                        emailVerified: true,
+                    },
+                });
+            }
+
+            await tx.employerProfile.upsert({
+                where: { userId: user.id },
+                update: {
+                    companyName: request.companyName,
+                    website: request.website,
+                    location: request.address,
+                    status: 'APPROVED',
+                },
+                create: {
+                    userId: user.id,
+                    companyName: request.companyName,
+                    website: request.website,
+                    location: request.address,
+                    status: 'APPROVED',
+                },
+            });
+
+            const updatedRequest = await tx.employerRequest.update({
+                where: { id: request.id },
+                data: {
+                    status: 'APPROVED',
+                    approvedUserId: user.id,
+                    adminNotes: adminNotes || null,
+                    rejectionReason: null,
+                },
+                select: requestSelect(),
+            });
+
+            return { request: updatedRequest, userId: user.id };
+        });
+
+        return res.json({
+            success: true,
+            message: 'Employer request approved and login access enabled.',
+            data: result,
+        });
+    } catch (error) {
+        return next(error);
     }
-
-    if (request.status !== 'PENDING') {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot approve a request that is already ${request.status}`,
-      });
-    }
-
-    // Check if user already exists with this email
-    const existingUser = await prisma.user.findUnique({
-      where: { email: request.email.toLowerCase() },
-    });
-
-    let userId;
-
-    if (existingUser) {
-      // If user exists, just update their role to EMPLOYER
-      userId = existingUser.id;
-      await prisma.user.update({
-        where: { id: userId },
-        data: { role: 'EMPLOYER' },
-      });
-    } else {
-      // Create new employer user account with temporary password
-      const temporaryPassword = crypto.randomBytes(12).toString('hex');
-      const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
-
-      const newUser = await prisma.user.create({
-        data: {
-          email: request.email.toLowerCase(),
-          password: hashedPassword,
-          name: request.name,
-          phone: request.phone || null,
-          role: 'EMPLOYER',
-          isActive: true,
-          emailVerified: false,
-        },
-      });
-
-      userId = newUser.id;
-
-      // TODO: Send email to employer with login credentials
-      console.log(`[Employer Account Created] Email: ${request.email}, Temp Password: ${temporaryPassword}`);
-    }
-
-    // Create or update EmployerProfile
-    const existingProfile = await prisma.employerProfile.findUnique({
-      where: { userId },
-    });
-
-    if (!existingProfile) {
-      await prisma.employerProfile.create({
-        data: {
-          userId,
-          companyName: request.name,
-          status: 'APPROVED',
-        },
-      });
-    }
-
-    // Update the employer request status
-    const updatedRequest = await prisma.employerRequest.update({
-      where: { id },
-      data: {
-        status: 'APPROVED',
-        adminNotes: adminNotes || null,
-        approvedUserId: userId,
-      },
-    });
-
-    console.log(`[Employer Request Approved] ID: ${id}, Email: ${request.email}, User ID: ${userId}`);
-
-    res.json({
-      success: true,
-      message: 'Employer request approved successfully and account created',
-      data: {
-        ...updatedRequest,
-        userId,
-      },
-    });
-  } catch (error) {
-    console.error('[Approve Employer Request Error]:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to approve employer request',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-    });
-  }
 });
 
-/**
- * PUT /api/employer-requests/:id/reject
- * Reject an employer request
- */
-router.put('/:id/reject', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { rejectionReason } = req.body;
+router.put('/:id/reject', authenticate, authorize(...ADMIN_ROLES), async (req, res, next) => {
+    try {
+        const rejectionReason = typeof req.body.rejectionReason === 'string'
+            ? req.body.rejectionReason.trim()
+            : '';
 
-    if (!rejectionReason || !rejectionReason.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Rejection reason is required',
-      });
+        if (!rejectionReason) {
+            return res.status(400).json({ success: false, message: 'Rejection reason is required.' });
+        }
+
+        const updatedRequest = await prisma.$transaction(async tx => {
+            const request = await tx.employerRequest.findUnique({ where: { id: req.params.id } });
+            if (!request) throw httpError(404, 'Employer request not found.');
+            if (!ACTIONABLE_STATUSES.includes(request.status)) {
+                throw httpError(400, `Cannot reject a request with status ${request.status}.`);
+            }
+
+            if (request.approvedUserId) {
+                await tx.user.updateMany({
+                    where: { id: request.approvedUserId, role: 'EMPLOYER' },
+                    data: { isActive: false },
+                });
+                await tx.employerProfile.updateMany({
+                    where: { userId: request.approvedUserId },
+                    data: { status: 'REJECTED' },
+                });
+            }
+
+            return tx.employerRequest.update({
+                where: { id: request.id },
+                data: {
+                    status: 'REJECTED',
+                    rejectionReason,
+                },
+                select: requestSelect(),
+            });
+        });
+
+        return res.json({
+            success: true,
+            message: 'Employer request rejected.',
+            data: updatedRequest,
+        });
+    } catch (error) {
+        return next(error);
     }
+});
 
-    const request = await prisma.employerRequest.findUnique({
-      where: { id },
-    });
+router.put('/:id/cancel-approval', authenticate, authorize(...ADMIN_ROLES), async (req, res, next) => {
+    try {
+        const updatedRequest = await prisma.$transaction(async tx => {
+            const request = await tx.employerRequest.findUnique({ where: { id: req.params.id } });
+            if (!request) throw httpError(404, 'Employer request not found.');
+            if (request.status !== 'APPROVED') {
+                throw httpError(400, 'Only approved employer requests can have approval cancelled.');
+            }
+            if (!request.approvedUserId) {
+                throw httpError(409, 'Approved employer account is not linked to this request.');
+            }
 
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'Employer request not found',
-      });
+            await tx.user.updateMany({
+                where: { id: request.approvedUserId, role: 'EMPLOYER' },
+                data: { isActive: false },
+            });
+            await tx.employerProfile.updateMany({
+                where: { userId: request.approvedUserId },
+                data: { status: 'CANCELLED_APPROVAL' },
+            });
+
+            return tx.employerRequest.update({
+                where: { id: request.id },
+                data: { status: 'CANCELLED_APPROVAL' },
+                select: requestSelect(),
+            });
+        });
+
+        return res.json({
+            success: true,
+            message: 'Employer approval cancelled and login access disabled.',
+            data: updatedRequest,
+        });
+    } catch (error) {
+        return next(error);
     }
-
-    if (request.status !== 'PENDING') {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot reject a request that is already ${request.status}`,
-      });
-    }
-
-    const updatedRequest = await prisma.employerRequest.update({
-      where: { id },
-      data: {
-        status: 'REJECTED',
-        rejectionReason: rejectionReason.trim(),
-      },
-    });
-
-    console.log(`[Employer Request Rejected] ID: ${id}, Email: ${request.email}`);
-
-    res.json({
-      success: true,
-      message: 'Employer request rejected',
-      data: updatedRequest,
-    });
-  } catch (error) {
-    console.error('[Reject Employer Request Error]:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to reject employer request',
-    });
-  }
 });
 
 module.exports = router;

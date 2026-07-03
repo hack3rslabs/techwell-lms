@@ -3,20 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
-const rateLimit = require('express-rate-limit');
-
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 requests per windowMs for auth routes
-    message: { error: 'Too many authentication attempts, please try again after 15 minutes.' },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
 
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
-const { authenticate } = require('../middleware/auth');
-const twoFactorService = require('../services/twoFactor.service');
 
 // Validation schemas
 const registerSchema = z.object({
@@ -101,8 +90,7 @@ router.post('/register', async (req, res, next) => {
 
         res.status(200).json({
             message: 'OTP sent to your email',
-            email: validatedData.email,
-            devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined
+            email: validatedData.email
         });
     } catch (error) {
         next(error);
@@ -114,7 +102,7 @@ router.post('/register', async (req, res, next) => {
  * @desc    Step 2: Verify OTP and create user account
  * @access  Public
  */
-router.post('/verify-otp', authLimiter, async (req, res, next) => {
+router.post('/verify-otp', async (req, res, next) => {
     try {
         const { email, otp } = req.body;
 
@@ -148,12 +136,7 @@ router.post('/verify-otp', authLimiter, async (req, res, next) => {
             emailVerified: true
         };
 
-        if (pending.dob) {
-            const parsedDate = new Date(pending.dob);
-            if (!isNaN(parsedDate.getTime()) && parsedDate.getFullYear() > 1900 && parsedDate.getFullYear() < 2100) {
-                userData.dob = parsedDate;
-            }
-        }
+        if (pending.dob) userData.dob = new Date(pending.dob);
         if (pending.qualification) userData.qualification = pending.qualification;
         if (pending.college) userData.college = pending.college;
 
@@ -180,7 +163,7 @@ router.post('/verify-otp', authLimiter, async (req, res, next) => {
         const token = jwt.sign(
             { userId: user.id },
             process.env.JWT_SECRET,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
         );
 
         // Send Welcome Email
@@ -228,8 +211,7 @@ router.post('/resend-otp', async (req, res, next) => {
         console.log(`[OTP] Resent code for ${email}: ${otp}`);
 
         res.status(200).json({
-            message: 'OTP resent to your email',
-            devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined
+            message: 'OTP resent to your email'
         });
     } catch (error) {
         next(error);
@@ -241,7 +223,7 @@ router.post('/resend-otp', async (req, res, next) => {
  * @desc    Login user
  * @access  Public
  */
-router.post('/login', authLimiter, async (req, res, next) => {
+router.post('/login', async (req, res, next) => {
     try {
         const validatedData = loginSchema.parse(req.body);
 
@@ -249,6 +231,11 @@ router.post('/login', authLimiter, async (req, res, next) => {
         const user = await prisma.user.findUnique({
             where: { email: validatedData.email },
             include: {
+                employerProfile: {
+                    select: {
+                        status: true
+                    }
+                },
                 systemRole: {
                     include: {
                         rolePermissions: {
@@ -280,6 +267,10 @@ router.post('/login', authLimiter, async (req, res, next) => {
             return res.status(403).json({ error: 'Account is deactivated' });
         }
 
+        if (user.role === 'EMPLOYER' && user.employerProfile?.status !== 'APPROVED') {
+            return res.status(403).json({ error: 'Employer account is awaiting admin approval' });
+        }
+
         // Format role permissions
         const rolePermissions = {};
         if (user.systemRole && user.systemRole.rolePermissions) {
@@ -292,42 +283,11 @@ router.post('/login', authLimiter, async (req, res, next) => {
             });
         }
 
-        // Check if 2FA is enabled
-        if (user.twoFactorEnabled) {
-            // Check for trusted device token
-            let trustToken = req.headers['x-trust-token'];
-            if (!trustToken && req.headers.cookie) {
-                const match = req.headers.cookie.match(/trustToken=([^;]+)/);
-                if (match) trustToken = match[1];
-            }
-
-            let isTrusted = false;
-            if (trustToken) {
-                const hashed = twoFactorService.hashToken(trustToken);
-                const devices = Array.isArray(user.trustedDevices) ? user.trustedDevices : [];
-                isTrusted = devices.some(d => d.tokenHash === hashed && new Date(d.expiresAt) > new Date());
-            }
-
-            if (!isTrusted) {
-                const tempToken = jwt.sign(
-                    { userId: user.id, isPending2FA: true },
-                    process.env.JWT_SECRET,
-                    { algorithm: 'HS256', expiresIn: '5m' }
-                );
-
-                return res.json({
-                    message: 'Two-factor authentication required',
-                    require2FA: true,
-                    tempToken
-                });
-            }
-        }
-
         // Generate token
         const token = jwt.sign(
             { userId: user.id },
             process.env.JWT_SECRET,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
         );
 
         res.json({
@@ -340,8 +300,7 @@ router.post('/login', authLimiter, async (req, res, next) => {
                 permissions: user.permissions || [],
                 rolePermissions: rolePermissions,
                 systemRole: user.systemRole ? { name: user.systemRole.name } : null,
-                hasUnlimitedInterviews: true,
-                twoFactorEnabled: user.twoFactorEnabled
+                hasUnlimitedInterviews: true
             },
             token
         });
@@ -371,18 +330,26 @@ router.post('/refresh', async (req, res, next) => {
             // Check if user still exists
             const user = await prisma.user.findUnique({
                 where: { id: decoded.userId },
-                select: { id: true, isActive: true }
+                select: {
+                    id: true,
+                    role: true,
+                    isActive: true,
+                    employerProfile: { select: { status: true } }
+                }
             });
 
             if (!user || !user.isActive) {
                 return res.status(401).json({ error: 'User not found or inactive' });
+            }
+            if (user.role === 'EMPLOYER' && user.employerProfile?.status !== 'APPROVED') {
+                return res.status(403).json({ error: 'Employer account is not approved' });
             }
 
             // Generate new token
             const newToken = jwt.sign(
                 { userId: user.id },
                 process.env.JWT_SECRET,
-                { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+                { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
             );
 
             res.json({ token: newToken });
@@ -399,7 +366,7 @@ router.post('/refresh', async (req, res, next) => {
  * @desc    Step 1: Find user and send reset OTP
  * @access  Public
  */
-router.post('/forgot-password', authLimiter, async (req, res, next) => {
+router.post('/forgot-password', async (req, res, next) => {
     try {
         const { email } = req.body;
 
@@ -447,7 +414,7 @@ router.post('/forgot-password', authLimiter, async (req, res, next) => {
  * @desc    Step 2: Verify reset OTP
  * @access  Public
  */
-router.post('/verify-reset-otp', authLimiter, async (req, res, next) => {
+router.post('/verify-reset-otp', async (req, res, next) => {
     try {
         const { email, otp } = req.body;
 
@@ -521,226 +488,6 @@ router.post('/reset-password', async (req, res, next) => {
 
         res.status(200).json({
             message: 'Password reset successful. You can now login with your new password.'
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   POST /api/auth/2fa/setup
- * @desc    Generate TOTP secret and QR code URI
- * @access  Private
- */
-router.post('/2fa/setup', authenticate, async (req, res, next) => {
-    try {
-        const userId = req.user.id;
-        const secret = twoFactorService.generateSecret();
-        const otpauthUri = twoFactorService.generateOtpauthUri(req.user.email, secret);
-        const qrCodeUrl = await twoFactorService.generateQrCodeUrl(otpauthUri);
-
-        // Store secret temporarily
-        await prisma.user.update({
-            where: { id: userId },
-            data: { twoFactorTempSecret: secret }
-        });
-
-        res.json({
-            secret,
-            qrCodeUrl
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   POST /api/auth/2fa/enable
- * @desc    Verify TOTP code and enable 2FA
- * @access  Private
- */
-router.post('/2fa/enable', authenticate, async (req, res, next) => {
-    try {
-        const { code } = req.body;
-        if (!code) {
-            return res.status(400).json({ error: 'Verification code is required' });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { id: req.user.id }
-        });
-
-        if (!user.twoFactorTempSecret) {
-            return res.status(400).json({ error: '2FA setup has not been initiated' });
-        }
-
-        const isValid = await twoFactorService.verifyToken(code, user.twoFactorTempSecret);
-        if (!isValid) {
-            return res.status(400).json({ error: 'Invalid verification code' });
-        }
-
-        await prisma.user.update({
-            where: { id: req.user.id },
-            data: {
-                twoFactorSecret: user.twoFactorTempSecret,
-                twoFactorTempSecret: null,
-                twoFactorEnabled: true
-            }
-        });
-
-        // Trigger future email/SMS hooks
-        await twoFactorService.sendFutureBackupMailConfirmation(req.user);
-
-        res.json({
-            message: 'Two-factor authentication enabled successfully'
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   POST /api/auth/2fa/disable
- * @desc    Disable 2FA
- * @access  Private
- */
-router.post('/2fa/disable', authenticate, async (req, res, next) => {
-    try {
-        await prisma.user.update({
-            where: { id: req.user.id },
-            data: {
-                twoFactorEnabled: false,
-                twoFactorSecret: null,
-                twoFactorTempSecret: null
-            }
-        });
-
-        res.json({
-            message: 'Two-factor authentication disabled successfully'
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   POST /api/auth/2fa/verify
- * @desc    Verify TOTP code during login
- * @access  Public (Limited by temp token)
- */
-router.post('/2fa/verify', async (req, res, next) => {
-    try {
-        const { code, tempToken, trustDevice } = req.body;
-
-        if (!code || !tempToken) {
-            return res.status(400).json({ error: 'Verification code and temporary token are required' });
-        }
-
-        // Verify temporary token
-        let decoded;
-        try {
-            decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
-        } catch (err) {
-            return res.status(401).json({ error: 'Temporary session expired. Please log in again.' });
-        }
-
-        if (!decoded.isPending2FA) {
-            return res.status(401).json({ error: 'Invalid authentication session' });
-        }
-
-        // Find user
-        const user = await prisma.user.findUnique({
-            where: { id: decoded.userId },
-            include: {
-                systemRole: {
-                    include: {
-                        rolePermissions: {
-                            include: {
-                                feature: true
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        if (!user || !user.isActive) {
-            return res.status(401).json({ error: 'User account is inactive or not found' });
-        }
-
-        // Verify code
-        const isValid = await twoFactorService.verifyToken(code, user.twoFactorSecret);
-        if (!isValid) {
-            return res.status(400).json({ error: 'Invalid verification code' });
-        }
-
-        // Manage trusted devices
-        let trustToken = null;
-        if (trustDevice) {
-            trustToken = twoFactorService.generateTrustToken();
-            const tokenHash = twoFactorService.hashToken(trustToken);
-            const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 Days
-
-            const devices = Array.isArray(user.trustedDevices) ? user.trustedDevices : [];
-            // Clean up expired devices to prevent size bloat
-            const now = new Date();
-            const cleanDevices = devices.filter(d => new Date(d.expiresAt) > now);
-            cleanDevices.push({ tokenHash, expiresAt: expiresAt.toISOString() });
-
-            await prisma.user.update({
-                where: { id: user.id },
-                data: { trustedDevices: cleanDevices }
-            });
-        }
-
-        // Generate final access token
-        const token = jwt.sign(
-            { userId: user.id },
-            process.env.JWT_SECRET,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-        );
-
-        // Format role permissions
-        const rolePermissions = {};
-        if (user.systemRole && user.systemRole.rolePermissions) {
-            user.systemRole.rolePermissions.forEach(rp => {
-                rolePermissions[rp.feature.code] = {
-                    canRead: rp.canRead,
-                    canWrite: rp.canWrite,
-                    isDisabled: rp.isDisabled
-                };
-            });
-        }
-
-        // Trigger future confirmation hooks
-        await twoFactorService.sendFutureBackupMailConfirmation(user);
-        await twoFactorService.sendFutureBackupMobileOTP(user);
-
-        // Set secure HTTP-only cookie if trusted
-        if (trustToken) {
-            res.cookie('trustToken', trustToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-                sameSite: 'strict'
-            });
-        }
-
-        res.json({
-            message: 'Login successful',
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: user.role,
-                permissions: user.permissions || [],
-                rolePermissions: rolePermissions,
-                systemRole: user.systemRole ? { name: user.systemRole.name } : null,
-                hasUnlimitedInterviews: true,
-                twoFactorEnabled: true
-            },
-            token,
-            trustToken // also returned for clients without cookie access
         });
     } catch (error) {
         next(error);

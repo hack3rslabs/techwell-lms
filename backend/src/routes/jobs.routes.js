@@ -4,6 +4,23 @@ const { authenticate, authorize, checkPermission, optionalAuth } = require('../m
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
+async function requireApprovedEmployer(req, res, next) {
+    if (['ADMIN', 'SUPER_ADMIN'].includes(req.user.role)) return next();
+
+    try {
+        const profile = await prisma.employerProfile.findUnique({
+            where: { userId: req.user.id },
+            select: { status: true }
+        });
+        if (!profile || profile.status !== 'APPROVED') {
+            return res.status(403).json({ error: 'Employer approval is required.' });
+        }
+        return next();
+    } catch (error) {
+        return next(error);
+    }
+}
+
 /**
  * @route   GET /api/jobs
  * @desc    List public jobs
@@ -33,10 +50,27 @@ router.get('/', async (req, res, next) => {
  * @desc    Get job details
  * @access  Public
  */
+router.get('/my/listings/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
+    try {
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
+        const job = await prisma.job.findFirst({
+            where: {
+                id: req.params.id,
+                ...(isAdmin ? {} : { employerId: req.user.id })
+            },
+            include: { _count: { select: { applications: true } } }
+        });
+        if (!job) return res.status(404).json({ error: 'Job not found' });
+        return res.json(job);
+    } catch (error) {
+        return next(error);
+    }
+});
+
 router.get('/:id', async (req, res, next) => {
     try {
-        const job = await prisma.job.findUnique({
-            where: { id: req.params.id },
+        const job = await prisma.job.findFirst({
+            where: { id: req.params.id, status: { in: ['OPEN', 'PUBLISHED'] } },
             include: { employer: { select: { name: true, employerProfile: { select: { companyName: true, logo: true, description: true, website: true } } } } }
         });
         if (!job) return res.status(404).json({ error: 'Job not found' });
@@ -51,21 +85,19 @@ router.get('/:id', async (req, res, next) => {
  * @desc    Post a new job
  * @access  Private (Approved Employer)
  */
-router.post('/', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.post('/', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
     try {
-        // Check approval status
-        const profile = await prisma.employerProfile.findUnique({ where: { userId: req.user.id } });
-        if (!profile || profile.status !== 'APPROVED') {
-            return res.status(403).json({ error: 'Account pending approval. Cannot post jobs.' });
-        }
-
         const { title, description, requirements, location, type, experience, salary, skills, clientName, shift } = req.body;
+        if (!title?.trim() || !description?.trim() || !location?.trim()) {
+            return res.status(400).json({ error: 'Title, description, and location are required.' });
+        }
 
         const job = await prisma.job.create({
             data: {
                 title, description, requirements, location, type, experience, salary,
                 skills, clientName, shift,
-                employerId: req.user.id
+                employerId: req.user.id,
+                status: 'OPEN'
             }
         });
 
@@ -111,11 +143,13 @@ router.post('/:id/apply', authenticate, authorize('STUDENT'), async (req, res, n
  * @desc    Get my posted jobs (Employer)
  * @access  Private (Employer)
  */
-router.get('/my/listings', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.get('/my/listings', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
     try {
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
+        const where = isAdmin ? {} : { employerId: req.user.id };
+
         const jobs = await prisma.job.findMany({
-            where: { employerId: req.user.id },
-            where: { employerId: req.user.id },
+            where,
             include: {
                 _count: { select: { applications: true } },
                 applications: { select: { status: true } }
@@ -133,10 +167,13 @@ router.get('/my/listings', authenticate, authorize('EMPLOYER'), async (req, res,
  * @desc    Get applications for a job
  * @access  Private (Employer)
  */
-router.get('/:id/applications', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.get('/:id/applications', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
     try {
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
         const job = await prisma.job.findUnique({ where: { id: req.params.id } });
-        if (!job || job.employerId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+        
+        if (!job) return res.status(404).json({ error: 'Job not found' });
+        if (!isAdmin && job.employerId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
 
         const applications = await prisma.jobApplication.findMany({
             where: { jobId: req.params.id },
@@ -197,10 +234,11 @@ router.get('/:id/applications', authenticate, authorize('EMPLOYER'), async (req,
  * @desc    Update application status (Employer)
  * @access  Private (Employer)
  */
-router.patch('/applications/:id/status', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.patch('/applications/:id/status', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
     try {
         const { id } = req.params;
         const { status } = req.body; // SHORTLISTED, INTERVIEW_PENDING, etc.
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         // Verify ownership
         const application = await prisma.jobApplication.findUnique({
@@ -208,7 +246,7 @@ router.patch('/applications/:id/status', authenticate, authorize('EMPLOYER'), as
             include: { job: true }
         });
 
-        if (!application || application.job.employerId !== req.user.id) {
+        if (!application || (!isAdmin && application.job.employerId !== req.user.id)) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -257,4 +295,60 @@ router.get('/applications/me', authenticate, authorize('STUDENT'), async (req, r
     }
 });
 
+/**
+ * @route   PUT /api/jobs/:id
+ * @desc    Update a job
+ * @access  Private (Employer/Admin)
+ */
+router.put('/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
+        
+        const job = await prisma.job.findUnique({ where: { id } });
+        if (!job) return res.status(404).json({ error: 'Job not found' });
+        if (!isAdmin && job.employerId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+
+        const { title, description, requirements, location, type, experience, salary, skills, clientName, shift, status } = req.body;
+        const allowedStatuses = ['DRAFT', 'OPEN', 'PUBLISHED', 'PAUSED', 'CLOSED', 'ARCHIVED'];
+        if (status && !allowedStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Invalid job status.' });
+        }
+
+        const updatedJob = await prisma.job.update({
+            where: { id },
+            data: {
+                title, description, requirements, location, type, experience, salary,
+                skills, clientName, shift, status
+            }
+        });
+
+        res.json(updatedJob);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   DELETE /api/jobs/:id
+ * @desc    Delete a job
+ * @access  Private (Employer/Admin)
+ */
+router.delete('/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
+
+        const job = await prisma.job.findUnique({ where: { id } });
+        if (!job) return res.status(404).json({ error: 'Job not found' });
+        if (!isAdmin && job.employerId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+
+        await prisma.job.delete({ where: { id } });
+        res.json({ message: 'Job deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;
+

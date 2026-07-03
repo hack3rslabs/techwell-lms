@@ -11,8 +11,7 @@ import {
     LogOut,
     PlusCircle,
     Building2,
-    Users,
-    Search
+    Users
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
@@ -32,11 +31,6 @@ const sidebarItems = [
         title: "Candidates",
         href: "/employer/candidates",
         icon: Users,
-    },
-    {
-        title: "Talent Pool",
-        href: "/employer/dashboard/talent-pool",
-        icon: Search,
     },
     {
         title: "Interviews",

@@ -2,7 +2,6 @@ const express = require('express');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
-const cache = require('../services/cache.service');
 
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
@@ -45,7 +44,7 @@ router.get('/my/enrolled', authenticate, async (req, res, next) => {
 
             const isActive = ['ACTIVE', 'COMPLETED'].includes(e.status?.toUpperCase());
             const isPaid = paidCourseIds.has(e.courseId);
-            
+
             // Check if free
             const effectivePrice = e.course.discountPrice !== null ? Number(e.course.discountPrice) : Number(e.course.price);
             const isFree = effectivePrice <= 0;
@@ -119,6 +118,8 @@ const createCourseSchema = z.object({
     price: z.number().min(0).default(0),
     discountPrice: z.number().min(0).default(0),
     courseCode: z.string().optional(),
+    mandatoryCourseIds: z.array(z.string()).optional().default([]),
+    suggestedCourseIds: z.array(z.string()).optional().default([]),
     jobRoles: z.array(z.string()).optional(),
     bannerUrl: z.string().optional(),
     // Course Types
@@ -128,28 +129,7 @@ const createCourseSchema = z.object({
     // Interview Integration
     hasInterviewPrep: z.boolean().default(false),
     interviewPrice: z.number().min(0).default(0),
-    bundlePrice: z.number().min(0).default(0),
-    jobPrep: z.boolean().default(false),
-    // New Features
-    fakeEnrolledCount: z.number().int().min(0).default(0),
-    fakeRating: z.number().min(0).max(5).optional(),
-    benefits: z.any().optional(),
-    specialOffers: z.any().optional(),
-    requireAdmissionFee: z.boolean().default(true),
-    admissionFee: z.number().min(0).default(1000),
-    // SEO Fields (Phase 1)
-    slug: z.string().optional().nullable(),
-    seoTitle: z.string().optional().nullable(),
-    metaDescription: z.string().optional().nullable(),
-    targetKeywords: z.array(z.string()).optional().default([]),
-    faqs: z.any().optional(),
-    // SEO Fields (Phase 2)
-    careerOpportunities: z.any().optional(),
-    salaryInsights: z.any().optional(),
-    projects: z.any().optional(),
-    prerequisites: z.any().optional(),
-    learningOutcomes: z.any().optional(),
-    toolsCovered: z.array(z.string()).optional().default([])
+    bundlePrice: z.number().min(0).default(0)
 });
 
 /**
@@ -184,14 +164,101 @@ router.delete('/:id', authenticate, async (req, res, next) => {
             where: { id: courseId }
         });
 
-        cache.invalidate('courses:');
-        cache.invalidate('course:');
-
         console.log(`[DEBUG] Course deleted successfully: ${courseId}`);
         res.json({ message: 'Course deleted successfully' });
     } catch (error) {
         console.error('[DEBUG] Delete course error:', error);
         next(error);
+    }
+});
+/**
+ * @route   GET /api/courses/list/all
+ * @desc    Get all courses for dropdown selection
+ * @access  Private
+ */
+router.get('/list/all', authenticate, async (req, res, next) => {
+    try {
+        const courses = await prisma.course.findMany({
+            select: {
+                id: true,
+                title: true
+            },
+            orderBy: {
+                title: 'asc'
+            }
+        });
+
+        res.json({ courses });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/courses/manage/all
+ * @desc    Get all courses for the admin course management screen
+ * @access  Private/Admin or user with course read access
+ */
+router.get('/manage/all', authenticate, async (req, res, next) => {
+    try {
+        const hasCourseAccess =
+            ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)
+            || req.user.rolePermissions?.COURSES?.canRead
+            || req.user.rolePermissions?.COURSES?.canWrite
+            || req.user.permissions?.includes('ALL')
+            || req.user.permissions?.includes('MANAGE_COURSES');
+
+        if (!hasCourseAccess) {
+            return res.status(403).json({ error: 'Access denied.' });
+        }
+
+        const { search, status = 'ALL', page = 1, limit = 24 } = req.query;
+        const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+        const limitNum = Math.min(Math.max(parseInt(limit, 10) || 24, 1), 100);
+        const where = {};
+
+        if (status === 'PUBLISHED') where.isPublished = true;
+        if (status === 'DRAFT') where.isPublished = false;
+
+        if (typeof search === 'string' && search.trim()) {
+            const query = search.trim();
+            where.OR = [
+                { title: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } },
+                { category: { contains: query, mode: 'insensitive' } },
+                { courseCode: { contains: query, mode: 'insensitive' } }
+            ];
+        }
+
+        const [courses, total] = await Promise.all([
+            prisma.course.findMany({
+                where,
+                include: {
+                    _count: {
+                        select: {
+                            modules: true,
+                            enrollments: true
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' },
+                skip: (pageNum - 1) * limitNum,
+                take: limitNum
+            }),
+            prisma.course.count({ where })
+        ]);
+
+        return res.json({
+            courses,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                total,
+                pages: Math.max(Math.ceil(total / limitNum), 1)
+            }
+        });
+    } catch (error) {
+        return next(error);
     }
 });
 
@@ -200,16 +267,12 @@ router.delete('/:id', authenticate, async (req, res, next) => {
  * @desc    Get all published courses
  * @access  Public
  */
-router.get('/', optionalAuth, cache.middleware('courses', 60000), async (req, res, next) => {
+router.get('/', optionalAuth, async (req, res, next) => {
     try {
         console.log('[COURSES GET] Fetching courses...');
-        const { category, difficulty, search, page = 1, limit = 12, jobPrep } = req.query;
+        const { category, difficulty, search, page = 1, limit = 12 } = req.query;
 
         const where = {};
-
-        if (jobPrep !== undefined) {
-            where.jobPrep = jobPrep === 'true';
-        }
 
         // Robust parsing of page and limit to prevent NaN values crashing Prisma
         let pageNum = parseInt(page, 10);
@@ -219,10 +282,9 @@ router.get('/', optionalAuth, cache.middleware('courses', 60000), async (req, re
 
         const isAdmin = req.user && ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
 
-        // Allow all courses to be visible publicly as requested
-        // if (!isAdmin) {
-        //     where.isPublished = true;
-        // }
+        if (!isAdmin) {
+            where.isPublished = true;
+        }
 
         // Clean query parameters to avoid Prisma database errors
         if (category && category !== 'ALL' && category !== 'undefined' && category !== 'null' && category.trim() !== '') {
@@ -316,7 +378,7 @@ router.get('/', optionalAuth, cache.middleware('courses', 60000), async (req, re
  * @desc    Get course details with modules
  * @access  Public
  */
-router.get('/:id', optionalAuth, cache.middleware('course', 60000), async (req, res, next) => {
+router.get('/:id', optionalAuth, async (req, res, next) => {
     try {
         const course = await prisma.course.findUnique({
             where: { id: req.params.id },
@@ -345,6 +407,29 @@ router.get('/:id', optionalAuth, cache.middleware('course', 60000), async (req, 
             return res.status(404).json({ error: 'Course not found' });
         }
 
+        const loadRelatedCourses = async (ids) => {
+            if (!Array.isArray(ids) || ids.length === 0) {
+                return [];
+            }
+            return await prisma.course.findMany({
+                where: {
+                    id: { in: ids }
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    price: true,
+                    discountPrice: true,
+                    bannerUrl: true,
+                    duration: true,
+                    difficulty: true
+                }
+            });
+        };
+
+        const suggestedCourses = await loadRelatedCourses(course.suggestedCourseIds || []);
+        const mandatoryCourses = await loadRelatedCourses(course.mandatoryCourseIds || []);
+
         // Check if user is enrolled AND paid (if not free)
         let isEnrolled = false;
         if (req.user) {
@@ -356,41 +441,20 @@ router.get('/:id', optionalAuth, cache.middleware('course', 60000), async (req, 
                     }
                 }
             });
-            
+
             if (enrollment) {
                 isEnrolled = ['ACTIVE', 'COMPLETED'].includes(enrollment.status);
             }
         }
 
-        // Fetch Upcoming Batch
-        const upcomingBatch = await prisma.batch.findFirst({
-            where: {
-                courseId: course.id,
-                status: 'UPCOMING',
-                isActive: true,
-                startDate: { gt: new Date() }
+        res.json({
+            course: {
+                ...course,
+                suggestedCourses,
+                mandatoryCourses
             },
-            orderBy: { startDate: 'asc' }
+            isEnrolled
         });
-
-        // Count Demo Requests
-        const demoRequestsCount = await prisma.lead.count({
-            where: {
-                courseId: course.id,
-                OR: [
-                    { source: 'Demo Request' },
-                    { demoSchedules: { some: {} } }
-                ]
-            }
-        });
-
-        // Increment Page Views asynchronously
-        prisma.course.update({
-            where: { id: course.id },
-            data: { pageViews: { increment: 1 } }
-        }).catch(err => console.error('Failed to update pageViews', err));
-
-        res.json({ course, isEnrolled, upcomingBatch, demoRequestsCount });
     } catch (error) {
         next(error);
     }
@@ -407,7 +471,7 @@ router.patch('/:id/status', authenticate, async (req, res, next) => {
     try {
         const courseId = req.params.id;
         const course = await prisma.course.findUnique({ where: { id: courseId } });
-        
+
         if (!course) return res.status(404).json({ error: 'Course not found' });
 
         const hasManagePermission = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || req.user.rolePermissions?.COURSES?.canWrite || req.user.permissions?.includes('ALL');
@@ -438,9 +502,6 @@ router.patch('/:id/status', authenticate, async (req, res, next) => {
             where: { id: req.params.id },
             data: updateData
         });
-
-        cache.invalidate('courses:');
-        cache.invalidate('course:');
 
         res.json({ message: 'Course status updated', course: updatedCourse });
     } catch (error) {
@@ -490,8 +551,6 @@ router.post('/', authenticate, async (req, res, next) => {
             data: dataToCreate
         });
 
-        cache.invalidate('courses:');
-
         console.log('[DEBUG] Course created with ID:', course.id);
         res.status(201).json({ message: 'Course created', course });
     } catch (error) {
@@ -519,11 +578,11 @@ router.put('/:id', authenticate, async (req, res, next) => {
         const course = await prisma.course.findUnique({ where: { id: req.params.id } });
         if (!course) return res.status(404).json({ error: 'Course not found' });
 
-        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
-                          req.user.rolePermissions?.COURSES?.canWrite || 
-                          req.user.permissions?.includes('ALL') ||
-                          course.instructorId === req.user.id;
-        
+        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) ||
+            req.user.rolePermissions?.COURSES?.canWrite ||
+            req.user.permissions?.includes('ALL') ||
+            course.instructorId === req.user.id;
+
         if (!canUpdate) {
             return res.status(403).json({ error: 'Access denied' });
         }
@@ -546,9 +605,6 @@ router.put('/:id', authenticate, async (req, res, next) => {
                 discountPrice: validatedData.discountPrice
             }
         });
-
-        cache.invalidate('courses:');
-        cache.invalidate('course:');
 
         console.log('[DEBUG] Course updated with ID:', updatedCourse.id);
         res.json({ message: 'Course updated', course: updatedCourse });
@@ -675,11 +731,11 @@ router.put('/:id/curriculum', authenticate, async (req, res, next) => {
         const course = await prisma.course.findUnique({ where: { id: req.params.id } });
         if (!course) return res.status(404).json({ error: 'Course not found' });
 
-        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
-                          req.user.permissions?.includes('MANAGE_COURSES') || 
-                          req.user.permissions?.includes('ALL') ||
-                          course.instructorId === req.user.id;
-        
+        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) ||
+            req.user.permissions?.includes('MANAGE_COURSES') ||
+            req.user.permissions?.includes('ALL') ||
+            course.instructorId === req.user.id;
+
         if (!canUpdate) {
             return res.status(403).json({ error: 'Access denied' });
         }
@@ -807,79 +863,6 @@ router.get('/:id/learn', authenticate, async (req, res, next) => {
     }
 });
 
-const autoGenerateCertificate = async (userId, courseId) => {
-    try {
-        const existing = await prisma.certificate.findFirst({
-            where: { userId, courseId }
-        });
-        if (existing) return;
-
-        const [user, course, settings] = await Promise.all([
-            prisma.user.findUnique({ where: { id: userId } }),
-            prisma.course.findUnique({ where: { id: courseId } }),
-            prisma.certificateSettings.findFirst({ where: { instituteId: 'default' } })
-        ]);
-
-        if (!user || !course) return;
-
-        const defaultTemplate = await prisma.certificateTemplate.findFirst({
-            where: { isDefault: true, isActive: true }
-        });
-
-        let certSettings = settings;
-        if (!certSettings) {
-            certSettings = await prisma.certificateSettings.create({
-                data: { instituteId: 'default' }
-            });
-        }
-
-        const newSequence = certSettings.currentSequence + 1;
-        await prisma.certificateSettings.update({
-            where: { id: certSettings.id },
-            data: { currentSequence: newSequence }
-        });
-
-        const year = certSettings.yearInId ? new Date().getFullYear() : '';
-        const sequence = String(newSequence).padStart(certSettings.sequenceDigits, '0');
-        const uniqueId = certSettings.yearInId
-            ? `${certSettings.prefix}-${year}-${sequence}`
-            : `${certSettings.prefix}-${sequence}`;
-
-        const enrollment = await prisma.enrollment.findUnique({
-            where: { userId_courseId: { userId, courseId } }
-        });
-
-        let expiryDate = null;
-        if (certSettings?.defaultValidityMonths) {
-            expiryDate = new Date();
-            expiryDate.setMonth(expiryDate.getMonth() + certSettings.defaultValidityMonths);
-        }
-
-        await prisma.certificate.create({
-            data: {
-                uniqueId,
-                userId,
-                courseId,
-                enrollmentId: enrollment?.id,
-                studentName: user.name,
-                courseName: course.title,
-                courseCategory: course.category,
-                grade: 'A',
-                score: 100,
-                templateId: defaultTemplate?.id,
-                signatureUrl: certSettings?.defaultSignatureUrl,
-                signatoryName: certSettings?.defaultSignatoryName || 'Director',
-                signatoryTitle: certSettings?.defaultSignatoryTitle || 'Academic Director',
-                expiryDate,
-                verificationUrl: `/certificates/verify/${uniqueId}`
-            }
-        });
-        console.log(`[Auto Cert] Issued: ${uniqueId} for ${user.name}`);
-    } catch (e) {
-        console.error("[Auto Cert Error]:", e.message);
-    }
-};
-
 /**
  * @route   POST /api/courses/:courseId/lessons/:lessonId/complete
  * @desc    Mark a lesson as complete & check for course completion
@@ -894,7 +877,15 @@ router.post('/:courseId/lessons/:lessonId/complete', authenticate, async (req, r
         const result = await lmsService.updateLessonProgress(userId, lessonId, { timeSpent, score });
 
         if (result.courseCompleted) {
-            await autoGenerateCertificate(userId, courseId);
+            // Trigger Certificate Generation if not exists
+            const existingCert = await prisma.certificate.findFirst({
+                where: { userId, courseId }
+            });
+
+            if (!existingCert) {
+                // Return flag to frontend to show "Claim Certificate" button
+                // Or call internal certificate generation logic here
+            }
         }
 
         res.json(result);
@@ -915,11 +906,11 @@ router.post('/:id/modules', authenticate, async (req, res, next) => {
         const course = await prisma.course.findUnique({ where: { id: req.params.id } });
         if (!course) return res.status(404).json({ error: 'Course not found' });
 
-        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
-                          req.user.permissions?.includes('MANAGE_COURSES') || 
-                          req.user.permissions?.includes('ALL') ||
-                          course.instructorId === req.user.id;
-        
+        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) ||
+            req.user.permissions?.includes('MANAGE_COURSES') ||
+            req.user.permissions?.includes('ALL') ||
+            course.instructorId === req.user.id;
+
         if (!canUpdate) return res.status(403).json({ error: 'Access denied' });
         const { title, description, orderIndex } = req.body;
         const module = await prisma.module.create({
@@ -944,17 +935,17 @@ router.post('/:id/modules', authenticate, async (req, res, next) => {
  */
 router.put('/modules/:moduleId', authenticate, async (req, res, next) => {
     try {
-        const module = await prisma.module.findUnique({ 
+        const module = await prisma.module.findUnique({
             where: { id: req.params.moduleId },
             include: { course: true }
         });
         if (!module) return res.status(404).json({ error: 'Module not found' });
 
-        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
-                          req.user.permissions?.includes('MANAGE_COURSES') || 
-                          req.user.permissions?.includes('ALL') ||
-                          module.course.instructorId === req.user.id;
-        
+        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) ||
+            req.user.permissions?.includes('MANAGE_COURSES') ||
+            req.user.permissions?.includes('ALL') ||
+            module.course.instructorId === req.user.id;
+
         if (!canUpdate) return res.status(403).json({ error: 'Access denied' });
         const { title, description, orderIndex, isPublished } = req.body;
         const updatedModule = await prisma.module.update({
@@ -974,17 +965,17 @@ router.put('/modules/:moduleId', authenticate, async (req, res, next) => {
  */
 router.post('/modules/:moduleId/lessons', authenticate, async (req, res, next) => {
     try {
-        const module = await prisma.module.findUnique({ 
+        const module = await prisma.module.findUnique({
             where: { id: req.params.moduleId },
             include: { course: true }
         });
         if (!module) return res.status(404).json({ error: 'Module not found' });
 
-        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
-                          req.user.permissions?.includes('MANAGE_COURSES') || 
-                          req.user.permissions?.includes('ALL') ||
-                          module.course.instructorId === req.user.id;
-        
+        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) ||
+            req.user.permissions?.includes('MANAGE_COURSES') ||
+            req.user.permissions?.includes('ALL') ||
+            module.course.instructorId === req.user.id;
+
         if (!canUpdate) return res.status(403).json({ error: 'Access denied' });
         const { title, type, order } = req.body;
         const lesson = await prisma.lesson.create({
@@ -1009,17 +1000,17 @@ router.post('/modules/:moduleId/lessons', authenticate, async (req, res, next) =
  */
 router.put('/lessons/:lessonId', authenticate, async (req, res, next) => {
     try {
-        const lesson = await prisma.lesson.findUnique({ 
+        const lesson = await prisma.lesson.findUnique({
             where: { id: req.params.lessonId },
             include: { module: { include: { course: true } } }
         });
         if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
 
-        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) || 
-                          req.user.permissions?.includes('MANAGE_COURSES') || 
-                          req.user.permissions?.includes('ALL') ||
-                          lesson.module.course.instructorId === req.user.id;
-        
+        const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) ||
+            req.user.permissions?.includes('MANAGE_COURSES') ||
+            req.user.permissions?.includes('ALL') ||
+            lesson.module.course.instructorId === req.user.id;
+
         if (!canUpdate) return res.status(403).json({ error: 'Access denied' });
         const { title, content, videoUrl, duration, type, isPublished, isPreview, settings, resources } = req.body;
         const updatedLesson = await prisma.lesson.update({

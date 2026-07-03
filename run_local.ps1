@@ -3,9 +3,8 @@
 Write-Host "Starting Techwell LMS Setup..." -ForegroundColor Cyan
 
 # 1. Check for Node.js
-$npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
-if (-not $npmCommand) {
-    Write-Host "Error: npm.cmd not found. Please install Node.js." -ForegroundColor Red
+if (!(Get-Command npm -ErrorAction SilentlyContinue)) {
+    Write-Host "Error: npm not found. Please install Node.js." -ForegroundColor Red
     exit
 }
 
@@ -25,26 +24,26 @@ if ($pgService) {
 # 3. Setup Backend
 Write-Host "Installing Backend Dependencies..." -ForegroundColor Cyan
 Push-Location backend
-& $npmCommand.Source install
+npm install
 Write-Host "Preparing Database (Prisma)..." -ForegroundColor Cyan
-& $npmCommand.Source run db:prepare
+npm run db:prepare
 Pop-Location
 
 # 4. Install Frontend Dependencies
 Write-Host "Installing Frontend Dependencies..." -ForegroundColor Cyan
 Push-Location frontend
-& $npmCommand.Source install
+npm install
 Pop-Location
 
 # 5. Start Servers in new windows
 Write-Host "Starting Servers..." -ForegroundColor Green
 
 # Start Backend
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PSScriptRoot\backend'; npm.cmd run dev" -WindowStyle Normal
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PSScriptRoot\backend'; npm run dev" -WindowStyle Normal
 Write-Host "Backend starting in a new window..." -ForegroundColor Gray
 
 # Start Frontend
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PSScriptRoot\frontend'; npm.cmd run dev" -WindowStyle Normal
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PSScriptRoot\frontend'; npm run dev" -WindowStyle Normal
 Write-Host "Frontend starting in a new window..." -ForegroundColor Gray
 
 Write-Host ""

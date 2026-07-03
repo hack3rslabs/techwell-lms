@@ -13,9 +13,7 @@ import {
     Save,
     Sliders,
     Zap,
-    Target,
-    BrainCircuit,
-    CreditCard
+    Target
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -26,33 +24,7 @@ export default function AIInterviewsPage() {
         initialDifficulty: 'INTERMEDIATE',
         maxQuestions: 10,
         hrQuestionRatio: 3, // Every Nth question is HR
-        
-        // Model Settings
-        enableOpenAI: true,
-        enableGemini: true,
-        enableOllama: false,
-        
-        // Business Settings
-        basicTierLimit: 5,
-        payPerInterviewPrice: 99
     })
-
-    // Pricing Constants
-    const ESTIMATED_API_COST = 10; // INR
-    const MANDATORY_PROFIT_MARGIN = 0.75; // 75%
-    const MINIMUM_PRICE = Math.ceil(ESTIMATED_API_COST / (1 - MANDATORY_PROFIT_MARGIN)); // 40 INR
-
-    const handlePriceChange = (val: any) => {
-        const newPrice = Number(val);
-        setSettings(s => ({ ...s, payPerInterviewPrice: newPrice }));
-    };
-
-    const handlePriceBlur = () => {
-        if (settings.payPerInterviewPrice < MINIMUM_PRICE) {
-            alert(`Price adjusted to mandatory minimum of ₹${MINIMUM_PRICE} to maintain 75% profit margin.`);
-            setSettings(s => ({ ...s, payPerInterviewPrice: MINIMUM_PRICE }));
-        }
-    };
 
     const [isLoading, setIsLoading] = useState(true)
 
@@ -128,15 +100,7 @@ export default function AIInterviewsPage() {
 
             {/* Settings Tabs */}
             <Tabs defaultValue="adaptive" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 max-w-3xl">
-                    <TabsTrigger value="models">
-                        <BrainCircuit className="h-4 w-4 mr-2" />
-                        Models
-                    </TabsTrigger>
-                    <TabsTrigger value="business">
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        Business
-                    </TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 max-w-md">
                     <TabsTrigger value="adaptive">
                         <Zap className="h-4 w-4 mr-2" />
                         Adaptive
@@ -150,92 +114,6 @@ export default function AIInterviewsPage() {
                         Behavior
                     </TabsTrigger>
                 </TabsList>
-
-                <TabsContent value="models" className="mt-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>AI Model Providers</CardTitle>
-                            <CardDescription>
-                                Configure which AI models are active for the platform.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <Label className="text-base">OpenAI (GPT-4o)</Label>
-                                    <p className="text-sm text-muted-foreground">Used for Premium/Pro interviews</p>
-                                </div>
-                                <Button variant={settings.enableOpenAI ? "default" : "outline"} onClick={() => setSettings(s => ({ ...s, enableOpenAI: !s.enableOpenAI }))}>
-                                    {settings.enableOpenAI ? "Enabled" : "Disabled"}
-                                </Button>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <Label className="text-base">Google Gemini (Flash/Pro)</Label>
-                                    <p className="text-sm text-muted-foreground">Default fallback and basic tier</p>
-                                </div>
-                                <Button variant={settings.enableGemini ? "default" : "outline"} onClick={() => setSettings(s => ({ ...s, enableGemini: !s.enableGemini }))}>
-                                    {settings.enableGemini ? "Enabled" : "Disabled"}
-                                </Button>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <Label className="text-base">Ollama (Local)</Label>
-                                    <p className="text-sm text-muted-foreground">Free self-hosted generation</p>
-                                </div>
-                                <Button variant={settings.enableOllama ? "default" : "outline"} onClick={() => setSettings(s => ({ ...s, enableOllama: !s.enableOllama }))}>
-                                    {settings.enableOllama ? "Enabled" : "Disabled"}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="business" className="mt-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Business Model & Quotas</CardTitle>
-                            <CardDescription>
-                                Configure limits and monetization for AI interviews.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label>Basic Tier Free Limit</Label>
-                                <p className="text-sm text-muted-foreground mb-2">Number of free interviews for Basic users</p>
-                                <Input
-                                    type="number"
-                                    value={settings.basicTierLimit}
-                                    onChange={(e) => setSettings(s => ({ ...s, basicTierLimit: Number(e.target.value) }))}
-                                    min={0}
-                                    className="max-w-xs"
-                                />
-                            </div>
-                            <div className="space-y-2 p-4 bg-primary/5 rounded-xl border border-primary/20">
-                                <Label>Pay-Per-Interview Price (₹)</Label>
-                                <p className="text-sm text-muted-foreground mb-2">Cost to unlock one premium interview for non-Pro users</p>
-                                <Input
-                                    type="number"
-                                    value={settings.payPerInterviewPrice}
-                                    onChange={(e) => handlePriceChange(e.target.value)}
-                                    onBlur={handlePriceBlur}
-                                    min={MINIMUM_PRICE}
-                                    className="max-w-xs"
-                                />
-                                <div className="mt-4 pt-4 border-t border-primary/10 grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <p className="text-muted-foreground">Est. API Cost</p>
-                                        <p className="font-semibold text-red-600">₹{ESTIMATED_API_COST}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-muted-foreground">Mandatory Margin</p>
-                                        <p className="font-semibold text-green-600">{MANDATORY_PROFIT_MARGIN * 100}% (Min ₹{MINIMUM_PRICE})</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
 
                 <TabsContent value="adaptive" className="mt-6">
                     <Card>

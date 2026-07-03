@@ -6,123 +6,6 @@ const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 /**
- * Helper: Ensure the special resume-builder course product exists in the DB
- */
-const ensureResumeCourse = async () => {
-    try {
-        const existing = await prisma.course.findUnique({ where: { id: 'resume-builder' } });
-        if (!existing) {
-            // Find an instructor or super admin to assign to the course
-            const instructor = await prisma.user.findFirst({ where: { role: 'INSTRUCTOR' } }) 
-                || await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });
-            
-            if (!instructor) {
-                console.warn("No instructor or admin found to assign to resume-builder course.");
-                return;
-            }
-            
-            await prisma.course.create({
-                data: {
-                    id: 'resume-builder',
-                    title: 'ATS Resume Builder Unlock',
-                    description: 'Unlock unlimited ATS resume builder access, downloads, and AI enhancement.',
-                    price: 59,
-                    category: 'General',
-                    isPublished: true,
-                    instructorId: instructor.id,
-                    duration: 0
-                }
-            });
-            console.log("✅ Seeded resume-builder course product");
-        }
-    } catch (e) {
-        console.error("Failed to seed resume-builder course:", e);
-    }
-};
-
-/**
- * Helper: Check if user has paid access to the resume builder
- * Paid access means enrolled in ANY course (paid or free) or has purchased the resume-builder unlock within 90 days (3 months).
- */
-const checkResumeAccess = async (userId) => {
-    await ensureResumeCourse();
-    const enrollments = await prisma.enrollment.findMany({
-        where: {
-            userId,
-            status: 'ACTIVE'
-        }
-    });
-
-    const hasPaidCourse = enrollments.some(e => e.courseId !== 'resume-builder');
-    if (hasPaidCourse) return true;
-
-    const resumeEnrollment = enrollments.find(e => e.courseId === 'resume-builder');
-    if (resumeEnrollment) {
-        const enrolledAt = new Date(resumeEnrollment.enrolledAt);
-        const now = new Date();
-        const diffDays = Math.ceil(Math.abs(now.getTime() - enrolledAt.getTime()) / (1000 * 60 * 60 * 24));
-        return diffDays <= 90; // valid for 90 days
-    }
-
-    return false;
-};
-
-/**
- * @route   GET /api/resume/check-access
- * @desc    Check if current user has paid access to the resume builder (with 3 months expiry check)
- * @access  Private
- */
-router.get('/check-access', authenticate, async (req, res, next) => {
-    try {
-        await ensureResumeCourse();
-        const userId = req.user.id;
-
-        const enrollments = await prisma.enrollment.findMany({
-            where: {
-                userId,
-                status: 'ACTIVE'
-            },
-            include: {
-                course: true
-            }
-        });
-
-        const hasPaidCourse = enrollments.some(e => e.courseId !== 'resume-builder');
-        const resumeEnrollment = enrollments.find(e => e.courseId === 'resume-builder');
-        
-        let hasPaidResume = false;
-        let isExpired = false;
-        let daysRemaining = 0;
-
-        if (resumeEnrollment) {
-            const enrolledAt = new Date(resumeEnrollment.enrolledAt);
-            const now = new Date();
-            const diffDays = Math.ceil(Math.abs(now.getTime() - enrolledAt.getTime()) / (1000 * 60 * 60 * 24));
-            if (diffDays <= 90) {
-                hasPaidResume = true;
-                daysRemaining = 90 - diffDays;
-            } else {
-                isExpired = true;
-            }
-        }
-
-        const hasAccess = hasPaidCourse || hasPaidResume;
-
-        return res.status(200).json({
-            hasAccess,
-            price: 59,
-            hasPaidCourse,
-            hasPaidResume,
-            isExpired,
-            daysRemaining,
-            validityMonths: 3
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
  * @route   GET /api/resume
  * @desc    Get the current user's saved resume data
  * @access  Private
@@ -153,15 +36,6 @@ router.get('/', authenticate, async (req, res, next) => {
 router.post('/', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const hasAccess = await checkResumeAccess(userId);
-        if (!hasAccess) {
-            return res.status(403).json({ 
-                error: "Access Denied", 
-                requiresPayment: true, 
-                message: "Please unlock the Resume Builder or enroll in a course to save your progress." 
-            });
-        }
-
         const resumeData = req.body;
         
         const upsertResume = await prisma.resume.upsert({
@@ -177,40 +51,6 @@ router.post('/', authenticate, async (req, res, next) => {
             },
         });
 
-        // Update lead lifecycle stage
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { email: true, phone: true, name: true }
-        });
-
-        if (user) {
-            const lead = await prisma.lead.findFirst({
-                where: {
-                    OR: [
-                        user.email ? { email: user.email } : null,
-                        user.phone ? { phone: { contains: user.phone } } : null
-                    ].filter(Boolean)
-                }
-            });
-
-            if (lead) {
-                const wasBuilt = lead.resumeBuilt;
-                await prisma.lead.update({
-                    where: { id: lead.id },
-                    data: {
-                        lifecycleStage: 'RESUME_BUILT',
-                        resumeBuilt: true
-                    }
-                });
-
-                if (user.phone && !wasBuilt) {
-                    const { sendWhatsAppMessage } = require('../utils/whatsappAgent');
-                    sendWhatsAppMessage(user.phone, `Hi *${user.name}*! Congratulations on building your professional ATS resume at Techwell. 📄 Next, let us know if you want us to match you with active recruiter openings or start mock interview practices!`)
-                        .catch(err => console.error('[WhatsApp Resume Built Notice Failed]:', err.message));
-                }
-            }
-        }
-
         return res.status(200).json({ message: 'Resume synchronized successfully', resume: upsertResume.data });
     } catch (error) {
         next(error);
@@ -219,26 +59,12 @@ router.post('/', authenticate, async (req, res, next) => {
 
 /**
  * @route   POST /api/resume/enhance
- * @desc    Enhance resume data using AI Expert tailored to JD and designation
+ * @desc    Enhance resume data using AI Expert
  * @access  Private
  */
 router.post('/enhance', authenticate, async (req, res, next) => {
     try {
-        const userId = req.user.id;
-        const hasAccess = await checkResumeAccess(userId);
-        if (!hasAccess) {
-            return res.status(403).json({ 
-                error: "Access Denied", 
-                requiresPayment: true, 
-                message: "Please unlock the Resume Builder or enroll in a course to enhance your resume." 
-            });
-        }
-
-        const { resumeData, jd, designation } = req.body;
-        if (!resumeData) {
-            return res.status(400).json({ error: "resumeData is required" });
-        }
-
+        const resumeData = req.body;
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -289,20 +115,13 @@ For Experience, follow CAR format: Action Verb + Responsibility + Tool/Skill + M
                 break;
         }
 
-        if (designation) {
-            personaPrompt += `\nTarget Designation: "${designation}". Tailor the job titles, summary, and skills to match this role closely.`;
-        }
-        if (jd) {
-            personaPrompt += `\nTarget Job Description (JD): "${jd}". Extract key technical and soft skills, tools, and experience requirements, and weave them into the summary, experience descriptions, and skills list to maximize the ATS score.`;
-        }
-
         const prompt = `${personaPrompt}
 
 Your task is to refine the provided resume data to enhance its appeal and compatibility with Applicant Tracking Systems.
 
 Rules:
 - Maintain a professional tone throughout.
-- Use industry-relevant keywords and phrases based on the requested persona, JD, and designation.
+- Use industry-relevant keywords and phrases based on the requested persona.
 - Ensure the resume is succinct and well-organized. 
 - IMPORTANT: You MUST return the enhanced resume in EXACTLY the same JSON structure provided. Do not invent new fields. Output pure JSON without markdown wrappers (no \`\`\`json).
 
@@ -313,6 +132,7 @@ ${JSON.stringify(resumeData, null, 2)}
         const result = await model.generateContent(prompt);
         const responseText = result.response.text();
         
+        // Strip markdown if AI stubbornly includes it
         let cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
         const enhancedData = JSON.parse(cleanJson);
 
@@ -324,4 +144,3 @@ ${JSON.stringify(resumeData, null, 2)}
 });
 
 module.exports = router;
-

@@ -24,11 +24,6 @@ import {
     Image as ImageIcon,
     CreditCard,
     Ticket,
-    Globe,
-    Megaphone,
-    Database,
-    FileCode2,
-    ShieldCheck,
     type LucideIcon
 } from "lucide-react"
 
@@ -45,12 +40,9 @@ interface RouteConfig {
     showLeadCounts?: boolean
 }
 
-type SidebarProps = React.HTMLAttributes<HTMLDivElement> & {
-    isCollapsed?: boolean
-    onToggleCollapse?: () => void
-}
+type SidebarProps = React.HTMLAttributes<HTMLDivElement>
 
-export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse }: SidebarProps) {
+export function AdminSidebar({ className }: SidebarProps) {
 
     const pathname = usePathname()
     const { logout, hasPermission, user } = useAuth()
@@ -64,36 +56,30 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
 
     const routes: RouteConfig[] = [
          { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD" },
-         { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES" },
+         { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS" },
          { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES" },
-         { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COUPONS" },
-         { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES" },
-         { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL" },
-         { label: "Central CRM", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", showLeadCounts: true },
-         { label: "Global Data", icon: Database, href: "/admin/global-data", permission: "GLOBAL_DATA" },
-         { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB" },
-         { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER" },
-         { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS" },
-         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS" },
-         { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "TRANSACTIONS" },
-         { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "MESSAGES" },
+         { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COURSES" },
+         { label: "All Leads", icon: Magnet, href: "/admin/leads", permission: "LEADS", showLeadCounts: true },
+         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "USERS" },
+         { label: "Batches", icon: Users, href: "/admin/batches", permission: "USERS" },
+         { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "FINANCE" },
+         { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "USERS" },
          { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "BLOGS" },
-         { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER" },
-         { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER" },
-         { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY" },
-         { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY" },
+         { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "COURSES" },
+         { label: "Library", icon: BookOpen, href: "/admin/library", permission: "COURSES" },
          { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES" },
-         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS" },
-         { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS" },
-         { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES" },
-         { label: "Tasks", icon: MessageSquare, href: "/admin/tasks", permission: "TASKS" },
-         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS" },
-         { label: "Reviews", icon: MessageSquare, href: "/admin/reviews", permission: "REVIEWS" },
-         { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "EMPLOYER_REQUESTS" }, 
-         { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY" },
+         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "USERS" },
+         { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "COURSES" },
+         { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "COURSES" },
+         { label: "Tasks", icon: MessageSquare, href: "/admin/tasks", permission: "USERS" },
+         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "COURSES" },
+         { label: "Reviews", icon: MessageSquare, href: "/admin/reviews", permission: "COURSES" },
+         { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "USERS" }, 
+         { label: "Jobs", icon: Briefcase, href: "/admin/jobs", permission: "USERS" },
          { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS" },
          { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS" },
          { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS" },
+         // { label: "Finance", icon: FileText, href: "/admin/finance", permission: "FINANCE" },
     ]
 
     const availableRoutes = routes.filter(route => {
@@ -156,23 +142,18 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             {/* Sidebar */}
             <div
                 className={cn(
-                    "fixed left-0 top-0 z-40 h-screen border-r bg-background overflow-y-auto transition-all duration-300 md:translate-x-0",
-                    isCollapsed ? "w-20" : "w-64",
-                    isMobileOpen ? "translate-x-0 w-64" : "-translate-x-full",
+                    "fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background overflow-y-auto transition-transform duration-300 md:translate-x-0",
+                    isMobileOpen ? "translate-x-0" : "-translate-x-full",
                     className
                 )}
             >
 
                 {/* Header */}
-                <div className="px-6 py-5 border-b flex items-center justify-between flex-shrink-0 h-16">
-                    {!isCollapsed && (
-                        <div>
-                            <h2 className="text-xl font-bold text-primary">Admin Panel</h2>
-                            <p className="text-xs text-muted-foreground">
-                                {user?.systemRole?.name ?? user?.role?.replace(/_/g, ' ')}
-                            </p>
-                        </div>
-                    )}
+                <div className="px-6 py-5 border-b flex-shrink-0">
+                    <h2 className="text-xl font-bold text-primary">Admin Panel</h2>
+                    <p className="text-xs text-muted-foreground">
+                        {user?.systemRole?.name ?? user?.role?.replace(/_/g, ' ')}
+                    </p>
                 </div>
 
                 {/* Scrollable Menu ✅ */}
@@ -185,55 +166,35 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                 pathname.startsWith(route.href + "/")
 
                             return (
-                                <div key={route.href}>
-                                    <Link
-                                        href={route.href}
-                                        className={cn(
-                                            "text-sm flex items-center justify-between gap-3 p-3 rounded-lg transition",
-                                            isActive
-                                                ? "text-primary bg-primary/10"
-                                                : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-                                        )}
-                                    >
-                                        <span className="flex min-w-0 items-center">
-                                            <route.icon className={cn("h-5 w-5 flex-shrink-0", isCollapsed ? "mx-auto" : "mr-3")} />
-                                            {!isCollapsed && <span className="truncate">{route.label}</span>}
-                                        </span>
-
-                                        {route.showLeadCounts && canViewLeads && !isCollapsed && (
-                                            <span className="ml-auto flex items-center gap-2">
-                                                <span className="inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold bg-muted">
-                                                    {leadCounts.totalCount}
-                                                </span>
-
-                                                {leadCounts.unreadCount > 0 && (
-                                                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-                                                        {leadCounts.unreadCount > 99 ? "99+" : leadCounts.unreadCount}
-                                                    </span>
-                                                )}
-                                            </span>
-                                        )}
-                                    </Link>
-                                    
-                                    {route.label === "Central CRM" && !isCollapsed && (
-                                        <div className="ml-8 mt-1 space-y-1 border-l pl-3 border-slate-200 dark:border-slate-800">
-                                            {[
-                                                { label: "Job Enquiries", type: "JOB_ENQUIRY" },
-                                                { label: "Training", type: "TRAINING" },
-                                                { label: "Service Requests", type: "SERVICE_REQUEST" },
-                                                { label: "Software Requests", type: "SOFTWARE_REQUEST" }
-                                            ].map((subRoute) => (
-                                                <Link
-                                                    key={subRoute.type}
-                                                    href={`/admin/leads?type=${subRoute.type}`}
-                                                    className="block text-xs text-muted-foreground hover:text-primary hover:bg-primary/5 p-2 rounded-md transition"
-                                                >
-                                                    {subRoute.label}
-                                                </Link>
-                                            ))}
-                                        </div>
+                                <Link
+                                    key={route.href}
+                                    href={route.href}
+                                    className={cn(
+                                        "text-sm flex items-center justify-between gap-3 p-3 rounded-lg transition",
+                                        isActive
+                                            ? "text-primary bg-primary/10"
+                                            : "text-muted-foreground hover:text-primary hover:bg-primary/10"
                                     )}
-                                </div>
+                                >
+                                    <span className="flex min-w-0 items-center">
+                                        <route.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+                                        <span className="truncate">{route.label}</span>
+                                    </span>
+
+                                    {route.showLeadCounts && canViewLeads && (
+                                        <span className="ml-auto flex items-center gap-2">
+                                            <span className="inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold bg-muted">
+                                                {leadCounts.totalCount}
+                                            </span>
+
+                                            {leadCounts.unreadCount > 0 && (
+                                                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                                                    {leadCounts.unreadCount > 99 ? "99+" : leadCounts.unreadCount}
+                                                </span>
+                                            )}
+                                        </span>
+                                    )}
+                                </Link>
                             )
                         })}
                     </nav>
