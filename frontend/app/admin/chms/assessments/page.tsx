@@ -1,0 +1,1 @@
+export default function Page() { return <div className='p-8 space-y-6'><h1 className='text-3xl font-bold tracking-tight capitalize'>assessments Management</h1><p className='text-muted-foreground'>Manage your campus hiring assessments here. Analytics and detailed views are under active development.</p></div> }
