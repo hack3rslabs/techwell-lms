@@ -543,3 +543,23 @@ export const instituteApi = {
     update: (id: string, data: any) => api.put(`/institutes/${id}`, data),
     delete: (id: string) => api.delete(`/institutes/${id}`),
 };
+
+// Products API
+export const productApi = {
+    getAll: (params?: any) => api.get('/products', { params }),
+    getAdminAll: () => api.get('/products/admin/all'),
+    getById: (slug: string) => api.get(`/products/${slug}`),
+    create: (data: any) => api.post('/products', data),
+    update: (id: string, data: any) => api.put(`/products/${id}`, data),
+    delete: (id: string) => api.delete(`/products/${id}`),
+};
+
+// Clients API
+export const clientApi = {
+    getAll: (params?: any) => api.get('/clients', { params }),
+    getAdminAll: () => api.get('/clients/admin/all'),
+    getById: (id: string) => api.get(`/clients/${id}`),
+    create: (data: any) => api.post('/clients', data),
+    update: (id: string, data: any) => api.put(`/clients/${id}`, data),
+    delete: (id: string) => api.delete(`/clients/${id}`),
+};

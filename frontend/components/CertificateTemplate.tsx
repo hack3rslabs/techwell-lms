@@ -53,8 +53,8 @@ export const CertificateTemplate = ({ certificate, logoUrl, stampUrl, stampPosit
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-[#1469e2]/10 via-[#414488]/10 to-transparent rounded-tr-full pointer-events-none -z-10"></div>
 
             {/* Branding Double Framing Accent */}
-            <div className="absolute inset-2 border-[2px] border-[#1469e2]/80 pointer-events-none z-0"></div>
-            <div className="absolute inset-3 border border-[#78c1b5]/60 pointer-events-none z-0"></div>
+            <div className="absolute inset-2 border-[2px] border-[#d4af37]/80 pointer-events-none z-0"></div>
+            <div className="absolute inset-3 border border-[#b8860b]/60 pointer-events-none z-0"></div>
 
             {/* Top Corner Details */}
             <div className="flex justify-between items-start z-10">
@@ -81,7 +81,7 @@ export const CertificateTemplate = ({ certificate, logoUrl, stampUrl, stampPosit
                     <div className="text-3xl md:text-4xl font-extrabold text-[#414488] tracking-wider uppercase font-serif whitespace-nowrap">
                         Certificate of Competency
                     </div>
-                    <div className="w-48 h-1 bg-gradient-to-r from-transparent via-[#0eeee9] to-transparent mx-auto mt-3"></div>
+                    <div className="w-48 h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent mx-auto mt-3"></div>
                 </div>
 
                 <p className="text-[#414488]/70 uppercase tracking-[0.25em] text-xs font-bold">
@@ -142,7 +142,7 @@ export const CertificateTemplate = ({ certificate, logoUrl, stampUrl, stampPosit
 
                 {/* Validation Seal and Footer */}
                 <div className="flex flex-col items-center justify-center relative top-2">
-                    <div className="relative flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#0eeee9] via-[#1469e2] to-[#414488] shadow-lg shadow-[#1469e2]/30 border-[3px] border-[#ffffff] select-none">
+                    <div className="relative flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#d4af37] via-[#b8860b] to-[#8b6508] shadow-lg shadow-[#d4af37]/30 border-[3px] border-[#ffffff] select-none">
                         <div className="absolute inset-1 rounded-full border border-dashed border-[#ffffff]/70 flex items-center justify-center flex-col bg-[#000000]/10">
                             <ShieldCheck className="h-7 w-7 text-[#ffffff] drop-shadow-sm mb-0.5" />
                             <span className="text-[6px] font-bold text-[#ffffff] tracking-widest uppercase drop-shadow-sm">VERIFIED</span>

@@ -1,912 +1,268 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from '@/components/ui/tabs'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import dynamic from 'next/dynamic'
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
-import 'react-quill-new/dist/quill.snow.css'
-import {
-    Send,
-    Loader2,
-    CheckCircle,
-    AlertCircle,
-    MessageSquare,
-    Users,
-    BookOpen,
-    Trash2,
-    Eye,
-    Edit
-} from 'lucide-react'
-import api from '@/lib/api'
+import { Loader2, Plus, Edit, Trash2 } from 'lucide-react'
+import { productApi, clientApi } from '@/lib/api'
 
-interface Message {
-    id: string
-    title: string
-    content: string
-    priority: string
-    sender: {
-        id: string
-        name: string
-        email: string
-        avatar?: string
-    }
-    recipients: Array<{
-        userId: string
-        isRead: boolean
-        readAt?: string
-    }>
-    createdAt: string
-    updatedAt: string
-    isHtml?: boolean
-    replies?: {
-        id: string
-        title: string
-        content: string
-        createdAt: string
-        isHtml?: boolean
-        sender: {
-            id: string
-            name: string
-        }
-    }[]
-}
-
-interface Batch {
-    id: string
-    name: string
-    courseId: string
-    course: {
-        title: string
-    }
-}
-
-interface Student {
-    id: string
-    name: string
-    email: string
-    avatar?: string
-}
-
-export default function AdminMessagesPage() {
-    const [activeTab, setActiveTab] = useState('send-all')
-    const [messages, setMessages] = useState<Message[]>([])
-    const [batches, setBatches] = useState<Batch[]>([])
-    const [students, setStudents] = useState<Student[]>([])
-    const [loading, setLoading] = useState(false)
-    const [messageLoading, setMessageLoading] = useState(false)
-    const [successMessage, setSuccessMessage] = useState('')
-    const [errorMessage, setErrorMessage] = useState('')
-    const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null)
+export default function CMSManagerPage() {
+    const [activeTab, setActiveTab] = useState('products')
+    const [products, setProducts] = useState<any[]>([])
+    const [clients, setClients] = useState<any[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+    const [isSaving, setIsSaving] = useState(false)
 
     // Form states
-    const [title, setTitle] = useState('')
-    const [content, setContent] = useState('')
-    const [priority, setPriority] = useState('NORMAL')
-    const [isHtml, setIsHtml] = useState(true)
-    const [category, setCategory] = useState('')
-    const [scheduledFor, setScheduledFor] = useState('')
-    const [expiresAt, setExpiresAt] = useState('')
-    const [attachmentUrl, setAttachmentUrl] = useState('')
-    const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>([])
-    const [selectedStudent, setSelectedStudent] = useState('')
-    const [templates, setTemplates] = useState<any[]>([])
+    const [productForm, setProductForm] = useState({ id: '', name: '', slug: '', description: '', category: '', price: '', demoUrl: '', brochureUrl: '', isActive: true })
+    const [clientForm, setClientForm] = useState({ id: '', name: '', description: '', url: '', logoUrl: '', isActive: true })
+    const [isEditing, setIsEditing] = useState(false)
 
-    // Fetch sent messages
     useEffect(() => {
-        fetchMessages()
-        fetchBatches()
-        fetchStudents()
-        fetchTemplates()
+        loadData()
     }, [])
 
-    const fetchTemplates = async () => {
+    const loadData = async () => {
+        setIsLoading(true)
         try {
-            const response = await api.get('/messages/templates')
-            setTemplates(response.data.data || [])
+            const [prodRes, cliRes] = await Promise.all([
+                productApi.getAdminAll().catch(() => ({ data: [] })),
+                clientApi.getAdminAll().catch(() => ({ data: [] }))
+            ])
+            setProducts(prodRes.data || [])
+            setClients(cliRes.data || [])
         } catch (error) {
-            console.error('Error fetching templates:', error)
-        }
-    }
-
-    const fetchMessages = async () => {
-        try {
-            setLoading(true)
-            const response = await api.get('/messages')
-            setMessages(response.data.data || [])
-        } catch (error) {
-            console.error('Error fetching messages:', error)
-            setErrorMessage('Failed to fetch messages')
+            console.error('Error loading CMS data:', error)
         } finally {
-            setLoading(false)
+            setIsLoading(false)
         }
     }
 
-    const fetchBatches = async () => {
-        try {
-            const response = await api.get('/batches')
-            setBatches(response.data || [])
-        } catch (error) {
-            console.error('Error fetching batches:', error)
-            setBatches([])
-        }
-    }
-
-    const fetchStudents = async () => {
-        try {
-            // Try to fetch students from users API
-            const response = await api.get('/users?role=STUDENT&skip=0&take=100')
-            setStudents(response.data.users || response.data.data || [])
-        } catch (error) {
-            console.error('Error fetching students:', error)
-            setStudents([])
-        }
-    }
-
-    const resetForm = () => {
-        setTitle('')
-        setContent('')
-        setPriority('NORMAL')
-        setCategory('')
-        setScheduledFor('')
-        setExpiresAt('')
-        setAttachmentUrl('')
-        setSelectedBatchIds([])
-        setSelectedStudent('')
-    }
-
-    const handleSendToAll = async (e: React.FormEvent) => {
+    const handleProductSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!title.trim() || !content.trim()) {
-            setErrorMessage('Title and content are required')
-            return
-        }
-
+        setIsSaving(true)
         try {
-            setMessageLoading(true)
-            const payload = {
-                title,
-                content,
-                priority,
-                isHtml,
-                category,
-                attachmentUrl,
-                scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : undefined,
-                expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined
+            if (isEditing && productForm.id) {
+                await productApi.update(productForm.id, productForm)
+            } else {
+                await productApi.create(productForm)
             }
-            const response = await api.post('/messages/send-to-all', payload)
-            setSuccessMessage(`Message sent successfully to ${response.data.recipientsCount || 0} students`)
-            resetForm()
-            fetchMessages()
-            setTimeout(() => setSuccessMessage(''), 3000)
+            setProductForm({ id: '', name: '', slug: '', description: '', category: '', price: '', demoUrl: '', brochureUrl: '', isActive: true })
+            setIsEditing(false)
+            loadData()
         } catch (error) {
-            setErrorMessage('Failed to send message')
-            console.error(error)
+            console.error('Failed to save product', error)
         } finally {
-            setMessageLoading(false)
+            setIsSaving(false)
         }
     }
 
-    const handleSendToBatch = async (e: React.FormEvent) => {
+    const handleClientSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!title.trim() || !content.trim() || selectedBatchIds.length === 0) {
-            setErrorMessage('Title, content, and at least one batch are required')
-            return
-        }
-
+        setIsSaving(true)
         try {
-            setMessageLoading(true)
-            const payload = {
-                title,
-                content,
-                batchIds: selectedBatchIds,
-                priority,
-                isHtml,
-                category,
-                attachmentUrl,
-                scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : undefined,
-                expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined
+            if (isEditing && clientForm.id) {
+                await clientApi.update(clientForm.id, clientForm)
+            } else {
+                await clientApi.create(clientForm)
             }
-            const response = await api.post('/messages/send-to-batch', payload)
-            setSuccessMessage(`Message sent successfully to ${response.data.recipientsCount || 0} students in selected batches`)
-            resetForm()
-            fetchMessages()
-            setTimeout(() => setSuccessMessage(''), 3000)
+            setClientForm({ id: '', name: '', description: '', url: '', logoUrl: '', isActive: true })
+            setIsEditing(false)
+            loadData()
         } catch (error) {
-            setErrorMessage('Failed to send message')
-            console.error(error)
+            console.error('Failed to save client', error)
         } finally {
-            setMessageLoading(false)
+            setIsSaving(false)
         }
     }
 
-    const handleSendToStudent = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!title.trim() || !content.trim() || !selectedStudent) {
-            setErrorMessage('Title, content, and student are required')
-            return
-        }
-
-        try {
-            setMessageLoading(true)
-            const payload = {
-                title,
-                content,
-                studentId: selectedStudent,
-                priority,
-                isHtml,
-                category,
-                attachmentUrl,
-                scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : undefined,
-                expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined
-            }
-            await api.post('/messages/send-to-student', payload)
-            setSuccessMessage('Message sent successfully to student')
-            resetForm()
-            fetchMessages()
-            setTimeout(() => setSuccessMessage(''), 3000)
-        } catch (error) {
-            setErrorMessage('Failed to send message')
-            console.error(error)
-        } finally {
-            setMessageLoading(false)
-        }
+    const deleteProduct = async (id: string) => {
+        if (!confirm('Are you sure?')) return
+        await productApi.delete(id)
+        loadData()
     }
 
-    const handleDeleteMessage = async (messageId: string) => {
-        if (confirm('Are you sure you want to delete this message?')) {
-            try {
-                await api.delete(`/messages/${messageId}`)
-                setSuccessMessage('Message deleted successfully')
-                fetchMessages()
-                setTimeout(() => setSuccessMessage(''), 3000)
-            } catch (error) {
-                setErrorMessage('Failed to delete message')
-                console.error(error)
-            }
-        }
+    const deleteClient = async (id: string) => {
+        if (!confirm('Are you sure?')) return
+        await clientApi.delete(id)
+        loadData()
     }
 
-    const handleReuseMessage = (message: Message) => {
-        setTitle(message.title)
-        setContent(message.content)
-        setPriority(message.priority)
-        // Default to sending to all when reusing
-        setActiveTab('send-all')
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+    const editProduct = (p: any) => {
+        setProductForm(p)
+        setIsEditing(true)
+    }
+
+    const editClient = (c: any) => {
+        setClientForm(c)
+        setIsEditing(true)
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-            <div className="max-w-7xl mx-auto space-y-6">
-                {/* Header */}
-                <div className="flex items-center gap-3">
-                    <MessageSquare className="w-8 h-8 text-blue-600" />
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-900">Student Messages</h1>
-                        <p className="text-sl text-slate-600">Send instructions and announcements to students</p>
-                    </div>
-                </div>
+        <div className="container mx-auto py-8">
+            <h1 className="text-3xl font-bold mb-8">CMS Manager</h1>
 
-                {/* Alerts */}
-                {successMessage && (
-                    <Card className="border-green-200 bg-green-50">
-                        <CardContent className="pt-6 flex items-center gap-3 text-green-700">
-                            <CheckCircle className="w-5 h-5" />
-                            <span>{successMessage}</span>
-                        </CardContent>
-                    </Card>
-                )}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="mb-8">
+                    <TabsTrigger value="products">Products</TabsTrigger>
+                    <TabsTrigger value="clients">Clients</TabsTrigger>
+                </TabsList>
 
-                {errorMessage && (
-                    <Card className="border-red-200 bg-red-50">
-                        <CardContent className="pt-6 flex items-center gap-3 text-red-700">
-                            <AlertCircle className="w-5 h-5" />
-                            <span>{errorMessage}</span>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Tabs */}
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-8">
-                        <TabsTrigger value="send-all" className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to All</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="send-batch" className="flex items-center gap-2">
-                            <BookOpen className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to Batch</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="send-student" className="flex items-center gap-2">
-                            <MessageSquare className="w-4 h-4" />
-                            <span className="hidden sm:inline">Send to Student</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="history" className="flex items-center gap-2">
-                            <Eye className="w-4 h-4" />
-                            <span className="hidden sm:inline">History</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="templates" className="flex items-center gap-2">
-                            <BookOpen className="w-4 h-4" />
-                            <span className="hidden sm:inline">Templates</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="analytics" className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4" />
-                            <span className="hidden sm:inline">Analytics</span>
-                        </TabsTrigger>
-                    </TabsList>
-
-                    {/* Send to All Tab */}
-                    <TabsContent value="send-all" className="space-y-4">
-                        <Card>
+                {/* Products Tab */}
+                <TabsContent value="products">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <Card className="col-span-1">
                             <CardHeader>
-                                <CardTitle>Send Message to All Students</CardTitle>
-                                <CardDescription>This message will be sent to all active students</CardDescription>
+                                <CardTitle>{isEditing ? 'Edit Product' : 'Add Product'}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <form onSubmit={handleSendToAll} className="space-y-4">
+                                <form onSubmit={handleProductSubmit} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Title
-                                        </label>
-                                        <Input
-                                            placeholder="Message title"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-                                            <Input placeholder="e.g. Announcement, Alert" value={category} onChange={(e) => setCategory(e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Attachment URL</label>
-                                            <Input placeholder="https://..." value={attachmentUrl} onChange={(e) => setAttachmentUrl(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Schedule For</label>
-                                            <Input type="datetime-local" value={scheduledFor} onChange={(e) => setScheduledFor(e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Expires At</label>
-                                            <Input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
-                                        </div>
+                                        <label className="text-sm font-medium">Name</label>
+                                        <Input required value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Message Content
-                                        </label>
-                                        <div className="bg-white rounded-md">
-                                            <ReactQuill theme="snow" value={content} onChange={setContent} className="min-h-[150px]" />
-                                        </div>
+                                        <label className="text-sm font-medium">Slug</label>
+                                        <Input required value={productForm.slug} onChange={e => setProductForm({...productForm, slug: e.target.value})} />
                                     </div>
-
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Priority
-                                        </label>
-                                        <Select value={priority} onValueChange={setPriority}>
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="LOW">Low</SelectItem>
-                                                <SelectItem value="NORMAL">Normal</SelectItem>
-                                                <SelectItem value="HIGH">High</SelectItem>
-                                                <SelectItem value="URGENT">Urgent</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <label className="text-sm font-medium">Category</label>
+                                        <Input required value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} />
                                     </div>
-
-                                    <Button
-                                        type="submit"
-                                        disabled={messageLoading}
-                                        className="w-full"
-                                    >
-                                        {messageLoading ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send to All Students
-                                            </>
-                                        )}
+                                    <div>
+                                        <label className="text-sm font-medium">Description</label>
+                                        <Textarea required value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium">URL</label>
+                                        <Input value={productForm.demoUrl} onChange={e => setProductForm({...productForm, demoUrl: e.target.value})} placeholder="https://..." />
+                                    </div>
+                                    <Button type="submit" disabled={isSaving} className="w-full">
+                                        {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                                        {isEditing ? 'Update Product' : 'Create Product'}
                                     </Button>
+                                    {isEditing && (
+                                        <Button variant="outline" className="w-full mt-2" onClick={() => { setIsEditing(false); setProductForm({ id: '', name: '', slug: '', description: '', category: '', price: '', demoUrl: '', brochureUrl: '', isActive: true }) }}>
+                                            Cancel
+                                        </Button>
+                                    )}
                                 </form>
                             </CardContent>
                         </Card>
-                    </TabsContent>
 
-                    {/* Send to Batch Tab */}
-                    <TabsContent value="send-batch" className="space-y-4">
-                        <Card>
+                        <Card className="col-span-1 md:col-span-2">
                             <CardHeader>
-                                <CardTitle>Send Message to Batch</CardTitle>
-                                <CardDescription>Send a message to all students in a specific batch</CardDescription>
+                                <CardTitle>Products List</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <form onSubmit={handleSendToBatch} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Select Batches
-                                        </label>
-                                        <div className="border rounded-md max-h-48 overflow-y-auto p-2 bg-white">
-                                            {batches.length === 0 ? (
-                                                <p className="text-sm text-muted-foreground p-2">No batches found.</p>
-                                            ) : batches.map(batch => (
-                                                <label key={batch.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        className="w-4 h-4 rounded border-slate-300"
-                                                        checked={selectedBatchIds.includes(batch.id)}
-                                                        onChange={(e) => {
-                                                            if(e.target.checked) {
-                                                                setSelectedBatchIds([...selectedBatchIds, batch.id])
-                                                            } else {
-                                                                setSelectedBatchIds(selectedBatchIds.filter(id => id !== batch.id))
-                                                            }
-                                                        }}
-                                                    />
-                                                    <span className="text-sm font-medium">{batch.name}</span>
-                                                    <span className="text-xs text-muted-foreground ml-auto">{batch.course?.title}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Title
-                                        </label>
-                                        <Input
-                                            placeholder="Message title"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-                                            <Input placeholder="e.g. Announcement, Alert" value={category} onChange={(e) => setCategory(e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Attachment URL</label>
-                                            <Input placeholder="https://..." value={attachmentUrl} onChange={(e) => setAttachmentUrl(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Schedule For</label>
-                                            <Input type="datetime-local" value={scheduledFor} onChange={(e) => setScheduledFor(e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Expires At</label>
-                                            <Input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Message Content
-                                        </label>
-                                        <div className="bg-white rounded-md">
-                                            <ReactQuill theme="snow" value={content} onChange={setContent} className="min-h-[150px]" />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Priority
-                                        </label>
-                                        <Select value={priority} onValueChange={setPriority}>
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="LOW">Low</SelectItem>
-                                                <SelectItem value="NORMAL">Normal</SelectItem>
-                                                <SelectItem value="HIGH">High</SelectItem>
-                                                <SelectItem value="URGENT">Urgent</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <Button
-                                        type="submit"
-                                        disabled={messageLoading || selectedBatchIds.length === 0}
-                                        className="w-full"
-                                    >
-                                        {messageLoading ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send to Batch
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Send to Individual Student Tab */}
-                    <TabsContent value="send-student" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Send Message to Individual Student</CardTitle>
-                                <CardDescription>Send a personal message to a specific student</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleSendToStudent} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Select Student
-                                        </label>
-                                        <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose a student" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {students.map((student) => (
-                                                    <SelectItem key={student.id} value={student.id}>
-                                                        {student.name} - {student.email}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Title
-                                        </label>
-                                        <Input
-                                            placeholder="Message title"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-                                            <Input placeholder="e.g. Announcement, Alert" value={category} onChange={(e) => setCategory(e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Attachment URL</label>
-                                            <Input placeholder="https://..." value={attachmentUrl} onChange={(e) => setAttachmentUrl(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Schedule For</label>
-                                            <Input type="datetime-local" value={scheduledFor} onChange={(e) => setScheduledFor(e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Expires At</label>
-                                            <Input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Message Content
-                                        </label>
-                                        <div className="bg-white rounded-md">
-                                            <ReactQuill theme="snow" value={content} onChange={setContent} className="min-h-[150px]" />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Priority
-                                        </label>
-                                        <Select value={priority} onValueChange={setPriority}>
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="LOW">Low</SelectItem>
-                                                <SelectItem value="NORMAL">Normal</SelectItem>
-                                                <SelectItem value="HIGH">High</SelectItem>
-                                                <SelectItem value="URGENT">Urgent</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <Button
-                                        type="submit"
-                                        disabled={messageLoading || !selectedStudent}
-                                        className="w-full"
-                                    >
-                                        {messageLoading ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send to Student
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Message History Tab */}
-                    <TabsContent value="history" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Message History</CardTitle>
-                                <CardDescription>View and manage sent messages</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {loading ? (
-                                    <div className="flex items-center justify-center py-8">
-                                        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                                    </div>
-                                ) : messages.length === 0 ? (
-                                    <p className="text-center text-slate-500 py-8">No messages sent yet</p>
-                                ) : (
-                                    <div className="overflow-x-auto">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Title</TableHead>
-                                                    <TableHead>Sent By</TableHead>
-                                                    <TableHead>Recipients</TableHead>
-                                                    <TableHead>Read</TableHead>
-                                                    <TableHead>Replies</TableHead>
-                                                    <TableHead>Priority</TableHead>
-                                                    <TableHead>Date</TableHead>
-                                                    <TableHead>Action</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {messages.map((message) => {
-                                                    const totalRecipients = message.recipients.length
-                                                    const readCount = message.recipients.filter(r => r.isRead).length
-                                                    const replyCount = message.replies?.length || 0
-                                                    const isExpanded = expandedHistoryId === message.id
-                                                    return (
-                                                        <React.Fragment key={message.id}>
-                                                            <TableRow>
-                                                                <TableCell className="font-medium">{message.title}</TableCell>
-                                                                <TableCell>{message.sender.name}</TableCell>
-                                                                <TableCell>{totalRecipients}</TableCell>
-                                                                <TableCell>
-                                                                    <Badge variant="outline">
-                                                                        {readCount}/{totalRecipients}
-                                                                    </Badge>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {replyCount > 0 ? (
-                                                                        <Badge variant="secondary" className="cursor-pointer" onClick={() => setExpandedHistoryId(isExpanded ? null : message.id)}>
-                                                                            {replyCount} Replies
-                                                                        </Badge>
-                                                                    ) : (
-                                                                        <span className="text-gray-400">-</span>
-                                                                    )}
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <Badge
-                                                                        variant={
-                                                                            message.priority === 'URGENT'
-                                                                                ? 'destructive'
-                                                                                : message.priority === 'HIGH'
-                                                                                ? 'secondary'
-                                                                                : 'outline'
-                                                                        }
-                                                                    >
-                                                                        {message.priority}
-                                                                    </Badge>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {new Date(message.createdAt).toLocaleDateString()}
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() => setExpandedHistoryId(isExpanded ? null : message.id)}
-                                                                            className="text-slate-600 hover:text-slate-700"
-                                                                            title="View Thread"
-                                                                        >
-                                                                            <MessageSquare className="w-4 h-4" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() => handleReuseMessage(message)}
-                                                                            className="text-blue-600 hover:text-blue-700"
-                                                                            title="Edit and Resend"
-                                                                        >
-                                                                            <Edit className="w-4 h-4" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            onClick={() => handleDeleteMessage(message.id)}
-                                                                            className="text-red-600 hover:text-red-700"
-                                                                            title="Delete"
-                                                                        >
-                                                                            <Trash2 className="w-4 h-4" />
-                                                                        </Button>
-                                                                    </div>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                            
-                                                            {isExpanded && (
-                                                                <TableRow>
-                                                                    <TableCell colSpan={8} className="bg-slate-50 p-0">
-                                                                        <div className="p-6 space-y-4">
-                                                                            <h4 className="font-semibold text-slate-900 border-b pb-2">Message Thread</h4>
-                                                                            {/* Original Message */}
-                                                                            <div className="bg-white p-4 rounded-md border shadow-sm">
-                                                                                <div className="text-xs font-semibold text-blue-600 mb-2">Original Message ({message.sender.name})</div>
-                                                                                {message.isHtml ? (
-                                                                                    <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: message.content }} />
-                                                                                ) : (
-                                                                                    <div className="whitespace-pre-wrap text-sm text-slate-700">{message.content}</div>
-                                                                                )}
-                                                                            </div>
-                                                                            
-                                                                            {/* Replies */}
-                                                                            {message.replies && message.replies.map(reply => (
-                                                                                <div key={reply.id} className="bg-white p-4 rounded-md border ml-8 border-l-4 border-l-blue-500 shadow-sm">
-                                                                                    <div className="flex justify-between items-center mb-2">
-                                                                                        <div className="text-xs font-semibold text-slate-700">{reply.sender?.name || 'Student'} replied:</div>
-                                                                                        <div className="text-xs text-slate-500">{new Date(reply.createdAt).toLocaleString()}</div>
-                                                                                    </div>
-                                                                                    {reply.isHtml ? (
-                                                                                        <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: reply.content }} />
-                                                                                    ) : (
-                                                                                        <div className="whitespace-pre-wrap text-sm text-slate-700">{reply.content}</div>
-                                                                                    )}
-                                                                                </div>
-                                                                            ))}
-                                                                            {replyCount === 0 && (
-                                                                                <p className="text-sm text-slate-500 italic ml-2">No replies yet.</p>
-                                                                            )}
-                                                                        </div>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            )}
-                                                        </React.Fragment>
-                                                    )
-                                                })}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Templates Tab */}
-                    <TabsContent value="templates" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Message Templates</CardTitle>
-                                <CardDescription>Manage reusable message templates</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {templates.length === 0 ? (
-                                    <p className="text-center text-slate-500 py-8">No templates found</p>
-                                ) : (
-                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                        {templates.map(t => (
-                                            <Card key={t.id}>
-                                                <CardHeader className="pb-2">
-                                                    <CardTitle className="text-lg">{t.name}</CardTitle>
-                                                    <CardDescription>{t.titleTemplate}</CardDescription>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <div className="flex justify-between items-center">
-                                                        <Badge>{t.category || 'General'}</Badge>
-                                                        <Button variant="outline" size="sm" onClick={() => {
-                                                            setTitle(t.titleTemplate);
-                                                            setContent(t.contentTemplate);
-                                                            setCategory(t.category || '');
-                                                            setActiveTab('send-all');
-                                                        }}>Use Template</Button>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Category</TableHead>
+                                            <TableHead>URL</TableHead>
+                                            <TableHead>Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {isLoading ? (
+                                            <TableRow><TableCell colSpan={4} className="text-center py-8"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></TableCell></TableRow>
+                                        ) : products.map(p => (
+                                            <TableRow key={p.id}>
+                                                <TableCell className="font-medium">{p.name}</TableCell>
+                                                <TableCell><Badge>{p.category}</Badge></TableCell>
+                                                <TableCell>{p.demoUrl && <a href={p.demoUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">Link</a>}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-2">
+                                                        <Button size="sm" variant="outline" onClick={() => editProduct(p)}><Edit className="w-4 h-4" /></Button>
+                                                        <Button size="sm" variant="destructive" onClick={() => deleteProduct(p.id)}><Trash2 className="w-4 h-4" /></Button>
                                                     </div>
-                                                </CardContent>
-                                            </Card>
+                                                </TableCell>
+                                            </TableRow>
                                         ))}
-                                    </div>
-                                )}
+                                    </TableBody>
+                                </Table>
                             </CardContent>
                         </Card>
-                    </TabsContent>
+                    </div>
+                </TabsContent>
 
-                    {/* Analytics Tab */}
-                    <TabsContent value="analytics" className="space-y-4">
-                        <Card>
+                {/* Clients Tab */}
+                <TabsContent value="clients">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <Card className="col-span-1">
                             <CardHeader>
-                                <CardTitle>Message Analytics</CardTitle>
-                                <CardDescription>Overview of message engagement</CardDescription>
+                                <CardTitle>{isEditing ? 'Edit Client' : 'Add Client'}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid gap-4 md:grid-cols-3">
-                                    <Card>
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-sm font-medium text-slate-500">Total Sent</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="text-2xl font-bold">{messages.length}</div>
-                                        </CardContent>
-                                    </Card>
-                                    <Card>
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-sm font-medium text-slate-500">Average Open Rate</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="text-2xl font-bold">
-                                                {messages.length > 0 ? 
-                                                    Math.round(messages.reduce((acc, m) => acc + (m.recipients.filter(r => r.isRead).length / (m.recipients.length || 1)), 0) / messages.length * 100)
-                                                : 0}%
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                    <Card>
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-sm font-medium text-slate-500">Urgent Messages</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="text-2xl font-bold">
-                                                {messages.filter(m => m.priority === 'URGENT').length}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </div>
+                                <form onSubmit={handleClientSubmit} className="space-y-4">
+                                    <div>
+                                        <label className="text-sm font-medium">Name</label>
+                                        <Input required value={clientForm.name} onChange={e => setClientForm({...clientForm, name: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium">URL</label>
+                                        <Input value={clientForm.url} onChange={e => setClientForm({...clientForm, url: e.target.value})} placeholder="https://..." />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium">Description</label>
+                                        <Textarea value={clientForm.description} onChange={e => setClientForm({...clientForm, description: e.target.value})} />
+                                    </div>
+                                    <Button type="submit" disabled={isSaving} className="w-full">
+                                        {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                                        {isEditing ? 'Update Client' : 'Create Client'}
+                                    </Button>
+                                    {isEditing && (
+                                        <Button variant="outline" className="w-full mt-2" onClick={() => { setIsEditing(false); setClientForm({ id: '', name: '', description: '', url: '', logoUrl: '', isActive: true }) }}>
+                                            Cancel
+                                        </Button>
+                                    )}
+                                </form>
                             </CardContent>
                         </Card>
-                    </TabsContent>
-                </Tabs>
-            </div>
+
+                        <Card className="col-span-1 md:col-span-2">
+                            <CardHeader>
+                                <CardTitle>Clients List</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>URL</TableHead>
+                                            <TableHead>Description</TableHead>
+                                            <TableHead>Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {isLoading ? (
+                                            <TableRow><TableCell colSpan={4} className="text-center py-8"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></TableCell></TableRow>
+                                        ) : clients.map(c => (
+                                            <TableRow key={c.id}>
+                                                <TableCell className="font-medium">{c.name}</TableCell>
+                                                <TableCell>{c.url && <a href={c.url} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">{c.url}</a>}</TableCell>
+                                                <TableCell>{c.description}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-2">
+                                                        <Button size="sm" variant="outline" onClick={() => editClient(c)}><Edit className="w-4 h-4" /></Button>
+                                                        <Button size="sm" variant="destructive" onClick={() => deleteClient(c.id)}><Trash2 className="w-4 h-4" /></Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }

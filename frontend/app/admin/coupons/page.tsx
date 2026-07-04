@@ -47,7 +47,9 @@ export default function AdminCouponsPage() {
     const [form, setForm] = React.useState({
         couponName: "",
         discountPercentage: "",
+        startDate: "",
         expiryDate: "",
+        usageLimit: "",
         courseIds: [] as string[]
     })
 
@@ -142,14 +144,18 @@ export default function AdminCouponsPage() {
                 discountPercentage: Number(
                     form.discountPercentage
                 ),
+                startDate: form.startDate,
                 expiryDate: form.expiryDate,
+                usageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
                 courseIds: form.courseIds
             })
 
             setForm({
                 couponName: "",
                 discountPercentage: "",
+                startDate: "",
                 expiryDate: "",
+                usageLimit: "",
                 courseIds: []
             })
 
@@ -322,6 +328,33 @@ export default function AdminCouponsPage() {
                                             )
                                         }
                                         required
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="start-date">
+                                        Start Date
+                                    </Label>
+                                    <Input
+                                        id="start-date"
+                                        type="date"
+                                        value={form.startDate}
+                                        onChange={(event) => setForm({...form, startDate: event.target.value})}
+                                        disabled={!canWrite("COURSES")}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="usage-limit">
+                                        Usage Limit
+                                    </Label>
+                                    <Input
+                                        id="usage-limit"
+                                        type="number"
+                                        value={form.usageLimit}
+                                        onChange={(event) => setForm({...form, usageLimit: event.target.value})}
+                                        disabled={!canWrite("COURSES")}
+                                        placeholder="Max numbers apply"
                                     />
                                 </div>
                             </div>

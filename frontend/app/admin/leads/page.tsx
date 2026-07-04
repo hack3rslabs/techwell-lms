@@ -22,6 +22,7 @@ import {
     Upload,
     Trash2,
     User,
+    Phone,
 } from 'lucide-react'
 import { exportToCSV } from '@/lib/export-utils'
 import api, { leadApi } from '@/lib/api'
@@ -473,7 +474,14 @@ export default function LeadsPage() {
                                             <TableCell>
                                                 <div className="font-medium">{lead.name}</div>
                                                 <div className="text-xs text-muted-foreground">{lead.email}</div>
-                                                <div className="text-xs text-muted-foreground">{lead.phone}</div>
+                                                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                                    {lead.phone}
+                                                    {lead.phone && (
+                                                        <a href={`tel:${lead.phone}`} className="text-blue-500 hover:text-blue-700 ml-1" title="Call Lead">
+                                                            <Phone className="w-3 h-3" />
+                                                        </a>
+                                                    )}
+                                                </div>
                                                 <div className="text-[10px] text-primary font-medium mt-1 uppercase italic">
                                                     {lead.qualification || 'General Enquiry'}
                                                 </div>

@@ -2488,3 +2488,4 @@ model ConsultancyCoordination {
   institute     Institute @relation(fields: [instituteId], references: [id])
   techwellAdmin User      @relation("AdminCoordination", fields: [techwellAdminId], references: [id])
 }
+
