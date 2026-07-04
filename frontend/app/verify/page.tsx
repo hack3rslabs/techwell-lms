@@ -1,156 +1,152 @@
 "use client"
 
-import * as React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Search, ShieldCheck, ShieldAlert, Award, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Search, ShieldCheck, ShieldAlert, Award, Calendar, User, FileText, ArrowRight, Loader2, Sparkles } from 'lucide-react'
-import Link from 'next/link'
-import api from '@/lib/api'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import axios from 'axios'
+import { format } from 'date-fns'
 
-interface VerifiedCert {
-    uniqueId: string
-    studentName: string
-    courseName: string
-    courseCategory: string
-    issueDate: string
-    expiryDate: string | null
-    grade: string
-    isValid: boolean
-    signatoryName: string
-    signatoryTitle: string
-}
-
-export default function VerificationPage() {
-    const [searchId, setSearchId] = React.useState('')
-    const [isLoading, setIsLoading] = React.useState(false)
-    const [result, setResult] = React.useState<{ verified: boolean, certificate?: VerifiedCert, isExpired?: boolean } | null>(null)
-    const [error, setError] = React.useState<string | null>(null)
+export default function VerificationPortal() {
+    const router = useRouter()
+    const [searchId, setSearchId] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [result, setResult] = useState<any>(null)
+    const [error, setError] = useState<string | null>(null)
 
     const handleVerify = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!searchId.trim()) return
-        setIsLoading(true)
-        setError(null)
-        setResult(null)
 
         try {
-            const res = await api.get(`/certificates/verify/${searchId.trim()}`)
+            setLoading(true)
+            setError(null)
+            setResult(null)
+
+            const res = await axios.get(`/api/certificates/verify/${searchId.trim()}`)
             setResult(res.data)
         } catch (err: any) {
-            console.error('Verification query failed:', err)
-            setError(err.response?.data?.error || 'Certificate not found or invalid format.')
+            console.error(err)
+            if (err.response?.status === 404) {
+                setError("Certificate not found. Please check the ID and try again.")
+            } else {
+                setError("An error occurred during verification. Please try again.")
+            }
         } finally {
-            setIsLoading(false)
+            setLoading(false)
         }
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-slate-50">
-            {/* Header branding */}
-            <div className="text-center mb-8 space-y-2">
-                <div className="flex justify-center items-center gap-2 mb-2">
-                    <Award className="h-10 w-10 text-indigo-400" />
-                    <span className="text-2xl font-black tracking-wider uppercase text-white font-serif">Techwell</span>
+        <div className="min-h-screen bg-slate-50 py-16 px-4 flex flex-col items-center selection:bg-amber-200">
+            
+            <div className="text-center mb-12">
+                <div className="w-16 h-16 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-xl border border-slate-700">
+                    <Award className="w-8 h-8 text-amber-500" />
                 </div>
-                <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-teal-400 to-indigo-400 bg-clip-text text-transparent">
-                    Official Student Credential Verification
-                </h1>
-                <p className="text-slate-400 max-w-md text-sm mx-auto">
-                    Verify the authenticity of Techwell graduation certificates and course completion credentials.
+                <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-3">Credential Verification</h1>
+                <p className="text-slate-500 max-w-lg mx-auto">
+                    Verify the authenticity of Techwell Consulting certificates. Enter the unique Certificate ID below.
                 </p>
             </div>
 
-            {/* Input card */}
-            <Card className="w-full max-w-md bg-slate-900 border-slate-800 shadow-xl shadow-indigo-500/5">
-                <CardContent className="pt-6">
-                    <form onSubmit={handleVerify} className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-slate-300 uppercase tracking-widest block">
-                                Unique Certificate ID / Reg ID
-                            </label>
-                            <div className="flex gap-2">
-                                <Input
-                                    placeholder="e.g. TW-2026-0001"
-                                    value={searchId}
-                                    onChange={e => setSearchId(e.target.value)}
-                                    className="bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 font-mono focus-visible:ring-indigo-500"
-                                    required
-                                />
-                                <Button type="submit" disabled={isLoading} className="bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 px-4 shrink-0">
-                                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                                    Verify
+            <Card className="w-full max-w-xl shadow-xl border-0 ring-1 ring-slate-100">
+                <CardHeader className="bg-white border-b border-slate-100 pb-8 pt-8">
+                    <form onSubmit={handleVerify} className="flex gap-3">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <Input 
+                                placeholder="e.g. TW-CERT-1A2B3C4D" 
+                                className="pl-10 h-12 bg-slate-50 border-slate-200 focus-visible:ring-slate-900 text-lg uppercase"
+                                value={searchId}
+                                onChange={(e) => setSearchId(e.target.value.toUpperCase())}
+                            />
+                        </div>
+                        <Button 
+                            type="submit" 
+                            disabled={!searchId.trim() || loading}
+                            className="h-12 px-8 bg-slate-900 hover:bg-slate-800 text-white font-semibold"
+                        >
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify"}
+                        </Button>
+                    </form>
+                </CardHeader>
+                
+                <CardContent className="p-0 bg-slate-50/50">
+                    {error && (
+                        <div className="p-8 text-center">
+                            <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                            <h3 className="text-lg font-bold text-slate-900 mb-1">Verification Failed</h3>
+                            <p className="text-red-600 font-medium">{error}</p>
+                        </div>
+                    )}
+
+                    {result && result.verified && (
+                        <div className="p-8">
+                            <div className="flex items-center gap-3 mb-6 justify-center">
+                                <div className="bg-green-100 p-2 rounded-full">
+                                    <ShieldCheck className="w-8 h-8 text-green-600" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-green-700">Valid Certificate</h3>
+                            </div>
+                            
+                            <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4 shadow-sm">
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Recipient</p>
+                                    <p className="text-xl font-bold text-slate-900">{result.certificate.studentName}</p>
+                                </div>
+                                <div className="border-t border-slate-100 pt-4">
+                                    <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Course Completed</p>
+                                    <p className="text-lg font-medium text-slate-800">{result.certificate.courseName}</p>
+                                    {result.certificate.courseCategory && (
+                                        <span className="inline-block mt-2 text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">
+                                            {result.certificate.courseCategory}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Issue Date</p>
+                                        <p className="font-medium text-slate-700">
+                                            {format(new Date(result.certificate.issueDate), 'MMM dd, yyyy')}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Certificate ID</p>
+                                        <p className="font-mono font-medium text-slate-700">{result.certificate.uniqueId}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-8 text-center">
+                                <Button 
+                                    onClick={() => router.push(`/certificates/${result.certificate.uniqueId}`)}
+                                    variant="outline"
+                                    className="border-slate-300 hover:bg-slate-100"
+                                >
+                                    View Original Certificate
                                 </Button>
                             </div>
                         </div>
-                    </form>
+                    )}
+
+                    {result && !result.verified && !error && (
+                        <div className="p-8 text-center">
+                            <ShieldAlert className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">Certificate Invalid</h3>
+                            <p className="text-slate-600">
+                                {result.isRevoked ? "This certificate has been revoked by the issuer." : "This certificate has expired."}
+                            </p>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
-            {/* Result display */}
-            <div className="w-full max-w-md mt-6">
-                {error && (
-                    <Card className="bg-red-950/20 border-red-900/50 text-red-400">
-                        <CardContent className="flex items-start gap-3 pt-6">
-                            <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
-                            <div>
-                                <h3 className="font-bold text-sm">Credential Mismatch</h3>
-                                <p className="text-xs text-red-400/80 mt-1">{error}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {result && result.verified && result.certificate && (
-                    <Card className="bg-slate-900 border-teal-500/30 overflow-hidden shadow-lg shadow-teal-500/5">
-                        {/* Status bar */}
-                        <div className="bg-teal-500/10 border-b border-teal-500/20 px-4 py-3 flex items-center gap-2 text-teal-400">
-                            <ShieldCheck className="h-5 w-5" />
-                            <span className="text-xs font-bold uppercase tracking-wider">Validated Credential Match</span>
-                        </div>
-                        
-                        <CardContent className="pt-5 space-y-4">
-                            <div className="flex items-start justify-between border-b border-slate-800 pb-3">
-                                <div>
-                                    <span className="text-[10px] text-slate-500 uppercase tracking-widest block">Student Name</span>
-                                    <span className="text-base font-bold text-slate-100 font-serif">{result.certificate.studentName}</span>
-                                </div>
-                                <Badge className="bg-teal-950 border-teal-900 text-teal-300">Active</Badge>
-                            </div>
-
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2 text-xs text-slate-300">
-                                    <FileText className="h-4 w-4 text-slate-500" />
-                                    <span><strong>Course:</strong> {result.certificate.courseName}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-slate-300">
-                                    <Calendar className="h-4 w-4 text-slate-500" />
-                                    <span><strong>Issue Date:</strong> {new Date(result.certificate.issueDate).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-slate-300">
-                                    <User className="h-4 w-4 text-slate-500" />
-                                    <span><strong>Authority:</strong> {result.certificate.signatoryName} ({result.certificate.signatoryTitle})</span>
-                                </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="pt-2 border-t border-slate-800 flex justify-end">
-                                <Link href={`/certificate/${result.certificate.uniqueId}`} className="w-full">
-                                    <Button className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border-0 flex items-center justify-center gap-1">
-                                        View Certificate <ArrowRight className="h-4 w-4" />
-                                    </Button>
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-
-            {/* Link back home */}
-            <Link href="/" className="mt-8 text-xs text-slate-500 hover:text-indigo-400 transition-colors">
-                Back to Techwell Home
-            </Link>
+            <p className="text-center text-sm text-slate-400 mt-12">
+                &copy; {new Date().getFullYear()} Techwell Consulting. All rights reserved.
+            </p>
         </div>
     )
 }

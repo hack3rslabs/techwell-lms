@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { AdminSidebar } from "@/components/admin/AdminSidebar"
 import { PermissionGuard } from "@/components/shared/PermissionGuard"
@@ -14,6 +14,7 @@ export default function AdminLayout({
 }) {
     const { user, isAuthenticated, isLoading } = useAuth()
     const router = useRouter()
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
     useEffect(() => {
         if (!isLoading) {
@@ -54,10 +55,13 @@ export default function AdminLayout({
         <div className="flex min-h-screen no-scrollbar">
 
             {/* Sidebar */}
-            <AdminSidebar />
+            <AdminSidebar 
+                isCollapsed={isSidebarCollapsed} 
+                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+            />
 
             {/* Main Content */}
-            <div className="flex-1 md:ml-64 p-8 bg-muted/10">
+            <div className={`flex-1 p-8 bg-muted/10 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
                 <PermissionGuard>
                     {children}
                 </PermissionGuard>

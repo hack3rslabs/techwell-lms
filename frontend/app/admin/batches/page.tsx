@@ -136,8 +136,10 @@ export default function BatchesPage() {
             if (selectedCourse !== 'all') params.courseId = selectedCourse
 
             const res = await batchesApi.getAll(params)
-            setBatches(res.data.batches)
-            setPagination(res.data.pagination)
+            setBatches(res.data?.batches || [])
+            if (res.data?.pagination) {
+                setPagination(res.data.pagination)
+            }
         } catch (error) {
             console.error('Failed to fetch batches:', error)
             toast({
@@ -256,7 +258,7 @@ export default function BatchesPage() {
                             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
                             <p className="text-sm text-muted-foreground">Loading batches...</p>
                         </div>
-                    ) : batches.length > 0 ? (
+                    ) : (batches?.length || 0) > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">

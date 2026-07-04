@@ -13,6 +13,7 @@ import {
     Eye,
 } from 'lucide-react'
 import api from '@/lib/api'
+import DOMPurify from 'isomorphic-dompurify'
 
 interface AdminMessage {
     id: string
@@ -270,7 +271,7 @@ export function StudentMessages() {
                                                 {msg.isHtml ? (
                                                     <div 
                                                         className="prose prose-sm max-w-none text-slate-700" 
-                                                        dangerouslySetInnerHTML={{ __html: msg.content }} 
+                                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.content) }} 
                                                     />
                                                 ) : (
                                                     <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">

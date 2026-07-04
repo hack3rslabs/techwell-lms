@@ -34,6 +34,9 @@ import {
     Key,
     ListTodo,
     Building2,
+    Search,
+    ChevronLeft,
+    ChevronRight,
     type LucideIcon
 } from "lucide-react"
 
@@ -63,6 +66,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
     const { logout, hasPermission, user } = useAuth()
     const [isMobileOpen, setIsMobileOpen] = useState(false)
     const [leadCounts, setLeadCounts] = useState({ totalCount: 0, unreadCount: 0 })
+    const [searchQuery, setSearchQuery] = useState("")
 
     const canViewLeads = hasPermission("VIEW_LEADS")
     const isViewingLeads =
@@ -77,9 +81,14 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
          { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "EMPLOYER_REQUESTS", group: "Requests" },
          
          // Tracking
-         { label: "Central CRM", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", showLeadCounts: true, group: "Tracking" },
+         { label: "Lead Management", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Tracking", showLeadCounts: true },
+         { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Tracking" },
+         { label: "Customer 360", icon: Users, href: "/admin/crm/customers", permission: "CENTRAL_CRM", group: "Tracking" },
+         { label: "Sales Pipelines", icon: Briefcase, href: "/admin/crm/pipelines", permission: "CENTRAL_CRM", group: "Tracking" },
+         { label: "Client Agreements", icon: FileText, href: "/admin/crm/agreements", permission: "CENTRAL_CRM", group: "Tracking" },
          { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Tracking" },
          { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Tracking" },
+         { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Tracking" },
          
          // Approve
          { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "REVIEWS", group: "Approve" },
@@ -159,8 +168,11 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
     ]
 
     const availableRoutes = routes.filter(route => {
-        if (!route.permission) return true
-        return hasPermission(route.permission)
+        if (route.permission && !hasPermission(route.permission)) return false
+        if (searchQuery) {
+            return route.label.toLowerCase().includes(searchQuery.toLowerCase())
+        }
+        return true
     })
 
     useEffect(() => {
@@ -226,16 +238,37 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             >
 
                 {/* Header */}
-                <div className="px-6 py-5 border-b flex items-center justify-between flex-shrink-0 h-16">
+                <div className={cn("px-4 py-4 border-b flex items-center flex-shrink-0 h-16", isCollapsed ? "justify-center" : "justify-between")}>
                     {!isCollapsed && (
-                        <div>
-                            <h2 className="text-xl font-bold text-primary">Admin Panel</h2>
-                            <p className="text-xs text-muted-foreground">
+                        <div className="overflow-hidden">
+                            <h2 className="text-xl font-bold text-primary truncate">Admin Panel</h2>
+                            <p className="text-xs text-muted-foreground truncate">
                                 {user?.systemRole?.name ?? user?.role?.replace(/_/g, ' ')}
                             </p>
                         </div>
                     )}
+                    {onToggleCollapse && (
+                        <Button variant="ghost" size="icon" onClick={onToggleCollapse} className="shrink-0 hidden md:flex">
+                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                        </Button>
+                    )}
                 </div>
+
+                {/* Search Bar */}
+                {!isCollapsed && (
+                    <div className="p-3 border-b">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <input 
+                                type="text"
+                                placeholder="Search menus..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="h-9 w-full rounded-md border border-input bg-transparent pl-9 pr-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* Scrollable Menu ✅ */}
                 <div className="p-3">
@@ -290,7 +323,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                                 )}
                                             </Link>
 
-                                            {route.label === "Central CRM" && !isCollapsed && (
+                                            {route.label === "Lead Management" && !isCollapsed && (
                                                 <div className="ml-8 mt-1 space-y-1 border-l pl-3 border-slate-200 dark:border-slate-800">
                                                     {[
                                                         { label: "Job Enquiries", type: "JOB_ENQUIRY" },

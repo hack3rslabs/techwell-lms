@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import DOMPurify from 'isomorphic-dompurify'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
@@ -61,7 +62,7 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
             <html lang="en">
                 <body
                     style={{ margin: 0, padding: 0 }}
-                    dangerouslySetInnerHTML={{ __html: finalHtml.replace(/^<!DOCTYPE[^>]*>/i, '').replace(/<\/?html[^>]*>/gi, '').replace(/<\/?body[^>]*>/gi, '') }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(finalHtml.replace(/^<!DOCTYPE[^>]*>/i, '').replace(/<\/?html[^>]*>/gi, '').replace(/<\/?body[^>]*>/gi, '')) }}
                 />
             </html>
         )
@@ -78,7 +79,7 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
                 {page.customCss && <style dangerouslySetInnerHTML={{ __html: page.customCss }} />}
             </head>
             <body>
-                <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bodyHtml) }} />
                 {page.customJs && <script dangerouslySetInnerHTML={{ __html: page.customJs }} />}
             </body>
         </html>

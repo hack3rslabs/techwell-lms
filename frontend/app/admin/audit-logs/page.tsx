@@ -41,6 +41,7 @@ export default function GlobalAuditLogsPage() {
     const [search, setSearch] = useState("")
     const [actionFilter, setActionFilter] = useState("ALL")
     const [entityFilter, setEntityFilter] = useState("ALL")
+    const [severityFilter, setSeverityFilter] = useState("ALL")
 
     const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 1 })
 
@@ -80,16 +81,40 @@ export default function GlobalAuditLogsPage() {
         fetchLogs(true)
     }
 
-    const getActionBadgeColor = (action: string) => {
+    const getSeverity = (action: string) => {
         switch (action) {
-            case 'LOGIN': return 'bg-green-500 hover:bg-green-600'
+            case 'DELETE': return 'Critical'
             case 'CREATE':
-            case 'REGISTER':
-            case 'ENROLL': return 'bg-emerald-500 hover:bg-emerald-600'
-            case 'UPDATE': return 'bg-blue-500 hover:bg-blue-600'
-            case 'DELETE': return 'bg-red-500 hover:bg-red-600'
-            default: return 'bg-slate-500 hover:bg-slate-600'
+            case 'REGISTER': return 'Medium'
+            case 'UPDATE':
+            case 'ENROLL': return 'Low'
+            case 'LOGIN': return 'Info'
+            default: return 'Info'
         }
+    }
+
+    const getActionBadgeColor = (action: string) => {
+        const severity = getSeverity(action)
+        switch (severity) {
+            case 'Info': return 'bg-gray-500 hover:bg-gray-600'
+            case 'Medium': return 'bg-orange-500 hover:bg-orange-600'
+            case 'Low': return 'bg-blue-500 hover:bg-blue-600'
+            case 'Critical': return 'bg-red-500 hover:bg-red-600'
+            default: return 'bg-gray-500 hover:bg-gray-600'
+        }
+    }
+
+    const filteredLogs = logs.filter(log => {
+        if (severityFilter === "ALL") return true;
+        return getSeverity(log.action) === severityFilter;
+    })
+
+    const counts = {
+        All: logs.length,
+        Critical: logs.filter(log => getSeverity(log.action) === 'Critical').length,
+        Medium: logs.filter(log => getSeverity(log.action) === 'Medium').length,
+        Low: logs.filter(log => getSeverity(log.action) === 'Low').length,
+        Info: logs.filter(log => getSeverity(log.action) === 'Info').length,
     }
 
     return (
@@ -147,6 +172,49 @@ export default function GlobalAuditLogsPage() {
                             </Select>
                         </div>
                     </div>
+                    {/* Severity Tabs */}
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        <Button 
+                            variant={severityFilter === "ALL" ? "default" : "outline"} 
+                            size="sm" 
+                            className="h-7 text-xs rounded-full"
+                            onClick={() => setSeverityFilter("ALL")}
+                        >
+                            All ({counts.All})
+                        </Button>
+                        <Button 
+                            variant={severityFilter === "Critical" ? "default" : "outline"} 
+                            size="sm" 
+                            className={`h-7 text-xs rounded-full ${severityFilter === "Critical" ? 'bg-red-600 hover:bg-red-700 text-white border-red-600' : 'text-red-600 border-red-200 hover:bg-red-50'}`}
+                            onClick={() => setSeverityFilter("Critical")}
+                        >
+                            Critical ({counts.Critical})
+                        </Button>
+                        <Button 
+                            variant={severityFilter === "Medium" ? "default" : "outline"} 
+                            size="sm" 
+                            className={`h-7 text-xs rounded-full ${severityFilter === "Medium" ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-500' : 'text-orange-600 border-orange-200 hover:bg-orange-50'}`}
+                            onClick={() => setSeverityFilter("Medium")}
+                        >
+                            Medium ({counts.Medium})
+                        </Button>
+                        <Button 
+                            variant={severityFilter === "Low" ? "default" : "outline"} 
+                            size="sm" 
+                            className={`h-7 text-xs rounded-full ${severityFilter === "Low" ? 'bg-blue-500 hover:bg-blue-600 text-white border-blue-500' : 'text-blue-600 border-blue-200 hover:bg-blue-50'}`}
+                            onClick={() => setSeverityFilter("Low")}
+                        >
+                            Low ({counts.Low})
+                        </Button>
+                        <Button 
+                            variant={severityFilter === "Info" ? "default" : "outline"} 
+                            size="sm" 
+                            className={`h-7 text-xs rounded-full ${severityFilter === "Info" ? 'bg-gray-500 hover:bg-gray-600 text-white border-gray-500' : 'text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                            onClick={() => setSeverityFilter("Info")}
+                        >
+                            Info ({counts.Info})
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="p-0 flex-1 overflow-auto bg-slate-50/50 dark:bg-slate-900/50">
                     {isLoading ? (
@@ -171,7 +239,7 @@ export default function GlobalAuditLogsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {logs.map((log) => (
+                                    {filteredLogs.map((log) => (
                                         <TableRow key={log.id} className="hover:bg-muted/50 transition-colors">
                                             <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">
                                                 {new Date(log.timestamp).toLocaleString()}

@@ -32,17 +32,17 @@ export default function CertificatePage() {
         signatoryName?: string
         signatoryTitle?: string
         signatureUrl?: string
+        status?: string
+        isValid?: boolean
     }
-    const [certificate, setCertificate] = React.useState<Certificate | null>(null)
+    const [verificationData, setVerificationData] = React.useState<any>(null)
     const [isLoading, setIsLoading] = React.useState(true)
 
     React.useEffect(() => {
         const fetchCertificate = async () => {
             try {
-                // Determine if ID is existing DB ID or needs verification
-                // Since this page handles /certificate/[id], we assume ID.
-                const res = await api.get(`/certificates/${params.id}`)
-                setCertificate(res.data.certificate)
+                const res = await api.get(`/certificates/verify/${params.id}`)
+                setVerificationData(res.data)
             } catch (error) {
                 console.error("Certificate fetch error", error)
             } finally {
@@ -54,13 +54,21 @@ export default function CertificatePage() {
         }
     }, [params.id])
 
-    const handlePrint = () => {
+    const handlePrint = async () => {
+        // Track download
+        if (certificate?.id) {
+            try {
+                await api.post(`/certificates/${certificate.id}/download-event`)
+            } catch (e) {}
+        }
         window.print()
     }
 
     if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin" /></div>
 
-    if (!certificate) return <div className="text-center p-20">Certificate not found.</div>
+    if (!verificationData || !verificationData.certificate) return <div className="text-center p-20">Certificate not found.</div>
+
+    const { certificate, verified, isRevoked, isExpired } = verificationData
 
     const courseName = certificate.courseName
     const studentName = certificate.studentName
@@ -76,13 +84,20 @@ export default function CertificatePage() {
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
                 </Button>
-                <Button onClick={handlePrint} className="bg-primary text-primary-foreground">
+                <Button onClick={handlePrint} className="bg-primary text-primary-foreground" disabled={isRevoked}>
                     <Download className="mr-2 h-4 w-4" /> Download/Print PDF
                 </Button>
             </div>
 
+            {/* Verification Status Banner */}
+            {!verified && (
+                <div className={`w-full max-w-[800px] mb-4 p-4 text-center font-bold text-white ${isRevoked ? 'bg-red-600' : 'bg-yellow-600'}`}>
+                    {isRevoked ? 'THIS CERTIFICATE HAS BEEN REVOKED.' : 'THIS CERTIFICATE IS NOT VALID OR HAS EXPIRED.'}
+                </div>
+            )}
+
             {/* Certificate Container */}
-            <div className="bg-white text-black w-full max-w-[800px] aspect-[1.414/1] shadow-2xl p-10 relative border-[20px] border-double border-neutral-200 print:shadow-none print:border-4 print:w-full print:aspect-auto print:h-screen">
+            <div className={`bg-white text-black w-full max-w-[800px] aspect-[1.414/1] shadow-2xl p-10 relative border-[20px] border-double border-neutral-200 print:shadow-none print:border-4 print:w-full print:aspect-auto print:h-screen ${!verified ? 'opacity-50 grayscale' : ''}`}>
                 {/* Decorative Corner */}
                 <div className="absolute top-4 left-4 border-t-4 border-l-4 border-primary w-16 h-16"></div>
                 <div className="absolute bottom-4 right-4 border-b-4 border-r-4 border-primary w-16 h-16"></div>

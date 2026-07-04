@@ -269,6 +269,8 @@ export const certificateApi = {
         instituteLogoUrl?: string;
         stampUrl?: string;
         stampPosition?: string;
+        approvalRequired?: boolean;
+        autoIssueOnCompletion?: boolean;
     }) => api.put('/certificates/admin/settings', data),
 
     // Templates

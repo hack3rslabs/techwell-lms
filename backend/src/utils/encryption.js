@@ -57,7 +57,7 @@ function decrypt(text) {
     try {
         const parts = text.split(':');
         if (parts.length !== 3) {
-            return decryptLegacyCBC(text);
+            throw new Error('Invalid encryption format');
         }
 
         const iv = Buffer.from(parts[0], 'hex');
@@ -77,26 +77,6 @@ function decrypt(text) {
     } catch (error) {
         console.error('Decryption failed:', error.message);
         return text; 
-    }
-}
-
-function decryptLegacyCBC(text) {
-    try {
-        const secret = getSecret();
-        const parts = text.split(':');
-        if (parts.length !== 2) return text;
-
-        const iv = Buffer.from(parts[0], 'hex');
-        const encryptedBuf = Buffer.from(parts[1], 'hex');
-
-        const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(secret).subarray(0, 32), iv);
-
-        let decrypted = decipher.update(encryptedBuf);
-        decrypted = Buffer.concat([decrypted, decipher.final()]);
-        return decrypted.toString();
-    } catch (e) {
-        console.warn('Legacy decryption failed');
-        return text;
     }
 }
 

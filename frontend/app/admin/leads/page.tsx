@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import Link from 'next/link'
 import EmailComposer from '@/components/admin/EmailComposer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -23,6 +24,8 @@ import {
     Trash2,
     User,
     Phone,
+    MessageCircle,
+    Eye
 } from 'lucide-react'
 import { exportToCSV } from '@/lib/export-utils'
 import api, { leadApi } from '@/lib/api'
@@ -60,6 +63,7 @@ export default function LeadsPage() {
     const [leads, setLeads] = React.useState<Lead[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [searchQuery, setSearchQuery] = React.useState('')
+    const [selectedLeads, setSelectedLeads] = React.useState<string[]>([])
 
     // Filters
     const [statusFilter, setStatusFilter] = React.useState('ALL')
@@ -94,6 +98,7 @@ export default function LeadsPage() {
 
             const res = await api.get(`/leads?${params.toString()}`)
             setLeads(res.data || [])
+            setSelectedLeads([])
         } catch (_error) {
             console.error('Failed to fetch leads:', _error)
             // Fallback mock data if API fails (during dev)
@@ -240,6 +245,39 @@ export default function LeadsPage() {
         })
     }
 
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) setSelectedLeads(filteredLeads.map(l => l.id))
+        else setSelectedLeads([])
+    }
+
+    const handleSelectLead = (id: string) => {
+        setSelectedLeads(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+    }
+
+    const handleBulkDelete = async () => {
+        if (!selectedLeads.length) return
+        if (!confirm(`Are you sure you want to delete ${selectedLeads.length} leads?`)) return
+        try {
+            await api.delete('/crm/leads/bulk', { data: { leadIds: selectedLeads } })
+            fetchLeads()
+        } catch {
+            alert('Failed to delete leads')
+        }
+    }
+
+    const handleBulkAssign = async () => {
+        if (!selectedLeads.length) return
+        const assignedToId = prompt('Enter User ID to assign to:')
+        if (!assignedToId) return
+        try {
+            await api.put('/crm/leads/bulk/assign', { leadIds: selectedLeads, assignedToId })
+            fetchLeads()
+            alert('Assigned successfully')
+        } catch {
+            alert('Failed to assign leads')
+        }
+    }
+
     const filteredLeads = leads.filter(lead =>
         lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -268,6 +306,12 @@ export default function LeadsPage() {
                     <p className="text-muted-foreground">Track enquiries, manage status, and analyze sources.</p>
                 </div>
                 <div className="flex gap-2">
+                    {selectedLeads.length > 0 && (
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={handleBulkAssign}>Assign ({selectedLeads.length})</Button>
+                            <Button variant="destructive" onClick={handleBulkDelete}>Delete ({selectedLeads.length})</Button>
+                        </div>
+                    )}
                     <Button variant="outline" onClick={handleExportCSV}>
                         <Download className="mr-2 h-4 w-4" />
                         Export
@@ -459,6 +503,9 @@ export default function LeadsPage() {
                             <Table>
                                 <TableHeader>
                                         <TableRow>
+                                            <TableHead className="w-12">
+                                                <input type="checkbox" checked={selectedLeads.length > 0 && selectedLeads.length === filteredLeads.length} onChange={handleSelectAll} />
+                                            </TableHead>
                                             <TableHead>Name & Details</TableHead>
                                             <TableHead>Course Interest</TableHead>
                                             <TableHead>Source</TableHead>
@@ -471,6 +518,9 @@ export default function LeadsPage() {
                                 <TableBody>
                                     {filteredLeads.map((lead) => (
                                         <TableRow key={lead.id}>
+                                            <TableCell>
+                                                <input type="checkbox" checked={selectedLeads.includes(lead.id)} onChange={() => handleSelectLead(lead.id)} />
+                                            </TableCell>
                                             <TableCell>
                                                 <div className="font-medium">{lead.name}</div>
                                                 <div className="text-xs text-muted-foreground">{lead.email}</div>
@@ -526,31 +576,65 @@ export default function LeadsPage() {
                                                 {format(new Date(lead.createdAt), 'dd MMM yyyy')}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 mr-1"
-                                                    onClick={() => handleEditLead(lead)}
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50 mr-1"
-                                                    onClick={() => setEmailLead(lead)}
-                                                >
-                                                    <Mail className="h-4 w-4" />
-                                                </Button>
-                                                
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                    onClick={() => handleDelete(lead.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                <div className="flex justify-end gap-1">
+                                                    {lead.phone && (
+                                                        <>
+                                                            <a
+                                                                href={`tel:${lead.phone}`}
+                                                                className="inline-flex items-center justify-center h-8 w-8 rounded-md text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                                title="Call Lead"
+                                                            >
+                                                                <Phone className="h-4 w-4" />
+                                                            </a>
+                                                            <a
+                                                                href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-flex items-center justify-center h-8 w-8 rounded-md text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
+                                                                title="WhatsApp Lead"
+                                                            >
+                                                                <MessageCircle className="h-4 w-4" />
+                                                            </a>
+                                                        </>
+                                                    )}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                                        onClick={() => setEmailLead(lead)}
+                                                        title="Email Lead"
+                                                    >
+                                                        <Mail className="h-4 w-4" />
+                                                    </Button>
+                                                    <Link href={`/admin/crm/customers/${lead.id}`}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                                            title="View 360 Profile"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                    </Link>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                        onClick={() => handleEditLead(lead)}
+                                                        title="Edit Lead"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={() => handleDelete(lead.id)}
+                                                        title="Delete Lead"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}

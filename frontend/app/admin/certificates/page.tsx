@@ -54,6 +54,10 @@ interface Certificate {
     grade?: string
     score?: number
     isValid: boolean
+    status: 'PENDING' | 'ISSUED' | 'REVOKED' | 'EXPIRED'
+    downloads: number
+    revokedAt?: string
+    revocationReason?: string
     signatoryName?: string
     signatoryTitle?: string
     template?: { name: string; previewUrl?: string }
@@ -88,6 +92,8 @@ interface CertificateSettings {
     signatureSize?: string
     borderStyle?: string
     backgroundUrl?: string
+    approvalRequired: boolean
+    autoIssueOnCompletion: boolean
 }
 
 export default function CertificatesPage() {
@@ -102,6 +108,7 @@ export default function CertificatesPage() {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false)
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
     const [newTemplate, setNewTemplate] = useState({ name: '', description: '', designUrl: '', isDefault: false })
+    const [stats, setStats] = useState({ total: 0, issued: 0, pending: 0, revoked: 0, downloads: 0 })
 
     // Fetch data on mount
     useEffect(() => {
@@ -111,20 +118,23 @@ export default function CertificatesPage() {
     const fetchData = async () => {
         setIsLoading(true)
         try {
-            const [certsRes, templatesRes, settingsRes] = await Promise.all([
+            const [certsRes, templatesRes, settingsRes, statsRes] = await Promise.all([
                 certificateApi.getAll(),
                 certificateApi.getTemplates(),
-                certificateApi.getSettings()
+                certificateApi.getSettings(),
+                fetch('/api/certificates/analytics/stats').then(r => r.json()) // Temporary inline fetch
             ])
             setCertificates(certsRes.data.certificates || [])
             setTemplates(templatesRes.data.templates || [])
             setSettings(settingsRes.data.settings)
+            if (statsRes && !statsRes.error) setStats(statsRes)
         } catch (error) {
             console.error('Failed to fetch certificate data:', error)
             // Use mock data as fallback
             setCertificates([
-                { id: '1', uniqueId: 'CERT-2026-00001', studentName: 'John Doe', courseName: 'Advanced JavaScript', issueDate: '2026-01-15', isValid: true },
-                { id: '2', uniqueId: 'CERT-2026-00002', studentName: 'Jane Smith', courseName: 'React Fundamentals', issueDate: '2026-01-20', isValid: true }
+                { id: '1', uniqueId: 'CERT-2026-00001', studentName: 'John Doe', courseName: 'Advanced JavaScript', issueDate: '2026-01-15', isValid: true, status: 'ISSUED', downloads: 2 },
+                { id: '2', uniqueId: 'CERT-2026-00002', studentName: 'Jane Smith', courseName: 'React Fundamentals', issueDate: '2026-01-20', isValid: true, status: 'ISSUED', downloads: 0 },
+                { id: '3', uniqueId: 'CERT-2026-00003', studentName: 'Alice Wong', courseName: 'Cybersecurity 101', issueDate: '2026-01-22', isValid: false, status: 'PENDING', downloads: 0 }
             ])
         } finally {
             setIsLoading(false)
@@ -144,11 +154,28 @@ export default function CertificatesPage() {
             courseName: c.courseName,
             issueDate: c.issueDate,
             grade: c.grade || '',
+            status: c.status,
             isValid: c.isValid ? 'Valid' : 'Invalid'
         })), {
             filename: `certificates_export_${new Date().toISOString().split('T')[0]}`,
-            headers: ['certificateId', 'studentName', 'courseName', 'issueDate', 'grade', 'isValid']
+            headers: ['certificateId', 'studentName', 'courseName', 'issueDate', 'grade', 'status', 'isValid']
         })
+    }
+
+    const handleUpdateStatus = async (id: string, newStatus: string) => {
+        try {
+            const res = await fetch(`/api/certificates/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus, revocationReason: newStatus === 'REVOKED' ? 'Admin action' : undefined })
+            })
+            if (res.ok) {
+                setCertificates(certificates.map(c => c.id === id ? { ...c, status: newStatus as any, isValid: newStatus === 'ISSUED' } : c))
+                fetchData() // Refresh stats
+            }
+        } catch (error) {
+            console.error('Failed to update status', error)
+        }
     }
 
     const handleViewCertificate = (cert: Certificate) => {
@@ -203,7 +230,9 @@ export default function CertificatesPage() {
                 defaultSignatoryTitle: settings.defaultSignatoryTitle,
                 defaultValidityMonths: settings.defaultValidityMonths,
                 instituteName: settings.instituteName,
-                instituteLogoUrl: settings.instituteLogoUrl
+                instituteLogoUrl: settings.instituteLogoUrl,
+                approvalRequired: settings.approvalRequired,
+                autoIssueOnCompletion: settings.autoIssueOnCompletion
             })
             alert('Settings saved successfully!')
         } catch (error) {
@@ -273,6 +302,46 @@ export default function CertificatesPage() {
 
                 {/* CERTIFICATES TAB */}
                 <TabsContent value="certificates" className="mt-6">
+                    {/* Analytics Dashboard */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <Card>
+                            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                                <CardTitle className="text-sm font-medium">Total Issued</CardTitle>
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{stats.issued}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                                <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+                                <Loader2 className="h-4 w-4 text-yellow-500" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                                <CardTitle className="text-sm font-medium">Revoked</CardTitle>
+                                <XCircle className="h-4 w-4 text-red-500" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-red-600">{stats.revoked}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                                <CardTitle className="text-sm font-medium">Total Downloads</CardTitle>
+                                <Download className="h-4 w-4 text-primary" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{stats.downloads}</div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div className="relative max-w-sm">
@@ -314,17 +383,31 @@ export default function CertificatesPage() {
                                                 <TableCell>{cert.courseName}</TableCell>
                                                 <TableCell>{new Date(cert.issueDate).toLocaleDateString()}</TableCell>
                                                 <TableCell>
-                                                    {cert.isValid ? (
-                                                        <span className="flex items-center gap-1 text-green-600 text-sm">
-                                                            <CheckCircle className="h-4 w-4" /> Valid
+                                                    {cert.status === 'PENDING' ? (
+                                                        <span className="flex items-center gap-1 text-yellow-600 text-sm font-medium bg-yellow-100 w-fit px-2 py-0.5 rounded">
+                                                            Pending
+                                                        </span>
+                                                    ) : cert.status === 'REVOKED' ? (
+                                                        <span className="flex items-center gap-1 text-red-600 text-sm font-medium bg-red-100 w-fit px-2 py-0.5 rounded">
+                                                            Revoked
                                                         </span>
                                                     ) : (
-                                                        <span className="flex items-center gap-1 text-red-600 text-sm">
-                                                            <XCircle className="h-4 w-4" /> Invalid
+                                                        <span className="flex items-center gap-1 text-green-600 text-sm font-medium bg-green-100 w-fit px-2 py-0.5 rounded">
+                                                            Issued
                                                         </span>
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right">
+                                                    {cert.status === 'PENDING' && (
+                                                        <Button variant="outline" size="sm" className="mr-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleUpdateStatus(cert.id, 'ISSUED')}>
+                                                            Approve
+                                                        </Button>
+                                                    )}
+                                                    {cert.status === 'ISSUED' && (
+                                                        <Button variant="outline" size="sm" className="mr-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleUpdateStatus(cert.id, 'REVOKED')}>
+                                                            Revoke
+                                                        </Button>
+                                                    )}
                                                     <Button variant="ghost" size="sm" onClick={() => handleViewCertificate(cert)}>
                                                         <Eye className="h-4 w-4 mr-1" />
                                                         View
@@ -474,6 +557,11 @@ export default function CertificatesPage() {
                                         )}
                                         <Button variant="ghost" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
                                             <Trash2 className="h-4 w-4 text-red-500" />
+                                        </Button>
+                                    </div>
+                                    <div className="mt-2">
+                                        <Button variant="outline" size="sm" className="w-full" onClick={() => window.location.href = `/admin/certificates/designer/${template.id}`}>
+                                            Edit Design (Drag & Drop)
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -679,6 +767,33 @@ export default function CertificatesPage() {
                                                     value={settings.instituteLogoUrl || ''}
                                                     onChange={e => setSettings({ ...settings, instituteLogoUrl: e.target.value })}
                                                     placeholder="https://... (logo image)"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Automation & Approvals */}
+                                    <div className="space-y-4 border-t pt-6">
+                                        <h3 className="font-semibold">Automation & Approvals</h3>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                                                <div>
+                                                    <Label className="text-base font-medium">Auto-Issue on Completion</Label>
+                                                    <p className="text-sm text-muted-foreground">Automatically generate certificates when students complete courses.</p>
+                                                </div>
+                                                <Switch
+                                                    checked={settings.autoIssueOnCompletion}
+                                                    onCheckedChange={checked => setSettings({ ...settings, autoIssueOnCompletion: checked })}
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                                                <div>
+                                                    <Label className="text-base font-medium">Require Approval</Label>
+                                                    <p className="text-sm text-muted-foreground">Generated certificates will remain PENDING until approved by an Admin.</p>
+                                                </div>
+                                                <Switch
+                                                    checked={settings.approvalRequired}
+                                                    onCheckedChange={checked => setSettings({ ...settings, approvalRequired: checked })}
                                                 />
                                             </div>
                                         </div>

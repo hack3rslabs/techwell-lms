@@ -37,6 +37,7 @@
         "otplib": "^13.4.1",
         "pdf-parse": "^2.4.5",
         "pg": "^8.18.0",
+        "puppeteer": "^25.3.0",
         "qrcode": "^1.5.4",
         "razorpay": "^2.9.6",
         "serialport": "^13.0.0",

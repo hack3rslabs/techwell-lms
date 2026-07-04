@@ -44,14 +44,31 @@ async function generateCertificateId() {
 router.get('/', authenticate, async (req, res, next) => {
     try {
         const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
-        const where = isAdmin ? {} : { userId: req.user.id };
+        const { status, courseId, search } = req.query;
+
+        const where = {};
+        if (!isAdmin) {
+            where.userId = req.user.id;
+            where.status = 'ISSUED'; // Students only see issued certs
+        } else {
+            if (status) where.status = status;
+            if (courseId) where.courseId = courseId;
+            if (search) {
+                where.OR = [
+                    { studentName: { contains: search, mode: 'insensitive' } },
+                    { uniqueId: { contains: search, mode: 'insensitive' } }
+                ];
+            }
+        }
 
         const certificates = await prisma.certificate.findMany({
             where,
             include: {
-                template: { select: { name: true, previewUrl: true } }
+                template: { select: { name: true, previewUrl: true } },
+                user: { select: { name: true, email: true, avatar: true } },
+                course: { select: { title: true } }
             },
-            orderBy: { issueDate: 'desc' }
+            orderBy: { createdAt: 'desc' }
         });
 
         res.json({ certificates });
@@ -92,11 +109,13 @@ router.get('/verify/:uniqueId', async (req, res, next) => {
 
         // Check expiry
         const isExpired = certificate.expiryDate && new Date(certificate.expiryDate) < new Date();
+        const isRevoked = certificate.status === 'REVOKED';
 
         res.json({
-            verified: certificate.isValid && !isExpired,
+            verified: certificate.isValid && !isExpired && !isRevoked,
             certificate,
-            isExpired
+            isExpired,
+            isRevoked
         });
     } catch (error) {
         next(error);
@@ -196,6 +215,8 @@ router.post('/generate', authenticate, async (req, res, next) => {
             expiryDate.setMonth(expiryDate.getMonth() + settings.defaultValidityMonths);
         }
 
+        const status = settings?.approvalRequired ? 'PENDING' : 'ISSUED';
+
         // Create certificate
         const certificate = await prisma.certificate.create({
             data: {
@@ -213,16 +234,174 @@ router.post('/generate', authenticate, async (req, res, next) => {
                 signatoryName: settings?.defaultSignatoryName || 'Director',
                 signatoryTitle: settings?.defaultSignatoryTitle || 'Academic Director',
                 expiryDate,
-                verificationUrl: `/certificates/verify/${uniqueId}`
+                verificationUrl: `/certificate/${uniqueId}`, // Updated to new public URL pattern
+                status,
+                isValid: true
             }
         });
 
         res.status(201).json({
-            message: 'Certificate generated successfully',
+            message: status === 'PENDING' ? 'Certificate request submitted for approval' : 'Certificate generated successfully',
             certificate
         });
     } catch (error) {
         next(error);
+    }
+});
+
+/**
+ * @route   PUT /api/certificates/:id/status
+ * @desc    Update certificate status (Approve/Revoke)
+ * @access  Private/Admin
+ */
+router.put('/:id/status', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
+    try {
+        const { status, revocationReason } = req.body;
+        
+        if (!['ISSUED', 'REVOKED', 'EXPIRED'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        const updateData = {
+            status,
+            isValid: status === 'ISSUED',
+            approvedById: req.user.id
+        };
+
+        if (status === 'REVOKED') {
+            updateData.revokedAt = new Date();
+            updateData.revocationReason = revocationReason || 'No reason provided';
+        }
+
+        const certificate = await prisma.certificate.update({
+            where: { id: req.params.id },
+            data: updateData
+        });
+
+        res.json({ message: `Certificate ${status.toLowerCase()} successfully`, certificate });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/certificates/bulk-generate
+ * @desc    Bulk generate certificates
+ * @access  Private/Admin
+ */
+router.post('/bulk-generate', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
+    try {
+        const { courseId, userIds, templateId } = req.body;
+
+        const course = await prisma.course.findUnique({ where: { id: courseId } });
+        const settings = await prisma.certificateSettings.findFirst({ where: { instituteId: 'default' } });
+
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+
+        const results = { success: 0, failed: 0, errors: [] };
+        const status = settings?.approvalRequired ? 'PENDING' : 'ISSUED';
+
+        for (const userId of userIds) {
+            try {
+                const user = await prisma.user.findUnique({ where: { id: userId } });
+                if (!user) {
+                    results.failed++;
+                    results.errors.push(`User ${userId} not found`);
+                    continue;
+                }
+
+                const existing = await prisma.certificate.findFirst({ where: { userId, courseId } });
+                if (existing) {
+                    results.failed++;
+                    results.errors.push(`Certificate for ${user.email} already exists`);
+                    continue;
+                }
+
+                const enrollment = await prisma.enrollment.findUnique({
+                    where: { userId_courseId: { userId, courseId } }
+                });
+
+                if (!enrollment) {
+                    results.failed++;
+                    results.errors.push(`User ${user.email} not enrolled in course`);
+                    continue;
+                }
+
+                const uniqueId = await generateCertificateId();
+                
+                await prisma.certificate.create({
+                    data: {
+                        uniqueId,
+                        userId,
+                        courseId,
+                        enrollmentId: enrollment.id,
+                        studentName: user.name,
+                        courseName: course.title,
+                        courseCategory: course.category,
+                        templateId: templateId || undefined,
+                        signatureUrl: settings?.defaultSignatureUrl,
+                        signatoryName: settings?.defaultSignatoryName || 'Director',
+                        signatoryTitle: settings?.defaultSignatoryTitle || 'Academic Director',
+                        verificationUrl: `/certificate/${uniqueId}`,
+                        status,
+                        isValid: true
+                    }
+                });
+                
+                results.success++;
+            } catch (err) {
+                results.failed++;
+                results.errors.push(`Failed for user ${userId}: ${err.message}`);
+            }
+        }
+
+        res.json({ message: 'Bulk generation complete', results });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/certificates/analytics/stats
+ * @desc    Get certificate analytics
+ * @access  Private/Admin
+ */
+router.get('/analytics/stats', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
+    try {
+        const [total, issued, pending, revoked, totalDownloads] = await Promise.all([
+            prisma.certificate.count(),
+            prisma.certificate.count({ where: { status: 'ISSUED' } }),
+            prisma.certificate.count({ where: { status: 'PENDING' } }),
+            prisma.certificate.count({ where: { status: 'REVOKED' } }),
+            prisma.certificate.aggregate({ _sum: { downloads: true } })
+        ]);
+
+        res.json({
+            total,
+            issued,
+            pending,
+            revoked,
+            downloads: totalDownloads._sum.downloads || 0
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/certificates/:id/download-event
+ * @desc    Log download event and increment count
+ * @access  Private
+ */
+router.post('/:id/download-event', authenticate, async (req, res, next) => {
+    try {
+        await prisma.certificate.update({
+            where: { id: req.params.id },
+            data: { downloads: { increment: 1 } }
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false }); // Silently fail to not block download UI
     }
 });
 
@@ -286,7 +465,9 @@ router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), asy
             defaultSignatoryTitle,
             defaultValidityMonths,
             instituteName,
-            instituteLogoUrl
+            instituteLogoUrl,
+            approvalRequired,
+            autoIssueOnCompletion
         } = req.body;
 
         let settings = await prisma.certificateSettings.findFirst({
@@ -305,7 +486,9 @@ router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), asy
                     defaultSignatoryTitle,
                     defaultValidityMonths,
                     instituteName,
-                    instituteLogoUrl
+                    instituteLogoUrl,
+                    approvalRequired,
+                    autoIssueOnCompletion
                 }
             });
         } else {
@@ -320,7 +503,9 @@ router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), asy
                     defaultSignatoryTitle,
                     defaultValidityMonths,
                     instituteName,
-                    instituteLogoUrl
+                    instituteLogoUrl,
+                    approvalRequired,
+                    autoIssueOnCompletion
                 }
             });
         }
@@ -357,7 +542,7 @@ router.get('/admin/templates', authenticate, checkPermission('CERTIFICATES'), as
  */
 router.post('/admin/templates', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
-        const { name, description, designUrl, previewUrl, layout, isDefault } = req.body;
+        const { name, description, designUrl, previewUrl, layout, canvasData, isDefault } = req.body;
 
         // If setting as default, unset other defaults
         if (isDefault) {
@@ -374,6 +559,7 @@ router.post('/admin/templates', authenticate, checkPermission('CERTIFICATES'), a
                 designUrl,
                 previewUrl,
                 layout,
+                canvasData,
                 isDefault: isDefault || false
             }
         });
@@ -391,7 +577,7 @@ router.post('/admin/templates', authenticate, checkPermission('CERTIFICATES'), a
  */
 router.put('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
-        const { name, description, designUrl, previewUrl, layout, isDefault, isActive } = req.body;
+        const { name, description, designUrl, previewUrl, layout, canvasData, isDefault, isActive } = req.body;
 
         // If setting as default, unset other defaults
         if (isDefault) {
@@ -403,7 +589,7 @@ router.put('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES')
 
         const template = await prisma.certificateTemplate.update({
             where: { id: req.params.id },
-            data: { name, description, designUrl, previewUrl, layout, isDefault, isActive }
+            data: { name, description, designUrl, previewUrl, layout, canvasData, isDefault, isActive }
         });
 
         res.json({ message: 'Template updated', template });

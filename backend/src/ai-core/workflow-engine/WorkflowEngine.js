@@ -7,6 +7,7 @@ const vapiProvider = require('../providers/vapi');
 const whatsappProvider = require('../providers/whatsapp');
 const emailProvider = require('../providers/emailProvider');
 const { generateAIResponse } = require('../rag/queryService');
+const { isSafeWebhookUrl } = require('../../utils/ssrfValidator');
 
 class WorkflowEngine {
   /**
@@ -139,6 +140,9 @@ class WorkflowEngine {
             const webhookUrl = node.config?.webhookUrl;
             if (webhookUrl) {
                 try {
+                    if (!(await isSafeWebhookUrl(webhookUrl))) {
+                        throw new Error('SSRF Blocked: Webhook URL is not permitted.');
+                    }
                     const response = await axios.post(webhookUrl, {
                         eventData: state.event,
                         aiSummary: state.aiOutput?.response || null,
