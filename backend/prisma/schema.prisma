@@ -8,85 +8,89 @@ datasource db {
 }
 
 model User {
-  id                     String                  @id @default(cuid())
-  email                  String                  @unique
-  password               String
-  name                   String
-  role                   Role                    @default(STUDENT)
-  plan                   Plan                    @default(FREE)
-  avatar                 String?
-  phone                  String?
-  isActive               Boolean                 @default(true)
-  emailVerified          Boolean                 @default(false)
-  permissions            Json?
-  dob                    DateTime?
-  qualification          String?
-  college                String?
-  instituteId            String?
-  leadLastSeenAt         DateTime?
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  systemRoleId           String?
-  announcements          Announcement[]
-  assignmentSubmissions  AssignmentSubmission[]
-  instructedBatches      Batch[]
-  blogPosts              BlogPost[]
-  certificates           Certificate[]
-  employerProfile        EmployerProfile?
-  enrollments            Enrollment[]
-  enrollmentRequests     EnrollmentRequest[]
-  comments               ForumComment[]
-  posts                  ForumPost[]
-  interviews             Interview[]
-  jobs                   Job[]
-  applications           JobApplication[]
-  conductedJobInterviews JobInterview[]
-  lessonComments         LessonComment[]
-  lessonProgress         LessonProgress[]
-  libraryBookmarks       LibraryBookmark[]
-  sentMessages           Message[]
-  adminMessages          AdminMessage[]
-  receivedMessages       AdminMessageRecipient[]
-  payments               Payment[]
-  reviews                Review[]
-  assignedTasks          Task[]                  @relation("AssignedTo")
-  createdTasks           Task[]                  @relation("CreatedBy")
-  taskComments           TaskComment[]
-  tickets                Ticket[]
-  sentTicketMessages     TicketMessage[]
-  institute              Institute?              @relation(fields: [instituteId], references: [id])
-  systemRole             SystemRole?             @relation(fields: [systemRoleId], references: [id])
-  conversations          Conversation[]          @relation("UserConversations")
-  notifications          Notification[]
-  batchNotes             BatchNote[]
-  candidateProfile       CandidateProfile?
-  resume                 Resume?
-  twoFactorEnabled       Boolean                 @default(false)
-  twoFactorSecret        String?
-  twoFactorTempSecret    String?
-  trustedDevices         Json?                   @default("[]")
-  attendances            Attendance[]
-  staffAttendances       StaffAttendance[]
-  assignedDemos          DemoSchedule[]          @relation("AssignedDemoTo")
-  staffGoals             StaffGoal[]
-  Course                 Course[]
-  internshipsAsStudent   InternshipEnrollment[]  @relation("InternUser")
-  internshipsAsMentor    InternshipEnrollment[]  @relation("InternMentor")
-  payrollRecords         StaffPayroll[]
-  
-  // GDPR
-  subscribedToNewsletter Boolean                 @default(true)
-  deleteRequested        Boolean                 @default(false)
-  deleteRequestDate      DateTime?
-
-  // Referrals
-  referralCode           String?                 @unique
-  referredById           String?
-  referralCommissionBal  Float                   @default(0)
-  referredBy             User?                   @relation("UserReferrals", fields: [referredById], references: [id])
-  referralsMade          User[]                  @relation("UserReferrals")
-  referralRewardsAsReferrer ReferralReward[]     @relation("ReferrerRewards")
-  referralRewardsAsReferred ReferralReward[]     @relation("ReferredRewards")
+  id                          String                    @id @default(cuid())
+  email                       String                    @unique
+  password                    String
+  name                        String
+  role                        Role                      @default(STUDENT)
+  avatar                      String?
+  phone                       String?
+  isActive                    Boolean                   @default(true)
+  emailVerified               Boolean                   @default(false)
+  createdAt                   DateTime                  @default(now())
+  updatedAt                   DateTime                  @updatedAt
+  permissions                 Json?
+  plan                        Plan                      @default(FREE)
+  instituteId                 String?
+  systemRoleId                String?
+  college                     String?
+  dob                         DateTime?
+  qualification               String?
+  leadLastSeenAt              DateTime?
+  trustedDevices              Json?                     @default("[]")
+  twoFactorEnabled            Boolean                   @default(false)
+  twoFactorSecret             String?
+  twoFactorTempSecret         String?
+  deleteRequestDate           DateTime?
+  deleteRequested             Boolean                   @default(false)
+  referralCode                String?                   @unique
+  referralCommissionBal       Float                     @default(0)
+  referredById                String?
+  subscribedToNewsletter      Boolean                   @default(true)
+  regId                       String?                   @unique
+  currentSessionToken         String?
+  adminMessages               AdminMessage[]
+  receivedMessages            AdminMessageRecipient[]
+  announcements               Announcement[]
+  assignmentSubmissions       AssignmentSubmission[]
+  attendances                 Attendance[]
+  instructedBatches           Batch[]
+  batchNotes                  BatchNote[]
+  blogPosts                   BlogPost[]
+  candidateProfile            CandidateProfile?
+  certificates                Certificate[]
+  Course                      Course[]
+  assignedDemos               DemoSchedule[]            @relation("AssignedDemoTo")
+  employerProfile             EmployerProfile?
+  enrollments                 Enrollment[]
+  enrollmentRequests          EnrollmentRequest[]
+  comments                    ForumComment[]
+  posts                       ForumPost[]
+  internshipsAsMentor         InternshipEnrollment[]    @relation("InternMentor")
+  internshipsAsStudent        InternshipEnrollment[]    @relation("InternUser")
+  interviews                  Interview[]
+  jobs                        Job[]
+  applications                JobApplication[]
+  conductedJobInterviews      JobInterview[]
+  lessonComments              LessonComment[]
+  lessonProgress              LessonProgress[]
+  libraryBookmarks            LibraryBookmark[]
+  sentMessages                Message[]
+  notifications               Notification[]
+  payments                    Payment[]
+  referralRewardsAsReferred   ReferralReward[]          @relation("ReferredRewards")
+  referralRewardsAsReferrer   ReferralReward[]          @relation("ReferrerRewards")
+  resume                      Resume?
+  reviews                     Review[]
+  staffAttendances            StaffAttendance[]
+  staffGoals                  StaffGoal[]
+  payrollRecords              StaffPayroll[]
+  assignedTasks               Task[]                    @relation("AssignedTo")
+  createdTasks                Task[]                    @relation("CreatedBy")
+  taskComments                TaskComment[]
+  tickets                     Ticket[]
+  sentTicketMessages          TicketMessage[]
+  institute                   Institute?                @relation(fields: [instituteId], references: [id])
+  referredBy                  User?                     @relation("UserReferrals", fields: [referredById], references: [id])
+  referralsMade               User[]                    @relation("UserReferrals")
+  systemRole                  SystemRole?               @relation(fields: [systemRoleId], references: [id])
+  conversations               Conversation[]            @relation("UserConversations")
+  // Campus & Consultancy
+  campusDrivesEmployer        CampusDrive[]             @relation("EmployerCampusDrives")
+  campusDriveParticipations   CampusDriveStudent[]
+  bulkUploads                 BulkUploadLog[]
+  consultancyCoordsAsEmployer ConsultancyCoordination[] @relation("EmployerCoordination")
+  consultancyCoordsAsAdmin    ConsultancyCoordination[] @relation("AdminCoordination")
 }
 
 model SystemRole {
@@ -94,18 +98,18 @@ model SystemRole {
   name            String           @unique
   description     String?
   isSystem        Boolean          @default(false)
-  permissions     Json? // Legacy permissions field
-  rolePermissions RolePermission[]
+  permissions     Json?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  rolePermissions RolePermission[]
   users           User[]
 }
 
 model SystemFeature {
   id          String           @id @default(cuid())
   name        String           @unique
-  code        String           @unique // e.g., "COURSES", "USERS"
-  module      String? // e.g., "Academics", "Management"
+  code        String           @unique
+  module      String?
   description String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
@@ -121,8 +125,8 @@ model RolePermission {
   isDisabled Boolean       @default(false)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
-  role       SystemRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
   feature    SystemFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  role       SystemRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, featureId])
 }
@@ -137,19 +141,34 @@ model SystemPermission {
 }
 
 model Institute {
-  id        String   @id @default(cuid())
-  name      String
-  code      String?  @unique
-  logoUrl   String?
-  address   String?
-  website   String?
-  phone     String?
-  email     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  batches   Batch[]
-  courses   Course[]
-  users     User[]
+  id                    String                    @id @default(cuid())
+  name                  String
+  code                  String?                   @unique
+  logoUrl               String?
+  address               String?
+  website               String?
+  phone                 String?
+  email                 String?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  batches               Batch[]
+  courses               Course[]
+  users                 User[]
+  type                  InstituteType             @default(TRAINING_INSTITUTE)
+  status                InstituteStatus           @default(APPROVED)
+  contactPerson         String?
+  state                 String?
+  district              String?
+  city                  String?
+  accreditation         String?
+  themeColor            String?
+  certificateTemplateId String?
+  emailTemplate         String?
+  landingPageUrl        String?
+  subdomain             String?                   @unique
+  campusDrives          CampusDriveInstitute[]
+  bulkUploads           BulkUploadLog[]
+  consultancyCoords     ConsultancyCoordination[]
 }
 
 model Course {
@@ -158,75 +177,66 @@ model Course {
   description          String
   thumbnail            String?
   category             String
-  categoryId           String?
   difficulty           Difficulty          @default(BEGINNER)
-  duration             Int                 @default(0)
   price                Decimal             @default(0)
-  discountPrice        Decimal             @default(0)
-  courseCode           String?             @unique
-  jobRoles             Json?
-  bannerUrl            String?
-  averageRating        Float               @default(0)
   instructorId         String
   isPublished          Boolean             @default(false)
-  hasInterviewPrep     Boolean             @default(false)
-  jobPrep              Boolean             @default(false)
-  interviewPrice       Decimal             @default(0)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  duration             Int                 @default(0)
   bundlePrice          Decimal             @default(0)
+  hasInterviewPrep     Boolean             @default(false)
+  interviewPrice       Decimal             @default(0)
+  averageRating        Float               @default(0)
+  bannerUrl            String?
+  courseCode           String?             @unique
   courseType           CourseType          @default(RECORDED)
-  liveSchedule         Json?
+  discountPrice        Decimal             @default(0)
   hybridConfig         Json?
+  jobRoles             Json?
+  liveSchedule         Json?
   publishStatus        PublishStatus       @default(DRAFT)
   publishedAt          DateTime?
   reviewNotes          String?
   submittedForReviewAt DateTime?
   instituteId          String?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
+  categoryId           String?
+  jobPrep              Boolean             @default(false)
+  couponId             String?
+  admissionFee         Decimal             @default(1000)
+  benefits             Json?
+  fakeEnrolledCount    Int                 @default(0)
+  fakeRating           Float?
+  requireAdmissionFee  Boolean             @default(true)
+  specialOffers        Json?
+  pageViews            Int                 @default(0)
+  salaryExperienced    String?
+  salaryFresher        String?
+  toolsCovered         String[]            @default([])
+  faqs                 Json?
+  metaDescription      String?
+  seoTitle             String?
+  slug                 String?             @unique
+  targetKeywords       String[]
+  careerOpportunities  Json?
+  learningOutcomes     Json?
+  prerequisites        Json?
+  projects             Json?
+  salaryInsights       Json?
   announcements        Announcement[]
   batches              Batch[]
-  institute            Institute?          @relation(fields: [instituteId], references: [id])
+  certificates         Certificate[]
   courseCategory       CourseCategory?     @relation(fields: [categoryId], references: [id])
+  Coupon               Coupon?             @relation(fields: [couponId], references: [id])
+  institute            Institute?          @relation(fields: [instituteId], references: [id])
+  instructor           User                @relation(fields: [instructorId], references: [id])
   enrollments          Enrollment[]
   enrollmentRequests   EnrollmentRequest[]
   liveClasses          LiveClass[]
+  meetings             Meeting[]
   modules              Module[]
   payments             Payment[]
   reviews              Review[]
-  certificates         Certificate[]
-  meetings             Meeting[]
-  Coupon               Coupon?             @relation(fields: [couponId], references: [id])
-  couponId             String?
-
-  fakeEnrolledCount   Int     @default(0)
-  fakeRating          Float?
-  benefits            Json?
-  specialOffers       Json?
-  requireAdmissionFee Boolean @default(true)
-  admissionFee        Decimal @default(1000)
-
-  // New High-Converting Page Fields
-  toolsCovered      String[] @default([])
-  salaryFresher     String?
-  salaryExperienced String?
-  pageViews         Int      @default(0)
-
-  // SEO Fields (Phase 1)
-  slug            String?  @unique
-  seoTitle        String?
-  metaDescription String?
-  targetKeywords  String[]
-  faqs            Json? // [{question: "", answer: ""}]
-
-  // SEO Content Fields (Phase 2)
-  careerOpportunities Json? // [{ role: string, description: string }]
-  salaryInsights      Json? // [{ role: string, min: string, max: string, average: string }]
-  projects            Json? // [{ title: string, description: string, duration: string }]
-  prerequisites       Json? // [string]
-  learningOutcomes    Json? // [string]
-
-  // Relations
-  instructor User @relation(fields: [instructorId], references: [id])
 
   @@unique([title, instructorId])
 }
@@ -247,30 +257,30 @@ model CourseCategory {
 
 model Batch {
   id               String         @id @default(cuid())
-  batchCode        String         @unique // Auto-generated e.g. B-YYYY-MM-001
   name             String
   courseId         String
   instructorId     String
-  instituteId      String?
   startDate        DateTime?
   endDate          DateTime?
-  timings          String? // e.g. "10:00 AM - 12:00 PM"
   description      String?
   maxStudents      Int?
-  hasJobAssistance Boolean        @default(false)
-  isActive         Boolean        @default(true)
-  status           String         @default("UPCOMING") // UPCOMING, ONGOING, COMPLETED
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  instituteId      String?
+  batchCode        String         @unique
+  hasJobAssistance Boolean        @default(false)
+  isActive         Boolean        @default(true)
+  timings          String?
+  status           String         @default("UPCOMING")
   announcements    Announcement[]
-  notes            BatchNote[]
+  attendances      Attendance[]
   course           Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
   institute        Institute?     @relation(fields: [instituteId], references: [id])
   instructor       User           @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  notes            BatchNote[]
   enrollments      Enrollment[]
-  attendances      Attendance[]
-  liveClasses      LiveClass[]
   interviews       Interview[]
+  liveClasses      LiveClass[]
 }
 
 model Attendance {
@@ -278,7 +288,7 @@ model Attendance {
   batchId   String
   userId    String
   date      DateTime
-  status    String // PRESENT, ABSENT, LATE, EXCUSED
+  status    String
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -308,14 +318,13 @@ model BatchNote {
   batchId          String
   userId           String
   content          String
-  type             String    @default("COMMENT") // COMMENT, EXTENSION_REQUEST
+  type             String    @default("COMMENT")
   requestedEndDate DateTime?
-  status           String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  status           String    @default("PENDING")
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-
-  batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  batch            Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model LessonComment {
@@ -339,10 +348,10 @@ model Module {
   courseId    String
   title       String
   description String?
-  orderIndex  Int
-  isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  orderIndex  Int
+  isPublished Boolean  @default(false)
   lessons     Lesson[]
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
@@ -357,13 +366,13 @@ model Lesson {
   videoUrl              String?
   duration              Int?
   order                 Int
-  type                  LessonType             @default(VIDEO)
-  isPublished           Boolean                @default(false)
-  isPreview             Boolean                @default(false)
-  settings              Json?
-  resources             Json?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
+  isPreview             Boolean                @default(false)
+  isPublished           Boolean                @default(false)
+  resources             Json?
+  settings              Json?
+  type                  LessonType             @default(VIDEO)
   assignmentSubmissions AssignmentSubmission[]
   module                Module                 @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   comments              LessonComment[]
@@ -403,10 +412,10 @@ model Enrollment {
   courseId           String
   progress           Int              @default(0)
   status             EnrollmentStatus @default(ACTIVE)
-  hasInterviewAccess Boolean          @default(false)
-  batchId            String?
   enrolledAt         DateTime         @default(now())
   completedAt        DateTime?
+  hasInterviewAccess Boolean          @default(false)
+  batchId            String?
   batch              Batch?           @relation(fields: [batchId], references: [id])
   course             Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -436,9 +445,9 @@ model LessonProgress {
   userId         String
   lessonId       String
   completed      Boolean  @default(false)
-  score          Int?
   timeSpent      Int      @default(0)
   lastAccessedAt DateTime @default(now())
+  score          Int?
   lesson         Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -463,20 +472,20 @@ model Interview {
   domain          String
   company         String?
   role            String
-  technology      String?
   jobDescription  String?
   resumeUrl       String?
   difficulty      Difficulty           @default(INTERMEDIATE)
   panelCount      Int                  @default(1)
-  linkedCourseId  String?
-  duration        Int                  @default(30)
-  selectedAvatars String[]
-  aiAvatarUrl     String?
   status          InterviewStatus      @default(SCHEDULED)
   scheduledAt     DateTime?
   startedAt       DateTime?
   completedAt     DateTime?
   createdAt       DateTime             @default(now())
+  linkedCourseId  String?
+  duration        Int                  @default(30)
+  technology      String?
+  selectedAvatars String[]
+  aiAvatarUrl     String?
   batchId         String?
   batch           Batch?               @relation(fields: [batchId], references: [id], onDelete: Cascade)
   user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -502,11 +511,11 @@ model InterviewResponse {
   interviewId String
   questionId  String            @unique
   transcript  String?
-  code        String?
   videoUrl    String?
   audioUrl    String?
   duration    Int?
   respondedAt DateTime          @default(now())
+  code        String?
   feedback    String?
   score       Int?
   interview   Interview         @relation(fields: [interviewId], references: [id], onDelete: Cascade)
@@ -535,26 +544,26 @@ model Avatar {
   role        String
   personality String
   avatarUrl   String
-  gender      Gender?  @default(MALE)
   voiceId     String?
-  provider    String?  @default("ELEVEN_LABS")
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
+  gender      Gender?  @default(MALE)
+  provider    String?  @default("ELEVEN_LABS")
 }
 
 model KnowledgeBase {
   id          String          @id @default(cuid())
   domain      String
-  topic       String
-  content     String
-  answer      String?
-  difficulty  Difficulty      @default(INTERMEDIATE)
-  type        QuestionType    @default(TECHNICAL)
-  codeSnippet String?
-  tags        Json?
-  status      KnowledgeStatus @default(PUBLISHED)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  status      KnowledgeStatus @default(PUBLISHED)
+  answer      String?
+  content     String
+  difficulty  Difficulty      @default(INTERMEDIATE)
+  topic       String
+  codeSnippet String?
+  tags        Json?
+  type        QuestionType    @default(TECHNICAL)
 }
 
 model InterviewSettings {
@@ -638,16 +647,24 @@ model Conversation {
 }
 
 model AdminMessage {
-  id          String                  @id @default(cuid())
-  title       String
-  content     String
-  senderId    String
-  priority    String                  @default("NORMAL")
-  isPublished Boolean                 @default(true)
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
-  sender      User                    @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  recipients  AdminMessageRecipient[]
+  id                 String                  @id @default(cuid())
+  title              String
+  content            String
+  senderId           String
+  priority           String                  @default("NORMAL")
+  isPublished        Boolean                 @default(true)
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  attachmentUrl      String?
+  category           String?
+  expiresAt          DateTime?
+  isHtml             Boolean                 @default(false)
+  parentId           String?
+  scheduledFor       DateTime?
+  AdminMessage       AdminMessage?           @relation("AdminMessageToAdminMessage", fields: [parentId], references: [id])
+  other_AdminMessage AdminMessage[]          @relation("AdminMessageToAdminMessage")
+  sender             User                    @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  recipients         AdminMessageRecipient[]
 }
 
 model AdminMessageRecipient {
@@ -684,8 +701,6 @@ model Certificate {
   courseName      String
   courseCategory  String?
   issueDate       DateTime             @default(now())
-  startDate       DateTime?
-  endDate         DateTime?
   expiryDate      DateTime?
   templateId      String?
   signatureUrl    String?
@@ -697,8 +712,10 @@ model Certificate {
   score           Float?
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
-  template        CertificateTemplate? @relation(fields: [templateId], references: [id])
+  endDate         DateTime?
+  startDate       DateTime?
   course          Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  template        CertificateTemplate? @relation(fields: [templateId], references: [id])
   user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -735,10 +752,10 @@ model CertificateSettings {
   defaultValidityMonths Int?
   instituteName         String   @default("Techwell Academy")
   instituteLogoUrl      String?
-  stampUrl              String?
-  stampPosition         String   @default("bottom-right")
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+  stampPosition         String   @default("bottom-right")
+  stampUrl              String?
 }
 
 model AIProvider {
@@ -820,56 +837,53 @@ model Lead {
   qualification    String?
   dob              DateTime?
   location         String?
-  district         String?
-  pinCode          String?
-  referralName     String?
   gender           String?
   source           String
   status           LeadStatus         @default(NEW)
-  leadType         String             @default("GENERAL") // TRAINING, JOB_ENQUIRY, SOFTWARE_REQUEST, SERVICE_REQUEST, GENERAL
   notes            String?
   assignedTo       String?
-  platform         String?
-  campaignId       String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   adGroupId        String?
   adId             String?
+  campaignId       String?
+  platform         String?
   courseId         String?
   courseName       String?
   lifecycleStage   LeadLifecycleStage @default(NEW)
-  whatsappOptIn    Boolean            @default(true)
-  resumeBuilt      Boolean            @default(false)
   placementStatus  String?
+  resumeBuilt      Boolean            @default(false)
   revenueGenerated Float              @default(0)
-
-  // Unified Candidate Fields
-  skills          String[]
-  category        String?
-  companyName     String?
-  resumeUrl       String?
-  parsedText      String?
-  atsScore        Float    @default(0)
-  readinessScore  Float    @default(0)
-  experienceLevel String?
-  currentCTC      String?
-  expectedCTC     String?
-  noticePeriod    String?
-  interestedRole  String?
-  paymentStatus   String   @default("UNPAID")
-
-  whatsappLogs     WhatsAppChatLog[]
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  tasks            Task[]
+  whatsappOptIn    Boolean            @default(true)
+  atsScore         Float              @default(0)
+  category         String?
+  currentCTC       String?
+  expectedCTC      String?
+  experienceLevel  String?
+  interestedRole   String?
+  leadType         String             @default("GENERAL")
+  noticePeriod     String?
+  parsedText       String?
+  paymentStatus    String             @default("UNPAID")
+  readinessScore   Float              @default(0)
+  resumeUrl        String?
+  skills           String[]
+  companyName      String?
+  district         String?
+  pinCode          String?
+  referralName     String?
   candidateProfile CandidateProfile?
-  activityLogs     LeadActivityLog[]
-  reminders        FollowUpReminder[]
   demoSchedules    DemoSchedule[]
+  reminders        FollowUpReminder[]
+  activityLogs     LeadActivityLog[]
+  tasks            Task[]
+  whatsappLogs     WhatsAppChatLog[]
 }
 
 model WhatsAppChatLog {
   id        String   @id @default(cuid())
   phone     String
-  sender    String // USER, AI_AGENT, SYSTEM
+  sender    String
   message   String
   createdAt DateTime @default(now())
   leadId    String?
@@ -920,11 +934,11 @@ model Task {
   assignedTo    String?
   createdBy     String?
   leadId        String?
-  goalType      String? // e.g., TELESALES, REVENUE, BUSINESS_GROWTH
-  targetValue   Float?
-  achievedValue Float?        @default(0)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  achievedValue Float?        @default(0)
+  goalType      String?
+  targetValue   Float?
   assignee      User?         @relation("AssignedTo", fields: [assignedTo], references: [id])
   creator       User?         @relation("CreatedBy", fields: [createdBy], references: [id])
   lead          Lead?         @relation(fields: [leadId], references: [id])
@@ -948,13 +962,13 @@ model BlogPost {
   content     String
   summary     String?
   coverImage  String?
-  category    String?
   status      BlogStatus @default(DRAFT)
   tags        Json?
   authorId    String
   publishedAt DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  category    String?
   author      User       @relation(fields: [authorId], references: [id])
 }
 
@@ -967,9 +981,9 @@ model Ticket {
   category      TicketCategory  @default(GENERAL)
   userId        String
   assignedTo    String?
-  internalNotes String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  internalNotes String?
   user          User            @relation(fields: [userId], references: [id])
   messages      TicketMessage[]
 }
@@ -990,18 +1004,18 @@ model Event {
   id               String   @id @default(cuid())
   title            String
   description      String?
-  imageUrl         String?
-  type             String   @default("Webinar") // Webinar, Offline Event, Masterclass
+  type             String   @default("Webinar")
   date             DateTime
   time             String
   location         String
-  status           String   @default("Upcoming") // Upcoming, Registration Open, Completed
+  status           String   @default("Upcoming")
   seatsTotal       Int      @default(100)
   seatsBooked      Int      @default(0)
   iconName         String?
-  customFormFields Json?    // Array of field definitions: [{ name, label, type, required }]
+  customFormFields Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  imageUrl         String?
 }
 
 model PaymentConfig {
@@ -1029,59 +1043,44 @@ model Expense {
 }
 
 model SystemSettings {
-  id                 String  @id @default("default")
-  platformName       String  @default("Techwell Academy")
-  supportEmail       String  @default("support@techwell.co.in")
-  logoUrl            String?
-  faviconUrl         String?
-  primaryColor       String  @default("#2563eb")
-  isMaintenanceMode  Boolean @default(false)
-  showOurTeam        Boolean @default(false)
-  enableRegistration Boolean @default(true)
-  address            String?
-  phone              String?
-
-  // SMTP Settings
-  smtpHost     String?
-  smtpPort     String?
-  smtpUser     String?
-  smtpPassword String?
-
-  // Razorpay Settings
-  razorpayKeyId     String?
-  razorpayKeySecret String?
-
-  // Zoom Settings
-  zoomAccountId    String?
-  zoomClientId     String?
-  zoomClientSecret String?
-
-  // Meetings & Webinars
-  googleMeetApiKey       String?
-  msTeamsClientId        String?
-  msTeamsClientSecret    String?
-
-  // Payments
-  stripePublicKey        String?
-  stripeSecretKey        String?
-  paypalClientId         String?
-  paypalSecretKey        String?
-
-  // Messaging & Calling
-  whatsappApiToken       String?
-  whatsappPhoneNumberId  String?
-  twilioAccountSid       String?
-  twilioAuthToken        String?
-  twilioPhoneNumber      String?
-
-  // AI & Automation (n8n, RAG, LLMs)
-  n8nWebhookUrl          String?
-  n8nAuthToken           String?
-  openaiApiKey           String?
-  anthropicApiKey        String?
-  ragEndpointUrl         String?
-
-  updatedAt DateTime @updatedAt
+  id                    String   @id @default("default")
+  platformName          String   @default("Techwell Academy")
+  supportEmail          String   @default("support@techwell.co.in")
+  logoUrl               String?
+  faviconUrl            String?
+  primaryColor          String   @default("#2563eb")
+  isMaintenanceMode     Boolean  @default(false)
+  address               String?
+  phone                 String?
+  updatedAt             DateTime @updatedAt
+  showOurTeam           Boolean  @default(false)
+  enableRegistration    Boolean  @default(true)
+  razorpayKeyId         String?
+  razorpayKeySecret     String?
+  smtpHost              String?
+  smtpPassword          String?
+  smtpPort              String?
+  smtpUser              String?
+  zoomAccountId         String?
+  zoomClientId          String?
+  zoomClientSecret      String?
+  anthropicApiKey       String?
+  googleMeetApiKey      String?
+  msTeamsClientId       String?
+  msTeamsClientSecret   String?
+  n8nAuthToken          String?
+  n8nWebhookUrl         String?
+  openaiApiKey          String?
+  paypalClientId        String?
+  paypalSecretKey       String?
+  ragEndpointUrl        String?
+  stripePublicKey       String?
+  stripeSecretKey       String?
+  twilioAccountSid      String?
+  twilioAuthToken       String?
+  twilioPhoneNumber     String?
+  whatsappApiToken      String?
+  whatsappPhoneNumberId String?
 }
 
 model EmployerProfile {
@@ -1095,19 +1094,22 @@ model EmployerProfile {
   industry          String?
   companySize       String?
   status            EmployerStatus @default(PENDING)
-  documentsVerified Boolean        @default(false)
-  verificationNotes String?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  documentsVerified Boolean        @default(false)
+  verificationNotes String?
   user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model EmployerRequest {
   id              String   @id @default(cuid())
-  name            String
-  designation     String
+  employerName    String
+  companyName     String
   email           String
-  phone           String?
+  phone           String
+  website         String?
+  address         String
+  passwordHash    String
   status          String   @default("PENDING")
   adminNotes      String?
   rejectionReason String?
@@ -1128,17 +1130,17 @@ model Job {
   type          JobType          @default(FULL_TIME)
   experience    String?
   salary        String?
-  skills        String?
-  clientName    String?
-  shift         String?
-  domain        String?
-  qualification String?
   employerId    String
   status        JobStatus        @default(DRAFT)
-  publishedAt   DateTime?
-  expiresAt     DateTime?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+  clientName    String?
+  shift         String?
+  skills        String?
+  domain        String?
+  expiresAt     DateTime?
+  publishedAt   DateTime?
+  qualification String?
   employer      User             @relation(fields: [employerId], references: [id])
   applications  JobApplication[]
 }
@@ -1147,18 +1149,18 @@ model JobApplication {
   id               String            @id @default(cuid())
   jobId            String
   applicantId      String?
-  source           CandidateSource   @default(INTERNAL)
-  externalName     String?
-  externalEmail    String?
-  externalPhone    String?
   resumeUrl        String?
   coverLetter      String?
-  resumeParsedText String?
-  atsScore         Float             @default(0)
   status           ApplicationStatus @default(APPLIED)
-  statusHistory    Json?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+  atsScore         Float             @default(0)
+  externalEmail    String?
+  externalName     String?
+  externalPhone    String?
+  resumeParsedText String?
+  source           CandidateSource   @default(INTERNAL)
+  statusHistory    Json?
   auditLogs        AuditLog[]
   emailLogs        EmailLog[]
   applicant        User?             @relation(fields: [applicantId], references: [id])
@@ -1217,10 +1219,10 @@ model AuditLog {
   newValue      Json?
   applicationId String?
   performedBy   String
-  userRole      String? // NEW: To track which role performed the action
-  severity      String          @default("INFO") // NEW: INFO, WARNING, CRITICAL
   details       Json?
   timestamp     DateTime        @default(now())
+  severity      String          @default("INFO")
+  userRole      String?
   application   JobApplication? @relation(fields: [applicationId], references: [id])
 }
 
@@ -1340,7 +1342,7 @@ model LibraryDomain {
 }
 
 model LibraryResource {
-  id          String  @id @default(cuid())
+  id          String            @id @default(cuid())
   title       String
   description String?
   type        String
@@ -1349,18 +1351,15 @@ model LibraryResource {
   fileSize    Int?
   content     Json?
   domainId    String
-  views       Int     @default(0)
-  downloads   Int     @default(0)
+  views       Int               @default(0)
+  downloads   Int               @default(0)
   createdBy   String
-
-  isPaid      Boolean   @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  isPaid      Boolean           @default(false)
   publishedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  bookmarks LibraryBookmark[]
-  domain    LibraryDomain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  bookmarks   LibraryBookmark[]
+  domain      LibraryDomain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
 
   @@index([domainId])
 }
@@ -1374,6 +1373,661 @@ model LibraryBookmark {
   user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, resourceId])
+}
+
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Meeting {
+  id            String         @id @default(cuid())
+  courseId      String
+  title         String
+  link          String
+  datetime      DateTime
+  description   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  meetingId String?
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  meeting   Meeting? @relation(fields: [meetingId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CandidateProfile {
+  id              String                @id @default(cuid())
+  userId          String?               @unique
+  leadId          String?               @unique
+  name            String
+  email           String?               @unique
+  phone           String?
+  skills          String[]
+  category        String
+  resumeUrl       String?
+  parsedText      String?
+  atsScore        Float                 @default(0)
+  readinessScore  Float                 @default(0)
+  status          String                @default("SCREENING")
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  currentCTC      String?
+  expectedCTC     String?
+  experienceLevel ExperienceLevel       @default(FRESHER)
+  interestType    CandidateInterestType @default(JOB)
+  interestedRole  String?
+  noticePeriod    String?
+  paymentStatus   PaymentTier           @default(UNPAID)
+  district        String?
+  education       String?
+  industry        String?
+  passedOutYear   String?
+  pinCode         String?
+  state           String?
+  lead            Lead?                 @relation(fields: [leadId], references: [id])
+  user            User?                 @relation(fields: [userId], references: [id])
+}
+
+model LeadActivityLog {
+  id          String   @id @default(cuid())
+  leadId      String
+  actionType  String
+  notes       String
+  performedBy String
+  createdAt   DateTime @default(now())
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model FollowUpReminder {
+  id          String   @id @default(cuid())
+  leadId      String
+  title       String
+  remindAt    DateTime
+  isCompleted Boolean  @default(false)
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  category    String
+  features    Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  category    String
+  price       Decimal?
+  features    Json?
+  screenshots Json?
+  brochureUrl String?
+  demoUrl     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  url         String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TeamMember {
+  id          String   @id @default(uuid())
+  name        String
+  designation String
+  description String?
+  photoUrl    String?
+  linkedinUrl String?
+  orderIndex  Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Coupon {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  discountPercent Float
+  startDate       DateTime?
+  expiryDate      DateTime
+  isActive        Boolean   @default(true)
+  usageLimit      Int?
+  usedCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  courses         Course[]
+}
+
+model DemoSchedule {
+  id          String   @id @default(cuid())
+  leadId      String
+  assignedTo  String
+  scheduledAt DateTime
+  status      String   @default("SCHEDULED")
+  meetingLink String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assignee    User     @relation("AssignedDemoTo", fields: [assignedTo], references: [id], onDelete: Cascade)
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model StaffGoal {
+  id            String   @id @default(cuid())
+  userId        String
+  goalType      String
+  targetValue   Float
+  achievedValue Float    @default(0)
+  month         Int
+  year          Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, goalType, month, year])
+}
+
+model FollowUpTemplate {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  type      String
+  category  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StaffAttendance {
+  id           String    @id @default(cuid())
+  userId       String
+  date         DateTime  @db.Date
+  checkInTime  DateTime
+  checkOutTime DateTime?
+  totalHours   Float?
+  status       String    @default("PRESENT")
+  location     String?
+  ipAddress    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  photoUrl     String?
+  sessions     Json?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model InternshipProgram {
+  id             String                 @id @default(cuid())
+  title          String
+  department     String
+  description    String
+  durationMonths Int                    @default(6)
+  skillsRequired String[]
+  isActive       Boolean                @default(true)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  enrollments    InternshipEnrollment[]
+}
+
+model InternshipEnrollment {
+  id             String                @id @default(cuid())
+  userId         String
+  programId      String
+  mentorId       String?
+  status         String                @default("PENDING")
+  startDate      DateTime?
+  endDate        DateTime?
+  offerConverted Boolean               @default(false)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  mentor         User?                 @relation("InternMentor", fields: [mentorId], references: [id])
+  program        InternshipProgram     @relation(fields: [programId], references: [id], onDelete: Cascade)
+  user           User                  @relation("InternUser", fields: [userId], references: [id])
+  evaluation     InternshipEvaluation?
+  dailyLogs      InternshipLog[]
+  tasks          InternshipTask[]
+}
+
+model InternshipLog {
+  id             String               @id @default(cuid())
+  enrollmentId   String
+  date           DateTime             @default(now())
+  hoursLogged    Float
+  tasksCompleted String
+  blockers       String?
+  mentorFeedback String?
+  status         String               @default("SUBMITTED")
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  enrollment     InternshipEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+}
+
+model InternshipTask {
+  id           String               @id @default(cuid())
+  enrollmentId String
+  title        String
+  description  String?
+  dueDate      DateTime?
+  status       String               @default("ASSIGNED")
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  enrollment   InternshipEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+}
+
+model InternshipEvaluation {
+  id               String               @id @default(cuid())
+  enrollmentId     String               @unique
+  performanceScore Float                @default(0)
+  mentorComments   String
+  offerRecommended Boolean              @default(false)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  enrollment       InternshipEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+}
+
+model StaffPayroll {
+  id             String    @id @default(cuid())
+  userId         String
+  month          Int
+  year           Int
+  baseSalary     Float
+  totalHours     Float     @default(0)
+  bonus          Float     @default(0)
+  deductions     Float     @default(0)
+  netAmount      Float
+  status         String    @default("PENDING")
+  paymentDate    DateTime?
+  paymentMethod  String?
+  transactionRef String?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+}
+
+model LandingPage {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  content      Json?
+  status       String   @default("DRAFT")
+  seoTitle     String?
+  seoDesc      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  customCss    String?
+  customJs     String?
+  headerCode   String?
+  htmlContent  String?
+  ogImage      String?
+  pagePassword String?
+  views        Int      @default(0)
+}
+
+model LeadGenForm {
+  id            String   @id @default(cuid())
+  title         String
+  fields        Json
+  submitMessage String?
+  redirectUrl   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model MarketingCampaign {
+  id        String    @id @default(cuid())
+  name      String
+  type      String    @default("EMAIL")
+  status    String    @default("DRAFT")
+  budget    Float?
+  roiScore  Float?
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model AdBanner {
+  id           String    @id @default(cuid())
+  title        String
+  imageUrl     String
+  targetUrl    String?
+  position     String    @default("RIGHT_1")
+  status       String    @default("ACTIVE")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  businessName String?
+  contactInfo  String?
+  autoRenewal  Boolean   @default(false)
+  durationDays Int?
+  expiresAt    DateTime?
+  isPermanent  Boolean   @default(false)
+  clicks       Int       @default(0)
+  views        Int       @default(0)
+}
+
+model ReferralReward {
+  id         String   @id @default(cuid())
+  referrerId String
+  referredId String
+  amount     Float
+  status     String   @default("PENDING")
+  type       String   @default("COMMISSION")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  referred   User     @relation("ReferredRewards", fields: [referredId], references: [id], onDelete: Cascade)
+  referrer   User     @relation("ReferrerRewards", fields: [referrerId], references: [id], onDelete: Cascade)
+}
+
+model ConsultancyInvitation {
+  id            String                @id @default(cuid())
+  email         String
+  name          String
+  phone         String?
+  status        ConsultancyStatus     @default(INVITED)
+  token         String                @unique
+  expiresAt     DateTime
+  agreementId   String?               @unique
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  customTerms   String?
+  feePercentage String?
+  advanceFee    Float?
+  totalFee      Float?
+  jobRole       String?
+  prefilledData Json?
+  agreement     ConsultancyAgreement? @relation(fields: [agreementId], references: [id])
+}
+
+model ConsultancyAgreement {
+  id                   String                 @id @default(cuid())
+  fullName             String
+  parentsName          String
+  dob                  DateTime?
+  gender               String?
+  aadhaarNumber        String?
+  panNumber            String?
+  passportPhotoUrl     String?
+  livePhotoUrl         String
+  liveSelfieUrl        String?
+  currentAddress       String?
+  permanentAddress     String?
+  city                 String?
+  state                String?
+  pinCode              String?
+  mobileNumber         String?
+  alternateMobile      String?
+  emailAddress         String?
+  emergencyContactName String?
+  emergencyContactNum  String?
+  highestQualification String?
+  specialization       String?
+  collegeUniversity    String?
+  graduationYear       Int?
+  percentageCgpa       String?
+  experienceLevel      String?
+  currentCompany       String?
+  totalExperience      String?
+  relevantExperience   String?
+  currentCtc           String?
+  expectedCtc          String?
+  noticePeriod         String?
+  preferredLocations   String?
+  preferredJobRoles    String
+  preferredIndustry    String?
+  resumeUrl            String?
+  digitalSignatureUrl  String
+  agreementVersion     String
+  acceptedAt           DateTime
+  browserInfo          String?
+  ipAddress            String?
+  locationCoords       String?
+  advanceFee           Float?
+  totalFee             Float?
+  createdAt            DateTime               @default(now())
+  invitation           ConsultancyInvitation?
+}
+
+model AdminMessageTemplate {
+  id              String   @id
+  name            String
+  titleTemplate   String
+  contentTemplate String
+  category        String?
+  isHtml          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+}
+
+model AiAgentPersona {
+  id           String   @id
+  name         String   @unique
+  description  String?
+  systemPrompt String
+  model        String   @default("gemini-1.5-pro")
+  provider     String   @default("google")
+  temperature  Float    @default(0.7)
+  tools        Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+}
+
+model AiExecutionLog {
+  id          String      @id
+  workflowId  String?
+  eventId     String?
+  status      String
+  inputData   Json?
+  outputData  Json?
+  error       String?
+  tokensUsed  Int         @default(0)
+  startedAt   DateTime    @default(now())
+  completedAt DateTime?
+  AiWorkflow  AiWorkflow? @relation(fields: [workflowId], references: [id])
+}
+
+model AiIntegration {
+  id        String   @id
+  provider  String   @unique
+  config    Json
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model AiKnowledgeChunk {
+  id                  String              @id
+  documentId          String
+  content             String
+  embedding           Json?
+  createdAt           DateTime            @default(now())
+  AiKnowledgeDocument AiKnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
+
+model AiKnowledgeDocument {
+  id               String             @id
+  url              String             @unique
+  title            String?
+  content          String
+  status           String             @default("TRAINING")
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  AiKnowledgeChunk AiKnowledgeChunk[]
+}
+
+model AiWorkflow {
+  id             String           @id
+  name           String
+  description    String?
+  status         String           @default("DRAFT")
+  triggerType    String
+  triggerData    Json?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  AiExecutionLog AiExecutionLog[]
+  AiWorkflowEdge AiWorkflowEdge[]
+  AiWorkflowNode AiWorkflowNode[]
+}
+
+model AiWorkflowEdge {
+  id           String     @id
+  workflowId   String
+  sourceNodeId String
+  targetNodeId String
+  condition    Json?
+  createdAt    DateTime   @default(now())
+  AiWorkflow   AiWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+}
+
+model AiWorkflowNode {
+  id         String     @id
+  workflowId String
+  type       String
+  label      String
+  positionX  Float      @default(0)
+  positionY  Float      @default(0)
+  config     Json?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime
+  AiWorkflow AiWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+}
+
+model ContentPromotion {
+  id                 String               @id
+  name               String
+  code               String               @unique
+  type               PromotionType        @default(HERO_BANNER)
+  category           String?
+  title              String
+  subtitle           String?
+  description        String?
+  ctaText            String?
+  redirectUrl        String?
+  imageUrl           String?
+  videoUrl           String?
+  mediaId            String?
+  backgroundColor    String?              @default("#000000")
+  theme              String?              @default("dark")
+  startDate          DateTime?
+  endDate            DateTime?
+  startTime          String?
+  endTime            String?
+  timezone           String?              @default("Asia/Kolkata")
+  autoPublish        Boolean              @default(false)
+  autoExpire         Boolean              @default(true)
+  isRecurring        Boolean              @default(false)
+  recurringPattern   String?
+  status             PromotionStatus      @default(DRAFT)
+  priority           Int                  @default(0)
+  targetRoles        String[]             @default([])
+  targetColleges     String[]             @default([])
+  targetCourses      String[]             @default([])
+  targetBatches      String[]             @default([])
+  targetPlans        String[]             @default([])
+  zones              PromotionZone[]
+  displayFrequency   String?              @default("ALWAYS")
+  maxViews           Int?
+  maxClicks          Int?
+  hideAfterAction    String?
+  totalImpressions   Int                  @default(0)
+  totalClicks        Int                  @default(0)
+  totalConversions   Int                  @default(0)
+  totalRevenue       Float                @default(0)
+  uniqueVisitors     Int                  @default(0)
+  aiPersonalized     Boolean              @default(false)
+  triggerCourses     String[]             @default([])
+  recommendCategory  String?
+  createdById        String?
+  approvedById       String?
+  approvedAt         DateTime?
+  publishedAt        DateTime?
+  expiredAt          DateTime?
+  tags               String[]             @default([])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  PromotionAnalytics PromotionAnalytics[]
+}
+
+model MarketingMedia {
+  id           String    @id
+  name         String
+  filename     String
+  url          String
+  type         MediaType @default(IMAGE)
+  mimeType     String?
+  fileSize     Int?
+  width        Int?
+  height       Int?
+  duration     Int?
+  category     String?
+  tags         String[]  @default([])
+  alt          String?
+  uploadedById String?
+  usageCount   Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+}
+
+model PlatformEvent {
+  id          String    @id
+  eventType   String
+  source      String
+  payload     Json
+  status      String    @default("PENDING")
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model PromotionAnalytics {
+  id               String           @id
+  promotionId      String
+  userId           String?
+  sessionId        String?
+  action           TrackAction      @default(IMPRESSION)
+  zone             String?
+  device           String?
+  browser          String?
+  location         String?
+  referrer         String?
+  revenue          Float?
+  createdAt        DateTime         @default(now())
+  ContentPromotion ContentPromotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  @@index([action])
+  @@index([createdAt])
+  @@index([promotionId])
+  @@index([userId])
 }
 
 enum Role {
@@ -1488,9 +2142,9 @@ enum LeadLifecycleStage {
 
 enum BlogStatus {
   DRAFT
-  IN_REVIEW
   PUBLISHED
   ARCHIVED
+  IN_REVIEW
 }
 
 enum TaskStatus {
@@ -1555,11 +2209,11 @@ enum CandidateSource {
 }
 
 enum JobStatus {
-  DRAFT
   OPEN
+  CLOSED
+  DRAFT
   PUBLISHED
   PAUSED
-  CLOSED
   ARCHIVED
 }
 
@@ -1585,14 +2239,14 @@ enum ApplicationStatus {
   VIEWED
   SCREENED
   SHORTLISTED
-  INTERVIEW_PENDING
   INTERVIEW_SCHEDULED
   INTERVIEWED
-  INTERVIEW_COMPLETED
   SELECTED
   APPOINTED
-  HIRED
   REJECTED
+  INTERVIEW_PENDING
+  INTERVIEW_COMPLETED
+  HIRED
   REVIEWING
 }
 
@@ -1617,397 +2271,6 @@ enum EmailStatus {
   QUEUED
 }
 
-model Resume {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  data      Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Meeting {
-  id            String         @id @default(cuid())
-  courseId      String
-  title         String
-  link          String
-  datetime      DateTime
-  description   String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  notifications Notification[]
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  meetingId String?
-  title     String
-  message   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  meeting   Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model CandidateProfile {
-  id              String                @id @default(cuid())
-  userId          String?               @unique
-  leadId          String?               @unique
-  name            String
-  email           String?               @unique
-  phone           String?
-  skills          String[] // For database querying and smart matching
-  category        String // e.g. "IT_CLOUD", "IT_JAVA", "NON_IT_HR", etc.
-  resumeUrl       String?
-  parsedText      String?
-  atsScore        Float                 @default(0)
-  readinessScore  Float                 @default(0)
-  status          String                @default("SCREENING") // SCREENING, TRAINING, INTERVIEW_READY, PLACED
-  interestType    CandidateInterestType @default(JOB)
-  experienceLevel ExperienceLevel       @default(FRESHER)
-  currentCTC      String?
-  expectedCTC     String?
-  noticePeriod    String?
-  interestedRole  String?
-  pinCode         String?
-  state           String?
-  district        String?
-  education       String?
-  passedOutYear   String?
-  industry        String?
-  paymentStatus   PaymentTier           @default(UNPAID)
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-
-  user User? @relation(fields: [userId], references: [id])
-  lead Lead? @relation(fields: [leadId], references: [id])
-}
-
-model LeadActivityLog {
-  id          String   @id @default(cuid())
-  leadId      String
-  actionType  String // "CALL", "WHATSAPP", "NOTE", "FOLLOW_UP_SCHEDULED"
-  notes       String
-  performedBy String
-  createdAt   DateTime @default(now())
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-}
-
-model FollowUpReminder {
-  id          String   @id @default(cuid())
-  leadId      String
-  title       String
-  remindAt    DateTime
-  isCompleted Boolean  @default(false)
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-}
-
-model Service {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String
-  category    String // IT_INFRASTRUCTURE, CLOUD_SOLUTIONS, CYBER_SECURITY, SOFTWARE_DEVELOPMENT, DIGITAL_SERVICES
-  features    Json? // Array of key features/specs
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Product {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String
-  category    String // LMS, ERP, COLLEGE_MGMT, SCHOOL_MGMT, ASSET_MGMT, BILLING, CUSTOM
-  price       Decimal?
-  features    Json? // Array of product features
-  screenshots Json? // Array of screenshot URLs
-  brochureUrl String?
-  demoUrl     String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Client {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  url         String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model TeamMember {
-  id          String   @id @default(uuid())
-  name        String
-  designation String
-  description String?  @db.Text
-  photoUrl    String?
-  linkedinUrl String?
-  orderIndex  Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Coupon {
-  id              String    @id @default(cuid())
-  code            String    @unique
-  discountPercent Float
-  startDate       DateTime?
-  expiryDate      DateTime
-  isActive        Boolean   @default(true)
-  usageLimit      Int?
-  usedCount       Int       @default(0)
-  courses         Course[]
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model DemoSchedule {
-  id          String   @id @default(cuid())
-  leadId      String
-  assignedTo  String
-  scheduledAt DateTime
-  status      String   @default("SCHEDULED") // SCHEDULED, COMPLETED, NO_SHOW, CANCELLED
-  meetingLink String?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  assignee    User     @relation("AssignedDemoTo", fields: [assignedTo], references: [id], onDelete: Cascade)
-}
-
-model StaffGoal {
-  id            String   @id @default(cuid())
-  userId        String
-  goalType      String // REVENUE, ENROLLMENTS, CALLS
-  targetValue   Float
-  achievedValue Float    @default(0)
-  month         Int
-  year          Int
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, goalType, month, year])
-}
-
-model FollowUpTemplate {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
-  type      String // WHATSAPP, EMAIL, SCRIPT
-  category  String // Initial Contact, Follow-up, Discount Offer, etc.
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model StaffAttendance {
-  id           String    @id @default(cuid())
-  userId       String
-  date         DateTime  @db.Date
-  checkInTime  DateTime
-  checkOutTime DateTime?
-  totalHours   Float?
-  status       String    @default("PRESENT") // PRESENT, ABSENT, LEAVE
-  location     String?
-  ipAddress    String?
-  photoUrl     String? // Initial check-in photo
-  sessions     Json? // Array of break sessions [{checkIn: Time, checkOut: Time}]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, date])
-}
-
-// --- INTERNSHIP MANAGEMENT MODULE ---
-
-model InternshipProgram {
-  id              String                 @id @default(cuid())
-  title           String
-  department      String
-  description     String
-  durationMonths  Int                    @default(6)
-  skillsRequired  String[]
-  isActive        Boolean                @default(true)
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-  enrollments     InternshipEnrollment[]
-}
-
-model InternshipEnrollment {
-  id              String               @id @default(cuid())
-  userId          String
-  programId       String
-  mentorId        String?
-  status          String               @default("PENDING") // PENDING, ACTIVE, COMPLETED, DROPPED
-  startDate       DateTime?
-  endDate         DateTime?
-  offerConverted  Boolean              @default(false)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-
-  user            User                 @relation("InternUser", fields: [userId], references: [id])
-  mentor          User?                @relation("InternMentor", fields: [mentorId], references: [id])
-  program         InternshipProgram    @relation(fields: [programId], references: [id], onDelete: Cascade)
-  dailyLogs       InternshipLog[]
-  tasks           InternshipTask[]
-  evaluation      InternshipEvaluation?
-}
-
-model InternshipLog {
-  id              String               @id @default(cuid())
-  enrollmentId    String
-  date            DateTime             @default(now())
-  hoursLogged     Float
-  tasksCompleted  String
-  blockers        String?
-  mentorFeedback  String?
-  status          String               @default("SUBMITTED") // SUBMITTED, REVIEWED
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-
-  enrollment      InternshipEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-}
-
-model InternshipTask {
-  id              String               @id @default(cuid())
-  enrollmentId    String
-  title           String
-  description     String?
-  dueDate         DateTime?
-  status          String               @default("ASSIGNED") // ASSIGNED, IN_PROGRESS, COMPLETED
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-
-  enrollment      InternshipEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-}
-
-model InternshipEvaluation {
-  id              String               @id @default(cuid())
-  enrollmentId    String               @unique
-  performanceScore Float               @default(0)
-  mentorComments  String
-  offerRecommended Boolean             @default(false)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-
-  enrollment      InternshipEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-}
-
-// --- HR & PAYROLL MODULE ---
-
-model StaffPayroll {
-  id              String   @id @default(cuid())
-  userId          String
-  month           Int
-  year            Int
-  baseSalary      Float
-  totalHours      Float    @default(0)
-  bonus           Float    @default(0)
-  deductions      Float    @default(0)
-  netAmount       Float
-  status          String   @default("PENDING") // PENDING, PAID
-  paymentDate     DateTime?
-  paymentMethod   String?
-  transactionRef  String?
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, month, year])
-}
-
-// ─── MARKETING CRM MODELS ───────────────────────────────────────────────
-
-model LandingPage {
-  id           String   @id @default(cuid())
-  title        String
-  slug         String   @unique
-  htmlContent  String?  @db.Text
-  customCss    String?  @db.Text
-  customJs     String?  @db.Text
-  headerCode   String?  @db.Text
-  content      Json?
-  status       String   @default("DRAFT")
-  seoTitle     String?
-  seoDesc      String?
-  ogImage      String?
-  pagePassword String?
-  views        Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model LeadGenForm {
-  id             String   @id @default(cuid())
-  title          String
-  fields         Json
-  submitMessage  String?
-  redirectUrl    String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-model MarketingCampaign {
-  id          String   @id @default(cuid())
-  name        String
-  type        String   @default("EMAIL") // EMAIL, SMS, WHATSAPP, ADS
-  status      String   @default("DRAFT") // ACTIVE, COMPLETED, DRAFT
-  budget      Float?
-  roiScore    Float?
-  startDate   DateTime?
-  endDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model AdBanner {
-  id           String    @id @default(cuid())
-  title        String
-  businessName String?
-  contactInfo  String?
-  imageUrl     String
-  targetUrl    String?
-  position     String    @default("RIGHT_1") // LEFT_1, LEFT_2, RIGHT_1, RIGHT_2, TOP_BANNER
-  status       String    @default("ACTIVE") // ACTIVE, INACTIVE
-  durationDays Int?      // 7, 15, 30
-  isPermanent  Boolean   @default(false)
-  autoRenewal  Boolean   @default(false)
-  expiresAt    DateTime?
-  views        Int       @default(0)
-  clicks       Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-}
-
-model ReferralReward {
-  id              String   @id @default(cuid())
-  referrerId      String
-  referredId      String
-  amount          Float
-  status          String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
-  type            String   @default("COMMISSION") // COMMISSION, DISCOUNT
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  referrer        User     @relation("ReferrerRewards", fields: [referrerId], references: [id], onDelete: Cascade)
-  referred        User     @relation("ReferredRewards", fields: [referredId], references: [id], onDelete: Cascade)
-}
-
-// -----------------------------------------------------------------------------
-// CONSULTANCY MODULE
-// -----------------------------------------------------------------------------
-
 enum ConsultancyStatus {
   INVITED
   PENDING_ACCEPTANCE
@@ -2020,85 +2283,209 @@ enum ConsultancyStatus {
   CLOSED
 }
 
-model ConsultancyInvitation {
-  id           String   @id @default(cuid())
-  email        String
-  name         String
-  phone        String?
-  status       ConsultancyStatus @default(INVITED)
-  token        String   @unique
-  expiresAt    DateTime
-  
-  // Dynamic fields
-  customTerms  String?  @db.Text
-  jobRole      String?
-  feePercentage String?
-  prefilledData Json?
-  
-  agreementId  String?  @unique
-  agreement    ConsultancyAgreement? @relation(fields: [agreementId], references: [id])
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+enum MediaType {
+  IMAGE
+  VIDEO
+  GIF
+  ICON
+  DOCUMENT
 }
 
-model ConsultancyAgreement {
-  id                  String   @id @default(cuid())
-  
-  // Identity
-  fullName            String
-  parentsName         String
-  dob                 DateTime?
-  gender              String?
-  aadhaarNumber       String?
-  panNumber           String?
-  passportPhotoUrl    String?
-  livePhotoUrl        String   
-  liveSelfieUrl       String?
-  
-  // Address
-  currentAddress      String?
-  permanentAddress    String?
-  city                String?
-  state               String?
-  pinCode             String?
-  
-  // Contact
-  mobileNumber        String?
-  alternateMobile     String?
-  emailAddress        String?
-  emergencyContactName String?
-  emergencyContactNum String?
-  
-  // Education
-  highestQualification String?
-  specialization       String?
-  collegeUniversity    String?
-  graduationYear       Int?
-  percentageCgpa       String?
-  
-  // Professional
-  experienceLevel      String?
-  currentCompany       String?
-  totalExperience      String?
-  relevantExperience   String?
-  currentCtc           String?
-  expectedCtc          String?
-  noticePeriod         String?
-  preferredLocations   String?
-  preferredJobRoles    String
-  preferredIndustry    String?
-  resumeUrl            String?
-  
-  // Audit & Verification
-  digitalSignatureUrl  String
-  agreementVersion     String
-  acceptedAt           DateTime
-  browserInfo          String?
-  ipAddress            String?
-  locationCoords       String?
-  
-  invitation           ConsultancyInvitation?
-  
-  createdAt            DateTime @default(now())
+enum PromotionStatus {
+  DRAFT
+  PENDING_APPROVAL
+  PUBLISHED
+  SCHEDULED
+  EXPIRED
+  ARCHIVED
 }
+
+enum PromotionType {
+  HERO_BANNER
+  IMAGE_BANNER
+  VIDEO_BANNER
+  SLIDER
+  FEATURED_CARD
+  INFORMATION_CARD
+  POPUP
+  ANNOUNCEMENT_BAR
+  FLOATING_WIDGET
+  SIDEBAR_BANNER
+  DASHBOARD_WIDGET
+}
+
+enum PromotionZone {
+  WEBSITE_HOME_HERO
+  WEBSITE_HOME_SLIDER
+  WEBSITE_FEATURED_SECTION
+  WEBSITE_FOOTER_BANNER
+  LMS_DASHBOARD_BANNER
+  LMS_SIDEBAR_WIDGET
+  LMS_COURSE_RECOMMENDATION
+  LMS_LEARNING_DASHBOARD
+  STUDENT_DASHBOARD
+  STUDENT_MY_LEARNING
+  STUDENT_CAREER_HUB
+  STUDENT_AI_INTERVIEW
+  STUDENT_RESUME_BUILDER
+  CAREER_HUB_FEATURED_JOBS
+  CAREER_HUB_PLACEMENT
+  CAREER_HUB_SERVICES
+  COURSES_RECOMMENDED
+  COURSES_RELATED
+  COURSES_PREMIUM
+  COURSES_DISCOUNT
+  EVENTS_FEATURED
+  EVENTS_UPCOMING
+  EVENTS_LIVE
+  WEBINAR_FEATURED
+  WEBINAR_LIVE
+  WEBINAR_UPCOMING
+  EMPLOYER_HIRING_CAMPAIGN
+  EMPLOYER_CAMPUS_RECRUITMENT
+  EMPLOYER_FEATURED_SERVICES
+  BLOG_FEATURED
+  BLOG_RELATED_COURSES
+  BLOG_RECOMMENDED_PROGRAMS
+}
+
+enum TrackAction {
+  IMPRESSION
+  CLICK
+  CONVERSION
+  REGISTRATION
+  PURCHASE
+}
+
+// -----------------------------------------------------------------------------
+// MULTI-TENANT & CAMPUS HIRING MODELS
+// -----------------------------------------------------------------------------
+
+enum InstituteStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum InstituteType {
+  COLLEGE
+  UNIVERSITY
+  TRAINING_INSTITUTE
+  SKILL_CENTER
+}
+
+enum CampusDriveStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum HiringMode {
+  CAMPUS
+  VIRTUAL
+  HYBRID
+}
+
+model CampusDrive {
+  id                  String                 @id @default(cuid())
+  employerId          String
+  isOffCampus         Boolean                @default(false)
+  eligibilityCriteria Json?
+  title         String
+  description   String?
+  skills        String[]          @default([])
+  jobRole       String?
+  salary        String?
+  openings      Int?
+  hiringMode    HiringMode        @default(CAMPUS)
+  status        CampusDriveStatus @default(REQUESTED)
+  targetYear    String? // Graduation year e.g. "2024"
+  departments   String[]          @default([])
+  location      String?
+  scheduledDate DateTime?
+  completedDate DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  // Dynamic Job Mela Builder Configs
+  participatingCompanies Json? // List of companies with name, logo, roles, etc.
+  customFormFields       Json? // Array of field configurations for the lead gen form
+  brandingAssets         Json? // Custom banner, primary color, logos, etc.
+  hostType               String? @default("TECHWELL")
+  hostName               String?
+  hostLogo               String?
+
+  employer  User                   @relation("EmployerCampusDrives", fields: [employerId], references: [id])
+  institutes CampusDriveInstitute[]
+  students  CampusDriveStudent[]
+}
+
+model CampusDriveInstitute {
+  id          String   @id @default(cuid())
+  driveId     String
+  instituteId String
+  status      String   @default("INVITED") // INVITED, ACCEPTED, REJECTED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  drive     CampusDrive @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  institute Institute   @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+
+  @@unique([driveId, instituteId])
+}
+
+model CampusDriveStudent {
+  id        String   @id @default(cuid())
+  driveId   String
+  userId    String
+  
+  targetEmployerId String? // Added for Multi-Company Job Melas
+  targetRole       String? // Added for Multi-Company Job Melas
+  
+  status         String   @default("ELIGIBLE") // ELIGIBLE, INVITED, APPLIED, SHORTLISTED, TECH_INTERVIEW, HR_INTERVIEW, SELECTED, OFFERED, JOINED, REJECTED
+  resumeUrl      String?
+  offerLetterUrl String?
+  ctc            String?
+  atsScore       Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  drive CampusDrive @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BulkUploadLog {
+  id           String   @id @default(cuid())
+  instituteId  String
+  uploadedBy   String
+  filename     String
+  totalRecords Int
+  successCount Int
+  failedCount  Int
+  errors       Json?
+  createdAt    DateTime @default(now())
+
+  institute Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [uploadedBy], references: [id])
+}
+
+model ConsultancyCoordination {
+  id              String   @id @default(cuid())
+  employerId      String
+  instituteId     String
+  techwellAdminId String
+  status          String   @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  revenue         Float    @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  employer      User      @relation("EmployerCoordination", fields: [employerId], references: [id])
+  institute     Institute @relation(fields: [instituteId], references: [id])
+  techwellAdmin User      @relation("AdminCoordination", fields: [techwellAdminId], references: [id])
+}
+

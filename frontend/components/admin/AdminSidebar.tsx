@@ -29,6 +29,11 @@ import {
     Database,
     FileCode2,
     ShieldCheck,
+    Bot,
+    Workflow,
+    Key,
+    ListTodo,
+    Building2,
     type LucideIcon
 } from "lucide-react"
 
@@ -39,10 +44,12 @@ import { useState, useEffect } from "react"
 
 interface RouteConfig {
     label: string
-    icon: LucideIcon
+    icon?: LucideIcon
     href: string
     permission?: string
     showLeadCounts?: boolean
+    customContent?: React.ReactNode
+    group?: string
 }
 
 type SidebarProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -63,37 +70,92 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         pathname.startsWith("/admin/leads/")
 
     const routes: RouteConfig[] = [
-         { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD" },
-         { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES" },
-         { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES" },
-         { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COUPONS" },
-         { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES" },
-         { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL" },
-         { label: "Central CRM", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", showLeadCounts: true },
-         { label: "Global Data", icon: Database, href: "/admin/global-data", permission: "GLOBAL_DATA" },
-         { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB" },
-         { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER" },
-         { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS" },
-         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS" },
-         { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "TRANSACTIONS" },
-         { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "MESSAGES" },
-         { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "BLOGS" },
-         { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER" },
-         { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER" },
-         { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY" },
-         { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY" },
-         { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES" },
-         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS" },
-         { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS" },
-         { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES" },
-         { label: "Tasks", icon: MessageSquare, href: "/admin/tasks", permission: "TASKS" },
-         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS" },
-         { label: "Reviews", icon: MessageSquare, href: "/admin/reviews", permission: "REVIEWS" },
-         { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "EMPLOYER_REQUESTS" }, 
-         { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY" },
-         { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS" },
-         { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS" },
-         { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS" },
+         { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Overview" },
+         { label: "Global Data", icon: FileText, href: "/admin/global-data", permission: "ADMIN", group: "Overview" },
+         
+         // Requests
+         { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "EMPLOYER_REQUESTS", group: "Requests" },
+         
+         // Tracking
+         { label: "Central CRM", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", showLeadCounts: true, group: "Tracking" },
+         { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Tracking" },
+         { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Tracking" },
+         
+         // Approve
+         { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "REVIEWS", group: "Approve" },
+         { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES", group: "Approve" },
+         
+         // Monitoring
+         { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS", group: "Monitoring" },
+         { label: "GDPR & Compliance", icon: ShieldCheck, href: "/admin/compliance", permission: "ADMIN", group: "Monitoring" },
+         
+         // Operations
+         { label: "Operations Center", icon: ListTodo, href: "/admin/operations", permission: "ADMIN", group: "Operations" },
+         { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES", group: "Operations" },
+         { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES", group: "Operations" },
+         { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS", group: "Operations" },
+         { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES", group: "Operations" },
+         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS", group: "Operations" },
+         { label: "Tasks", icon: ListTodo, href: "/admin/tasks", permission: "TASKS", group: "Operations" },
+         { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS", group: "Operations" },
+         { label: "Automation Studio", icon: Bot, href: "/admin/automation-studio", group: "Operations", customContent: (
+            <div className="space-y-1 mt-2">
+                <Link
+                    href="/admin/automation-studio"
+                    className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio" ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md" : "text-gray-600 hover:bg-blue-50/50 hover:text-blue-600")}
+                >
+                    <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio" ? "bg-white/20" : "bg-blue-100 text-blue-600 group-hover:bg-blue-200")}>
+                        <Workflow className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium text-sm">Workflows</span>
+                </Link>
+                <Link
+                    href="/admin/automation-studio/knowledge"
+                    className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/knowledge" ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md" : "text-gray-600 hover:bg-purple-50/50 hover:text-purple-600")}
+                >
+                    <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/knowledge" ? "bg-white/20" : "bg-purple-100 text-purple-600 group-hover:bg-purple-200")}>
+                        <Database className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium text-sm">AI Knowledge</span>
+                </Link>
+                <Link
+                    href="/admin/automation-studio/integrations"
+                    className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/integrations" ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md" : "text-gray-600 hover:bg-emerald-50/50 hover:text-emerald-600")}
+                >
+                    <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/integrations" ? "bg-white/20" : "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200")}>
+                        <Key className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium text-sm">Integrations</span>
+                </Link>
+            </div>
+         ), permission: "AUTOMATION_STUDIO" },
+         
+         // Campus Hiring
+         { label: "Master Drives", icon: Briefcase, href: "/admin/campus-drives", group: "Campus Hiring" },
+         { label: "Companies", icon: Building2, href: "/admin/companies", group: "Campus Hiring" },
+         { label: "Institutes", icon: GraduationCap, href: "/admin/institutes", group: "Campus Hiring" },
+         { label: "Consulting Revenue", icon: CreditCard, href: "/admin/consultancy-revenue", group: "Campus Hiring" },
+         
+         // Administration
+         { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES", group: "Administration" },
+         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS", group: "Administration" },
+         { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL", group: "Administration" },
+         { label: "Global Data", icon: Database, href: "/admin/global-data", permission: "GLOBAL_DATA", group: "Administration" },
+         { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COUPONS", group: "Administration" },
+         { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "TRANSACTIONS", group: "Administration" },
+         { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "MESSAGES", group: "Administration" },
+         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Administration" },
+         { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY", group: "Administration" },
+         { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Administration" },
+
+         // Deployments
+         { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Deployments" },
+         { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER", group: "Deployments" },
+         { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "BLOGS", group: "Deployments" },
+         { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Deployments" },
+         { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Deployments" },
+         { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Deployments" },
+         { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY", group: "Deployments" },
     ]
 
     const availableRoutes = routes.filter(route => {
@@ -178,64 +240,85 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                 {/* Scrollable Menu ✅ */}
                 <div className="p-3">
                     <nav className="space-y-1 pb-6">
-                        {availableRoutes.map((route) => {
+                        {Object.entries(
+                            availableRoutes.reduce((acc, route) => {
+                                const group = route.group || 'Overview'
+                                if (!acc[group]) acc[group] = []
+                                acc[group].push(route)
+                                return acc
+                            }, {} as Record<string, RouteConfig[]>)
+                        ).map(([group, groupRoutes]) => (
+                            <div key={group} className="mb-4">
+                                {!isCollapsed && (
+                                    <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                                        {group}
+                                    </h3>
+                                )}
+                                {groupRoutes.map((route) => {
+                                    const isActive =
+                                        pathname === route.href ||
+                                        (route.href !== "/admin" && pathname.startsWith(route.href + "/"))
 
-                            const isActive =
-                                pathname === route.href ||
-                                pathname.startsWith(route.href + "/")
-
-                            return (
-                                <div key={route.href}>
-                                    <Link
-                                        href={route.href}
-                                        className={cn(
-                                            "text-sm flex items-center justify-between gap-3 p-3 rounded-lg transition",
-                                            isActive
-                                                ? "text-primary bg-primary/10"
-                                                : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-                                        )}
-                                    >
-                                        <span className="flex min-w-0 items-center">
-                                            <route.icon className={cn("h-5 w-5 flex-shrink-0", isCollapsed ? "mx-auto" : "mr-3")} />
-                                            {!isCollapsed && <span className="truncate">{route.label}</span>}
-                                        </span>
-
-                                        {route.showLeadCounts && canViewLeads && !isCollapsed && (
-                                            <span className="ml-auto flex items-center gap-2">
-                                                <span className="inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold bg-muted">
-                                                    {leadCounts.totalCount}
+                                    return (
+                                        <div key={route.href}>
+                                            <Link
+                                                href={route.href}
+                                                className={cn(
+                                                    "text-sm flex items-center justify-between gap-3 p-3 rounded-lg transition",
+                                                    isActive && !route.customContent
+                                                        ? "text-primary bg-primary/10"
+                                                        : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                )}
+                                            >
+                                                <span className="flex min-w-0 items-center">
+                                                    {route.icon && <route.icon className={cn("h-5 w-5 flex-shrink-0", isCollapsed ? "mx-auto" : "mr-3")} />}
+                                                    {!isCollapsed && <span className="truncate">{route.label}</span>}
                                                 </span>
 
-                                                {leadCounts.unreadCount > 0 && (
-                                                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-                                                        {leadCounts.unreadCount > 99 ? "99+" : leadCounts.unreadCount}
+                                                {route.showLeadCounts && canViewLeads && !isCollapsed && (
+                                                    <span className="ml-auto flex items-center gap-2">
+                                                        <span className="inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold bg-muted">
+                                                            {leadCounts.totalCount}
+                                                        </span>
+
+                                                        {leadCounts.unreadCount > 0 && (
+                                                            <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                                                                {leadCounts.unreadCount > 99 ? "99+" : leadCounts.unreadCount}
+                                                            </span>
+                                                        )}
                                                     </span>
                                                 )}
-                                            </span>
-                                        )}
-                                    </Link>
-                                    
-                                    {route.label === "Central CRM" && !isCollapsed && (
-                                        <div className="ml-8 mt-1 space-y-1 border-l pl-3 border-slate-200 dark:border-slate-800">
-                                            {[
-                                                { label: "Job Enquiries", type: "JOB_ENQUIRY" },
-                                                { label: "Training", type: "TRAINING" },
-                                                { label: "Service Requests", type: "SERVICE_REQUEST" },
-                                                { label: "Software Requests", type: "SOFTWARE_REQUEST" }
-                                            ].map((subRoute) => (
-                                                <Link
-                                                    key={subRoute.type}
-                                                    href={`/admin/leads?type=${subRoute.type}`}
-                                                    className="block text-xs text-muted-foreground hover:text-primary hover:bg-primary/5 p-2 rounded-md transition"
-                                                >
-                                                    {subRoute.label}
-                                                </Link>
-                                            ))}
+                                            </Link>
+
+                                            {route.label === "Central CRM" && !isCollapsed && (
+                                                <div className="ml-8 mt-1 space-y-1 border-l pl-3 border-slate-200 dark:border-slate-800">
+                                                    {[
+                                                        { label: "Job Enquiries", type: "JOB_ENQUIRY" },
+                                                        { label: "Training", type: "TRAINING" },
+                                                        { label: "Service Requests", type: "SERVICE_REQUEST" },
+                                                        { label: "Software Requests", type: "SOFTWARE_REQUEST" }
+                                                    ].map((subRoute) => (
+                                                        <Link
+                                                            key={subRoute.type}
+                                                            href={`/admin/leads?type=${subRoute.type}`}
+                                                            className="block text-xs text-muted-foreground hover:text-primary hover:bg-primary/5 p-2 rounded-md transition"
+                                                        >
+                                                            {subRoute.label}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            
+                                            {route.customContent && isActive && !isCollapsed && (
+                                                <div className="ml-8 mt-1 space-y-1">
+                                                    {route.customContent}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                            )
-                        })}
+                                    )
+                                })}
+                            </div>
+                        ))}
                     </nav>
                 </div>
 

@@ -215,6 +215,13 @@ export default function ConsultancyInvitePage() {
                     <div className="text-sm text-slate-500 mt-4 space-y-1">
                         <p>Document Version: 1.0</p>
                         <p>Agreement Type: Candidate Consent & Placement Consultancy Agreement</p>
+                        {invitation?.totalFee && (
+                            <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-lg inline-block text-left text-slate-800 shadow-sm">
+                                <h3 className="font-bold text-indigo-900 mb-2 uppercase text-xs tracking-wider">Fee Structure</h3>
+                                <p><strong>Total Consultancy Fee:</strong> ₹{invitation.totalFee.toLocaleString()}</p>
+                                {invitation.advanceFee && <p><strong>Advance Fee Payable:</strong> ₹{invitation.advanceFee.toLocaleString()}</p>}
+                            </div>
+                        )}
                     </div>
                 </CardHeader>
 
@@ -474,7 +481,7 @@ export default function ConsultancyInvitePage() {
                                 </label>
                                 <label className="flex items-start space-x-3 cursor-pointer">
                                     <Checkbox className="mt-1" checked={consents.acceptTerms} onCheckedChange={(c) => setConsents({...consents, acceptTerms: !!c})} />
-                                    <span className="text-sm font-bold text-slate-900">I voluntarily accept all the above Terms & Conditions.</span>
+                                    <span className="text-sm font-bold text-slate-900">I am accepting knowingly, aware of this process, I have read everything and accept.</span>
                                 </label>
                             </div>
                         </section>

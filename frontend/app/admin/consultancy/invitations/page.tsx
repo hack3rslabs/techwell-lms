@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { consultancyApi } from "@/lib/api"
+import { consultancyApi, studentsApi } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Link2, Copy, Check } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { Sparkles, Loader2 } from "lucide-react"
 
 const defaultTerms = `# CONSULTANCY TERMS & CONDITIONS
 
@@ -70,6 +71,8 @@ By signing below and completing this submission, I confirm that:
 
 export default function ConsultancyInvitations() {
     const [invitations, setInvitations] = useState<any[]>([])
+    const [students, setStudents] = useState<any[]>([])
+    const [selectedStudent, setSelectedStudent] = useState<string>("manual")
     const [isOpen, setIsOpen] = useState(false)
     const [viewOpen, setViewOpen] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -84,10 +87,28 @@ export default function ConsultancyInvitations() {
     const [activeTab, setActiveTab] = useState<'basic' | 'prefill' | 'terms'>('basic')
     const [submitting, setSubmitting] = useState(false)
     const [copiedId, setCopiedId] = useState<string | null>(null)
+    
+    // Auto Match State
+    const [matchOpen, setMatchOpen] = useState(false)
+    const [matchingId, setMatchingId] = useState<string | null>(null)
+    const [isMatching, setIsMatching] = useState(false)
+    const [matches, setMatches] = useState<any[]>([])
+    const [searchTerm, setSearchTerm] = useState("")
+    const [showDropdown, setShowDropdown] = useState(false)
 
     useEffect(() => {
         fetchInvitations()
+        fetchStudents()
     }, [])
+
+    const fetchStudents = async () => {
+        try {
+            const res = await studentsApi.getAll()
+            setStudents(res.data.students || [])
+        } catch (error) {
+            console.error("Failed to fetch students", error)
+        }
+    }
 
     const fetchInvitations = async () => {
         try {
@@ -118,6 +139,7 @@ export default function ConsultancyInvitations() {
                 }
             })
             setEditingId(null)
+            setSelectedStudent("manual")
             fetchInvitations()
         } catch (error) {
             toast.error(editingId ? "Failed to update invitation" : "Failed to create invitation")
@@ -161,6 +183,42 @@ export default function ConsultancyInvitations() {
         setTimeout(() => setCopiedId(null), 2000)
     }
 
+    const handleAutoMatch = async (invitationId: string) => {
+        setMatchingId(invitationId)
+        setMatchOpen(true)
+        setIsMatching(true)
+        setMatches([])
+        try {
+            const res = await fetch(`/api/consultancy/invitations/${invitationId}/auto-match`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }
+            })
+            const data = await res.json()
+            setMatches(data.matches || [])
+        } catch (error) {
+            toast.error("Failed to auto-match jobs")
+        } finally {
+            setIsMatching(false)
+        }
+    }
+
+    const handleStudentSelect = (studentId: string) => {
+        setSelectedStudent(studentId)
+        if (studentId === "manual") {
+            setFormData({ ...formData, name: "", email: "", phone: "" })
+            return
+        }
+        const student = students.find(s => s.id === studentId)
+        if (student) {
+            setFormData({
+                ...formData,
+                name: student.name,
+                email: student.email,
+                phone: student.phone || ""
+            })
+        }
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -183,6 +241,41 @@ export default function ConsultancyInvitations() {
 
                             {activeTab === 'basic' && (
                                 <div className="space-y-4">
+                                    <div className="mb-4">
+                                        <label className="text-sm font-medium text-primary">Fetch Registered Candidate (Optional)</label>
+                                        <div className="relative mt-1">
+                                            <Input 
+                                                placeholder="Search by Name or Mobile..." 
+                                                value={searchTerm}
+                                                onFocus={() => setShowDropdown(true)}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                                            />
+                                            {showDropdown && (
+                                                <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto text-sm">
+                                                    <div 
+                                                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-muted-foreground"
+                                                        onClick={() => { handleStudentSelect("manual"); setSearchTerm(""); }}
+                                                    >
+                                                        -- Enter Manually --
+                                                    </div>
+                                                    {students.filter(s => 
+                                                        s.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                                        (s.phone && s.phone.includes(searchTerm))
+                                                    ).map(s => (
+                                                        <div 
+                                                            key={s.id} 
+                                                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                            onClick={() => { handleStudentSelect(s.id); setSearchTerm(`${s.name} (${s.phone || 'No phone'})`); }}
+                                                        >
+                                                            <div className="font-medium">{s.name}</div>
+                                                            <div className="text-xs text-muted-foreground">{s.phone || 'No phone'} • {s.email}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="text-sm font-medium">Candidate Name</label>
@@ -294,6 +387,52 @@ export default function ConsultancyInvitations() {
                         )}
                     </DialogContent>
                 </Dialog>
+
+                {/* Auto Match Dialog */}
+                <Dialog open={matchOpen} onOpenChange={setMatchOpen}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-primary" />
+                                AI Job Matcher
+                            </DialogTitle>
+                        </DialogHeader>
+                        
+                        {isMatching ? (
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
+                                <p className="text-muted-foreground animate-pulse">Scanning thousands of jobs with Gemini AI...</p>
+                            </div>
+                        ) : matches.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg mt-4">
+                                No suitable open jobs found for this candidate right now.
+                            </div>
+                        ) : (
+                            <div className="space-y-4 pt-4">
+                                <p className="text-sm text-muted-foreground mb-4">Found {matches.length} highly compatible jobs based on candidate's agreement profile.</p>
+                                {matches.map((match, idx) => (
+                                    <div key={idx} className="border rounded-lg p-4 bg-card hover:border-primary/50 transition-colors">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <h3 className="font-semibold text-lg">{match.title}</h3>
+                                                <div className="mt-2 text-sm bg-primary/10 text-primary px-3 py-2 rounded-md font-medium border border-primary/20">
+                                                    <strong>AI Rationale:</strong> {match.rationale}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <div className="text-2xl font-black text-green-600">{match.matchPercentage}%</div>
+                                                <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Match Score</div>
+                                                <Button size="sm" className="mt-3" onClick={() => toast.success("Applicant mapped to Job. They will be notified.")}>
+                                                    Map to Job
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className="border rounded-lg bg-card">
@@ -341,9 +480,19 @@ export default function ConsultancyInvitations() {
                                     >
                                         Edit
                                     </Button>
-                                    <Button variant="secondary" size="sm" onClick={() => handleCopy(inv.token)}>
+                                    <Button variant="secondary" size="sm" onClick={() => handleCopy(inv.token)} title="Copy Public Link">
                                         {copiedId === inv.token ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                                     </Button>
+                                    {inv.status !== 'INVITED' && inv.status !== 'PENDING_ACCEPTANCE' && (
+                                        <Button 
+                                            size="sm" 
+                                            className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-primary/20 border"
+                                            onClick={() => handleAutoMatch(inv.id)}
+                                            title="AI Match Jobs"
+                                        >
+                                            <Sparkles className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}

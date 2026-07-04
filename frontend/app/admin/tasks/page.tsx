@@ -13,12 +13,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
-    CheckSquare, Plus, Calendar, Clock, AlertCircle, CheckCircle2, User, Trash2, MessageSquare, Send, Target, Download, Edit2, X
+    CheckSquare, Plus, Calendar, Clock, AlertCircle, CheckCircle2, User, Trash2, MessageSquare, Send
 } from 'lucide-react'
 import api from '@/lib/api'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import ExcelJS from 'exceljs'
 
 interface Comment {
     id: string
@@ -41,9 +40,6 @@ interface Task {
     assignee?: { id: string, name: string, avatar?: string }
     comments?: Comment[]
     _count?: { comments: number }
-    goalType?: string | null
-    targetValue?: number | null
-    achievedValue?: number | null
 }
 
 export default function TaskManagerPage() {
@@ -58,7 +54,6 @@ export default function TaskManagerPage() {
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null)
     const [detailOpen, setDetailOpen] = React.useState(false)
     const [commentText, setCommentText] = React.useState('')
-    const [isEditingTask, setIsEditingTask] = React.useState(false)
 
     // New Task Form
     const [newTask, setNewTask] = React.useState({
@@ -67,9 +62,7 @@ export default function TaskManagerPage() {
         priority: 'MEDIUM',
         dueDate: '',
         status: 'PENDING',
-        assignedTo: '',
-        goalType: 'NONE',
-        targetValue: ''
+        assignedTo: ''
     })
 
     React.useEffect(() => {
@@ -94,82 +87,13 @@ export default function TaskManagerPage() {
 
     const handleAddTask = async () => {
         try {
-            const payload = {
-                ...newTask,
-                goalType: newTask.goalType === 'NONE' ? null : newTask.goalType,
-                targetValue: newTask.targetValue ? Number(newTask.targetValue) : null
-            };
-            await api.post('/tasks', payload)
+            await api.post('/tasks', newTask)
             setIsAddOpen(false)
             fetchData()
-            setNewTask({ title: '', description: '', priority: 'MEDIUM', dueDate: '', status: 'PENDING', assignedTo: '', goalType: 'NONE', targetValue: '' })
+            setNewTask({ title: '', description: '', priority: 'MEDIUM', dueDate: '', status: 'PENDING', assignedTo: '' })
             toast.success('Task created')
         } catch (_error) {
             toast.error('Failed to add task')
-        }
-    }
-
-    const handleUpdateTaskDetails = async () => {
-        if (!selectedTask) return
-        try {
-            const payload = {
-                title: selectedTask.title,
-                description: selectedTask.description,
-                priority: selectedTask.priority,
-                status: selectedTask.status,
-                assignedTo: selectedTask.assignedTo,
-                dueDate: selectedTask.dueDate,
-                goalType: selectedTask.goalType === 'NONE' ? null : selectedTask.goalType,
-                targetValue: selectedTask.targetValue ? Number(selectedTask.targetValue) : null
-            };
-            await api.put(`/tasks/${selectedTask.id}`, payload)
-            toast.success('Task updated successfully')
-            setIsEditingTask(false)
-            fetchData()
-        } catch (error) {
-            toast.error('Failed to update task')
-        }
-    }
-
-    const handleExportExcel = () => {
-        try {
-            const exportData = tasks.map(task => ({
-                'ID': task.id,
-                'Title': task.title,
-                'Description': task.description || '',
-                'Status': task.status,
-                'Priority': task.priority,
-                'Due Date': task.dueDate ? format(new Date(task.dueDate), 'yyyy-MM-dd HH:mm') : '',
-                'Assigned To': task.assignee?.name || 'Unassigned',
-                'Goal Type': task.goalType || 'None',
-                'Target Value': task.targetValue || 0,
-                'Achieved Value': task.achievedValue || 0,
-                'Comments Count': task.comments?.length || 0,
-            }))
-            
-            
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("Tasks Analytics");
-        
-        if (exportData && exportData.length > 0) {
-            worksheet.columns = Object.keys(exportData[0]).map(key => ({ header: key, key }));
-            worksheet.addRows(exportData);
-        }
-        
-        workbook.xlsx.writeBuffer().then((buffer) => {
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Task_Analytics_Export_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-            toast.success("Exported successfully")
-        } catch (error) {
-            toast.error("Failed to export")
         }
     }
 
@@ -182,18 +106,6 @@ export default function TaskManagerPage() {
         try {
             setTasks(prev => prev.map(t => t.id === id ? { ...t, status: nextStatus as Task['status'] } : t))
             await api.put(`/tasks/${id}`, { status: nextStatus })
-        } catch (_error) {
-            fetchData()
-        }
-    }
-
-    const handleUpdateProgress = async (id: string, newAchievedValue: number) => {
-        try {
-            setTasks(prev => prev.map(t => t.id === id ? { ...t, achievedValue: newAchievedValue } : t))
-            if(selectedTask && selectedTask.id === id) {
-                setSelectedTask({ ...selectedTask, achievedValue: newAchievedValue })
-            }
-            await api.put(`/tasks/${id}`, { achievedValue: newAchievedValue })
         } catch (_error) {
             fetchData()
         }
@@ -242,7 +154,6 @@ export default function TaskManagerPage() {
 
     const openDetail = (task: Task) => {
         setSelectedTask(task)
-        setIsEditingTask(false)
         setDetailOpen(true)
     }
 
@@ -323,18 +234,13 @@ export default function TaskManagerPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Task Manager</h1>
                     <p className="text-muted-foreground">Organize your team&apos;s workflow and priorities.</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={handleExportExcel} className="hidden md:flex">
-                        <Download className="mr-2 h-4 w-4" />
-                        Export Analytics
-                    </Button>
-                    <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Plus className="mr-2 h-4 w-4" />
-                                New Task
-                            </Button>
-                        </DialogTrigger>
+                <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <Plus className="mr-2 h-4 w-4" />
+                            New Task
+                        </Button>
+                    </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Create New Task</DialogTitle>
@@ -374,26 +280,8 @@ export default function TaskManagerPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Due Date</label>
-                                    <Input type="datetime-local" value={newTask.dueDate} onChange={e => setNewTask({ ...newTask, dueDate: e.target.value })} />
+                                    <Input type="date" value={newTask.dueDate} onChange={e => setNewTask({ ...newTask, dueDate: e.target.value })} />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Goal Type (Optional)</label>
-                                    <Select value={newTask.goalType} onValueChange={v => setNewTask({ ...newTask, goalType: v })}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="NONE">None</SelectItem>
-                                            <SelectItem value="TELESALES">Telesales Target</SelectItem>
-                                            <SelectItem value="REVENUE">Revenue Target</SelectItem>
-                                            <SelectItem value="BUSINESS_GROWTH">Business Growth Target</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                {newTask.goalType !== 'NONE' && (
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Target Value</label>
-                                        <Input type="number" value={newTask.targetValue} onChange={e => setNewTask({ ...newTask, targetValue: e.target.value })} placeholder="e.g. 5000" />
-                                    </div>
-                                )}
                             </div>
                         </div>
                         <DialogFooter>
@@ -401,7 +289,6 @@ export default function TaskManagerPage() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-                </div>
             </div>
 
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 min-h-0">
@@ -415,161 +302,76 @@ export default function TaskManagerPage() {
                 <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
                     <DialogHeader>
                         <div className="flex justify-between items-start pr-8">
-                            <DialogTitle className="text-xl">
-                                {isEditingTask ? 'Edit Task Details' : selectedTask?.title}
-                            </DialogTitle>
-                            <div className="flex gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => setIsEditingTask(!isEditingTask)}>
-                                    {isEditingTask ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
-                                </Button>
-                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => selectedTask && handleDeleteTask(selectedTask.id)}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
+                            <DialogTitle className="text-xl">{selectedTask?.title}</DialogTitle>
+                            <Button variant="ghost" size="icon" className="text-destructive" onClick={() => selectedTask && handleDeleteTask(selectedTask.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
                         </div>
                     </DialogHeader>
 
                     <div className="flex-1 overflow-y-auto pr-2 space-y-6">
-                        {isEditingTask ? (
-                            <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Task Title</label>
-                                    <Input value={selectedTask?.title || ''} onChange={e => setSelectedTask(prev => prev ? {...prev, title: e.target.value} : null)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Description</label>
-                                    <Textarea value={selectedTask?.description || ''} onChange={e => setSelectedTask(prev => prev ? {...prev, description: e.target.value} : null)} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Status</label>
-                                        <Select value={selectedTask?.status} onValueChange={v => setSelectedTask(prev => prev ? {...prev, status: v as any} : null)}>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="PENDING">Pending (To Do)</SelectItem>
-                                                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                                                <SelectItem value="COMPLETED">Completed</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Priority</label>
-                                        <Select value={selectedTask?.priority} onValueChange={v => setSelectedTask(prev => prev ? {...prev, priority: v as any} : null)}>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="LOW">Low</SelectItem>
-                                                <SelectItem value="MEDIUM">Medium</SelectItem>
-                                                <SelectItem value="HIGH">High</SelectItem>
-                                                <SelectItem value="URGENT">Urgent</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Assign To</label>
-                                        <Select value={selectedTask?.assignedTo || ''} onValueChange={v => setSelectedTask(prev => prev ? {...prev, assignedTo: v} : null)}>
-                                            <SelectTrigger><SelectValue placeholder="Select User" /></SelectTrigger>
-                                            <SelectContent>
-                                                {users.map(u => (
-                                                    <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Due Date</label>
-                                        <Input type="datetime-local" value={selectedTask?.dueDate?.slice(0, 16) || ''} onChange={e => setSelectedTask(prev => prev ? {...prev, dueDate: new Date(e.target.value).toISOString()} : null)} />
-                                    </div>
-                                </div>
-                                <Button className="w-full mt-4" onClick={handleUpdateTaskDetails}>Save Changes</Button>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="flex gap-4 text-sm text-muted-foreground">
-                                    <Badge variant="outline">{selectedTask?.priority}</Badge>
-                                    <span className="flex items-center gap-1">
-                                        <User className="h-3 w-3" />
-                                        Assigned to: {selectedTask?.assignee?.name || 'Unassigned'}
-                                    </span>
-                                    {selectedTask?.dueDate && (
-                                        <span className="flex items-center gap-1">
-                                            <Calendar className="h-3 w-3" />
-                                            Due: {format(new Date(selectedTask.dueDate), 'MMM d, yyyy h:mm a')}
-                                        </span>
-                                    )}
-                                </div>
+                        <div className="flex gap-4 text-sm text-muted-foreground">
+                            <Badge variant="outline">{selectedTask?.priority}</Badge>
+                            <span className="flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                Assigned to: {selectedTask?.assignee?.name || 'Unassigned'}
+                            </span>
+                            {selectedTask?.dueDate && (
+                                <span className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    Due: {format(new Date(selectedTask.dueDate), 'MMM d, yyyy')}
+                                </span>
+                            )}
+                        </div>
 
-                                {selectedTask?.goalType && (
-                                    <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-lg space-y-2">
-                                        <h3 className="font-semibold text-indigo-900 flex items-center gap-2">
-                                            <Target className="h-4 w-4 text-indigo-600" /> Goal: {selectedTask.goalType.replace('_', ' ')}
-                                        </h3>
-                                        <div className="flex items-center gap-4 text-sm text-indigo-800">
-                                            <div>Target: <span className="font-bold">{selectedTask.targetValue}</span></div>
-                                            <div className="flex-1">
-                                                <label className="text-xs">Progress (Achieved)</label>
-                                                <Input 
-                                                    type="number" 
-                                                    className="h-8 bg-white" 
-                                                    defaultValue={selectedTask.achievedValue || 0}
-                                                    onBlur={(e) => handleUpdateProgress(selectedTask.id, Number(e.target.value))}
-                                                />
+                        <div className="text-sm bg-muted/30 p-4 rounded-lg">
+                            {selectedTask?.description || 'No description provided.'}
+                        </div>
+
+                        {/* Comments Section */}
+                        <div className="space-y-4">
+                            <h3 className="font-semibold flex items-center gap-2">
+                                <MessageSquare className="h-4 w-4" />
+                                Comments
+                            </h3>
+
+                            <div className="space-y-4 mb-4">
+                                {selectedTask?.comments && selectedTask.comments.length > 0 ? (
+                                    selectedTask.comments.map(comment => (
+                                        <div key={comment.id} className="flex gap-3 text-sm">
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={comment.user?.avatar} />
+                                                <AvatarFallback>{comment.user?.name?.[0]}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">{comment.user?.name}</span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {format(new Date(comment.createdAt), 'MMM d, h:mm a')}
+                                                    </span>
+                                                </div>
+                                                <p className="text-muted-foreground">{comment.content}</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-muted-foreground italic">No comments yet.</p>
                                 )}
-
-                                <div className="text-sm bg-muted/30 p-4 rounded-lg">
-                                    {selectedTask?.description || 'No description provided.'}
-                                </div>
-
-                                {/* Comments Section */}
-                                <div className="space-y-4">
-                                    <h3 className="font-semibold flex items-center gap-2">
-                                        <MessageSquare className="h-4 w-4" />
-                                        Comments
-                                    </h3>
-
-                                    <div className="space-y-4 mb-4">
-                                        {selectedTask?.comments && selectedTask.comments.length > 0 ? (
-                                            selectedTask.comments.map(comment => (
-                                                <div key={comment.id} className="flex gap-3 text-sm">
-                                                    <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={comment.user?.avatar} />
-                                                        <AvatarFallback>{comment.user?.name?.[0]}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="flex-1 space-y-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-medium">{comment.user?.name}</span>
-                                                            <span className="text-xs text-muted-foreground">
-                                                                {format(new Date(comment.createdAt), 'MMM d, h:mm a')}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-muted-foreground">{comment.content}</p>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground italic">No comments yet.</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </>
-                        )}
+                            </div>
+                        </div>
                     </div>
 
-                    {!isEditingTask && (
-                        <div className="pt-4 border-t flex gap-2">
-                            <Input
-                                placeholder="Write a comment..."
-                                value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-                            />
-                            <Button size="icon" onClick={handleAddComment} disabled={!commentText.trim()}>
-                                <Send className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    )}
+                    <div className="pt-4 border-t flex gap-2">
+                        <Input
+                            placeholder="Write a comment..."
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                        />
+                        <Button size="icon" onClick={handleAddComment} disabled={!commentText.trim()}>
+                            <Send className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

@@ -93,19 +93,10 @@ router.get('/verify/:uniqueId', async (req, res, next) => {
         // Check expiry
         const isExpired = certificate.expiryDate && new Date(certificate.expiryDate) < new Date();
 
-        // Fetch settings
-        const settings = await prisma.certificateSettings.findFirst({ where: { instituteId: 'default' } });
-
         res.json({
             verified: certificate.isValid && !isExpired,
-            certificate: {
-                ...certificate,
-                instituteLogoUrl: settings?.instituteLogoUrl,
-                stampUrl: settings?.stampUrl,
-                stampPosition: settings?.stampPosition
-            },
-            isExpired,
-            settings
+            certificate,
+            isExpired
         });
     } catch (error) {
         next(error);
@@ -117,9 +108,9 @@ router.get('/verify/:uniqueId', async (req, res, next) => {
  * @desc    Get single certificate details
  * @access  Private
  */
-router.get('/:id', optionalAuth, async (req, res, next) => {
+router.get('/:id', authenticate, async (req, res, next) => {
     try {
-        let certificate = await prisma.certificate.findUnique({
+        const certificate = await prisma.certificate.findUnique({
             where: { id: req.params.id },
             include: {
                 template: true,
@@ -128,42 +119,16 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
         });
 
         if (!certificate) {
-            certificate = await prisma.certificate.findUnique({
-                where: { uniqueId: req.params.id },
-                include: {
-                    template: true,
-                    user: { select: { name: true, email: true } }
-                }
-            });
-        }
-
-        if (!certificate) {
             return res.status(404).json({ error: 'Certificate not found' });
         }
 
-        // If certificate is invalid, restrict access to owner or admin
-        if (!certificate.isValid) {
-            if (!req.user) {
-                return res.status(401).json({ error: 'Authentication required for invalid certificate verification' });
-            }
-            const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
-            if (!isAdmin && certificate.userId !== req.user.id) {
-                return res.status(403).json({ error: 'Access denied' });
-            }
+        // Check access
+        const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
+        if (!isAdmin && certificate.userId !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied' });
         }
 
-        // Fetch settings
-        const settings = await prisma.certificateSettings.findFirst({ where: { instituteId: 'default' } });
-
-        res.json({
-            certificate: {
-                ...certificate,
-                instituteLogoUrl: settings?.instituteLogoUrl,
-                stampUrl: settings?.stampUrl,
-                stampPosition: settings?.stampPosition
-            },
-            settings
-        });
+        res.json({ certificate });
     } catch (error) {
         next(error);
     }
@@ -262,217 +227,6 @@ router.post('/generate', authenticate, async (req, res, next) => {
 });
 
 /**
- * @route   POST /api/certificates/bulk-generate
- * @desc    Bulk generate certificates for completed enrollments in a course
- * @access  Private/Admin
- */
-router.post('/bulk-generate', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
-    try {
-        const { courseId, batchId } = req.body;
-        if (!courseId && !batchId) {
-            return res.status(400).json({ error: 'courseId or batchId is required' });
-        }
-
-        let targetCourseId = courseId;
-        if (batchId) {
-            const batch = await prisma.batch.findUnique({ where: { id: batchId } });
-            if (!batch) return res.status(404).json({ error: 'Batch not found' });
-            targetCourseId = batch.courseId;
-        }
-
-        const [course, defaultTemplate, settings] = await Promise.all([
-            prisma.course.findUnique({ where: { id: targetCourseId } }),
-            prisma.certificateTemplate.findFirst({ where: { isDefault: true, isActive: true } }),
-            prisma.certificateSettings.findFirst({ where: { instituteId: 'default' } })
-        ]);
-
-        if (!course) {
-            return res.status(404).json({ error: 'Course not found' });
-        }
-
-        let certSettings = settings;
-        if (!certSettings) {
-            certSettings = await prisma.certificateSettings.create({
-                data: { instituteId: 'default' }
-            });
-        }
-
-        const whereClause = {
-            courseId: targetCourseId,
-            status: 'COMPLETED'
-        };
-        if (batchId) {
-            whereClause.batchId = batchId;
-        }
-
-        const completedEnrollments = await prisma.enrollment.findMany({
-            where: whereClause,
-            include: {
-                user: true
-            }
-        });
-
-        let generatedCount = 0;
-
-        for (const enrollment of completedEnrollments) {
-            const existing = await prisma.certificate.findFirst({
-                where: { userId: enrollment.userId, courseId: targetCourseId }
-            });
-
-            if (!existing) {
-                const newSequence = certSettings.currentSequence + 1;
-                certSettings = await prisma.certificateSettings.update({
-                    where: { id: certSettings.id },
-                    data: { currentSequence: newSequence }
-                });
-
-                const year = certSettings.yearInId ? new Date().getFullYear() : '';
-                const sequence = String(newSequence).padStart(certSettings.sequenceDigits, '0');
-                const uniqueId = certSettings.yearInId
-                    ? `${certSettings.prefix}-${year}-${sequence}`
-                    : `${certSettings.prefix}-${sequence}`;
-
-                let expiryDate = null;
-                if (certSettings?.defaultValidityMonths) {
-                    expiryDate = new Date();
-                    expiryDate.setMonth(expiryDate.getMonth() + certSettings.defaultValidityMonths);
-                }
-
-                await prisma.certificate.create({
-                    data: {
-                        uniqueId,
-                        userId: enrollment.userId,
-                        courseId: targetCourseId,
-                        enrollmentId: enrollment.id,
-                        studentName: enrollment.user.name,
-                        courseName: course.title,
-                        courseCategory: course.category,
-                        grade: 'A',
-                        score: 100,
-                        templateId: defaultTemplate?.id,
-                        signatureUrl: certSettings?.defaultSignatureUrl,
-                        signatoryName: certSettings?.defaultSignatoryName || 'Director',
-                        signatoryTitle: certSettings?.defaultSignatoryTitle || 'Academic Director',
-                        expiryDate,
-                        verificationUrl: `/certificates/verify/${uniqueId}`
-                    }
-                });
-
-                generatedCount++;
-            }
-        }
-
-        res.status(200).json({
-            message: `Bulk generation completed. Generated ${generatedCount} certificates.`,
-            count: generatedCount
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   POST /api/certificates/manual-generate
- * @desc    Manually generate certificates with custom dates (e.g. for old batches)
- * @access  Private/Admin
- */
-router.post('/manual-generate', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
-    try {
-        const { batchId, issueDate, startDate, endDate } = req.body;
-        if (!batchId) {
-            return res.status(400).json({ error: 'batchId is required' });
-        }
-
-        const batch = await prisma.batch.findUnique({ where: { id: batchId }, include: { course: true } });
-        if (!batch) return res.status(404).json({ error: 'Batch not found' });
-
-        const [defaultTemplate, settings] = await Promise.all([
-            prisma.certificateTemplate.findFirst({ where: { isDefault: true, isActive: true } }),
-            prisma.certificateSettings.findFirst({ where: { instituteId: 'default' } })
-        ]);
-
-        let certSettings = settings;
-        if (!certSettings) {
-            certSettings = await prisma.certificateSettings.create({ data: { instituteId: 'default' } });
-        }
-
-        // Fetch all enrollments for this batch, regardless of status, since it's a manual override for old batches
-        const enrollments = await prisma.enrollment.findMany({
-            where: { batchId },
-            include: { user: true }
-        });
-
-        if (enrollments.length === 0) {
-            return res.status(400).json({ error: 'No students found in this batch' });
-        }
-
-        let generatedCount = 0;
-
-        for (const enrollment of enrollments) {
-            const existing = await prisma.certificate.findFirst({
-                where: { userId: enrollment.userId, courseId: batch.courseId }
-            });
-
-            if (!existing) {
-                const newSequence = certSettings.currentSequence + 1;
-                certSettings = await prisma.certificateSettings.update({
-                    where: { id: certSettings.id },
-                    data: { currentSequence: newSequence }
-                });
-
-                const year = certSettings.yearInId ? (issueDate ? new Date(issueDate).getFullYear() : new Date().getFullYear()) : '';
-                const sequence = String(newSequence).padStart(certSettings.sequenceDigits, '0');
-                const uniqueId = certSettings.yearInId
-                    ? `${certSettings.prefix}-${year}-${sequence}`
-                    : `${certSettings.prefix}-${sequence}`;
-
-                await prisma.certificate.create({
-                    data: {
-                        uniqueId,
-                        userId: enrollment.userId,
-                        courseId: batch.courseId,
-                        enrollmentId: enrollment.id,
-                        studentName: enrollment.user.name,
-                        courseName: batch.course.title,
-                        courseCategory: batch.course.category,
-                        grade: 'A',
-                        score: 100,
-                        issueDate: issueDate ? new Date(issueDate) : new Date(),
-                        startDate: startDate ? new Date(startDate) : null,
-                        endDate: endDate ? new Date(endDate) : null,
-                        templateId: defaultTemplate?.id,
-                        signatureUrl: certSettings?.defaultSignatureUrl,
-                        signatoryName: certSettings?.defaultSignatoryName || 'Director',
-                        signatoryTitle: certSettings?.defaultSignatoryTitle || 'Academic Director',
-                        verificationUrl: `/certificates/verify/${uniqueId}`
-                    }
-                });
-
-                generatedCount++;
-            } else if (issueDate || startDate || endDate) {
-                 // Update existing if dates are provided in manual generation
-                 await prisma.certificate.update({
-                     where: { id: existing.id },
-                     data: {
-                         issueDate: issueDate ? new Date(issueDate) : existing.issueDate,
-                         startDate: startDate ? new Date(startDate) : existing.startDate,
-                         endDate: endDate ? new Date(endDate) : existing.endDate
-                     }
-                 });
-                 generatedCount++;
-            }
-        }
-
-        res.status(200).json({
-            message: `Manual generation completed. Processed ${generatedCount} certificates.`,
-            count: generatedCount
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
  * @route   PUT /api/certificates/:id/invalidate
  * @desc    Invalidate a certificate
  * @access  Private/Admin
@@ -532,9 +286,7 @@ router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), asy
             defaultSignatoryTitle,
             defaultValidityMonths,
             instituteName,
-            instituteLogoUrl,
-            stampUrl,
-            stampPosition
+            instituteLogoUrl
         } = req.body;
 
         let settings = await prisma.certificateSettings.findFirst({
@@ -553,9 +305,7 @@ router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), asy
                     defaultSignatoryTitle,
                     defaultValidityMonths,
                     instituteName,
-                    instituteLogoUrl,
-                    stampUrl,
-                    stampPosition
+                    instituteLogoUrl
                 }
             });
         } else {
@@ -570,9 +320,7 @@ router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), asy
                     defaultSignatoryTitle,
                     defaultValidityMonths,
                     instituteName,
-                    instituteLogoUrl,
-                    stampUrl,
-                    stampPosition
+                    instituteLogoUrl
                 }
             });
         }

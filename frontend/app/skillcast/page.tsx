@@ -16,8 +16,7 @@ export default function SkillcastPage() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
-        fetch(`${apiUrl}/skillcasts`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/skillcasts`)
             .then(res => res.json())
             .then(data => {
                 setSkillcasts(Array.isArray(data) ? data : [])

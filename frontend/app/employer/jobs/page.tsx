@@ -52,6 +52,16 @@ export default function EmployerJobsPage() {
         }
     }
 
+    const deleteJob = async (job: Job) => {
+        if (!window.confirm(`Delete "${job.title}"?`)) return
+        try {
+            await api.delete(`/jobs/${job.id}`)
+            setJobs(current => current.filter(item => item.id !== job.id))
+        } catch {
+            alert("Failed to delete job")
+        }
+    }
+
     const filteredJobs = jobs.filter(job =>
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.location.toLowerCase().includes(searchQuery.toLowerCase())
@@ -228,7 +238,10 @@ export default function EmployerJobsPage() {
                                                         <Briefcase className="mr-2 h-4 w-4" /> Close Job
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator className="bg-gray-100" />
-                                                    <DropdownMenuItem className="cursor-pointer text-red-600 rounded-lg focus:bg-red-50 focus:text-red-700 font-medium">
+                                                    <DropdownMenuItem
+                                                        className="cursor-pointer text-red-600 rounded-lg focus:bg-red-50 focus:text-red-700 font-medium"
+                                                        onClick={() => deleteJob(job)}
+                                                    >
                                                         <Trash2 className="mr-2 h-4 w-4" /> Delete Listing
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, RefreshCw, Search, ShieldAlert, Activity, AlertTriangle, Info, AlertOctagon } from "lucide-react"
+import { Loader2, RefreshCw, Search, ShieldAlert, Activity } from "lucide-react"
 
 interface AuditLogUser {
     id: string;
@@ -30,32 +30,22 @@ interface GlobalAuditLog {
     performedBy: string
     user?: AuditLogUser
     details?: unknown
-    severity: string
-    userRole?: string
 }
 
 export default function GlobalAuditLogsPage() {
     const [logs, setLogs] = useState<GlobalAuditLog[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isRefreshing, setIsRefreshing] = useState(false)
-    const [summary, setSummary] = useState({ INFO: 0, WARNING: 0, CRITICAL: 0, TOTAL: 0 })
 
     // Filters
     const [search, setSearch] = useState("")
     const [actionFilter, setActionFilter] = useState("ALL")
     const [entityFilter, setEntityFilter] = useState("ALL")
-    const [roleFilter, setRoleFilter] = useState("ALL")
-    const [severityFilter, setSeverityFilter] = useState("ALL")
-    const [ipAddress, setIpAddress] = useState("")
-    const [startDate, setStartDate] = useState("")
-    const [endDate, setEndDate] = useState("")
 
     const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 1 })
 
-    const ACTIONS = ["ALL", "LOGIN", "CREATE", "UPDATE", "DELETE", "REGISTER", "ENROLL", "UNAUTHORIZED_ACCESS", "EXPORT"]
-    const ENTITIES = ["ALL", "USER", "COURSE", "MODULE", "LESSON", "SYSTEM", "LEAD", "PAYMENT", "DATA_EXPORT"]
-    const ROLES = ["ALL", "SUPER_ADMIN", "ADMIN", "INSTITUTE_ADMIN", "INSTRUCTOR", "STAFF", "STUDENT", "EMPLOYER"]
-    const SEVERITIES = ["ALL", "INFO", "WARNING", "CRITICAL"]
+    const ACTIONS = ["ALL", "LOGIN", "CREATE", "UPDATE", "DELETE", "REGISTER", "ENROLL"]
+    const ENTITIES = ["ALL", "USER", "COURSE", "MODULE", "LESSON", "SYSTEM", "LEAD", "PAYMENT"]
 
     const fetchLogs = useCallback(async (isSilentRefresh = false) => {
         if (!isSilentRefresh) setIsLoading(true)
@@ -68,18 +58,10 @@ export default function GlobalAuditLogsPage() {
             if (search) params.search = search
             if (actionFilter !== "ALL") params.action = actionFilter
             if (entityFilter !== "ALL") params.entityType = entityFilter
-            if (roleFilter !== "ALL") params.role = roleFilter
-            if (severityFilter !== "ALL") params.severity = severityFilter
-            if (ipAddress) params.ipAddress = ipAddress
-            if (startDate) params.startDate = startDate
-            if (endDate) params.endDate = endDate
 
             const res = await userApi.getAuditLogs(params)
             
             setLogs(res.data.logs)
-            if (res.data.summary) {
-                setSummary(res.data.summary)
-            }
             setPagination(res.data.pagination)
         } catch (error) {
             console.error("Failed to fetch audit logs", error)
@@ -87,7 +69,7 @@ export default function GlobalAuditLogsPage() {
             setIsLoading(false)
             setIsRefreshing(false)
         }
-    }, [search, actionFilter, entityFilter, roleFilter, severityFilter, ipAddress, startDate, endDate, pagination.page, pagination.limit])
+    }, [search, actionFilter, entityFilter, pagination.page, pagination.limit])
 
     useEffect(() => {
         fetchLogs()
@@ -106,27 +88,7 @@ export default function GlobalAuditLogsPage() {
             case 'ENROLL': return 'bg-emerald-500 hover:bg-emerald-600'
             case 'UPDATE': return 'bg-blue-500 hover:bg-blue-600'
             case 'DELETE': return 'bg-red-500 hover:bg-red-600'
-            case 'UNAUTHORIZED_ACCESS': return 'bg-purple-600 hover:bg-purple-700'
-            case 'EXPORT': return 'bg-orange-500 hover:bg-orange-600'
             default: return 'bg-slate-500 hover:bg-slate-600'
-        }
-    }
-
-    const getRowStyle = (severity: string) => {
-        switch (severity) {
-            case 'CRITICAL': return 'bg-red-500/10 hover:bg-red-500/20'
-            case 'WARNING': return 'bg-orange-500/10 hover:bg-orange-500/20'
-            case 'INFO': return 'bg-blue-500/10 hover:bg-blue-500/20'
-            default: return 'hover:bg-muted/50'
-        }
-    }
-
-    const getSeverityBadgeClass = (severity: string) => {
-        switch (severity) {
-            case 'CRITICAL': return 'bg-red-500 hover:bg-red-600 text-white'
-            case 'WARNING': return 'bg-orange-500 hover:bg-orange-600 text-white'
-            case 'INFO': return 'bg-blue-500 hover:bg-blue-600 text-white'
-            default: return 'bg-slate-500 hover:bg-slate-600 text-white'
         }
     }
 
@@ -153,83 +115,36 @@ export default function GlobalAuditLogsPage() {
                 </Button>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-                <div className="bg-blue-50 border border-blue-200 rounded-md px-3 py-1.5 flex items-center gap-2">
-                    <Info className="h-4 w-4 text-blue-600" />
-                    <span className="text-xs font-semibold text-blue-700">Info: {summary.INFO}</span>
-                </div>
-                <div className="bg-orange-50 border border-orange-200 rounded-md px-3 py-1.5 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-orange-600" />
-                    <span className="text-xs font-semibold text-orange-700">Warning: {summary.WARNING}</span>
-                </div>
-                <div className="bg-red-50 border border-red-200 rounded-md px-3 py-1.5 flex items-center gap-2">
-                    <AlertOctagon className="h-4 w-4 text-red-600" />
-                    <span className="text-xs font-semibold text-red-700">Critical: {summary.CRITICAL}</span>
-                </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-slate-600" />
-                    <span className="text-xs font-semibold text-slate-700">Total: {summary.TOTAL}</span>
-                </div>
-            </div>
-
             <Card className="flex-1 overflow-hidden flex flex-col shadow-lg border-primary/10">
-                <CardHeader className="bg-muted/30 pb-4 border-b space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex-1 min-w-[200px] relative">
+                <CardHeader className="bg-muted/30 pb-4 border-b">
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                        <div className="flex items-center gap-2 w-full sm:w-1/3 relative">
                             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input 
-                                placeholder="Search Path, Actor ID..." 
+                                placeholder="Search IP, User ID, Path..." 
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 h-10"
+                                className="pl-9"
                                 onKeyDown={(e) => e.key === 'Enter' && handleRefresh()}
                             />
                         </div>
-                        <Input 
-                            type="text"
-                            placeholder="IP Address"
-                            value={ipAddress}
-                            onChange={(e) => setIpAddress(e.target.value)}
-                            className="w-[130px] h-10"
-                            onKeyDown={(e) => e.key === 'Enter' && handleRefresh()}
-                        />
-                        <Select value={actionFilter} onValueChange={setActionFilter}>
-                            <SelectTrigger className="w-[110px] h-10">
-                                <SelectValue placeholder="Action" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {ACTIONS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <Select value={entityFilter} onValueChange={setEntityFilter}>
-                            <SelectTrigger className="w-[110px] h-10">
-                                <SelectValue placeholder="Entity" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {ENTITIES.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <Select value={roleFilter} onValueChange={setRoleFilter}>
-                            <SelectTrigger className="w-[110px] h-10">
-                                <SelectValue placeholder="Role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                            <SelectTrigger className="w-[110px] h-10">
-                                <SelectValue placeholder="Severity" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {SEVERITIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <div className="flex gap-2 items-center">
-                            <span className="text-xs text-muted-foreground">From</span>
-                            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-[130px] h-10" />
-                            <span className="text-xs text-muted-foreground">To</span>
-                            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-[130px] h-10" />
+                        <div className="flex items-center gap-4 w-full sm:w-auto">
+                            <Select value={actionFilter} onValueChange={setActionFilter}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="Action" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {ACTIONS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                            <Select value={entityFilter} onValueChange={setEntityFilter}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="Entity" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {ENTITIES.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 </CardHeader>
@@ -257,20 +172,14 @@ export default function GlobalAuditLogsPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {logs.map((log) => (
-                                        <TableRow key={log.id} className={`transition-colors ${getRowStyle(log.severity)}`}>
+                                        <TableRow key={log.id} className="hover:bg-muted/50 transition-colors">
                                             <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">
                                                 {new Date(log.timestamp).toLocaleString()}
-                                                {log.severity && (
-                                                    <Badge className={`${getSeverityBadgeClass(log.severity)} ml-2 text-[9px]`}>
-                                                        {log.severity}
-                                                    </Badge>
-                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium text-sm flex items-center gap-1">
+                                                    <span className="font-medium text-sm">
                                                         {log.user?.name || 'System Operator'}
-                                                        {log.userRole && <Badge variant="outline" className="text-[9px]">{log.userRole}</Badge>}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">
                                                         {log.user?.email || log.performedBy}
@@ -318,7 +227,7 @@ export default function GlobalAuditLogsPage() {
                 {/* Pagination Footer */}
                 <div className="border-t p-4 bg-muted/20 flex justify-between items-center">
                     <p className="text-sm text-muted-foreground">
-                        Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} entries
+                        Showing {(pagination.page - 1) * pagination.limit + 1} to Math.min(pagination.page * pagination.limit, pagination.total) of {pagination.total} entries
                     </p>
                     <div className="flex gap-2">
                         <Button 

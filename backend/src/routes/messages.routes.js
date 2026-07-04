@@ -7,7 +7,11 @@ const {
   markMessageAsRead,
   getUnreadCount,
   getAllMessages,
-  deleteMessage
+  deleteMessage,
+//   sendMessageToAdmin,
+//   createTemplate,
+//   getTemplates,
+//   deleteTemplate
 } = require('../controllers/messages.controller');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
@@ -20,6 +24,7 @@ router.use(authenticate);
 router.get('/my-messages', getStudentMessages);
 router.get('/unread-count', getUnreadCount);
 router.put('/:messageId/read', markMessageAsRead);
+// router.post('/send-to-admin', sendMessageToAdmin);
 
 // Admin routes (require admin/instructor role)
 router.post('/send-to-all', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToStudents);
@@ -27,5 +32,10 @@ router.post('/send-to-batch', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'S
 router.post('/send-to-student', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToStudent);
 router.get('/', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), getAllMessages);
 router.delete('/:messageId', authorize('ADMIN', 'SUPER_ADMIN', 'STAFF'), deleteMessage);
+
+// Template routes
+// router.post('/templates', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), createTemplate);
+// router.get('/templates', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), getTemplates);
+// router.delete('/templates/:id', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), deleteTemplate);
 
 module.exports = router;

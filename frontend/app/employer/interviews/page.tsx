@@ -41,7 +41,7 @@ export default function EmployerInterviewsPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [activeTab, setActiveTab] = useState("upcoming")
     const [searchQuery, setSearchQuery] = useState("")
-    const router = useRouter()
+    const _router = useRouter()
 
     const fetchInterviews = useCallback(async () => {
         try {
@@ -236,7 +236,7 @@ export default function EmployerInterviewsPage() {
                                             <TableCell className="text-right pr-6 py-4">
                                                 <div className="flex items-center justify-end gap-2">
                                                     {interview.meetingLink && (
-                                                        <Button variant="outline" size="sm" className="h-8 text-xs font-semibold px-3 border-blue-200 text-blue-700 hover:bg-blue-50 bg-blue-50/50" onClick={() => router.push(`/employer/interviews/live/${interview.id}`)}>
+                                                        <Button variant="outline" size="sm" className="h-8 text-xs font-semibold px-3 border-blue-200 text-blue-700 hover:bg-blue-50 bg-blue-50/50" onClick={() => window.open(interview.meetingLink, '_blank')}>
                                                             <Video className="mr-1.5 h-3.5 w-3.5" /> Join
                                                         </Button>
                                                     )}

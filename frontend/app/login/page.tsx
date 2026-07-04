@@ -14,7 +14,7 @@ import { LoginCharacter } from '@/components/auth/LoginCharacter'
 export default function LoginPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const { login, verify2FA, isAuthenticated, user } = useAuth()
+    const { login, isAuthenticated, user } = useAuth()
 
     const [email, setEmail] = React.useState('')
     const [password, setPassword] = React.useState('')
@@ -24,19 +24,14 @@ export default function LoginPage() {
     const [charState, setCharState] = React.useState<"normal" | "shy" | "peeking">("normal")
     const [showIdleBanner, setShowIdleBanner] = React.useState(false)
 
-    // 2FA Challenge States
-    const [show2FAChallenge, setShow2FAChallenge] = React.useState(false)
-    const [tempToken, setTempToken] = React.useState('')
-    const [twoFactorCode, setTwoFactorCode] = React.useState('')
-    const [trustDevice, setTrustDevice] = React.useState(false)
-    const [is2FAVerifying, setIs2FAVerifying] = React.useState(false)
-
     React.useEffect(() => {
         if (isAuthenticated && user) {
             if (user.role === 'STUDENT') {
                 router.push('/dashboard')
+            } else if (user.role === 'EMPLOYER') {
+                router.push('/employer/dashboard')
             } else {
-                // SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, INSTITUTE_ADMIN, EMPLOYER, etc.
+                // SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, INSTITUTE_ADMIN, etc.
                 router.push('/admin')
             }
         }
@@ -54,32 +49,13 @@ export default function LoginPage() {
         setIsLoading(true)
 
         try {
-            const res = await login(email, password)
-            if (res && res.require2FA) {
-                setTempToken(res.tempToken || '')
-                setShow2FAChallenge(true)
-                setPassword('')
-            }
+            await login(email, password)
+            // Relies on useEffect to handle role-based redirection
         } catch (err: unknown) {
             const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Login failed. Please try again.'
             setError(errorMessage)
         } finally {
             setIsLoading(false)
-        }
-    }
-
-    const handle2FAVerify = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError('')
-        setIs2FAVerifying(true)
-
-        try {
-            await verify2FA(twoFactorCode, tempToken, trustDevice)
-        } catch (err: unknown) {
-            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Verification failed. Please check your authenticator code.'
-            setError(errorMessage)
-        } finally {
-            setIs2FAVerifying(false)
         }
     }
 
@@ -141,18 +117,16 @@ export default function LoginPage() {
 
                         <Card className="border-muted shadow-2xl backdrop-blur-sm bg-background/90 rounded-2xl">
                             <CardHeader className="text-center pt-10 pb-6">
-                                <CardTitle className="text-3xl font-bold tracking-tight">
-                                    {show2FAChallenge ? 'Two-Factor Verification' : 'Welcome Back'}
-                                </CardTitle>
-                                <CardDescription className="text-base">
-                                    {show2FAChallenge ? 'Enter the 6-digit code from your authenticator app' : 'Sign in to your Techwell account'}
-                                </CardDescription>
+                                <CardTitle className="text-3xl font-bold tracking-tight">Welcome Back</CardTitle>
+                                <CardDescription className="text-base">Sign in to your Techwell account</CardDescription>
                             </CardHeader>
                             <CardContent className="px-8 pb-10">
+                                <form onSubmit={handleSubmit} className="space-y-5">
+                                    {/* Idle session expired banner */}
                                 {showIdleBanner && (
                                     <div
                                         role="alert"
-                                        className="flex items-start gap-3 p-4 text-sm font-medium text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/40 animate-in fade-in slide-in-from-top-2 duration-300 mb-5"
+                                        className="flex items-start gap-3 p-4 text-sm font-medium text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/40 animate-in fade-in slide-in-from-top-2 duration-300"
                                     >
                                         <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
                                         <span className="flex-1">
@@ -170,136 +144,74 @@ export default function LoginPage() {
                                 )}
 
                                 {error && (
-                                    <div className="p-4 text-sm font-medium text-red-500 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/30 animate-in fade-in zoom-in duration-300 mb-5">
-                                        {error}
+                                        <div className="p-4 text-sm font-medium text-red-500 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/30 animate-in fade-in zoom-in duration-300">
+                                            {error}
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-2.5">
+                                        <label htmlFor="email" className="text-sm font-semibold ml-1">
+                                            Email Address
+                                        </label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            placeholder="name@company.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                            onFocus={() => setCharState("normal")}
+                                            className="h-12 rounded-xl focus:ring-primary/20"
+                                        />
                                     </div>
-                                )}
 
-                                {show2FAChallenge ? (
-                                    <form onSubmit={handle2FAVerify} className="space-y-6">
-                                        <div className="space-y-3 flex flex-col items-center">
-                                            <label htmlFor="twoFactorCode" className="text-sm font-semibold text-center w-full">
-                                                Authenticator Code
+                                    <div className="space-y-2.5">
+                                        <div className="flex justify-between items-center ml-1">
+                                            <label htmlFor="password" className="text-sm font-semibold">
+                                                Password
                                             </label>
-                                            <Input
-                                                id="twoFactorCode"
-                                                type="text"
-                                                inputMode="numeric"
-                                                pattern="[0-9]*"
-                                                placeholder="000 000"
-                                                value={twoFactorCode}
-                                                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                                required
-                                                disabled={is2FAVerifying}
-                                                className="h-14 text-center tracking-[0.25em] font-mono text-2xl rounded-xl border-muted focus:ring-primary/20 max-w-[240px]"
-                                                maxLength={6}
-                                                autoFocus
-                                            />
+                                            <Link 
+                                                href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`} 
+                                                className="text-xs text-primary hover:underline font-medium"
+                                            >
+                                                Forgot password?
+                                            </Link>
                                         </div>
-
-                                        <div className="flex items-center space-x-2 py-1 select-none">
-                                            <input
-                                                id="trustDevice"
-                                                type="checkbox"
-                                                checked={trustDevice}
-                                                onChange={(e) => setTrustDevice(e.target.checked)}
-                                                className="h-4 w-4 rounded border-muted text-primary focus:ring-primary/20 cursor-pointer"
-                                            />
-                                            <label htmlFor="trustDevice" className="text-sm text-muted-foreground cursor-pointer font-medium">
-                                                Trust this device for 30 days
-                                            </label>
-                                        </div>
-
-                                        <Button type="submit" className="w-full h-14 text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/25 rounded-xl transition-all active:scale-[0.98]" disabled={is2FAVerifying || twoFactorCode.length !== 6}>
-                                            {is2FAVerifying ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                                    Verifying Identity...
-                                                </>
-                                            ) : (
-                                                'Verify Code'
-                                            )}
-                                        </Button>
-
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            onClick={() => {
-                                                setShow2FAChallenge(false)
-                                                setTwoFactorCode('')
-                                                setError('')
-                                            }}
-                                            className="w-full h-12 text-sm text-muted-foreground hover:text-primary transition-all rounded-xl"
-                                        >
-                                            Back to Credentials Login
-                                        </Button>
-                                    </form>
-                                ) : (
-                                    <form onSubmit={handleSubmit} className="space-y-5">
-                                        <div className="space-y-2.5">
-                                            <label htmlFor="email" className="text-sm font-semibold ml-1">
-                                                Email Address
-                                            </label>
+                                        <div className="relative">
                                             <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="name@company.com"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
+                                                id="password"
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="••••••••"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
                                                 required
                                                 disabled={isLoading}
-                                                onFocus={() => setCharState("normal")}
-                                                className="h-12 rounded-xl focus:ring-primary/20"
+                                                className="h-12 rounded-xl pr-12 focus:ring-primary/20"
+                                                onFocus={handlePasswordFocus}
+                                                onBlur={handlePasswordBlur}
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors p-1"
+                                            >
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </button>
                                         </div>
+                                    </div>
 
-                                        <div className="space-y-2.5">
-                                            <div className="flex justify-between items-center ml-1">
-                                                <label htmlFor="password" className="text-sm font-semibold">
-                                                    Password
-                                                </label>
-                                                <Link 
-                                                    href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`} 
-                                                    className="text-xs text-primary hover:underline font-medium"
-                                                >
-                                                    Forgot password?
-                                                </Link>
-                                            </div>
-                                            <div className="relative">
-                                                <Input
-                                                    id="password"
-                                                    type={showPassword ? 'text' : 'password'}
-                                                    placeholder="••••••••"
-                                                    value={password}
-                                                    onChange={(e) => setPassword(e.target.value)}
-                                                    required
-                                                    disabled={isLoading}
-                                                    className="h-12 rounded-xl pr-12 focus:ring-primary/20"
-                                                    onFocus={handlePasswordFocus}
-                                                    onBlur={handlePasswordBlur}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors p-1"
-                                                >
-                                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <Button type="submit" className="w-full h-14 text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/25 rounded-xl transition-all active:scale-[0.98]" disabled={isLoading}>
-                                            {isLoading ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                                    Verifying Identity...
-                                                </>
-                                            ) : (
-                                                'Sign In'
-                                            )}
-                                        </Button>
-                                    </form>
-                                )}
+                                    <Button type="submit" className="w-full h-14 text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/25 rounded-xl transition-all active:scale-[0.98]" disabled={isLoading}>
+                                        {isLoading ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                Verifying Identity...
+                                            </>
+                                        ) : (
+                                            'Sign In'
+                                        )}
+                                    </Button>
+                                </form>
 
                                 <div className="mt-8 pt-6 border-t border-muted/60 text-center text-sm">
                                     <span className="text-muted-foreground">New to Techwell? </span>

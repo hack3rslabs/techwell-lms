@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import api, { rbacApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, UserCheck, UserX, Loader2, Eye, Plus, Trash2, Shield, ShieldAlert, Edit2, Download } from 'lucide-react'
-import ExcelJS from 'exceljs'
+import { Search, UserCheck, UserX, Loader2, Eye, Plus, Trash2, Shield, ShieldAlert, Edit2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { exportToCSV } from '@/lib/export-utils'
@@ -25,7 +24,6 @@ interface User {
     role: string
     isActive: boolean
     createdAt: string
-    phone?: string
     employerProfile?: { status: string }
     systemRole?: { name: string }
     totalPaid?: number
@@ -77,9 +75,6 @@ export default function AdminUsersPage() {
     const [roleToEditId, setRoleToEditId] = React.useState<string | null>(null)
     const [isDeleteUserOpen, setIsDeleteUserOpen] = React.useState(false)
     const [userToDelete, setUserToDelete] = React.useState<User | null>(null)
-    const [isEditUserOpen, setIsEditUserOpen] = React.useState(false)
-    const [userToEdit, setUserToEdit] = React.useState<User | null>(null)
-    const [editUserData, setEditUserData] = React.useState({ name: '', phone: '', isActive: true, role: '' })
 
     // Form State for Role
     const [newRoleData, setNewRoleData] = React.useState({
@@ -160,60 +155,6 @@ export default function AdminUsersPage() {
             toast({ title: "User status updated" })
         } catch (error) {
             console.error("Failed to toggle status", error)
-        }
-    }
-
-    const openEditUserModal = (user: User) => {
-        setUserToEdit(user)
-        setEditUserData({ name: user.name, phone: user.phone || '', isActive: user.isActive, role: user.role })
-        setIsEditUserOpen(true)
-    }
-
-    const handleUpdateUser = async () => {
-        if (!userToEdit) return
-        try {
-            await api.patch(`/users/${userToEdit.id}`, editUserData)
-            toast({ title: "User updated successfully" })
-            setIsEditUserOpen(false)
-            fetchUsers()
-        } catch (error: any) {
-            toast({ title: "Failed to update user", description: error.response?.data?.error, variant: "destructive" })
-        }
-    }
-
-    const handleExportExcel = () => {
-        try {
-            const dataToExport = filterUsers('all').map(u => ({
-                ID: u.id,
-                Name: u.name,
-                Email: u.email,
-                Role: u.systemRole?.name || u.role,
-                Status: u.isActive ? 'ACTIVE' : 'LOCKED',
-                'Joined At': new Date(u.createdAt).toLocaleDateString()
-            }))
-            
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("Users");
-        
-        if (dataToExport && dataToExport.length > 0) {
-            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
-            worksheet.addRows(dataToExport);
-        }
-        
-        workbook.xlsx.writeBuffer().then((buffer) => {
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Users_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-            toast({ title: "Exported successfully" })
-        } catch (error) {
-            toast({ title: "Failed to export", variant: "destructive" })
         }
     }
 
@@ -343,7 +284,6 @@ export default function AdminUsersPage() {
                                     </td>
                                     <td className="p-4 text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditUserModal(user)}><Edit2 className="h-4 w-4" /></Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/admin/users/${user.id}`)}><Eye className="h-4 w-4" /></Button>
                                             {!isSuperAdminRole(user.systemRole?.name || user.role) && (
                                                 <Button variant="ghost" size="icon" className={`h-8 w-8 ${user.isActive ? 'text-red-500' : 'text-green-500'}`} onClick={() => toggleUserStatus(user.id, user.isActive)}>
@@ -414,7 +354,6 @@ export default function AdminUsersPage() {
                     <p className="text-muted-foreground text-sm">Manage platform accounts and access hierarchies.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" className="glass border-white/10 rounded-xl h-11 px-6" onClick={handleExportExcel}><Download className="mr-2 h-4 w-4" /> Export</Button>
                     <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg rounded-xl h-11 px-6" onClick={() => setIsUserModalOpen(true)}><Plus className="mr-2 h-4 w-4" /> Create User</Button>
                     <Button variant="secondary" className="glass border-white/10 rounded-xl h-11 px-6" onClick={openCreateRoleModal}><Shield className="mr-2 h-4 w-4" /> Create Role</Button>
                 </div>
@@ -498,33 +437,6 @@ export default function AdminUsersPage() {
                 <DialogContent className="bg-[#0a0a0b] border-white/10"><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete Role</DialogTitle></DialogHeader>
                     <p className="text-sm text-muted-foreground">Are you sure you want to delete the <b>{roleToDelete?.name}</b> role?</p>
                     <DialogFooter><Button variant="outline" className="glass" onClick={() => setIsDeleteRoleOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteRole}>Confirm Delete</Button></DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
-                <DialogContent className="bg-[#0a0a0b] border-white/10">
-                    <DialogHeader><DialogTitle className="text-xl font-black uppercase italic text-primary">Edit User</DialogTitle></DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label>Name</Label>
-                            <Input className="glass-input border-white/10" value={editUserData.name} onChange={e => setEditUserData(prev => ({ ...prev, name: e.target.value }))} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Phone</Label>
-                            <Input className="glass-input border-white/10" value={editUserData.phone} onChange={e => setEditUserData(prev => ({ ...prev, phone: e.target.value }))} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Status</Label>
-                            <div className="flex items-center space-x-2 mt-2">
-                                <Checkbox id="active" checked={editUserData.isActive} onCheckedChange={(v) => setEditUserData(prev => ({ ...prev, isActive: !!v }))} />
-                                <Label htmlFor="active" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Active User</Label>
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" className="glass" onClick={() => setIsEditUserOpen(false)}>Cancel</Button>
-                        <Button className="bg-primary hover:bg-primary/90" onClick={handleUpdateUser}>Save Changes</Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import api, { interviewApi, userApi, analyticsApi } from '@/lib/api'
+import api, { interviewApi, userApi } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,7 +50,6 @@ interface Course {
 }
 
 import { InstituteSwitcher } from '@/components/admin/InstituteSwitcher'
-import { StaffCheckInBanner } from '@/components/admin/StaffCheckInBanner'
 
 export default function AdminDashboard() {
     const router = useRouter()
@@ -66,8 +65,7 @@ export default function AdminDashboard() {
         courses: 0,
         enrollments: 0,
         interviews: 0,
-        revenue: 0,
-        analytics: null as any
+        revenue: 0
     })
 
     const [isLoading, setIsLoading] = React.useState(true)
@@ -94,11 +92,10 @@ export default function AdminDashboard() {
         const fetchData = async () => {
             try {
                 // Fetch basic lists AND real stats
-                const [usersRes, coursesRes, statsRes, analyticsRes] = await Promise.allSettled([
+                const [usersRes, coursesRes, statsRes] = await Promise.allSettled([
                     hasPermission('USERS') ? api.get('/users') : Promise.resolve({ data: { users: [] } }),
                     hasPermission('COURSES') ? api.get('/courses') : Promise.resolve({ data: { courses: [] } }),
-                    userApi.getAdminStats(),
-                    analyticsApi.getDashboard()
+                    userApi.getAdminStats() // This endpoint uses authorize() so it's safer
                 ])
 
                 if (usersRes.status === 'fulfilled') {
@@ -107,16 +104,9 @@ export default function AdminDashboard() {
                 if (coursesRes.status === 'fulfilled') {
                     setCourses(coursesRes.value.data.courses || [])
                 }
-                
-                // Merge old stats and new analytics if available
-                let updatedStats = { ...stats };
                 if (statsRes.status === 'fulfilled') {
-                    updatedStats = { ...updatedStats, ...statsRes.value.data };
+                    setStats(statsRes.value.data)
                 }
-                if (analyticsRes.status === 'fulfilled') {
-                    updatedStats.analytics = analyticsRes.value.data;
-                }
-                setStats(updatedStats);
 
             } catch (error) {
                 console.error('Failed to fetch data:', error)
@@ -172,9 +162,10 @@ export default function AdminDashboard() {
         return null;
     }
 
+    // ... existing imports
+
     return (
         <div className="space-y-8">
-            <StaffCheckInBanner />
             {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -191,9 +182,11 @@ export default function AdminDashboard() {
 
                     {/* Placeholder for DateRangePicker */}
                     <Button variant="outline">Last 30 Days</Button>
-                    <Button onClick={() => router.push('/admin/reports')}>
-                        <BarChart3 className="mr-2 h-4 w-4" /> Analytics & Reports
-                    </Button>
+                    <AdminReportModal>
+                        <Button>
+                            <BarChart3 className="mr-2 h-4 w-4" /> Generate Report
+                        </Button>
+                    </AdminReportModal>
                 </div>
             </div>
 
@@ -309,62 +302,7 @@ export default function AdminDashboard() {
                             <AdminCharts stats={stats} />
                         </div>
 
-                        {/* Sidebar / Quick Actions */}
-                        <div className="space-y-6">
-                            <Card className="h-full border-t-4 border-t-primary shadow-md">
-                                <CardHeader>
-                                    <CardTitle>Quick Actions</CardTitle>
-                                    <CardDescription>Frequent management tasks</CardDescription>
-                                </CardHeader>
-                                <CardContent className="grid gap-3">
-                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/courses/new')}>
-                                        <div className="bg-primary/10 p-2 rounded-full mr-3">
-                                            <GraduationCap className="h-4 w-4 text-primary" />
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold">Create Course</div>
-                                            <div className="text-xs text-muted-foreground">Add new learning content</div>
-                                        </div>
-                                    </Button>
-                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/leads')}>
-                                        <div className="bg-blue-100 p-2 rounded-full mr-3">
-                                            <TrendingUp className="h-4 w-4 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold">View CRM</div>
-                                            <div className="text-xs text-muted-foreground">Check latest leads</div>
-                                        </div>
-                                    </Button>
-                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/roles')}>
-                                        <div className="bg-orange-100 p-2 rounded-full mr-3">
-                                            <UserCheck className="h-4 w-4 text-orange-600" />
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold">Verify Users</div>
-                                            <div className="text-xs text-muted-foreground">Approve new registrations</div>
-                                        </div>
-                                    </Button>
-                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/ai/training')}>
-                                        <div className="bg-purple-100 p-2 rounded-full mr-3">
-                                            <BrainCircuit className="h-4 w-4 text-purple-600" />
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold">Train AI Model</div>
-                                            <div className="text-xs text-muted-foreground">Update interview knowledge</div>
-                                        </div>
-                                    </Button>
-                                    <Button className="w-full justify-start text-left h-auto py-3" variant="outline" onClick={() => router.push('/admin/reports')}>
-                                        <div className="bg-green-100 p-2 rounded-full mr-3">
-                                            <BarChart3 className="h-4 w-4 text-green-600" />
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold">Analytics & Reports</div>
-                                            <div className="text-xs text-muted-foreground">View business insights</div>
-                                        </div>
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </div>
+                        
                     </div>
                 </div>
             )}

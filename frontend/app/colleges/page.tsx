@@ -178,7 +178,7 @@ export default function CollegesPage() {
                             },
                             {
                                 icon: Terminal, color: "text-yellow-500", bg: "bg-yellow-500/20", border: "hover:border-yellow-500/50",
-                                title: "Skills Practice", desc: "Integrated environment for assessments and automated evaluation."
+                                title: "Coding Practice", desc: "Integrated coding environment for live coding rounds with real-time evaluation."
                             },
                             {
                                 icon: BarChart3, color: "text-blue-500", bg: "bg-blue-500/20", border: "hover:border-blue-500/50",

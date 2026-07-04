@@ -8,8 +8,7 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
 
 // Validation Schema
 const createLiveClassSchema = z.object({
-    courseId: z.string().min(1, 'Course is required'),
-    batchId: z.string().min(1, 'Batch is required'),
+    courseId: z.string(),
     title: z.string().min(3, 'Title must be at least 3 characters'),
     description: z.string().optional(),
     platform: z.enum(['ZOOM', 'GOOGLE_MEET', 'MS_TEAMS', 'CUSTOM']).default('ZOOM'),
@@ -69,9 +68,6 @@ router.get('/', authenticate, async (req, res, next) => {
             include: {
                 course: {
                     select: { id: true, title: true }
-                },
-                batch: {
-                    select: { id: true, name: true, batchCode: true }
                 }
             },
             orderBy: { scheduledAt: 'asc' }

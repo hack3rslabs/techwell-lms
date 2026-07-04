@@ -1,0 +1,666 @@
+﻿
+> frontend@0.1.0 lint
+> eslint
+
+
+C:\Lms\techwell-lms\frontend\app\admin\ai-interviews\page.tsx
+  29:12  warning  'isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\ai-interviews\questions\page.tsx
+   68:12  warning  'isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  127:12  warning  'activeTab' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\ai\training\page.tsx
+   43:12  warning  '_editingId' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   43:24  warning  '_setEditingId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  177:11  warning  '_getTabIcon' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\analytics\page.tsx
+    6:52  warning  'CardDescription' is defined but never used         @typescript-eslint/no-unused-vars
+   10:5   warning  'BarChart' is defined but never used                @typescript-eslint/no-unused-vars
+   10:15  warning  'Bar' is defined but never used                     @typescript-eslint/no-unused-vars
+   10:20  warning  'XAxis' is defined but never used                   @typescript-eslint/no-unused-vars
+   10:27  warning  'YAxis' is defined but never used                   @typescript-eslint/no-unused-vars
+   10:34  warning  'CartesianGrid' is defined but never used           @typescript-eslint/no-unused-vars
+   10:49  warning  'Tooltip' is defined but never used                 @typescript-eslint/no-unused-vars
+   10:58  warning  'Legend' is defined but never used                  @typescript-eslint/no-unused-vars
+   10:66  warning  'ResponsiveContainer' is defined but never used     @typescript-eslint/no-unused-vars
+   11:5   warning  'PieChart' is defined but never used                @typescript-eslint/no-unused-vars
+   11:15  warning  'Pie' is defined but never used                     @typescript-eslint/no-unused-vars
+   11:20  warning  'Cell' is defined but never used                    @typescript-eslint/no-unused-vars
+   11:26  warning  'AreaChart' is defined but never used               @typescript-eslint/no-unused-vars
+   11:37  warning  'Area' is defined but never used                    @typescript-eslint/no-unused-vars
+   14:14  warning  'TrendingUp' is defined but never used              @typescript-eslint/no-unused-vars
+   14:26  warning  'Users' is defined but never used                   @typescript-eslint/no-unused-vars
+   14:33  warning  'DollarSign' is defined but never used              @typescript-eslint/no-unused-vars
+   14:45  warning  'Briefcase' is defined but never used               @typescript-eslint/no-unused-vars
+   14:56  warning  'GraduationCap' is defined but never used           @typescript-eslint/no-unused-vars
+   14:71  warning  'MapPin' is defined but never used                  @typescript-eslint/no-unused-vars
+   18:7   warning  'COLORS' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   36:23  warning  '_setDateRange' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  105:11  warning  'statusData' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  110:11  warning  'sourceData' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  115:11  warning  'collegeData' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  120:11  warning  'locationData' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\audit-logs\page.tsx
+   5:41  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+   5:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  54:27  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\admin\batches\page.tsx
+    4:29  warning  'CardHeader' is defined but never used    @typescript-eslint/no-unused-vars
+    4:41  warning  'CardTitle' is defined but never used     @typescript-eslint/no-unused-vars
+   72:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\admin\behavior-analytics\page.tsx
+    9:7   warning  '_API_URL' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  263:50  warning  '_index' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\blogs\page.tsx
+  55:11  warning  '_router' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  58:12  warning  '_isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\courses\review\page.tsx
+    7:10  warning  'Button' is defined but never used                      @typescript-eslint/no-unused-vars
+    8:10  warning  'Textarea' is defined but never used                    @typescript-eslint/no-unused-vars
+   11:5   warning  'Dialog' is defined but never used                      @typescript-eslint/no-unused-vars
+   12:5   warning  'DialogContent' is defined but never used               @typescript-eslint/no-unused-vars
+   13:5   warning  'DialogDescription' is defined but never used           @typescript-eslint/no-unused-vars
+   14:5   warning  'DialogFooter' is defined but never used                @typescript-eslint/no-unused-vars
+   15:5   warning  'DialogHeader' is defined but never used                @typescript-eslint/no-unused-vars
+   16:5   warning  'DialogTitle' is defined but never used                 @typescript-eslint/no-unused-vars
+   19:5   warning  'Table' is defined but never used                       @typescript-eslint/no-unused-vars
+   20:5   warning  'TableBody' is defined but never used                   @typescript-eslint/no-unused-vars
+   21:5   warning  'TableCell' is defined but never used                   @typescript-eslint/no-unused-vars
+   22:5   warning  'TableHead' is defined but never used                   @typescript-eslint/no-unused-vars
+   23:5   warning  'TableHeader' is defined but never used                 @typescript-eslint/no-unused-vars
+   24:5   warning  'TableRow' is defined but never used                    @typescript-eslint/no-unused-vars
+   27:5   warning  'Eye' is defined but never used                         @typescript-eslint/no-unused-vars
+   28:5   warning  'CheckCircle' is defined but never used                 @typescript-eslint/no-unused-vars
+   29:5   warning  'XCircle' is defined but never used                     @typescript-eslint/no-unused-vars
+   30:5   warning  'Clock' is defined but never used                       @typescript-eslint/no-unused-vars
+   31:5   warning  'Archive' is defined but never used                     @typescript-eslint/no-unused-vars
+   57:11  warning  'router' is assigned a value but never used             @typescript-eslint/no-unused-vars
+   60:12  warning  'selectedCourse' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   61:12  warning  'isDialogOpen' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   63:12  warning  'isProcessing' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   64:20  warning  'setFilter' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  115:11  warning  'handleApprove' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  131:11  warning  'handleReject' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  151:11  warning  'handleArchive' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  161:11  warning  'getCourseTypeIcon' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  169:11  warning  'getStatusBadge' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\email-settings\page.tsx
+  33:12  warning  '_isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  73:18  warning  '_error' is defined but never used               @typescript-eslint/no-unused-vars
+  82:18  warning  '_error' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\employer-requests\page.tsx
+    5:29  warning  'CardHeader' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+    5:41  warning  'CardTitle' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   40:10  warning  '_selectedRequest' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+   46:6   warning  React Hook useEffect has a missing dependency: 'fetchRequests'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   69:13  warning  '_response' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+   81:21  warning  Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  105:13  warning  '_response' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+  118:21  warning  Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  327:74  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                   react/no-unescaped-entities
+
+C:\Lms\techwell-lms\frontend\app\admin\employers\page.tsx
+  10:34  warning  'AvatarImage' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\gallery\page.tsx
+  56:18  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+  70:18  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+  92:18  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\jobs\[id]\applications\page.tsx
+  45:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  87:18  warning  '_error' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\jobs\page.tsx
+  108:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\admin\layout.tsx
+   4:21  warning  'usePathname' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  20:10  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Lms\techwell-lms\frontend\app\admin\layout.tsx:20:10
+  18 |  
+  19 |      useEffect(() => {
+> 20 |          setMounted(prev => prev ? prev : true)
+     |          ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |      }, [])
+  22 |
+  23 |     useEffect(() => {  react-hooks/set-state-in-effect
+
+C:\Lms\techwell-lms\frontend\app\admin\leads\integrations\page.tsx
+  27:12  warning  '_isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\library\page.tsx
+    9:16   warning  'TabsContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+   10:38   warning  'FileText' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+   10:48   warning  'Upload' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+   10:70   warning  'Save' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+   94:8    warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  174:35   warning  Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  242:25   warning  Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  260:105  warning  Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  261:40   warning  Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\admin\meetings\page.tsx
+  6:27  warning  'Clock' is defined but never used  @typescript-eslint/no-unused-vars
+  6:34  warning  'Users' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\messages\page.tsx
+   26:5   warning  'TableHeader' is defined but never used        @typescript-eslint/no-unused-vars
+  198:19  warning  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  226:19  warning  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\page.tsx
+    7:29  warning  'CardDescription' is defined but never used             @typescript-eslint/no-unused-vars
+    9:10  warning  'Input' is defined but never used                       @typescript-eslint/no-unused-vars
+   10:10  warning  'Textarea' is defined but never used                    @typescript-eslint/no-unused-vars
+   16:5   warning  'Search' is defined but never used                      @typescript-eslint/no-unused-vars
+   17:5   warning  'UserCheck' is defined but never used                   @typescript-eslint/no-unused-vars
+   20:5   warning  'BrainCircuit' is defined but never used                @typescript-eslint/no-unused-vars
+   60:12  warning  '_courses' is assigned a value but never used           @typescript-eslint/no-unused-vars
+   72:25  warning  '_setSearchQuery' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   82:12  warning  '_isTraining' is assigned a value but never used        @typescript-eslint/no-unused-vars
+   83:12  warning  '_trainMessage' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  123:11  warning  '_toggleUserStatus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  132:11  warning  '_handleTrainAI' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  150:11  warning  '_filteredUsers' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\pricing\page.tsx
+   6:16  warning  'Check' is defined but never used                @typescript-eslint/no-unused-vars
+  16:12  warning  '_isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\projects\page.tsx
+  4:38  warning  'Filter' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\reports\page.tsx
+  19:5   warning  'LineChart' is defined but never used     @typescript-eslint/no-unused-vars
+  20:5   warning  'Line' is defined but never used          @typescript-eslint/no-unused-vars
+  27:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\admin\reviews\page.tsx
+    9:32  warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+   69:18  warning  '_error' is defined but never used        @typescript-eslint/no-unused-vars
+   80:18  warning  '_error' is defined but never used        @typescript-eslint/no-unused-vars
+   90:18  warning  '_error' is defined but never used        @typescript-eslint/no-unused-vars
+  101:18  warning  '_error' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\roles\page.tsx
+    8:64  warning  'Shield' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+   11:10  warning  'exportToCSV' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+   12:74  warning  'DialogDescription' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+   73:12  warning  'activeTab' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+   76:12  warning  'isCreateRoleOpen' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+   76:30  warning  'setIsCreateRoleOpen' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+   80:26  warning  'setRoleToDelete' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  132:8   warning  React Hook React.useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  141:25  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  153:25  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  168:26  warning  'type' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  208:25  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  213:11  warning  'openCreateRoleModal' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\settings\page.tsx
+  9:27  warning  'Upload' is defined but never used  @typescript-eslint/no-unused-vars
+  9:35  warning  'User' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\skillcasts\page.tsx
+    6:10  warning  'motion' is defined but never used        @typescript-eslint/no-unused-vars
+    7:51  warning  'Briefcase' is defined but never used     @typescript-eslint/no-unused-vars
+   10:41  warning  'CardTitle' is defined but never used     @typescript-eslint/no-unused-vars
+  133:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\admin\staff\new\page.tsx
+  10:10  warning  'Checkbox' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\students\page.tsx
+  1025:80  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  1025:94  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Lms\techwell-lms\frontend\app\admin\support\page.tsx
+  53:30  warning  '_auth' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\tasks\page.tsx
+   16:5   warning  'CheckSquare' is defined but never used          @typescript-eslint/no-unused-vars
+   52:12  warning  '_isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   95:18  warning  '_error' is defined but never used               @typescript-eslint/no-unused-vars
+  109:18  warning  '_error' is defined but never used               @typescript-eslint/no-unused-vars
+  122:18  warning  '_error' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\transactions\page.tsx
+  135:122  warning  'idx' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\admin\users\[id]\page.tsx
+   15:10  warning  'Checkbox' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+   17:10  warning  'RadioGroup' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+   17:22  warning  'RadioGroupItem' is defined but never used                                                                    @typescript-eslint/no-unused-vars
+   18:54  warning  'Activity' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+   60:11  warning  'RBAC_MODULES' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+   82:8   warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  109:11  warning  'handleRadioChange' is assigned a value but never used                                                        @typescript-eslint/no-unused-vars
+  125:11  warning  'getModuleRadioValue' is assigned a value but never used                                                      @typescript-eslint/no-unused-vars
+  134:11  warning  'handleAllWildcard' is assigned a value but never used                                                        @typescript-eslint/no-unused-vars
+  164:25  warning  Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\admin\users\page.tsx
+   11:10  warning  'exportToCSV' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+   12:74  warning  'DialogDescription' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+   66:12  warning  'activeTab' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+   69:12  warning  'isCreateRoleOpen' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+   69:30  warning  'setIsCreateRoleOpen' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+   83:28  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  125:8   warning  React Hook React.useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  134:25  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  146:25  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  161:26  warning  'type' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  201:25  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\admin\video-settings\page.tsx
+   15:5   warning  'Settings' is defined but never used      @typescript-eslint/no-unused-vars
+   26:13  warning  'LinkIcon' is defined but never used      @typescript-eslint/no-unused-vars
+  149:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\blog\[slug]\page.tsx
+   7:37  warning  'Tag' is defined but never used               @typescript-eslint/no-unused-vars
+  29:11  warning  '_router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  43:27  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\certificate\[id]\page.tsx
+  12:11  warning  '_searchParams' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  14:19  warning  '_user' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  24:11  warning  '_courseId' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\colleges\page.tsx
+  4:8  warning  '_Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\courses\[id]\client.tsx
+   81:11  warning  'RelatedCourse' is defined but never used             @typescript-eslint/no-unused-vars
+  152:12  warning  'expandedModules' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  327:19  warning  'currentPrice' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  451:11  warning  'toggleModule' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\courses\[id]\learn\page.tsx
+  39:11  warning  '_Course' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\courses\[id]\page.tsx
+  22:14  warning  '_error' is defined but never used         @typescript-eslint/no-unused-vars
+  28:29  warning  '_searchParams' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\employer\dashboard\ats\candidate\[id]\page.tsx
+   13:10  warning  'Label' is defined but never used                    @typescript-eslint/no-unused-vars
+  223:11  warning  '_statusHistory' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  224:11  warning  '_ratings' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\employer\interviews\page.tsx
+   6:8   warning  '_api' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  44:11  warning  '_router' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  95:9   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Lms\techwell-lms\frontend\app\employer\interviews\page.tsx:95:9
+  93 |      
+  94 |     useEffect(() => {
+> 95 |         fetchInterviews()
+     |         ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  96 |     }, [fetchInterviews])
+  97 |
+  98 |     const filteredInterviews = interviews.filter(interview => {  react-hooks/set-state-in-effect
+
+C:\Lms\techwell-lms\frontend\app\employer\profile\page.tsx
+    5:10  warning  'Button' is defined but never used                     @typescript-eslint/no-unused-vars
+    6:10  warning  'Input' is defined but never used                      @typescript-eslint/no-unused-vars
+    7:10  warning  'Label' is defined but never used                      @typescript-eslint/no-unused-vars
+    8:10  warning  'Textarea' is defined but never used                   @typescript-eslint/no-unused-vars
+    9:10  warning  'Card' is defined but never used                       @typescript-eslint/no-unused-vars
+    9:16  warning  'CardContent' is defined but never used                @typescript-eslint/no-unused-vars
+    9:29  warning  'CardHeader' is defined but never used                 @typescript-eslint/no-unused-vars
+    9:41  warning  'CardTitle' is defined but never used                  @typescript-eslint/no-unused-vars
+    9:52  warning  'CardDescription' is defined but never used            @typescript-eslint/no-unused-vars
+   10:8   warning  'Image' is defined but never used                      @typescript-eslint/no-unused-vars
+   12:5   warning  'Select' is defined but never used                     @typescript-eslint/no-unused-vars
+   13:5   warning  'SelectContent' is defined but never used              @typescript-eslint/no-unused-vars
+   14:5   warning  'SelectItem' is defined but never used                 @typescript-eslint/no-unused-vars
+   15:5   warning  'SelectTrigger' is defined but never used              @typescript-eslint/no-unused-vars
+   16:5   warning  'SelectValue' is defined but never used                @typescript-eslint/no-unused-vars
+   23:5   warning  'Building2' is defined but never used                  @typescript-eslint/no-unused-vars
+   24:5   warning  'Camera' is defined but never used                     @typescript-eslint/no-unused-vars
+   25:5   warning  'Globe' is defined but never used                      @typescript-eslint/no-unused-vars
+   26:5   warning  'Briefcase' is defined but never used                  @typescript-eslint/no-unused-vars
+   27:5   warning  'MapPin' is defined but never used                     @typescript-eslint/no-unused-vars
+   28:5   warning  'Save' is defined but never used                       @typescript-eslint/no-unused-vars
+   33:12  warning  'isSaving' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   34:12  warning  'isUploading' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   35:11  warning  'fileInputRef' is assigned a value but never used      @typescript-eslint/no-unused-vars
+   75:11  warning  'handleChange' is assigned a value but never used      @typescript-eslint/no-unused-vars
+   79:11  warning  'handleFileChange' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  103:11  warning  'handleSubmit' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\employer\register\page.tsx
+  10:30  warning  'ArrowRight' is defined but never used       @typescript-eslint/no-unused-vars
+  22:10  warning  'Card' is defined but never used             @typescript-eslint/no-unused-vars
+  22:16  warning  'CardContent' is defined but never used      @typescript-eslint/no-unused-vars
+  22:29  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  22:46  warning  'CardFooter' is defined but never used       @typescript-eslint/no-unused-vars
+  22:58  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  22:70  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\employer\reports\page.tsx
+   3:20  warning  'useEffect' is defined but never used         @typescript-eslint/no-unused-vars
+   5:8   warning  '_api' is defined but never used              @typescript-eslint/no-unused-vars
+   8:10  warning  'Badge' is defined but never used             @typescript-eslint/no-unused-vars
+   9:10  warning  'Table' is defined but never used             @typescript-eslint/no-unused-vars
+   9:17  warning  'TableBody' is defined but never used         @typescript-eslint/no-unused-vars
+   9:28  warning  'TableCell' is defined but never used         @typescript-eslint/no-unused-vars
+   9:39  warning  'TableHead' is defined but never used         @typescript-eslint/no-unused-vars
+   9:50  warning  'TableHeader' is defined but never used       @typescript-eslint/no-unused-vars
+   9:63  warning  'TableRow' is defined but never used          @typescript-eslint/no-unused-vars
+  12:5   warning  'ArrowLeft' is defined but never used         @typescript-eslint/no-unused-vars
+  12:16  warning  'Printer' is defined but never used           @typescript-eslint/no-unused-vars
+  12:66  warning  'XCircle' is defined but never used           @typescript-eslint/no-unused-vars
+  13:17  warning  'Calendar' is defined but never used          @typescript-eslint/no-unused-vars
+  13:27  warning  'Filter' is defined but never used            @typescript-eslint/no-unused-vars
+  25:11  warning  '_router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\employer\schedule-interview\page.tsx
+  14:61  warning  'User' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  48:8   warning  React Hook useEffect has a missing dependency: 'fetchApplication'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Lms\techwell-lms\frontend\app\forgot-password\page.tsx
+  16:11  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  47:23  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  65:23  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  86:23  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\instructor\announcements\page.tsx
+   5:5   warning  'Bell' is defined but never used             @typescript-eslint/no-unused-vars
+  17:29  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  17:41  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+  17:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\instructor\assessments\page.tsx
+   8:5   warning  'Filter' is defined but never used           @typescript-eslint/no-unused-vars
+  14:5   warning  'XCircle' is defined but never used          @typescript-eslint/no-unused-vars
+  19:29  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  19:41  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+  19:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  34:5   warning  'TabsContent' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\instructor\courses\page.tsx
+  11:26  warning  'Clock' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\instructor\page.tsx
+   7:5  warning  'Star' is defined but never used   @typescript-eslint/no-unused-vars
+   9:5  warning  'Play' is defined but never used   @typescript-eslint/no-unused-vars
+  10:5  warning  'Clock' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\instructor\students\page.tsx
+  15:5   warning  'ArrowUpRight' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+  16:5   warning  'BarChart3' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  20:52  warning  'CardDescription' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  88:8   warning  React Hook React.useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Lms\techwell-lms\frontend\app\interviews\[id]\page.tsx
+     8:16  warning  'CardContent' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+    23:5   warning  'AlertTriangle' is defined but never used                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   163:12  warning  '_messages' is assigned a value but never used                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   171:12  warning  'fillerCount' is assigned a value but never used                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   173:12  warning  '_tabSwitchCount' is assigned a value but never used                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   174:12  warning  'isTabActive' is assigned a value but never used                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   264:59  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   327:8   warning  React Hook React.useEffect has a missing dependency: 'handleEndInterview'. Either include it or remove the dependency array                                                                                                                                                              react-hooks/exhaustive-deps
+   359:8   warning  React Hook React.useEffect has missing dependencies: 'stream' and 'toast'. Either include them or remove the dependency array                                                                                                                                                            react-hooks/exhaustive-deps
+   381:8   warning  React Hook React.useEffect has missing dependencies: 'currentQuestion', 'fetchNextQuestion', and 'isAIProcessing'. Either include them or remove the dependency array                                                                                                                    react-hooks/exhaustive-deps
+   426:8   warning  React Hook React.useEffect has a missing dependency: 'handleEndInterview'. Either include it or remove the dependency array                                                                                                                                                              react-hooks/exhaustive-deps
+   483:25  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   563:8   warning  React Hook React.useEffect has missing dependencies: 'analyzeSpeech' and 'toast'. Either include them or remove the dependency array                                                                                                                                                     react-hooks/exhaustive-deps
+   681:8   warning  React Hook React.useEffect has a missing dependency: 'fetchNextQuestion'. Either include it or remove the dependency array                                                                                                                                                               react-hooks/exhaustive-deps
+   947:57  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1081:37  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  1081:64  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+C:\Lms\techwell-lms\frontend\app\interviews\[id]\report\page.tsx
+  10:10  warning  'Progress' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\interviews\new\page.tsx
+  229:8  warning  React Hook React.useEffect has a missing dependency: 'formData.duration'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Lms\techwell-lms\frontend\app\jobs\[id]\page.tsx
+    6:57  warning  'Share2' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   10:52  warning  'CardDescription' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+   13:10  warning  'Separator' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   68:8   warning  React Hook useEffect has a missing dependency: 'fetchJobDetails'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  133:25  warning  Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  153:83  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                     react/no-unescaped-entities
+
+C:\Lms\techwell-lms\frontend\app\page.tsx
+  3:10  warning  'CredentialsSection' is defined but never used  @typescript-eslint/no-unused-vars
+  5:10  warning  'PricingSection' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\portfolio\[username]\page.tsx
+   15:5   warning  'Link2' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+   16:5   warning  'Download' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+   64:12  warning  '_error' is assigned a value but never used                                                                              @typescript-eslint/no-unused-vars
+   69:8   warning  React Hook React.useEffect has a missing dependency: 'fetchPortfolio'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  116:15  warning  '_title' is assigned a value but never used                                                                              @typescript-eslint/no-unused-vars
+  128:15  warning  '_title' is assigned a value but never used                                                                              @typescript-eslint/no-unused-vars
+  311:59  warning  '_text' is assigned a value but never used                                                                               @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\profile\page.tsx
+    8:29  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+    8:46  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+    8:58  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+   11:56  warning  'Shield' is defined but never used           @typescript-eslint/no-unused-vars
+   67:25  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  100:25  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\profile\portfolio\page.tsx
+  10:10  warning  'Textarea' is defined but never used      @typescript-eslint/no-unused-vars
+  13:10  warning  'Badge' is defined but never used         @typescript-eslint/no-unused-vars
+  16:5   warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\projects\[id]\page.tsx
+   7:35  warning  'Download' is defined but never used      @typescript-eslint/no-unused-vars
+  12:8   warning  '_Link' is defined but never used         @typescript-eslint/no-unused-vars
+  17:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\projects\page.tsx
+  126:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\sitemap.ts
+   2:8   warning  '_api' is defined but never used               @typescript-eslint/no-unused-vars
+   5:16  warning  '_getDynamicRoutes' is defined but never used  @typescript-eslint/no-unused-vars
+   5:34  warning  '_endpoint' is defined but never used          @typescript-eslint/no-unused-vars
+   5:53  warning  '_routePrefix' is defined but never used       @typescript-eslint/no-unused-vars
+  12:14  warning  '_e' is defined but never used                 @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\skillcast\page.tsx
+   6:16  warning  'Calendar' is defined but never used      @typescript-eslint/no-unused-vars
+   6:32  warning  'Briefcase' is defined but never used     @typescript-eslint/no-unused-vars
+   9:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+  15:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\student\library\page.tsx
+    4:28  warning  'Bookmark' is defined but never used               @typescript-eslint/no-unused-vars
+   40:15  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   44:19  warning  '_user' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   75:11  warning  'handleSearch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  271:59  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  271:85  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\app\support\page.tsx
+  5:29  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  5:41  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+  5:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\app\verify\[id]\page.tsx
+   9:5   warning  'Award' is defined but never used                                                                                          @typescript-eslint/no-unused-vars
+  13:5   warning  'Download' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  14:5   warning  'Share2' is defined but never used                                                                                         @typescript-eslint/no-unused-vars
+  53:12  warning  '_showShareMenu' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  53:28  warning  '_setShowShareMenu' is assigned a value but never used                                                                     @typescript-eslint/no-unused-vars
+  57:8   warning  React Hook React.useEffect has a missing dependency: 'fetchCertificate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Lms\techwell-lms\frontend\components\PersonalizedHints.tsx
+  22:12  warning  '_intent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  97:43  warning  '_intent' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\SmartIntentPopup.tsx
+  6:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\admin\AdminSidebar.tsx
+  23:5  warning  'Star' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\admin\VideoRecorder.tsx
+  205:18  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\admin\roles\CreateRoleModal.tsx
+   37:18  warning  Unexpected any. Specify a different type                                                                         @typescript-eslint/no-explicit-any
+   57:58  warning  Unexpected any. Specify a different type                                                                         @typescript-eslint/no-explicit-any
+   72:8   warning  React Hook useEffect has a missing dependency: 'loadFeatures'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   93:18  warning  'error' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+  153:25  warning  Unexpected any. Specify a different type                                                                         @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\components\admin\users\CreateUserModal.tsx
+  97:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\components\ai\ChatWidget.tsx
+  9:48  warning  'Minimize2' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\course\CourseCreationWizard.tsx
+  119:56   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  157:15   warning  '_validateImage' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  237:25   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  250:32   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  326:11   warning  'handleAddLesson' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  338:11   warning  'handleDeleteLesson' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  531:97   warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  531:109  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  877:136  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\components\course\CourseList.tsx
+  46:12  warning  '_enrollingId' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  90:11  warning  '_handleEnroll' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\home\StudentJourney.tsx
+  56:41  warning  '_authLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\home\TrustStrip.tsx
+  4:10  warning  'cn' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\interviews\NewInterviewDialog.tsx
+  34:5   warning  'Lock' is defined but never used            @typescript-eslint/no-unused-vars
+  62:19  warning  '_user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  89:51  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\components\jobs\EmployerRequestDialog.tsx
+    6:10  warning  'Card' is defined but never used                                 @typescript-eslint/no-unused-vars
+    6:16  warning  'CardContent' is defined but never used                          @typescript-eslint/no-unused-vars
+    6:29  warning  'CardDescription' is defined but never used                      @typescript-eslint/no-unused-vars
+    6:46  warning  'CardHeader' is defined but never used                           @typescript-eslint/no-unused-vars
+    6:58  warning  'CardTitle' is defined but never used                            @typescript-eslint/no-unused-vars
+  163:21  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  190:43  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Lms\techwell-lms\frontend\components\jobs\JobListing.tsx
+   7:5   warning  'Banknote' is defined but never used         @typescript-eslint/no-unused-vars
+   7:15  warning  'GraduationCap' is defined but never used    @typescript-eslint/no-unused-vars
+   7:49  warning  'Star' is defined but never used             @typescript-eslint/no-unused-vars
+   8:5   warning  'TrendingUp' is defined but never used       @typescript-eslint/no-unused-vars
+   8:26  warning  'BrainCircuit' is defined but never used     @typescript-eslint/no-unused-vars
+   8:40  warning  'Target' is defined but never used           @typescript-eslint/no-unused-vars
+   9:5   warning  'PlayCircle' is defined but never used       @typescript-eslint/no-unused-vars
+   9:17  warning  'Sparkles' is defined but never used         @typescript-eslint/no-unused-vars
+   9:27  warning  'LayoutGrid' is defined but never used       @typescript-eslint/no-unused-vars
+  16:29  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  16:41  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+  16:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  22:10  warning  'ScrollArea' is defined but never used       @typescript-eslint/no-unused-vars
+  27:10  warning  'toast' is defined but never used            @typescript-eslint/no-unused-vars
+  50:11  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  53:50  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\components\messages\StudentMessages.tsx
+  12:5   warning  'Trash2' is defined but never used  @typescript-eslint/no-unused-vars
+  62:18  warning  'err' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\messages\StudentSendMessage.tsx
+  23:18  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\projects\ProjectCard.tsx
+   4:22  warning  'Code2' is defined but never used  @typescript-eslint/no-unused-vars
+   6:8   warning  '_Link' is defined but never used  @typescript-eslint/no-unused-vars
+   9:10  warning  'cn' is defined but never used     @typescript-eslint/no-unused-vars
+  23:35  warning  '_id' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\resume\ResumeBuilder.tsx
+   87:48   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  101:10   warning  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  121:101  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  122:20   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  124:36   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  124:54   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  130:72   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  131:20   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  133:40   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  138:20   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  140:36   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  140:54   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  169:29   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  181:39   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  181:54   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  220:19   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  247:33   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  251:37   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  287:40   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  465:40   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  511:39   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  548:47   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  573:53   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  599:62   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  609:55   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  623:57   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  642:58   warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\components\resume\ResumeUpload.tsx
+  10:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Lms\techwell-lms\frontend\components\resume\templates\ClassicTemplate2.tsx
+  214:56  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\ui\floating-call-button.tsx
+  9:23  warning  '_setIsVisible' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\ui\scroll-button.tsx
+  10:12  warning  '_isVisible' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  10:24  warning  '_setIsVisible' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Lms\techwell-lms\frontend\components\ui\use-toast.tsx
+  17:7  warning  'actionTypes' is assigned a value but only used as a type  @typescript-eslint/no-unused-vars
+
+Γ£û 445 problems (0 errors, 445 warnings)
+

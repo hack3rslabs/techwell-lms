@@ -37,16 +37,11 @@ import {
     Save,
     Loader2,
     CheckCircle,
-    XCircle,
-    Sparkles,
-    FileText
+    XCircle
 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportToCSV } from '@/lib/export-utils'
-import api, { certificateApi } from '@/lib/api'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { CertificateTemplate } from '@/components/CertificateTemplate'
+import { certificateApi } from '@/lib/api'
 
 interface Certificate {
     id: string
@@ -93,8 +88,6 @@ interface CertificateSettings {
     signatureSize?: string
     borderStyle?: string
     backgroundUrl?: string
-    stampUrl?: string
-    stampPosition?: string
 }
 
 export default function CertificatesPage() {
@@ -110,24 +103,6 @@ export default function CertificatesPage() {
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
     const [newTemplate, setNewTemplate] = useState({ name: '', description: '', designUrl: '', isDefault: false })
 
-    // Edit Template State
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-    const [editingTemplate, setEditingTemplate] = useState<CertificateTemplate | null>(null)
-
-    // Bulk Generation States
-    const [batches, setBatches] = useState<any[]>([])
-    const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false)
-    const [bulkBatchId, setBulkBatchId] = useState('')
-    const [isBulkGenerating, setIsBulkGenerating] = useState(false)
-
-    // Manual Generation States
-    const [isManualDialogOpen, setIsManualDialogOpen] = useState(false)
-    const [manualBatchId, setManualBatchId] = useState('')
-    const [manualIssueDate, setManualIssueDate] = useState('')
-    const [manualStartDate, setManualStartDate] = useState('')
-    const [manualEndDate, setManualEndDate] = useState('')
-    const [isManualGenerating, setIsManualGenerating] = useState(false)
-
     // Fetch data on mount
     useEffect(() => {
         fetchData()
@@ -136,16 +111,14 @@ export default function CertificatesPage() {
     const fetchData = async () => {
         setIsLoading(true)
         try {
-            const [certsRes, templatesRes, settingsRes, batchesRes] = await Promise.all([
+            const [certsRes, templatesRes, settingsRes] = await Promise.all([
                 certificateApi.getAll(),
                 certificateApi.getTemplates(),
-                certificateApi.getSettings(),
-                api.get('/batches')
+                certificateApi.getSettings()
             ])
             setCertificates(certsRes.data.certificates || [])
             setTemplates(templatesRes.data.templates || [])
             setSettings(settingsRes.data.settings)
-            setBatches(batchesRes.data.batches || batchesRes.data || [])
         } catch (error) {
             console.error('Failed to fetch certificate data:', error)
             // Use mock data as fallback
@@ -155,48 +128,6 @@ export default function CertificatesPage() {
             ])
         } finally {
             setIsLoading(false)
-        }
-    }
-
-    const handleBulkGenerate = async () => {
-        if (!bulkBatchId) return
-        setIsBulkGenerating(true)
-        try {
-            const res = await api.post('/certificates/bulk-generate', { batchId: bulkBatchId })
-            alert(res.data.message || `Bulk generation completed.`)
-            setIsBulkDialogOpen(false)
-            setBulkBatchId('')
-            fetchData()
-        } catch (error: any) {
-            console.error('Bulk generation failed:', error)
-            alert(error.response?.data?.error || 'Failed to generate certificates in bulk')
-        } finally {
-            setIsBulkGenerating(false)
-        }
-    }
-
-    const handleManualGenerate = async () => {
-        if (!manualBatchId) return
-        setIsManualGenerating(true)
-        try {
-            const payload: any = { batchId: manualBatchId }
-            if (manualIssueDate) payload.issueDate = manualIssueDate
-            if (manualStartDate) payload.startDate = manualStartDate
-            if (manualEndDate) payload.endDate = manualEndDate
-
-            const res = await api.post('/certificates/manual-generate', payload)
-            alert(res.data.message || `Manual generation completed.`)
-            setIsManualDialogOpen(false)
-            setManualBatchId('')
-            setManualIssueDate('')
-            setManualStartDate('')
-            setManualEndDate('')
-            fetchData()
-        } catch (error: any) {
-            console.error('Manual generation failed:', error)
-            alert(error.response?.data?.error || 'Failed to generate certificates manually')
-        } finally {
-            setIsManualGenerating(false)
         }
     }
 
@@ -225,15 +156,38 @@ export default function CertificatesPage() {
         setIsPreviewOpen(true)
     }
 
-    const handleDownloadCertificate = async (cert: any) => {
-        try {
-            const printWindow = window.open(`/certificate/${cert.uniqueId}?print=true`, '_blank')
-            if (!printWindow) {
-                alert('Please allow pop-ups to download the certificate')
-            }
-        } catch (error) {
-            console.error('Download failed:', error)
-        }
+    const handleDownloadCertificate = (cert: Certificate) => {
+        const certContent = `
+            <!DOCTYPE html>
+            <html>
+            <head><title>Certificate - ${cert.uniqueId}</title></head>
+            <body style="font-family: Georgia, serif; text-align: center; padding: 60px; border: 3px double #1a365d;">
+                <h1 style="color: #1a365d; font-size: 36px;">Certificate of Completion</h1>
+                <p style="font-size: 18px; margin: 40px 0;">This is to certify that</p>
+                <h2 style="color: #2d3748; font-size: 32px; margin: 20px 0;">${cert.studentName}</h2>
+                <p style="font-size: 18px; margin: 40px 0;">has successfully completed</p>
+                <h3 style="color: #4a5568; font-size: 24px;">${cert.courseName}</h3>
+                ${cert.grade ? `<p style="margin-top: 30px;">Grade: <strong>${cert.grade}</strong></p>` : ''}
+                <p style="margin-top: 50px;">Date: ${new Date(cert.issueDate).toLocaleDateString()}</p>
+                <p style="font-size: 12px; color: #718096; margin-top: 20px;">Certificate ID: ${cert.uniqueId}</p>
+                ${cert.signatoryName ? `
+                    <div style="margin-top: 60px;">
+                        <p style="border-top: 1px solid #000; display: inline-block; padding-top: 10px;">
+                            ${cert.signatoryName}<br/>
+                            <small>${cert.signatoryTitle || ''}</small>
+                        </p>
+                    </div>
+                ` : ''}
+            </body>
+            </html>
+        `
+        const blob = new Blob([certContent], { type: 'text/html' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${cert.uniqueId}.html`
+        link.click()
+        URL.revokeObjectURL(url)
     }
 
     const handleSaveSettings = async () => {
@@ -249,9 +203,7 @@ export default function CertificatesPage() {
                 defaultSignatoryTitle: settings.defaultSignatoryTitle,
                 defaultValidityMonths: settings.defaultValidityMonths,
                 instituteName: settings.instituteName,
-                instituteLogoUrl: settings.instituteLogoUrl,
-                stampUrl: settings.stampUrl,
-                stampPosition: settings.stampPosition
+                instituteLogoUrl: settings.instituteLogoUrl
             })
             alert('Settings saved successfully!')
         } catch (error) {
@@ -272,23 +224,6 @@ export default function CertificatesPage() {
         } catch (error) {
             console.error('Failed to create template:', error)
             alert('Failed to create template')
-        }
-    }
-
-    const handleUpdateTemplate = async () => {
-        if (!editingTemplate || !editingTemplate.name || !editingTemplate.designUrl) return
-        try {
-            const res = await certificateApi.updateTemplate(editingTemplate.id, editingTemplate)
-            if (res.data && res.data.template) {
-                setTemplates(templates.map(t => t.id === editingTemplate.id ? res.data.template : t))
-            } else {
-                fetchData() // fallback
-            }
-            setEditingTemplate(null)
-            setIsEditDialogOpen(false)
-        } catch (error) {
-            console.error('Failed to update template:', error)
-            alert('Failed to update template')
         }
     }
 
@@ -317,16 +252,6 @@ export default function CertificatesPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Certificate Management</h1>
                     <p className="text-muted-foreground">Manage certificates, templates, and settings.</p>
-                </div>
-                <div className="flex gap-2">
-                    <Button onClick={() => setIsManualDialogOpen(true)} variant="outline" className="border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Manual Generate
-                    </Button>
-                    <Button onClick={() => setIsBulkDialogOpen(true)} className="bg-indigo-600 hover:bg-indigo-500 text-white">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Bulk Generate
-                    </Button>
                 </div>
             </div>
 
@@ -359,106 +284,10 @@ export default function CertificatesPage() {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <div className="flex gap-2">
-                                <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
-                                    <DialogContent className="bg-slate-900 border-slate-800 text-slate-100">
-                                        <DialogHeader>
-                                            <DialogTitle className="text-lg font-bold text-indigo-400">Bulk Certificate Generator</DialogTitle>
-                                            <DialogDescription className="text-slate-400 text-xs">
-                                                Select a batch. The system will search for all completed enrollments in that batch and automatically issue certificates.
-                                            </DialogDescription>
-                                        </DialogHeader>
-
-                                        <div className="space-y-4 py-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-slate-300">Select Target Batch</Label>
-                                                <Select value={bulkBatchId} onValueChange={setBulkBatchId}>
-                                                    <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100">
-                                                        <SelectValue placeholder="Choose a batch" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                                                        {batches.map(batch => (
-                                                            <SelectItem key={batch.id} value={batch.id}>
-                                                                {batch.name} {batch.course?.title ? `(${batch.course.title})` : ''}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-
-                                        <DialogFooter>
-                                            <Button type="button" variant="outline" onClick={() => setIsBulkDialogOpen(false)} className="border-slate-800 bg-slate-950 text-slate-300">
-                                                Cancel
-                                            </Button>
-                                            <Button type="button" onClick={handleBulkGenerate} disabled={isBulkGenerating || !bulkBatchId} className="bg-indigo-600 hover:bg-indigo-500 text-white">
-                                                {isBulkGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                                Generate Certificates
-                                            </Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
-
-                                <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
-                                    <DialogContent className="bg-slate-900 border-slate-800 text-slate-100">
-                                        <DialogHeader>
-                                            <DialogTitle className="text-lg font-bold text-indigo-400">Manual Certificate Generation</DialogTitle>
-                                            <DialogDescription className="text-slate-400 text-xs">
-                                                Select a past batch and assign custom issue or study dates manually. This generates certificates for all students in that batch with the overridden dates.
-                                            </DialogDescription>
-                                        </DialogHeader>
-
-                                        <div className="space-y-4 py-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-slate-300">Select Batch</Label>
-                                                <Select value={manualBatchId} onValueChange={setManualBatchId}>
-                                                    <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100">
-                                                        <SelectValue placeholder="Choose a batch" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                                                        {batches.map(batch => (
-                                                            <SelectItem key={batch.id} value={batch.id}>
-                                                                {batch.name} {batch.course?.title ? `(${batch.course.title})` : ''}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            
-                                            <div className="space-y-2">
-                                                <Label className="text-slate-300">Issue Date (Optional)</Label>
-                                                <Input type="date" value={manualIssueDate} onChange={e => setManualIssueDate(e.target.value)} className="bg-slate-950 border-slate-800 text-slate-100" />
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label className="text-slate-300">Start Date (Optional)</Label>
-                                                    <Input type="date" value={manualStartDate} onChange={e => setManualStartDate(e.target.value)} className="bg-slate-950 border-slate-800 text-slate-100" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label className="text-slate-300">End Date (Optional)</Label>
-                                                    <Input type="date" value={manualEndDate} onChange={e => setManualEndDate(e.target.value)} className="bg-slate-950 border-slate-800 text-slate-100" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <DialogFooter>
-                                            <Button type="button" variant="outline" onClick={() => setIsManualDialogOpen(false)} className="border-slate-800 bg-slate-950 text-slate-300">
-                                                Cancel
-                                            </Button>
-                                            <Button type="button" onClick={handleManualGenerate} disabled={isManualGenerating || !manualBatchId} className="bg-indigo-600 hover:bg-indigo-500 text-white">
-                                                {isManualGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                                Generate Certificates
-                                            </Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
-
-                                <Button variant="outline" onClick={handleExportAll}>
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Export All
-                                </Button>
-                            </div>
+                            <Button variant="outline" onClick={handleExportAll}>
+                                <Download className="mr-2 h-4 w-4" />
+                                Export All
+                            </Button>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? (
@@ -521,20 +350,24 @@ export default function CertificatesPage() {
 
                     {/* Certificate Preview Dialog */}
                     <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                        <DialogContent className="sm:max-w-2xl">
+                        <DialogContent className="sm:max-w-lg">
                             <DialogHeader>
                                 <DialogTitle>Certificate Preview</DialogTitle>
                                 <DialogDescription>{previewCert?.uniqueId}</DialogDescription>
                             </DialogHeader>
                             {previewCert && (
-                                <div className="py-4 flex justify-center">
-                                    <div className="transform scale-[0.5] sm:scale-[0.6] md:scale-[0.75] origin-top h-[550px] overflow-hidden flex justify-center w-full">
-                                        <CertificateTemplate 
-                                            certificate={previewCert} 
-                                            logoUrl={settings?.instituteLogoUrl} 
-                                            stampUrl={settings?.stampUrl}
-                                            stampPosition={settings?.stampPosition}
-                                        />
+                                <div className="py-4">
+                                    <div className="p-6 border-2 border-dashed rounded-lg text-center space-y-4">
+                                        <Award className="h-16 w-16 mx-auto text-primary" />
+                                        <h2 className="text-2xl font-bold">Certificate of Completion</h2>
+                                        <p className="text-muted-foreground">This is to certify that</p>
+                                        <h3 className="text-xl font-semibold">{previewCert.studentName}</h3>
+                                        <p className="text-muted-foreground">has successfully completed</p>
+                                        <h4 className="text-lg font-medium">{previewCert.courseName}</h4>
+                                        {previewCert.grade && <p>Grade: <strong>{previewCert.grade}</strong></p>}
+                                        <p className="text-sm text-muted-foreground">
+                                            Issued on: {new Date(previewCert.issueDate).toLocaleDateString()}
+                                        </p>
                                     </div>
                                 </div>
                             )}
@@ -621,7 +454,7 @@ export default function CertificatesPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="aspect-[4/3] bg-muted rounded-lg flex items-center justify-center mb-4">
-                                        {(template.previewUrl || template.designUrl)?.startsWith('http') || (template.previewUrl || template.designUrl)?.startsWith('/') ? (
+                                        {template.previewUrl || template.designUrl ? (
                                             <Image
                                                 src={template.previewUrl || template.designUrl}
                                                 alt={template.name}
@@ -630,10 +463,7 @@ export default function CertificatesPage() {
                                                 className="max-h-full object-contain"
                                             />
                                         ) : (
-                                            <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                                <FileImage className="h-12 w-12 mb-2" />
-                                                <span className="text-xs">{template.designUrl}</span>
-                                            </div>
+                                            <FileImage className="h-12 w-12 text-muted-foreground" />
                                         )}
                                     </div>
                                     <div className="flex gap-2">
@@ -642,19 +472,8 @@ export default function CertificatesPage() {
                                                 Set Default
                                             </Button>
                                         )}
-                                        <Button 
-                                            variant="secondary" 
-                                            size="sm" 
-                                            className={template.isDefault ? "flex-1" : ""}
-                                            onClick={() => {
-                                                setEditingTemplate(template)
-                                                setIsEditDialogOpen(true)
-                                            }}
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
-                                            <Trash2 className="h-4 w-4" />
+                                        <Button variant="ghost" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
+                                            <Trash2 className="h-4 w-4 text-red-500" />
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -667,52 +486,6 @@ export default function CertificatesPage() {
                             </div>
                         )}
                     </div>
-
-                    {/* Edit Template Dialog */}
-                    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Edit Template</DialogTitle>
-                                <DialogDescription>Update the details of the certificate template.</DialogDescription>
-                            </DialogHeader>
-                            {editingTemplate && (
-                                <div className="space-y-4 py-4">
-                                    <div className="space-y-2">
-                                        <Label>Template Name</Label>
-                                        <Input
-                                            value={editingTemplate.name}
-                                            onChange={e => setEditingTemplate({ ...editingTemplate, name: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Description</Label>
-                                        <Input
-                                            value={editingTemplate.description || ''}
-                                            onChange={e => setEditingTemplate({ ...editingTemplate, description: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Design URL</Label>
-                                        <Input
-                                            value={editingTemplate.designUrl}
-                                            onChange={e => setEditingTemplate({ ...editingTemplate, designUrl: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Switch
-                                            checked={editingTemplate.isDefault}
-                                            onCheckedChange={checked => setEditingTemplate({ ...editingTemplate, isDefault: checked })}
-                                        />
-                                        <Label>Set as default template</Label>
-                                    </div>
-                                </div>
-                            )}
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                                <Button onClick={handleUpdateTemplate}>Save Changes</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
                 </TabsContent>
 
                 {/* SETTINGS TAB */}
@@ -907,37 +680,6 @@ export default function CertificatesPage() {
                                                     onChange={e => setSettings({ ...settings, instituteLogoUrl: e.target.value })}
                                                     placeholder="https://... (logo image)"
                                                 />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Stamp Settings */}
-                                    <div className="space-y-4 border-t pt-6">
-                                        <h3 className="font-semibold">Official Stamp (Optional)</h3>
-                                        <p className="text-sm text-muted-foreground">Add an official seal or stamp image to the certificate.</p>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label>Stamp Image URL</Label>
-                                                <Input
-                                                    value={settings.stampUrl || ''}
-                                                    onChange={e => setSettings({ ...settings, stampUrl: e.target.value })}
-                                                    placeholder="https://... (stamp PNG)"
-                                                />
-                                            </div>
-                                            <div className="space-y-3">
-                                                <Label>Stamp Position</Label>
-                                                <div className="grid grid-cols-3 gap-2 p-3 bg-muted/50 rounded-lg border">
-                                                    {['bottom-right', 'bottom-center', 'bottom-left', 'center-watermark', 'top-right', 'top-left'].map(pos => (
-                                                        <button
-                                                            key={pos}
-                                                            onClick={() => setSettings({ ...settings!, stampPosition: pos })}
-                                                            className={`p-2 text-xs rounded transition-all ${(settings?.stampPosition || 'bottom-right') === pos ? 'bg-primary text-white' : 'bg-background hover:bg-primary/10'}`}
-                                                            title={`Set stamp to ${pos}`}
-                                                        >
-                                                            {pos.replace('-', ' ')}
-                                                        </button>
-                                                    ))}
-                                                </div>
                                             </div>
                                         </div>
                                     </div>

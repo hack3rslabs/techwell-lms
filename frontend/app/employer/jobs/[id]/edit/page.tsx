@@ -41,14 +41,14 @@ export default function EditJobPage() {
         clientName: '',
         shift: 'Day',
         category: 'Development',
-        status: 'PUBLISHED'
+        status: 'OPEN'
     })
 
     useEffect(() => {
         const fetchJob = async () => {
             try {
-                const res = await api.get(`/jobs/${params.id}`)
-                const job = res.data.job
+                const res = await api.get(`/jobs/my/listings/${params.id}`)
+                const job = res.data
                 setFormData({
                     title: job.title,
                     type: job.type,
@@ -116,7 +116,7 @@ export default function EditJobPage() {
                         </SelectTrigger>
                         <SelectContent className="glass-card border-none shadow-xl">
                             <SelectItem value="DRAFT">Draft</SelectItem>
-                            <SelectItem value="PUBLISHED">Published</SelectItem>
+                            <SelectItem value="OPEN">Open</SelectItem>
                             <SelectItem value="CLOSED">Closed</SelectItem>
                             <SelectItem value="PAUSED">Paused</SelectItem>
                         </SelectContent>
@@ -260,7 +260,16 @@ export default function EditJobPage() {
                             </div>
                         </CardContent>
                         <CardFooter className="flex flex-col md:flex-row justify-between items-center bg-muted/30 border-t border-muted/20 p-8 gap-4">
-                            <Button type="button" variant="ghost" className="rounded-xl font-bold uppercase tracking-wider text-xs text-red-500 hover:text-red-700 hover:bg-red-500/10">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="rounded-xl font-bold uppercase tracking-wider text-xs text-red-500 hover:text-red-700 hover:bg-red-500/10"
+                                onClick={async () => {
+                                    if (!window.confirm("Delete this job listing?")) return
+                                    await api.delete(`/jobs/${params.id}`)
+                                    router.push("/employer/jobs")
+                                }}
+                            >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Remove Job Listing
                             </Button>

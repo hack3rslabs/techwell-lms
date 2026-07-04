@@ -1,45 +1,46 @@
 "use client"
 
 import * as React from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Loader2, Download, ArrowLeft, ShieldCheck, Award, Linkedin } from 'lucide-react'
+import { Loader2, Download, ArrowLeft } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
 import api from '@/lib/api'
-import { Badge } from '@/components/ui/badge'
-import Image from 'next/image'
-
-import { useSearchParams } from 'next/navigation'
-import { CertificateTemplate } from '@/components/CertificateTemplate'
 
 export default function CertificatePage() {
     const params = useParams()
+    const _searchParams = useSearchParams()
     const router = useRouter()
-    const searchParams = useSearchParams()
+    const { user: _user } = useAuth()
+
+    // In a real app, we would fetch enrollment by ID to verify completion
+    // For V1, we will mock the "Course Name" and "Completion Date" validation 
+    // or assume they are passed/fetched. 
+    // Let's fetch the course details based on ID which is likely courseID or EnrollmentID.
+
+    // Assuming params.id is courseId for simplicity in this flow,
+    // or better, fetch 'my enrollment' for this course.
+
+    const _courseId = params.id as string
 
     interface Certificate {
         id: string
         uniqueId: string
         studentName: string
         courseName: string
-        courseCategory?: string
-        grade?: string
-        score?: number
         issueDate: string
         signatoryName?: string
         signatoryTitle?: string
         signatureUrl?: string
-        instituteLogoUrl?: string
-        stampUrl?: string
-        stampPosition?: string
-        isValid: boolean
     }
-    
     const [certificate, setCertificate] = React.useState<Certificate | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
 
     React.useEffect(() => {
         const fetchCertificate = async () => {
             try {
+                // Determine if ID is existing DB ID or needs verification
+                // Since this page handles /certificate/[id], we assume ID.
                 const res = await api.get(`/certificates/${params.id}`)
                 setCertificate(res.data.certificate)
             } catch (error) {
@@ -53,79 +54,89 @@ export default function CertificatePage() {
         }
     }, [params.id])
 
-    React.useEffect(() => {
-        if (searchParams.get('print') === 'true' && certificate && !isLoading) {
-            setTimeout(() => {
-                window.print()
-            }, 500)
-        }
-    }, [searchParams, certificate, isLoading])
-
     const handlePrint = () => {
         window.print()
     }
 
-    const handleLinkedInShare = () => {
-        if (!certificate) return;
-        const issueDateObj = new Date(certificate.issueDate);
-        const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-        const verifyUrl = `${baseUrl}/verify/${certificate.uniqueId}`;
-        
-        const params = new URLSearchParams({
-            startTask: 'CERTIFICATION_NAME',
-            name: certificate.courseName,
-            organizationName: 'Techwell',
-            issueYear: issueDateObj.getFullYear().toString(),
-            issueMonth: (issueDateObj.getMonth() + 1).toString(),
-            certId: certificate.uniqueId,
-            certUrl: verifyUrl
-        });
+    if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin" /></div>
 
-        window.open(`https://www.linkedin.com/profile/add?${params.toString()}`, '_blank', 'width=800,height=600');
-    }
-
-    if (isLoading) return <div className="flex justify-center p-20 bg-slate-950 min-h-screen items-center"><Loader2 className="animate-spin text-indigo-400 h-8 w-8" /></div>
-
-    if (!certificate) return <div className="text-center p-20 bg-slate-950 text-slate-400 min-h-screen">Certificate not found.</div>
+    if (!certificate) return <div className="text-center p-20">Certificate not found.</div>
 
     const courseName = certificate.courseName
     const studentName = certificate.studentName
-    const date = new Date(certificate.issueDate).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    })
+    const date = new Date(certificate.issueDate).toLocaleDateString()
     const certificateId = certificate.uniqueId
     const signatoryName = certificate.signatoryName || "Director"
     const signatoryTitle = certificate.signatoryTitle || "Academic Director"
 
     return (
-        <div className="min-h-screen bg-slate-950 flex flex-col items-center py-10 print:bg-white print:p-0">
-            {/* Control Panel */}
-            <div className="w-full max-w-[940px] flex justify-between items-center mb-6 print:hidden px-4">
-                <Button variant="outline" onClick={() => router.back()} className="border-slate-800 bg-slate-900 text-slate-300 hover:text-white">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+        <div className="min-h-screen bg-neutral-100 flex flex-col items-center py-10 print:bg-white print:p-0">
+            {/* No Print Controls */}
+            <div className="w-full max-w-[800px] flex justify-between items-center mb-6 print:hidden px-4">
+                <Button variant="outline" onClick={() => router.back()}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
                 </Button>
-                <div className="flex gap-4">
-                    <Button 
-                        onClick={handleLinkedInShare} 
-                        className="bg-[#0077b5] hover:bg-[#0077b5]/90 text-white shadow-lg shadow-[#0077b5]/20"
-                    >
-                        <Linkedin className="mr-2 h-4 w-4" /> Add to LinkedIn
-                    </Button>
-                    <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20">
-                        <Download className="mr-2 h-4 w-4" /> Print/Save PDF
-                    </Button>
-                </div>
+                <Button onClick={handlePrint} className="bg-primary text-primary-foreground">
+                    <Download className="mr-2 h-4 w-4" /> Download/Print PDF
+                </Button>
             </div>
 
-            {/* Certificate Canvas */}
-            <CertificateTemplate 
-                certificate={certificate} 
-                logoUrl={certificate.instituteLogoUrl} 
-                stampUrl={certificate.stampUrl}
-                stampPosition={certificate.stampPosition}
-            />
+            {/* Certificate Container */}
+            <div className="bg-white text-black w-full max-w-[800px] aspect-[1.414/1] shadow-2xl p-10 relative border-[20px] border-double border-neutral-200 print:shadow-none print:border-4 print:w-full print:aspect-auto print:h-screen">
+                {/* Decorative Corner */}
+                <div className="absolute top-4 left-4 border-t-4 border-l-4 border-primary w-16 h-16"></div>
+                <div className="absolute bottom-4 right-4 border-b-4 border-r-4 border-primary w-16 h-16"></div>
+
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-8 border-2 border-neutral-100 h-full p-8">
+
+                    {/* Logo / Header */}
+                    <div className="mb-4">
+                        <div className="text-4xl font-bold tracking-widest uppercase text-primary font-serif">
+                            Techwell
+                        </div>
+                        <div className="text-sm text-muted-foreground tracking-widest uppercase mt-1">
+                            Institute of Technology
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <h1 className="text-5xl font-script text-neutral-800 font-serif">Certificate of Completion</h1>
+                        <p className="text-neutral-500 uppercase tracking-widest text-sm">This is to certify that</p>
+                    </div>
+
+                    {/* Name */}
+                    <div className="border-b-2 border-neutral-300 pb-2 px-10 w-3/4">
+                        <h2 className="text-4xl font-bold capitalize text-neutral-900 font-serif italic">
+                            {studentName}
+                        </h2>
+                    </div>
+
+                    <div className="space-y-2">
+                        <p className="text-neutral-500 uppercase tracking-widest text-sm">Has successfully completed the course</p>
+                        <h3 className="text-2xl font-bold text-neutral-800 max-w-[80%] mx-auto">
+                            {courseName}
+                        </h3>
+                    </div>
+
+                    {/* Details */}
+                    <div className="flex justify-between w-full px-10 pt-10 mt-auto">
+                        <div className="text-left">
+                            <p className="text-xs text-neutral-400 uppercase tracking-wider">Date</p>
+                            <p className="text-base font-medium">{date}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-xs text-neutral-400 uppercase tracking-wider">Certificate ID</p>
+                            <p className="text-base font-medium font-mono">{certificateId}</p>
+                        </div>
+                        <div className="text-right">
+                            {/* Signature Line */}
+                            <div className="border-b border-neutral-400 w-32 mb-1"></div>
+                            <p className="text-xs text-neutral-400 uppercase tracking-wider">{signatoryName}</p>
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-wider">{signatoryTitle}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <style jsx global>{`
                 @media print {

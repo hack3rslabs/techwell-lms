@@ -31,8 +31,11 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Token expired or invalid
+            // Token expired or invalid, or session expired from another device
             if (typeof window !== 'undefined') {
+                if (error.response?.data?.isSessionExpired) {
+                    alert('Session expired. You logged in from another device.');
+                }
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 // Optionally redirect to login
@@ -49,9 +52,11 @@ export const authApi = {
         email: string;
         password: string;
         name: string;
+        phone?: string;
         dob?: string;
         qualification?: string;
-        college?: string
+        college?: string;
+        referredByCode?: string;
     }) => api.post('/auth/register', data),
     verifyOtp: (data: { email: string; otp: string }) =>
         api.post('/auth/verify-otp', data),
@@ -111,6 +116,7 @@ export const gdprApi = {
 
 export const gdprAdminApi = {
     getRequests: () => api.get('/admin/gdpr/requests'),
+    getUnsubscribed: () => api.get('/admin/gdpr/unsubscribed'),
     processRequest: (id: string, action: 'PROCESS' | 'CANCEL') => api.patch(`/admin/gdpr/requests/${id}`, { action }),
 };
 
@@ -193,6 +199,7 @@ export const employerRequestApi = {
     getById: (id: string) => api.get(`/employer-requests/${id}`),
     approve: (id: string, data?: { adminNotes?: string }) => api.put(`/employer-requests/${id}/approve`, data),
     reject: (id: string, data: { rejectionReason: string }) => api.put(`/employer-requests/${id}/reject`, data),
+    cancelApproval: (id: string) => api.put(`/employer-requests/${id}/cancel-approval`),
 };
 
 // Interview API
@@ -231,8 +238,8 @@ export const paymentApi = {
     getConfig: () => api.get('/payments/config'),
     updateConfig: (data: unknown) => api.put('/payments/config', data),
     // Send amount (in rupees) and optional currency; backend will create order and return orderId, keyId and amount (in paise)
-    createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY', amount?: number, currency = 'INR') =>
-        api.post('/payments/create-order', { courseId, type, amount, currency }),
+    createOrder: (courseId: string, type: string = 'COURSE_ONLY', amount?: number, currency = 'INR', couponCode?: string, courseIds?: string[]) =>
+        api.post('/payments/create-order', { courseId, type, amount, currency, couponCode, courseIds }),
     // Backend expects fields: razorpay_order_id, razorpay_payment_id, razorpay_signature
     verifyPayment: (data: unknown) => api.post('/payments/verify-payment', data),
     getOrderStatus: (orderId: string) => api.get(`/payments/order-status/${orderId}`),
@@ -421,8 +428,10 @@ export const libraryApi = {
 
 // Students API (Admin)
 export const studentsApi = {
-    getAll: (params?: { search?: string; course?: string; page?: number; limit?: number }) =>
+    getAll: (params?: { search?: string; course?: string; page?: number; limit?: number; batchId?: string }) =>
         api.get('/admin/students', { params }),
+    markPaymentDone: (data: any) => api.post('/admin/students/payment', data),
+    getAvailableForBatch: (courseId: string) => api.get(`/admin/students/available-for-batch?courseId=${courseId}`),
 };
 
 export const rbacApi = {
@@ -465,10 +474,92 @@ export const galleryApi = {
 // Coupon API
 export const couponApi = {
     getAll: () => api.get('/coupons'),
-    create: (data: { code: string; discountPercent: number; expiryDate: string; courseIds: string[]; usageLimit?: number | null }) => api.post('/coupons', data),
+    create: (data: { code?: string; couponName?: string; discountPercent?: number; discountPercentage?: number; expiryDate: string; courseIds: string[]; usageLimit?: number | null }) => api.post('/coupons', data),
     delete: (id: string) => api.delete(`/coupons/${id}`),
-    validate: (data: { code: string; courseId: string }) => api.post('/coupons/validate', data),
+    validate: (data: { code?: string; couponName?: string; courseId: string; amount?: number }) => api.post('/coupons/validate', data),
+    toggleActive: (id: string, isActive: boolean) => api.patch(`/coupons/${id}/toggle`, { isActive }),
 };
 
 export default api;
 
+
+// Batches API
+export const batchesApi = {
+    getAll: (params?: any) => api.get('/batches', { params }),
+    getById: (id: string) => api.get(`/batches/${id}`),
+    create: (data: any) => api.post('/batches', data),
+    update: (id: string, data: any) => api.put(`/batches/${id}`, data),
+    complete: (id: string) => api.patch(`/batches/${id}/complete`),
+    getStudents: (id: string) => api.get(`/batches/${id}/students`),
+    getAvailableStudents: (id: string) => api.get(`/batches/${id}/available-students`),
+    addStudents: (id: string, data: { studentIds: string[] }) => api.post(`/batches/${id}/students`, data),
+    getAttendance: (id: string, date: string) => api.get(`/batches/${id}/attendance`, { params: { date } }),
+    markAttendance: (id: string, data: any) => api.post(`/batches/${id}/attendance`, data),
+    getNotes: (id: string) => api.get(`/batches/${id}/notes`),
+    addNote: (id: string, data: any) => api.post(`/batches/${id}/notes`, data),
+    updateNoteStatus: (id: string, noteId: string, data: any) => api.patch(`/batches/${id}/notes/${noteId}/status`, data),
+    scheduleLiveClass: (id: string, data: any) => api.post(`/batches/${id}/live-classes`, data),
+    scheduleInterviews: (id: string, data: any) => api.post(`/batches/${id}/ai-interviews`, data),
+};
+
+// Jobs API
+export const jobsApi = {
+    getAll: (params?: any) => api.get('/jobs', { params }),
+    getById: (id: string) => api.get(`/jobs/${id}`),
+    create: (data: any) => api.post('/jobs', data),
+    update: (id: string, data: any) => api.put(`/jobs/${id}`, data),
+    delete: (id: string) => api.delete(`/jobs/${id}`),
+    getApplications: (id: string) => api.get(`/jobs/${id}/applications`),
+    updateApplicationStatus: (jobId: string, appId: string, status: string) => api.patch(`/jobs/${jobId}/applications/${appId}/status`, { status }),
+    getAdminListings: (params?: any) => api.get('/jobs/admin/listings', { params })
+};
+
+// Messages API
+export const messagesApi = {
+    sendToAll: (data: { title: string; content: string; priority?: string }) => api.post('/messages/send/all', data),
+    sendToBatch: (data: { title: string; content: string; batchId: string; priority?: string }) => api.post('/messages/send/batch', data),
+    sendToCourse: (data: { title: string; content: string; courseId: string; priority?: string }) => api.post('/messages/send/course', data),
+    sendToStudent: (data: { title: string; content: string; studentId: string; priority?: string }) => api.post('/messages/send/student', data),
+};
+
+// Campus Drives API
+export const campusApi = {
+    getAll: (params?: any) => api.get('/campus-drives', { params }),
+    getById: (id: string) => api.get(`/campus-drives/${id}`),
+    create: (data: any) => api.post('/campus-drives', data),
+    update: (id: string, data: any) => api.put(`/campus-drives/${id}`, data),
+    delete: (id: string) => api.delete(`/campus-drives/${id}`),
+    getStudents: (id: string) => api.get(`/campus-drives/${id}/students`),
+    updateStudentStatus: (studentId: string, status: string) => api.patch(`/campus-drives/students/${studentId}/status`, { status }),
+    matchStudents: (id: string) => api.post(`/campus-drives/${id}/match`),
+    addInstitute: (id: string, instituteId: string) => api.post(`/campus-drives/${id}/institutes`, { instituteId }),
+};
+
+// Institutes API
+export const instituteApi = {
+    getAll: (params?: any) => api.get('/institutes', { params }),
+    getById: (id: string) => api.get(`/institutes/${id}`),
+    create: (data: any) => api.post('/institutes', data),
+    update: (id: string, data: any) => api.put(`/institutes/${id}`, data),
+    delete: (id: string) => api.delete(`/institutes/${id}`),
+};
+
+// Products API
+export const productApi = {
+    getAll: (params?: any) => api.get('/products', { params }),
+    getAdminAll: () => api.get('/products/admin/all'),
+    getById: (slug: string) => api.get(`/products/${slug}`),
+    create: (data: any) => api.post('/products', data),
+    update: (id: string, data: any) => api.put(`/products/${id}`, data),
+    delete: (id: string) => api.delete(`/products/${id}`),
+};
+
+// Clients API
+export const clientApi = {
+    getAll: (params?: any) => api.get('/clients', { params }),
+    getAdminAll: () => api.get('/clients/admin/all'),
+    getById: (id: string) => api.get(`/clients/${id}`),
+    create: (data: any) => api.post('/clients', data),
+    update: (id: string, data: any) => api.put(`/clients/${id}`, data),
+    delete: (id: string) => api.delete(`/clients/${id}`),
+};

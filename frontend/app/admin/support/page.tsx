@@ -50,7 +50,7 @@ export default function AdminSupportPage() {
     const [internalNotes, setInternalNotes] = React.useState('')
     const [activeTab, setActiveTab] = React.useState('conversation')
 
-    const { user: _user } = useAuth()
+    const { isAuthenticated: _auth } = useAuth()
     const [file, setFile] = React.useState<File | null>(null)
 
     const [tickets, setTickets] = React.useState<Ticket[]>([])
@@ -63,20 +63,12 @@ export default function AdminSupportPage() {
     const [replyText, setReplyText] = React.useState('')
     const [isSending, setIsSending] = React.useState(false)
 
-    // Fetch Tickets & Staff
-    React.useEffect(() => {
-        fetchTickets()
-        fetchStaff()
-    }, [filterStatus, filterPriority])
+
 
     // Fetch Messages when ticket selected
-    React.useEffect(() => {
-        if (selectedTicket) {
-            fetchMessages(selectedTicket.id)
-        }
-    }, [selectedTicket])
 
-    const fetchTickets = async () => {
+
+    const fetchTickets = React.useCallback(async () => {
         setIsLoading(true)
         try {
             const params: Record<string, string> = {}
@@ -90,9 +82,9 @@ export default function AdminSupportPage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [filterStatus, filterPriority])
 
-    const fetchMessages = async (ticketId: string) => {
+    const fetchMessages = React.useCallback(async (ticketId: string) => {
         setIsLoadingMessages(true)
         try {
             const res = await api.get(`/tickets/${ticketId}`)
@@ -102,9 +94,9 @@ export default function AdminSupportPage() {
         } finally {
             setIsLoadingMessages(false)
         }
-    }
+    }, [])
 
-    const fetchStaff = async () => {
+    const fetchStaff = React.useCallback(async () => {
         try {
             const res = await api.get('/users?role=STAFF,ADMIN,INSTRUCTOR')
             if (res.data.users) {
@@ -113,7 +105,18 @@ export default function AdminSupportPage() {
         } catch (error) {
             console.error("Failed to fetch staff", error)
         }
-    }
+    }, [])
+
+    React.useEffect(() => {
+        if (selectedTicket) {
+            fetchMessages(selectedTicket.id)
+        }
+    }, [selectedTicket, fetchMessages])
+
+    React.useEffect(() => {
+        fetchTickets()
+        fetchStaff()
+    }, [fetchTickets, fetchStaff])
 
     const handleAssign = async (staffId: string) => {
         if (!selectedTicket) return

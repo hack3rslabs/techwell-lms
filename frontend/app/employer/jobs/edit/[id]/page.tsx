@@ -37,13 +37,13 @@ export default function EditJobPage() {
         description: '',
         requirements: '',
         skills: '',
-        status: 'PUBLISHED'
+        status: 'OPEN'
     })
 
     useEffect(() => {
         const fetchJob = async () => {
             try {
-                const res = await api.get(`/jobs/${id}`)
+                const res = await api.get(`/jobs/my/listings/${id}`)
                 setJob(res.data)
             } catch {
                 alert("Failed to load job details")
@@ -59,7 +59,7 @@ export default function EditJobPage() {
     const handleSave = async () => {
         setIsSaving(true)
         try {
-            await api.patch(`/jobs/${id}`, job)
+            await api.put(`/jobs/${id}`, job)
             alert('Job Updated Successfully!')
             router.push('/employer/dashboard')
         } catch {

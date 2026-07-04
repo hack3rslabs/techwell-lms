@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from 'react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { interviewApi } from '@/lib/api'
@@ -9,8 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import {
     ArrowLeft,
-    ArrowRight,
-    Check,
     Camera,
     Mic,
     Monitor,
@@ -42,13 +40,6 @@ export default function InterviewStartPage() {
     const videoRef = useRef<HTMLVideoElement>(null)
     const [stream, setStream] = useState<MediaStream | null>(null)
     const [audioLevel, setAudioLevel] = useState(0)
-    const [_isReady, setIsReady] = useState(false)
-    interface Interview {
-        id: string
-        role: string
-        title?: string
-    }
-    const [_interview, setInterview] = useState<Interview | null>(null)
 
     const [checks, setChecks] = useState<CheckItem[]>([
         { id: 'camera', label: 'Camera Access', icon: Camera, status: 'pending' },
@@ -63,12 +54,10 @@ export default function InterviewStartPage() {
         }
     }, [authLoading, isAuthenticated, router])
 
-    // Fetch interview details
     useEffect(() => {
         const fetchInterview = async () => {
             try {
-                const res = await interviewApi.getById(params.id as string)
-                setInterview(res.data.interview)
+                await interviewApi.getById(params.id as string)
             } catch (error) {
                 console.error('Failed to fetch interview:', error)
             }
@@ -78,13 +67,13 @@ export default function InterviewStartPage() {
         }
     }, [params.id])
 
-    function updateCheck(id: string, update: Partial<CheckItem>) {
+    const updateCheck = useCallback((id: string, update: Partial<CheckItem>) => {
         setChecks(prev => prev.map(check =>
             check.id === id ? { ...check, ...update } : check
         ))
-    }
+    }, [])
 
-    const requestMediaPermissions = async () => {
+    const requestMediaPermissions = useCallback(async () => {
         updateCheck('camera', { status: 'checking' })
         updateCheck('microphone', { status: 'checking' })
 
@@ -121,7 +110,6 @@ export default function InterviewStartPage() {
             }
             updateAudioLevel()
 
-            setIsReady(true)
         } catch (error) {
             console.error('Media permission error:', error)
             const err = error as Error
@@ -134,9 +122,9 @@ export default function InterviewStartPage() {
                 updateCheck('microphone', { status: 'error', message: 'Microphone not found' })
             }
         }
-    }
+    }, [updateCheck])
 
-    const runSystemChecks = async () => {
+    const runSystemChecks = useCallback(async () => {
         // Check browser compatibility
         updateCheck('browser', { status: 'checking' })
         await new Promise(r => setTimeout(r, 500))
@@ -157,24 +145,27 @@ export default function InterviewStartPage() {
 
         // Request camera and microphone
         await requestMediaPermissions()
-    }
+    }, [updateCheck, requestMediaPermissions])
 
     // Run system checks on mount
     useEffect(() => {
-        let mounted = true
-        if (mounted) {
-            // runSystemChecks is async but calls setState synchronously at start
-            // Defer to avoid cascading render lint
-            setTimeout(() => void runSystemChecks(), 0)
-        }
+        // runSystemChecks is async but calls setState synchronously at start
+        // Defer to avoid cascading render lint
+        const timer = setTimeout(() => void runSystemChecks(), 0)
+
         return () => {
-            mounted = false
-            // Cleanup stream on unmount
+            clearTimeout(timer)
+            // Cleanup stream on unmount handled by other effect or here
+        }
+    }, [runSystemChecks])
+
+    useEffect(() => {
+        return () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop())
             }
         }
-    }, [])
+    }, [stream])
 
     const handleStartInterview = async () => {
         try {

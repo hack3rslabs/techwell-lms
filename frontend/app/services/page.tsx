@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowUpRight, Laptop, Shield, Cloud, Settings, Terminal, Megaphone, CheckCircle2 } from 'lucide-react'
+import { ArrowUpRight, Laptop, Shield, Cloud, Settings, Terminal, Megaphone, CheckCircle2, Bot } from 'lucide-react'
 
 const STATIC_SERVICES = [
     {
@@ -46,6 +46,32 @@ const STATIC_SERVICES = [
             'Network Security',
             'Comprehensive Audits'
         ]
+    },
+    {
+        id: 's-5',
+        name: 'Digital Marketing',
+        slug: 'digital-marketing',
+        category: 'DIGITAL_SERVICES',
+        description: 'Comprehensive Digital Marketing solutions including SEO, Social Media Marketing, PPC campaigns, and content strategy to boost your online presence.',
+        features: [
+            'Search Engine Optimization (SEO)',
+            'Social Media Marketing',
+            'Pay-Per-Click (PPC) Advertising',
+            'Content Strategy & Branding'
+        ]
+    },
+    {
+        id: 's-6',
+        name: 'AI Automation & RAG',
+        slug: 'ai-automation',
+        category: 'AI_AUTOMATION',
+        description: 'Advanced AI Automation, RAG (Retrieval-Augmented Generation), and n8n workflows designed to scale enterprise intelligence and radically accelerate operational throughput.',
+        features: [
+            'n8n Workflow Automation',
+            'RAG & LLM Integration',
+            'Autonomous AI Agents',
+            'AI-Driven Data Analytics'
+        ]
     }
 ]
 
@@ -62,6 +88,8 @@ export default function ServicesPage() {
                 return <Terminal className="h-6 w-6 text-purple-500" />
             case 'DIGITAL_SERVICES':
                 return <Megaphone className="h-6 w-6 text-amber-500" />
+            case 'AI_AUTOMATION':
+                return <Bot className="h-6 w-6 text-rose-500" />
             default:
                 return <Laptop className="h-6 w-6 text-zinc-500" />
         }

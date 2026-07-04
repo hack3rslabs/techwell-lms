@@ -2,51 +2,10 @@ import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // reactCompiler: true,
+  reactCompiler: true,
   output: "standalone",
-  distDir: process.env.NEXT_DIST_DIR || ".next",
-  turbopack: {},
-
-  // ── SEO & Security HTTP Headers ──────────────────────────────────────────
-  async headers() {
-    return [
-      {
-        // Apply to all public pages
-        source: "/((?!api|_next/static|_next/image|favicon.ico).*)",
-        headers: [
-          // Prevent MIME-sniffing
-          { key: "X-Content-Type-Options",   value: "nosniff" },
-          // Control referrer info sent to other sites
-          { key: "Referrer-Policy",          value: "strict-origin-when-cross-origin" },
-          // Prevent clickjacking
-          { key: "X-Frame-Options",          value: "SAMEORIGIN" },
-          // Force HTTPS (1 year)
-          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
-          // Restrict powerful browser features
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(self), geolocation=(), payment=(self)",
-          },
-          // CSP — allow our own assets + Razorpay + Google Fonts
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://api.razorpay.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https: http:",
-              "connect-src 'self' https://api.razorpay.com wss: ws: http://localhost:5000",
-              "frame-src https://api.razorpay.com",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "upgrade-insecure-requests",
-            ].join("; "),
-          },
-        ],
-      }
-    ]
+  turbopack: {
+    root: path.resolve(__dirname),
   },
 
   images: {
@@ -98,11 +57,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-import withPWAInit from "@ducanh2912/next-pwa";
-
-const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === 'development',
-});
-
-export default withPWA(nextConfig);
+export default nextConfig;

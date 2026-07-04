@@ -163,13 +163,13 @@ export default function UserSupportPage() {
                     </CardContent>
                 </Card>
                 <Card className="bg-green-50 border-green-100 cursor-pointer hover:shadow-md transition">
-                    <CardContent className="p-6 flex items-center gap-4" onClick={() => window.location.href = 'mailto:info@techwell.co.in'}>
+                    <CardContent className="p-6 flex items-center gap-4" onClick={() => window.location.href = 'mailto:support@techwell.co.in'}>
                         <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
                             <Mail className="h-5 w-5" />
                         </div>
                         <div>
                             <h3 className="font-semibold">Email Support</h3>
-                            <p className="text-sm text-muted-foreground">info@techwell.co.in</p>
+                            <p className="text-sm text-muted-foreground">support@techwell.co.in</p>
                         </div>
                     </CardContent>
                 </Card>

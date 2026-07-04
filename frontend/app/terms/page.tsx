@@ -1,85 +1,65 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { FileText, ArrowLeft, Mail } from 'lucide-react'
+import React from "react";
+import { Card } from "@/components/ui/card";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://techwell.co.in'
+export default function TermsAndConditionsPage() {
+  return (
+    <div className="container mx-auto py-12 px-4 max-w-5xl">
+      <h1 className="text-3xl font-bold mb-6 text-primary border-b pb-4">Terms and Conditions</h1>
+      
+      <Card className="p-8 bg-muted/30 shadow-inner">
+        <div className="text-xs text-muted-foreground leading-relaxed text-justify space-y-6 font-medium font-serif opacity-90 tracking-tight">
+          
+          <section>
+            <h2 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest border-b border-border/50 pb-1">1. General Terms & Introduction</h2>
+            <p>
+              By accessing, browsing, or utilizing the services provided by Techwell IT Solutions ("Techwell", "We", "Us", or "Our"), you (the "User", "Client", "Candidate", or "Customer") irrevocably agree to be bound by these comprehensive Terms and Conditions. These terms constitute a legally binding agreement governing your use of all Techwell services, platforms, and products. If you do not unequivocally agree to these terms, you are expressly prohibited from utilizing any of our services and must immediately discontinue access. Techwell reserves the right, at its sole and absolute discretion, to modify, amend, alter, or replace these Terms and Conditions at any time without prior notice. Continued use of our services subsequent to any such modifications shall constitute your explicit consent to such changes. It is your inherent responsibility to review these terms periodically for any alterations. These terms supersede any prior agreements, representations, or understandings, whether written or oral, between you and Techwell. All intellectual property rights, including but not limited to copyrights, trademarks, trade secrets, and patents related to the services provided, are the exclusive property of Techwell. Unauthorized use, reproduction, or distribution of our proprietary materials is strictly prohibited and subject to severe legal prosecution.
+            </p>
+          </section>
 
-export const metadata: Metadata = {
-    title: 'Terms of Service | Techwell User Agreement',
-    description: 'Techwell Detailed Terms and Conditions for Users.',
-    alternates: { canonical: `${BASE_URL}/terms` },
-    robots: { index: true, follow: false },
-}
+          <section>
+            <h2 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest border-b border-border/50 pb-1">2. Software Solutions & IT Services</h2>
+            <p>
+              Techwell provides bespoke Software Development, IT Solutions, Web Development, and Enterprise Application services. All deliverables are provided strictly on an "as-is" basis, subject to the specifications agreed upon in the respective Statement of Work (SOW) or Service Level Agreement (SLA). Techwell explicitly disclaims any implied warranties of merchantability, fitness for a particular purpose, or non-infringement. We shall not be held liable for any indirect, incidental, consequential, special, or punitive damages arising from the use or inability to use our software solutions, including but not limited to data loss, business interruption, or loss of profits. Project timelines and delivery schedules are estimates and subject to change due to unforeseen technical complexities or delayed client feedback. The Client bears full responsibility for providing timely approvals, necessary assets, and system access required for project completion. Failure to provide such requisites may result in project suspension and additional billing. Upon final delivery and full clearance of outstanding invoices, a limited non-exclusive license for the use of the developed software is granted to the Client, while Techwell retains full underlying copyright and code ownership unless explicitly transferred in writing.
+            </p>
+          </section>
 
-export default function TermsPage() {
-    return (
-        <div className="min-h-screen py-20 bg-background">
-            <div className="container max-w-5xl">
-                <div className="flex items-center gap-4 mb-8 border-b pb-6">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-black uppercase tracking-tighter">Terms and Conditions of Service</h1>
-                        <p className="text-muted-foreground text-sm font-bold">Effective Date: August 1st, 2026 | Document Reference: TW-LEG-2026-01-B</p>
-                    </div>
-                </div>
+          <section>
+            <h2 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest border-b border-border/50 pb-1">3. Cyber Security Services</h2>
+            <p>
+              Our Cyber Security consulting, auditing, penetration testing, and vulnerability assessment services are executed with the utmost professional diligence using industry-standard methodologies. However, due to the rapidly evolving nature of cyber threats, Techwell does not guarantee, warrant, or represent that its services will identify all possible vulnerabilities, nor that the client's systems will remain entirely secure from current or future cyber-attacks, unauthorized access, data breaches, or malicious exploitation. The Client explicitly agrees to indemnify and hold Techwell harmless from any legal liabilities, financial losses, regulatory fines, or reputational damage resulting from a cyber incident, irrespective of whether Techwell previously audited or secured the affected systems. All penetration testing is conducted strictly within the authorized scope; the Client assumes full responsibility for any inadvertent system downtime, data corruption, or operational disruption that may occur during the testing process. The findings presented in our security reports are confidential and meant exclusively for internal remediation by the Client.
+            </p>
+          </section>
 
-                <div className="bg-muted/10 border border-border p-8 rounded-xl shadow-inner">
-                    <div className="text-[10px] leading-tight text-justify text-muted-foreground space-y-4 font-mono">
-                        <p className="uppercase font-bold text-foreground">IMPORTANT NOTICE TO ALL USERS: PLEASE READ THESE TERMS AND CONDITIONS CAREFULLY. BY ACCESSING, REGISTERING FOR, OR USING THE TECHWELL PLATFORM, YOU EXPLICITLY AGREE TO BE BOUND BY THESE TERMS AND ALL APPLICABLE LAWS AND REGULATIONS UNDER THE INDIAN CONTRACT ACT, 1872 AND THE INFORMATION TECHNOLOGY ACT, 2000. THESE TERMS ARE DESIGNED TO PROTECT TECHWELL'S BUSINESS INTERESTS.</p>
-                        
-                        <p><strong>1. ACCEPTANCE OF TERMS AND LEGALLY BINDING AGREEMENT:</strong> This document constitutes a legally binding electronic contract formed under the Information Technology Act, 2000 and rules made thereunder. This electronic record is generated by a computer system and does not require any physical or digital signatures. By clicking "I Agree", "Register", solving the verification captcha, or by continuing to use the platform, you acknowledge that you have read, understood, and accept these Terms in their entirety. If you do not agree, you are expressly prohibited from using our services.</p>
+          <section>
+            <h2 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest border-b border-border/50 pb-1">4. Digital Marketing Services</h2>
+            <p>
+              Techwell provides comprehensive Digital Marketing Services, including but not limited to Search Engine Optimization (SEO), Social Media Management (SMM), Pay-Per-Click (PPC) Advertising, Content Marketing, and Digital Strategy formulation. The Client acknowledges that search engine algorithms, social media platform policies, and digital advertising costs are entirely controlled by third-party entities (e.g., Google, Meta, LinkedIn) and are subject to constant, unannounced changes. Consequently, Techwell explicitly disclaims any guarantee regarding specific search engine rankings, lead generation volumes, conversion rates, exact cost-per-click metrics, or instantaneous Return on Investment (ROI). While Techwell executes campaigns utilizing proven industry best practices, the Client assumes all inherent risks associated with digital marketing expenditures. The Client is solely responsible for ensuring that all products, services, and claims promoted through Techwell's campaigns comply with local, national, and international advertising laws and regulations. Techwell shall not be held liable for any ad account suspensions, domain penalties, or shadow-banning imposed by third-party platforms. All advertising budgets are payable directly to the respective ad networks unless managed via a specific escrow arrangement.
+            </p>
+          </section>
 
-                        <p><strong>2. NON-REFUNDABLE NATURE OF SERVICES AND STRICT DEDUCTIONS:</strong> 
-                        Techwell provides educational training, interview preparation, AI tools, and job assistance services. You explicitly agree that <strong>WE WILL NOT PROCESS ANY REFUNDS WHATSOEVER ONCE YOU HAVE ATTENDED ANY LIVE OR RECORDED CLASSES, OR LOGGED INTO THE PORTAL POST-PURCHASE</strong>. The mere provision of educational material, access to learning management systems, and commencement of training constitutes full and final delivery of service for the purpose of refund calculations. Techwell reserves the absolute right to deny any refund request. In the exceptional and sole discretion of Techwell management, if a refund is approved <strong>BEFORE</strong> the utilization of any service (meaning absolutely no classes attended, no materials downloaded, no job assistance used, and no portal logins), such refund shall be strictly subject to the following non-negotiable statutory and administrative deductions: 
-                        (a) A deduction of exactly eighteen percent (18%) corresponding to Goods and Services Tax (GST) mandated by the Government of India; 
-                        (b) A deduction of two percent (2%) representing our internal administrative, infrastructural, and processing charges; and 
-                        (c) A deduction of two percent (2%) representing the non-recoverable Payment Gateway processing charges levied by our third-party financial partners. 
-                        Therefore, a total mandatory deduction of twenty-two percent (22%) will be applied to the principal amount paid prior to any partial refund issuance. The user explicitly waives any right to dispute these deductions under the Consumer Protection (E-Commerce) Rules, 2020 or any other applicable statute.</p>
+          <section>
+            <h2 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest border-b border-border/50 pb-1">5. Training, Courses & Placements</h2>
+            <p>
+              Techwell offers rigorous Corporate Training, Skill Development Courses, and Educational Bootcamps. Enrollment in any of our training programs is strictly voluntary. We make no guarantees, warranties, or representations regarding the candidate's subsequent employability, salary increments, or career progression upon completion of the course. The curriculum is subject to dynamic modifications to align with current industry trends. Candidates are expected to maintain professional decorum, strict attendance, and academic integrity throughout the duration of the training. Any form of intellectual property theft, unauthorized sharing of course materials, or disruptive behavior will result in immediate expulsion without refund. Placement assistance, where offered, is solely a facilitative service providing interview opportunities; Techwell operates strictly as a liaison and is NOT the ultimate employer. The final hiring decision rests exclusively with the prospective hiring entity. Techwell is not responsible for any rescinded offers, delayed onboarding, changes in CTC, or post-joining workplace disputes. Candidates availing placement consultancy agree to attend all scheduled interviews promptly and conduct themselves professionally.
+            </p>
+          </section>
 
-                        <p><strong>3. JOB ASSISTANCE AND PLACEMENT DISCLAIMER:</strong> While Techwell provides "Job Assistance", the user expressly agrees and acknowledges that Techwell does not, under any circumstances, guarantee job placements, specific salary packages, interview clearances, or employment. Job assistance is strictly limited to providing guidance, resume building, and forwarding profiles to partner companies. The final hiring decision rests solely with the third-party employers. Techwell is completely absolved of any liability if a user fails to secure employment. The user agrees not to hold Techwell responsible for their career trajectory, market conditions, or personal interview performance.</p>
+          <section>
+            <h2 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest border-b border-border/50 pb-1">6. Strict Refund & Cancellation Policy</h2>
+            <p>
+              ALL PAYMENTS, FEES, RETAINERS, AND DEPOSITS MADE TO TECHWELL FOR ANY SERVICE—INCLUDING BUT NOT LIMITED TO SOFTWARE DEVELOPMENT, IT SOLUTIONS, CYBER SECURITY, DIGITAL MARKETING, TRAINING, AND PLACEMENT CONSULTANCY—ARE STRICTLY, CATEGORICALLY, AND ABSOLUTELY NON-REFUNDABLE UNDER ANY CIRCUMSTANCES. By remitting payment to Techwell, the Client/User acknowledges the substantial upfront investment of time, resources, infrastructure, and intellectual capital deployed by Techwell upon the commencement of an engagement. In the event of a project cancellation, premature termination, mid-training drop-out, failure to secure a job placement, dissatisfaction with digital marketing metrics, or any other reason initiated by the Client/User, no pro-rated refunds, chargebacks, or credit notes will be issued. Techwell vigorously disputes all unauthorized credit card chargebacks and reserves the right to pursue aggressive legal action, including engaging collection agencies and filing civil lawsuits, to recover disputed amounts, alongside all associated legal and administrative costs. This no-refund policy is an essential, non-negotiable cornerstone of this agreement and is designed to legally protect Techwell from financial exposure following the mobilization of its specialized workforce and proprietary resources.
+            </p>
+          </section>
 
-                        <p><strong>4. AI SERVICE USAGE AND LIMITATIONS:</strong> Techwell provides AI-driven interview simulations. The user acknowledges that AI is an evolving technology and Techwell makes no representations regarding the 100% accuracy, reliability, or bias-free nature of the AI feedback. Techwell reserves the right to rate-limit, restrict, or completely revoke AI access without prior notice if usage exceeds reasonable boundaries or if server loads require it. The user has no right to demand uninterrupted AI access.</p>
+          <section>
+            <h2 className="text-sm font-bold text-foreground mb-2 uppercase tracking-widest border-b border-border/50 pb-1">7. Limitation of Liability & Governing Law</h2>
+            <p>
+              To the absolute maximum extent permitted by applicable law, Techwell, its directors, officers, employees, agents, affiliates, and contractors shall not be held liable for any direct, indirect, incidental, consequential, exemplary, punitive, or special damages of any kind whatsoever arising out of or in connection with the use, inability to use, or performance of our services. This includes damages for loss of profits, goodwill, use, data, or other intangible losses, even if Techwell has been advised of the possibility of such damages. The total aggregate liability of Techwell for any claim arising out of these terms shall in no event exceed the total amount paid by the Client/User to Techwell for the specific service in dispute during the three (3) months preceding the claim. These Terms and Conditions, and any disputes arising directly or indirectly hereunder, shall be governed exclusively by the laws of India. Any legal action, suit, or proceeding must be instituted exclusively in the competent courts located in Srikakulam, Andhra Pradesh, India. The Client/User explicitly waives any objection to the jurisdiction and venue of such courts. Techwell reserves the right to seek injunctive relief or any other equitable remedy in any court of competent jurisdiction to prevent the breach or threatened breach of its intellectual property or confidentiality rights.
+            </p>
+          </section>
 
-                        <p><strong>5. OWNERSHIP OF USER-GENERATED CONTENT:</strong> By submitting any content, code, interview answers, feedback, or data on the Techwell platform, the user automatically grants Techwell a perpetual, irrevocable, worldwide, royalty-free, and exclusive license to use, reproduce, modify, adapt, publish, translate, create derivative works from, distribute, and display such content in any media. Techwell may use your interview metrics and code submissions for training its AI models without providing any compensation to the user.</p>
-
-                        <p><strong>6. NATURE OF SERVICE AND "AS-IS" PROVISION:</strong> The training, modules, software, platform, and job assistance programs provided by Techwell are provided on a strictly "as-is" and "as-available" basis without warranties of any kind, either express or implied, including, but not limited to, warranties of merchantability, fitness for a particular purpose, or non-infringement. Techwell reserves the unilateral right to modify, suspend, or discontinue any part of the curriculum, service, or platform at any time without prior notice or liability.</p>
-
-                        <p><strong>7. LIMITATION OF LIABILITY:</strong> In no event shall Techwell, its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any conduct or content of any third party on the Service; (iii) any content obtained from the Service; and (iv) unauthorized access, use or alteration of your transmissions or content, whether based on warranty, contract, tort (including negligence) or any other legal theory, whether or not we have been informed of the possibility of such damage, and even if a remedy set forth herein is found to have failed of its essential purpose. The maximum cumulative liability of Techwell, under any and all circumstances, shall never exceed the total amount paid by the user in the thirty (30) days preceding the claim, or INR 1000, whichever is lower.</p>
-
-                        <p><strong>8. INDEMNIFICATION AND HOLD HARMLESS:</strong> You agree to fully and unconditionally defend, indemnify and hold harmless Techwell, its parent companies, licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of a) your use and access of the Service; b) a breach of these Terms; c) Content posted on the Service; or d) your violation of any third-party right, including intellectual property or privacy rights.</p>
-
-                        <p><strong>9. RIGHT TO TERMINATE:</strong> Techwell reserves the absolute, unilateral right to suspend, lock, or permanently terminate your account and access to the services at any time, for any reason, without notice or liability. Common reasons for termination include, but are not limited to, sharing account credentials, aggressive behavior towards Techwell staff, attempting to reverse engineer the platform, or violating any clause of these terms. In the event of termination by Techwell, no refunds will be provided.</p>
-
-                        <p><strong>10. FORCE MAJEURE:</strong> Techwell shall not be liable for any failure or delay in performance of its obligations under these Terms arising out of or caused, directly or indirectly, by circumstances beyond its reasonable control, including, without limitation, acts of God, earthquakes, fires, floods, wars, civil or military disturbances, acts of terrorism, sabotage, strikes, epidemics, pandemics, riots, power failures, server crashes, third-party API failures, computer failure and any such circumstances beyond its reasonable control as may cause interruption, loss or malfunction of utility, transportation, computer (hardware or software) or telephone communication service, accidents, labor disputes, acts of civil or military authority, or governmental actions.</p>
-
-                        <p><strong>11. SEVERABILITY AND WAIVER:</strong> If any provision of these Terms is held to be invalid or unenforceable by a court of competent jurisdiction, the remaining provisions of these Terms will remain in full force and effect. These Terms constitute the entire agreement between us regarding our Service. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.</p>
-
-                        <p><strong>12. GOVERNING LAW AND DISPUTE RESOLUTION:</strong> These Terms shall be governed and construed exclusively in accordance with the laws of India. Any dispute, controversy, or claim arising out of or relating to this Agreement shall be settled by binding arbitration in accordance with the Arbitration and Conciliation Act, 1996. The seat and venue of arbitration shall be exclusively in Bangalore, Karnataka, India. The user explicitly waives the right to participate in any class action lawsuit against Techwell. The user agrees to bear their own legal costs and half of the arbitration costs.</p>
-
-                        <p><strong>13. INTELLECTUAL PROPERTY RIGHTS:</strong> The Service and its original content, features and functionality are and will remain the exclusive property of Techwell and its licensors. The Service is protected by copyright, trademark, and other laws of India. Users are strictly prohibited from copying, downloading (except where explicitly permitted), screen-recording, distributing, or monetizing any content provided by Techwell. Any violation will result in immediate legal action and a penalty of no less than INR 5,00,000 for damages.</p>
-
-                        <p><strong>14. CHANGES TO TERMS:</strong> Techwell reserves the right, at its sole discretion, to modify or replace these Terms at any time. It is your responsibility to check these Terms periodically for changes. Your continued use of the Service following the posting of any changes to these Terms constitutes strict acceptance of those changes.</p>
-
-                        <p><strong>15. ENTIRE AGREEMENT:</strong> By accepting these terms through the two-step verification process during registration, you confirm that you have read through this entire document, regardless of its length, verbosity, or the size of its text, and you fully, unequivocally, and unconditionally understand and agree to be bound by the non-refundable policies, 22% exceptional deductions, total limitations of liability, job placement disclaimers, and all other clauses stated herein which are heavily in favor of Techwell. This electronic agreement is final, binding, and supersedes any prior oral or written communications.</p>
-                    </div>
-                </div>
-
-                <div className="mt-8 text-center border-t border-border pt-6">
-                    <p className="text-xs text-muted-foreground mb-4">For legal inquiries regarding these terms:</p>
-                    <Link href="mailto:info@techwell.co.in">
-                        <span className="inline-flex items-center gap-2 text-primary hover:underline text-sm font-bold">
-                            <Mail className="h-4 w-4" />
-                            info@techwell.co.in
-                        </span>
-                    </Link>
-                    <br /><br />
-                    <Link href="/" className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
-                        <ArrowLeft className="h-4 w-4" /> Back to Home
-                    </Link>
-                </div>
-            </div>
         </div>
-    )
+      </Card>
+    </div>
+  );
 }

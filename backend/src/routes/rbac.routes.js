@@ -108,10 +108,77 @@ router.put('/roles/:id', authenticate, checkPermission('SETTINGS'), async (req, 
 });
 
 /**
- * Role Creation and Deletion are disabled to maintain system integrity.
- * These roles must be managed via database migrations or seed scripts only.
+ * @route   POST /api/rbac/roles
+ * @desc    Create a new custom role
+ * @access  Private/Admin
  */
-router.post('/roles', (req, res) => res.status(403).json({ error: "Role creation is disabled. Roles are fixed." }));
-router.delete('/roles/:id', (req, res) => res.status(403).json({ error: "Role deletion is disabled. Roles are fixed." }));
+router.post('/roles', authenticate, checkPermission('USERS_ROLES'), async (req, res, next) => {
+    try {
+        const { name, description, permissions } = req.body;
+        
+        if (!name) return res.status(400).json({ error: 'Role name is required' });
+        
+        const existing = await prisma.systemRole.findUnique({ where: { name } });
+        if (existing) return res.status(400).json({ error: 'Role name already exists' });
+
+        const role = await prisma.$transaction(async (tx) => {
+            const newRole = await tx.systemRole.create({
+                data: {
+                    name,
+                    description,
+                    isSystem: false
+                }
+            });
+
+            if (permissions && Array.isArray(permissions)) {
+                await tx.rolePermission.createMany({
+                    data: permissions.map(p => ({
+                        roleId: newRole.id,
+                        featureId: p.featureId,
+                        canRead: p.canRead || false,
+                        canWrite: p.canWrite || false,
+                        isDisabled: p.isDisabled || false
+                    }))
+                });
+            }
+
+            return tx.systemRole.findUnique({
+                where: { id: newRole.id },
+                include: { rolePermissions: true }
+            });
+        });
+
+        res.status(201).json(role);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   DELETE /api/rbac/roles/:id
+ * @desc    Delete a custom role
+ * @access  Private/Admin
+ */
+router.delete('/roles/:id', authenticate, checkPermission('USERS_ROLES'), async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const role = await prisma.systemRole.findUnique({ where: { id } });
+        
+        if (!role) return res.status(404).json({ error: 'Role not found' });
+        if (role.isSystem) return res.status(403).json({ error: 'Cannot delete system roles' });
+        
+        const userCount = await prisma.user.count({ where: { systemRoleId: id } });
+        if (userCount > 0) return res.status(400).json({ error: 'Cannot delete role with assigned users. Reassign users first.' });
+
+        await prisma.$transaction(async (tx) => {
+            await tx.rolePermission.deleteMany({ where: { roleId: id } });
+            await tx.systemRole.delete({ where: { id } });
+        });
+        
+        res.json({ message: 'Role deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;

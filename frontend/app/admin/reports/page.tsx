@@ -6,12 +6,7 @@ import api from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Download, TrendingUp, DollarSign, Users, Upload, FileSpreadsheet } from "lucide-react"
-import { toast } from "sonner"
-import ExcelJS from 'exceljs'
+import { Loader2, Download, TrendingUp, DollarSign, Users } from "lucide-react"
 import {
     BarChart,
     Bar,
@@ -30,99 +25,6 @@ export default function ReportsPage() {
     const [activeTab, setActiveTab] = React.useState("business")
     const [loading, setLoading] = React.useState(false)
     const [data, setData] = React.useState<Record<string, any> | null>(null)
-
-    // Custom Reports State
-    const [customModule, setCustomModule] = React.useState("users")
-    const [startDate, setStartDate] = React.useState("")
-    const [endDate, setEndDate] = React.useState("")
-    const [isExporting, setIsExporting] = React.useState(false)
-
-    const handleExportCustomReport = async () => {
-        try {
-            setIsExporting(true)
-            // Fetch data based on module and date filters
-            const endpoint = `/${customModule}?startDate=${startDate}&endDate=${endDate}`
-            const res = await api.get(endpoint)
-            
-            // Extract the relevant array from response
-            let exportData = []
-            if (res.data[customModule]) {
-                exportData = res.data[customModule]
-            } else if (Array.isArray(res.data)) {
-                exportData = res.data
-            } else {
-                exportData = [res.data]
-            }
-
-            if (exportData.length === 0) {
-                toast.error("No data found for the selected criteria.")
-                return
-            }
-
-            
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("CustomReport");
-        
-        if (exportData && exportData.length > 0) {
-            worksheet.columns = Object.keys(exportData[0]).map(key => ({ header: key, key }));
-            worksheet.addRows(exportData);
-        }
-        
-        workbook.xlsx.writeBuffer().then((buffer) => {
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `CustomReport_${customModule}_${new Date().toISOString().split('T')[0]}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-            toast.success("Report exported to Excel successfully")
-        } catch (error) {
-            console.error("Failed to export report", error)
-            toast.error("Failed to export custom report")
-        } finally {
-            setIsExporting(false)
-        }
-    }
-
-    const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        
-        toast.info("Processing Excel Import...")
-        try {
-            const workbook = new ExcelJS.Workbook();
-            const arrayBuffer = await file.arrayBuffer();
-            await workbook.xlsx.load(arrayBuffer as any);
-            const ws = workbook.worksheets[0];
-            
-            if (ws) {
-                const data: any[] = [];
-                const cols: string[] = [];
-                
-                ws.getRow(1).eachCell((cell, colNumber) => {
-                    cols.push(cell.value ? cell.value.toString() : `Col${colNumber}`);
-                });
-                
-                ws.eachRow((row, rowNumber) => {
-                    if (rowNumber > 1) {
-                        const rowData: any = {};
-                        cols.forEach((colName, index) => {
-                            rowData[colName] = row.getCell(index + 1).value;
-                        });
-                        data.push(rowData);
-                    }
-                });
-                console.log("Imported Data:", data)
-                toast.success(`Successfully parsed ${data.length} rows from Excel. Backend processing pending.`)
-            }
-        } catch (error) {
-            toast.error("Failed to parse Excel file")
-        }
-    }
 
     const fetchReport = React.useCallback(async (type: string) => {
         setLoading(true)
@@ -181,7 +83,6 @@ export default function ReportsPage() {
                     {canViewFinance && <TabsTrigger value="sales">Sales & Targets</TabsTrigger>}
                     <TabsTrigger value="courses">Course Performance</TabsTrigger>
                     {isEmployer && <TabsTrigger value="employer">Hiring Stats</TabsTrigger>}
-                    <TabsTrigger value="custom">Custom Analytics</TabsTrigger>
                 </TabsList>
 
                 <div className="mt-6">
@@ -291,60 +192,6 @@ export default function ReportsPage() {
                             </TabsContent>
                         </>
                     )}
-                    
-                    <TabsContent value="custom" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2"><FileSpreadsheet className="h-5 w-5" /> Custom Analytics & Exports</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="grid md:grid-cols-4 gap-4 items-end">
-                                    <div className="space-y-2">
-                                        <Label>Data Module</Label>
-                                        <Select value={customModule} onValueChange={setCustomModule}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select module" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="users">Users</SelectItem>
-                                                <SelectItem value="leads">Leads</SelectItem>
-                                                <SelectItem value="courses">Courses</SelectItem>
-                                                <SelectItem value="finance/expenses">Expenses</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Start Date (Optional)</Label>
-                                        <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>End Date (Optional)</Label>
-                                        <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
-                                    </div>
-                                    <Button onClick={handleExportCustomReport} disabled={isExporting} className="gap-2">
-                                        {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                                        Export Excel
-                                    </Button>
-                                </div>
-
-                                <div className="pt-8 border-t space-y-4">
-                                    <h3 className="font-medium text-lg">Excel Import Options</h3>
-                                    <p className="text-sm text-muted-foreground">Upload an Excel file to bulk import data for the selected module.</p>
-                                    <div className="flex items-center gap-4">
-                                        <Input 
-                                            type="file" 
-                                            accept=".xlsx, .xls, .csv" 
-                                            onChange={handleImportExcel} 
-                                            className="max-w-xs"
-                                        />
-                                        <Button variant="outline" className="gap-2 pointer-events-none">
-                                            <Upload className="h-4 w-4" /> Import Data
-                                        </Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
                 </div>
             </Tabs>
         </div>

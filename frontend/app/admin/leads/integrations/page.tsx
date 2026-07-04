@@ -6,16 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
     Facebook,
     Globe,
     Phone,
-    Check,
-    AlertCircle,
-    Copy,
     Share2,
-    Settings
 } from 'lucide-react'
 import api from '@/lib/api'
 
@@ -42,11 +37,9 @@ export default function LeadIntegrationsPage() {
         name: ''
     })
 
-    React.useEffect(() => {
-        fetchIntegrations()
-    }, [])
 
-    const fetchIntegrations = async () => {
+
+    const fetchIntegrations = React.useCallback(async () => {
         try {
             const res = await api.get('/leads/integrations')
             setIntegrations(res.data)
@@ -55,7 +48,11 @@ export default function LeadIntegrationsPage() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [])
+
+    React.useEffect(() => {
+        fetchIntegrations()
+    }, [fetchIntegrations])
 
     const handleSaveConfig = async () => {
         try {

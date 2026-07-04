@@ -64,65 +64,55 @@ exports.sendMessageToStudents = async (req, res) => {
   }
 };
 
-// Send message to specific batches
+// Send message to specific batch
 exports.sendMessageToBatch = async (req, res) => {
   try {
-    const { title, content, batchIds, priority = 'NORMAL' } = req.body;
+    const { title, content, batchId, priority = 'NORMAL' } = req.body;
     const senderId = req.user.id;
 
-    if (!title || !content || !batchIds || !Array.isArray(batchIds) || batchIds.length === 0) {
-      // Fallback for older single batchId just in case
-      if (req.body.batchId) {
-          batchIds = [req.body.batchId];
-      } else {
-        return res.status(400).json({
-          success: false,
-          message: 'Title, content, and an array of batchIds are required'
-        });
-      }
-    }
-
-    // Verify batches exist
-    const batches = await prisma.batch.findMany({
-      where: { id: { in: batchIds } }
-    });
-
-    if (batches.length === 0) {
-      return res.status(404).json({
+    if (!title || !content || !batchId) {
+      return res.status(400).json({
         success: false,
-        message: 'No batches found'
+        message: 'Title, content, and batchId are required'
       });
     }
 
-    const batchNames = batches.map(b => b.name).join(', ');
+    // Verify batch exists
+    const batch = await prisma.batch.findUnique({
+      where: { id: batchId }
+    });
+
+    if (!batch) {
+      return res.status(404).json({
+        success: false,
+        message: 'Batch not found'
+      });
+    }
 
     // Create the admin message
     const adminMessage = await prisma.adminMessage.create({
       data: {
         title,
-        content: `[Batches: ${batchNames}]\n${content}`,
+        content: `[Batch: ${batch.name}]\n${content}`,
         priority,
         senderId,
         isPublished: true
       }
     });
 
-    // Get all enrolled students in these batches
+    // Get all enrolled students in this batch
     const batchStudents = await prisma.enrollment.findMany({
       where: {
-        batchId: { in: batchIds },
+        batchId: batchId,
         status: 'ACTIVE'
       },
       select: { userId: true }
     });
 
-    // Create unique recipients to avoid duplicates if a student is in multiple batches
-    const uniqueUserIds = [...new Set(batchStudents.map(e => e.userId))];
-
     // Create recipients for each student
-    const recipients = uniqueUserIds.map(userId => ({
+    const recipients = batchStudents.map(enrollment => ({
       messageId: adminMessage.id,
-      userId: userId,
+      userId: enrollment.userId,
       isRead: false
     }));
 
@@ -201,6 +191,81 @@ exports.sendMessageToStudent = async (req, res) => {
     });
   } catch (error) {
     console.error('Error sending message to student:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send message',
+      error: error.message
+    });
+  }
+};
+
+// Send message to specific course
+exports.sendMessageToCourse = async (req, res) => {
+  try {
+    const { title, content, courseId, priority = 'NORMAL' } = req.body;
+    const senderId = req.user.id;
+
+    if (!title || !content || !courseId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Title, content, and courseId are required'
+      });
+    }
+
+    // Verify course exists
+    const course = await prisma.course.findUnique({
+      where: { id: courseId }
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found'
+      });
+    }
+
+    // Create the admin message
+    const adminMessage = await prisma.adminMessage.create({
+      data: {
+        title,
+        content: `[Course: ${course.title}]\n${content}`,
+        priority,
+        senderId,
+        isPublished: true
+      }
+    });
+
+    // Get all enrolled students in this course
+    const enrolledStudents = await prisma.enrollment.findMany({
+      where: {
+        courseId: courseId,
+        status: 'ACTIVE'
+      },
+      select: { userId: true }
+    });
+
+    // Create recipients for each student
+    const recipients = enrolledStudents.map(enrollment => ({
+      messageId: adminMessage.id,
+      userId: enrollment.userId,
+      isRead: false
+    }));
+
+    if (recipients.length > 0) {
+      await prisma.adminMessageRecipient.createMany({
+        data: recipients,
+        skipDuplicates: true
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Message sent to course students',
+      data: adminMessage,
+      recipientsCount: recipients.length
+    });
+  } catch (error) {
+    console.error('Error sending message to course:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send message',

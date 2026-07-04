@@ -7,24 +7,6 @@ import { interviewApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import {
     Video,
     Calendar,
@@ -34,13 +16,6 @@ import {
     PlayCircle,
     Loader2,
     Plus,
-    Sparkles,
-    FileText,
-    Upload,
-    Bot,
-    Briefcase,
-    Check,
-    ArrowRight
 } from 'lucide-react'
 import { NewInterviewDialog } from '@/components/interviews/NewInterviewDialog'
 
@@ -56,21 +31,6 @@ interface Interview {
     score?: number
 }
 
-const _DOMAINS = [
-    { value: 'TECHNOLOGY', label: 'Technology / Software' },
-    { value: 'DATA_SCIENCE', label: 'Data Science & AI' },
-    { value: 'PRODUCT', label: 'Product Management' },
-    { value: 'DESIGN', label: 'UI/UX Design' },
-    { value: 'BUSINESS', label: 'Business / Consulting' },
-    { value: 'FINANCE', label: 'Finance & Banking' },
-]
-
-const _DIFFICULTIES = [
-    { value: 'BEGINNER', label: 'Beginner', desc: 'For freshers, 0-2 years experience' },
-    { value: 'INTERMEDIATE', label: 'Intermediate', desc: 'For mid-level, 2-5 years experience' },
-    { value: 'ADVANCED', label: 'Advanced', desc: 'For seniors, 5+ years experience' },
-]
-
 export default function InterviewsPage() {
     const router = useRouter()
     const { isAuthenticated, isLoading: authLoading } = useAuth()
@@ -78,25 +38,9 @@ export default function InterviewsPage() {
     const [interviews, setInterviews] = React.useState<Interview[]>([])
     const [stats, setStats] = React.useState<{ total: number; completed: number; averageScore: number } | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
-    // const [isPotentialModalOpen, setPotentialModalOpen] = useState(false) // Removed unused state
 
     // New Interview Form State
     const [isOpen, setIsOpen] = useState(false)
-    const [_isSubmitting, setIsSubmitting] = useState(false)
-    const [_step, _setStep] = useState(1) // 1: Details, 2: JD/Resume, 3: Review/Launch
-    const [formData, setFormData] = useState({
-        domain: 'TECHNOLOGY',
-        role: '',
-        company: '',
-        technology: '',
-        difficulty: 'INTERMEDIATE',
-        duration: 30,
-        jobDescription: '',
-        resumeFile: null as File | null,
-        resumeUrl: '',
-        panelCount: 1, // Simplified for quick start
-        type: 'INSTANT'
-    })
 
     React.useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -136,46 +80,6 @@ export default function InterviewsPage() {
             router.push(`/interviews/${id}`)
         } catch (error) {
             console.error('Failed to start interview:', error)
-        }
-    }
-
-    const updateFormData = (field: string, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }))
-    }
-
-    const _handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            updateFormData('resumeFile', file)
-            updateFormData('resumeUrl', file.name)
-        }
-    }
-
-    const _handleCreateInterview = async () => {
-        if (!formData.role || !formData.technology) return
-
-        setIsSubmitting(true)
-        try {
-            const response = await interviewApi.create({
-                domain: formData.domain,
-                role: formData.role,
-                company: formData.company,
-                difficulty: formData.difficulty,
-                jobDescription: formData.jobDescription,
-                panelCount: 1, // Defaulting to 1 for quick start
-                duration: formData.duration,
-                technology: formData.technology,
-                selectedAvatars: ['tech-1'] // Default avatar
-            })
-
-            const interviewId = response.data.interview.id
-            setIsOpen(false)
-            // Redirect to start page (Tech Check)
-            router.push(`/interviews/${interviewId}/start`)
-        } catch (error) {
-            console.error('Failed to create interview:', error)
-        } finally {
-            setIsSubmitting(false)
         }
     }
 

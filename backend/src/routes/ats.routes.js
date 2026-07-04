@@ -58,25 +58,19 @@ router.post('/apply/external', async (req, res, next) => {
  * @desc    Get single application details (Recruiter)
  * @access  Private (Employer)
  */
-router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { id } = req.params;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
         const application = await prisma.jobApplication.findUnique({
             where: { id },
             include: {
-                applicant: { 
-                    select: { 
-                        id: true, name: true, email: true, avatar: true, phone: true,
-                        enrollments: {
-                            include: { course: { select: { title: true, difficulty: true } } }
-                        }
-                    } 
-                },
+                applicant: { select: { id: true, name: true, email: true, avatar: true, phone: true } },
                 job: { select: { title: true, employerId: true } }
             }
         });
 
-        if (!application || application.job.employerId !== req.user.id) {
+        if (!application || (!isAdmin && application.job.employerId !== req.user.id)) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -91,13 +85,14 @@ router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER'), asyn
  * @desc    List applications with filters (Recruiter)
  * @access  Private (Employer)
  */
-router.get('/applications/:jobId', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.get('/applications/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { jobId } = req.params;
         const { source, status, minScore, search } = req.query;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         const job = await prisma.job.findUnique({ where: { id: jobId } });
-        if (!job || job.employerId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+        if (!job || (!isAdmin && job.employerId !== req.user.id)) return res.status(403).json({ error: 'Access denied' });
 
         const where = { jobId };
 
@@ -133,17 +128,18 @@ router.get('/applications/:jobId', authenticate, authorize('EMPLOYER'), async (r
  * @desc    Update Status & Workflow (Recruiter)
  * @access  Private (Employer)
  */
-router.patch('/status/:id', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.patch('/status/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { status, notes } = req.body;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         const application = await prisma.jobApplication.findUnique({
             where: { id },
             include: { job: true }
         });
 
-        if (!application || application.job.employerId !== req.user.id) {
+        if (!application || (!isAdmin && application.job.employerId !== req.user.id)) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -189,9 +185,19 @@ router.patch('/status/:id', authenticate, authorize('EMPLOYER'), async (req, res
  * @desc    Calculate ATS Score (Mock Implementation)
  * @access  Private (Employer)
  */
-router.post('/score/:id', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.post('/score/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { id } = req.params;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
+
+        const application = await prisma.jobApplication.findUnique({
+            where: { id },
+            include: { job: true }
+        });
+
+        if (!application || (!isAdmin && application.job.employerId !== req.user.id)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
 
         // In real app: Parse resumeUrl content -> Compare with Job Skills -> 0-100
         // Here: Random mock score for demo
@@ -213,9 +219,10 @@ router.post('/score/:id', authenticate, authorize('EMPLOYER'), async (req, res, 
  * @desc    Schedule Interview
  * @access  Private (Employer)
  */
-router.post('/interviews', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.post('/interviews', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { applicationId, roundName, scheduledAt, interviewerId, duration, type } = req.body;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         // Get application details for email
         const application = await prisma.jobApplication.findUnique({
@@ -231,8 +238,8 @@ router.post('/interviews', authenticate, authorize('EMPLOYER'), async (req, res,
             }
         });
 
-        if (!application) {
-            return res.status(404).json({ error: 'Application not found' });
+        if (!application || (!isAdmin && application.job.employerId !== req.user.id)) {
+            return res.status(403).json({ error: 'Access denied or application not found' });
         }
 
         // Generate meeting link from configured integration
@@ -301,16 +308,17 @@ router.post('/interviews', authenticate, authorize('EMPLOYER'), async (req, res,
  * @desc    Export Applicants to CSV
  * @access  Private (Employer)
  */
-router.get('/export/:jobId', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.get('/export/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { jobId } = req.params;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         const job = await prisma.job.findUnique({
             where: { id: jobId },
             include: { employer: true }
         });
 
-        if (!job || job.employerId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+        if (!job || (!isAdmin && job.employerId !== req.user.id)) return res.status(403).json({ error: 'Access denied' });
 
         const applications = await prisma.jobApplication.findMany({
             where: { jobId },
@@ -354,17 +362,18 @@ router.get('/export/:jobId', authenticate, authorize('EMPLOYER'), async (req, re
  * @desc    Add a note to a candidate application
  * @access  Private (Employer)
  */
-router.post('/notes/:applicationId', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.post('/notes/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { applicationId } = req.params;
         const { content, tags, rating } = req.body;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         const application = await prisma.jobApplication.findUnique({
             where: { id: applicationId },
             include: { job: true }
         });
 
-        if (!application || application.job.employerId !== req.user.id) {
+        if (!application || (!isAdmin && application.job.employerId !== req.user.id)) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -410,17 +419,18 @@ router.post('/notes/:applicationId', authenticate, authorize('EMPLOYER'), async 
  * @desc    Rate a candidate and add tags
  * @access  Private (Employer)
  */
-router.patch('/rate/:applicationId', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.patch('/rate/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { applicationId } = req.params;
         const { rating, tags } = req.body;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         const application = await prisma.jobApplication.findUnique({
             where: { id: applicationId },
             include: { job: true }
         });
 
-        if (!application || application.job.employerId !== req.user.id) {
+        if (!application || (!isAdmin && application.job.employerId !== req.user.id)) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -455,10 +465,11 @@ router.patch('/rate/:applicationId', authenticate, authorize('EMPLOYER'), async 
  * @desc    Submit interview feedback and result
  * @access  Private (Employer)
  */
-router.patch('/interviews/:interviewId/feedback', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.patch('/interviews/:interviewId/feedback', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { interviewId } = req.params;
         const { feedback, score, result, status } = req.body;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         const interview = await prisma.jobInterview.findUnique({
             where: { id: interviewId },
@@ -467,7 +478,7 @@ router.patch('/interviews/:interviewId/feedback', authenticate, authorize('EMPLO
             }
         });
 
-        if (!interview || interview.application.job.employerId !== req.user.id) {
+        if (!interview || (!isAdmin && interview.application.job.employerId !== req.user.id)) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -506,13 +517,16 @@ router.patch('/interviews/:interviewId/feedback', authenticate, authorize('EMPLO
  * @desc    Get comprehensive hiring analytics
  * @access  Private (Employer)
  */
-router.get('/analytics', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.get('/analytics', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
         const employerId = req.user.id;
 
-        // Get all jobs for this employer
+        // Get jobs for this employer OR all if admin
+        const where = isAdmin ? {} : { employerId };
+
         const jobs = await prisma.job.findMany({
-            where: { employerId },
+            where,
             include: {
                 applications: {
                     include: {
@@ -632,210 +646,6 @@ router.get('/analytics', authenticate, authorize('EMPLOYER'), async (req, res, n
     }
 });
 
-
-// ============= TALENT POOL SOURCING =============
-
-/**
- * @route   GET /api/ats/talent-pool
- * @desc    Search the Techwell student talent pool
- * @access  Private (Employer)
- */
-router.get('/talent-pool', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
-    try {
-        const { search, skills, minAiScore } = req.query;
-
-        let whereClause = {
-            role: 'STUDENT',
-            candidateProfile: {
-                isNot: null
-            }
-        };
-
-        if (search) {
-            whereClause.OR = [
-                { name: { contains: search, mode: 'insensitive' } },
-                { candidateProfile: { skills: { hasSome: [search] } } }
-            ];
-        }
-
-        // Fetch students with their learning progress and interview scores
-        let students = await prisma.user.findMany({
-            where: whereClause,
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-                candidateProfile: {
-                    select: { skills: true, resumeUrl: true, expectedCTC: true, interestedRole: true }
-                },
-                enrollments: {
-                    select: {
-                        progress: true,
-                        status: true,
-                        course: { select: { title: true, difficulty: true } }
-                    }
-                },
-                interviews: {
-                    where: { status: 'COMPLETED' },
-                    select: {
-                        evaluation: { select: { overallScore: true, technicalScore: true } },
-                        role: true,
-                        domain: true
-                    }
-                }
-            },
-            take: 50 // Limit for performance
-        });
-
-        // Filter and map logic
-        students = students.map(student => {
-            // Calculate avg AI Score
-            let avgScore = 0;
-            if (student.interviews.length > 0) {
-                const total = student.interviews.reduce((acc, curr) => acc + (curr.evaluation?.overallScore || 0), 0);
-                avgScore = Math.round(total / student.interviews.length);
-            }
-
-            return {
-                id: student.id,
-                name: student.name,
-                email: student.email,
-                avatar: student.avatar,
-                skills: student.candidateProfile?.skills || [],
-                resumeUrl: student.candidateProfile?.resumeUrl,
-                expectedCTC: student.candidateProfile?.expectedCTC,
-                interestedRole: student.candidateProfile?.interestedRole,
-                enrollments: student.enrollments,
-                avgAiScore: avgScore,
-                interviewCount: student.interviews.length
-            };
-        });
-
-        // Apply score filter if requested
-        if (minAiScore) {
-            const min = parseInt(minAiScore);
-            students = students.filter(s => s.avgAiScore >= min);
-        }
-
-        res.json({ talent: students });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @route   GET /api/ats/talent-pool/:id
- * @desc    Get single student profile from talent pool
- * @access  Private (Employer)
- */
-router.get('/talent-pool/:id', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const student = await prisma.user.findUnique({
-            where: { id, role: 'STUDENT' },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                avatar: true,
-                candidateProfile: {
-                    select: { skills: true, resumeUrl: true, expectedCTC: true, interestedRole: true, category: true, education: true, passedOutYear: true }
-                },
-                enrollments: {
-                    select: {
-                        progress: true,
-                        status: true,
-                        course: { select: { title: true, difficulty: true } }
-                    }
-                },
-                interviews: {
-                    where: { status: 'COMPLETED' },
-                    select: {
-                        id: true,
-                        role: true,
-                        domain: true,
-                        difficulty: true,
-                        createdAt: true,
-                        evaluation: { select: { overallScore: true, technicalScore: true } }
-                    }
-                }
-            }
-        });
-
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found in talent pool' });
-        }
-
-        res.json(student);
-    } catch (error) {
-        next(error);
-    }
-});
-
-// ============= LIVE INTERVIEW AI COPILOT =============
-
-/**
- * @route   POST /api/ats/interviews/live-analysis
- * @desc    Get real-time suggestions based on live transcript
- * @access  Private (Employer)
- */
-router.post('/interviews/live-analysis', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
-    try {
-        const { transcript } = req.body;
-        
-        if (!transcript || transcript.length < 10) {
-            return res.json({
-                techScore: 50,
-                commScore: 50,
-                suggestions: []
-            });
-        }
-
-        // Prompt Gemini to analyze the live transcript chunk
-        const prompt = `
-        You are an AI Interview Copilot assisting a recruiter. 
-        Read the following live interview transcript between a Recruiter and Candidate.
-        Provide a real-time assessment.
-        Output MUST be strict JSON:
-        {
-          "techScore": 0-100 (evaluate candidate's technical responses),
-          "commScore": 0-100 (evaluate communication clarity),
-          "suggestions": [
-             { "type": "Probing" | "Icebreaker" | "Red Flag", "text": "Short actionable suggestion for recruiter" }
-          ]
-        }
-        
-        Transcript:
-        ${transcript}
-        `;
-
-        try {
-            const aiResponse = await generateContent(prompt, { responseMimeType: "application/json" });
-            const result = JSON.parse(aiResponse);
-            
-            // Limit to max 2 suggestions at a time
-            if (result.suggestions && result.suggestions.length > 2) {
-                result.suggestions = result.suggestions.slice(0, 2);
-            }
-
-            res.json(result);
-        } catch (aiError) {
-            console.error("Live Analysis AI Error:", aiError);
-            // Fallback
-            res.json({
-                techScore: 65,
-                commScore: 75,
-                suggestions: [{ type: "Analysis", text: "Continue prompting the candidate for more details." }]
-            });
-        }
-
-    } catch (error) {
-        next(error);
-    }
-});
-
 // ============= ACTIVITY FEED =============
 
 /**
@@ -843,22 +653,25 @@ router.post('/interviews/live-analysis', authenticate, authorize('EMPLOYER'), as
  * @desc    Get recent activity feed from audit logs
  * @access  Private (Employer)
  */
-router.get('/activity', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.get('/activity', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { limit = 15 } = req.query;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
-        // Get recent audit logs for this employer's jobs
-        const logs = await prisma.auditLog.findMany({
-            where: {
-                OR: [
-                    { performedBy: req.user.id },
-                    {
-                        application: {
-                            job: { employerId: req.user.id }
-                        }
+        // Get recent audit logs for this employer's jobs OR all if admin
+        const where = isAdmin ? {} : {
+            OR: [
+                { performedBy: req.user.id },
+                {
+                    application: {
+                        job: { employerId: req.user.id }
                     }
-                ]
-            },
+                }
+            ]
+        };
+
+        const logs = await prisma.auditLog.findMany({
+            where,
             orderBy: { timestamp: 'desc' },
             take: parseInt(limit),
             include: {
@@ -931,9 +744,10 @@ router.get('/activity', authenticate, authorize('EMPLOYER'), async (req, res, ne
  * @desc    Bulk update application status
  * @access  Private (Employer)
  */
-router.post('/bulk-status', authenticate, authorize('EMPLOYER'), async (req, res, next) => {
+router.post('/bulk-status', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { applicationIds, status, notes } = req.body;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         if (!applicationIds || !Array.isArray(applicationIds) || applicationIds.length === 0) {
             return res.status(400).json({ error: 'applicationIds array is required' });
@@ -943,15 +757,17 @@ router.post('/bulk-status', authenticate, authorize('EMPLOYER'), async (req, res
             return res.status(400).json({ error: 'status is required' });
         }
 
-        // Verify all applications belong to this employer
+        // Verify all applications belong to this employer OR is admin
         const applications = await prisma.jobApplication.findMany({
             where: { id: { in: applicationIds } },
             include: { job: { select: { employerId: true } } }
         });
 
-        const unauthorized = applications.filter(a => a.job.employerId !== req.user.id);
-        if (unauthorized.length > 0) {
-            return res.status(403).json({ error: 'Access denied: One or more applications do not belong to you' });
+        if (!isAdmin) {
+            const unauthorized = applications.filter(a => a.job.employerId !== req.user.id);
+            if (unauthorized.length > 0) {
+                return res.status(403).json({ error: 'Access denied: One or more applications do not belong to you' });
+            }
         }
 
         // Update all applications
