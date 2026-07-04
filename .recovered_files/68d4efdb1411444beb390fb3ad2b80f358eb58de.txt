@@ -1,0 +1,37 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies required for whatsapp-web.js (Puppeteer) in Alpine
+RUN apk add --no-cache \
+      chromium \
+      nss \
+      freetype \
+      harfbuzz \
+      ca-certificates \
+      ttf-freefont \
+      curl
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+COPY package*.json ./
+
+# Use npm ci for reproducible, faster installs in production
+RUN npm ci --only=production
+
+# Generate Prisma Client
+COPY prisma ./prisma
+RUN npx prisma generate
+
+COPY src ./src
+COPY uploads ./uploads 2>/dev/null || true
+
+EXPOSE 5000
+
+# Healthcheck for container orchestration
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:5000/api/health || exit 1
+
+# Start the app (DB schema sync is handled by the 'migrate' service in docker-compose)
+CMD ["node", "src/index.js"]

@@ -1,256 +1,178 @@
 "use client"
 
-import * as React from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Download, Search, Filter, Loader2, Database, ArrowRight } from 'lucide-react'
-import api from '@/lib/api'
-import ExcelJS from 'exceljs'
-import { format } from 'date-fns'
-import { toast } from 'sonner'
+import { useState, useEffect } from "react"
+import { studentsApi, consultancyApi, employerRequestApi } from "@/lib/api"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Download, Search, RefreshCw, Loader2, FileDown } from "lucide-react"
+import { toast } from "sonner"
 
 export default function GlobalDataPage() {
-    const [data, setData] = React.useState<any[]>([])
-    const [isLoading, setIsLoading] = React.useState(true)
+    const [activeTab, setActiveTab] = useState<'students' | 'employers' | 'consultancy'>('students')
+    const [data, setData] = useState<any[]>([])
+    const [loading, setLoading] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
 
-    // Filters
-    const [filters, setFilters] = React.useState({
-        name: '',
-        phone: '',
-        email: '',
-        college: '',
-        district: '',
-        pinCode: '',
-        qualification: '',
-        referralName: '',
-        leadType: 'ALL',
-        startDate: '',
-        endDate: ''
-    })
+    useEffect(() => {
+        fetchData(activeTab)
+    }, [activeTab])
 
-    const fetchData = React.useCallback(async () => {
-        setIsLoading(true)
+    const fetchData = async (tab: string) => {
+        setLoading(true)
         try {
-            const params = new URLSearchParams()
-            
-            if (filters.name) params.append('name', filters.name)
-            if (filters.phone) params.append('phone', filters.phone)
-            if (filters.email) params.append('email', filters.email)
-            if (filters.college) params.append('college', filters.college)
-            if (filters.district) params.append('district', filters.district)
-            if (filters.pinCode) params.append('pinCode', filters.pinCode)
-            if (filters.qualification) params.append('qualification', filters.qualification)
-            if (filters.referralName) params.append('referralName', filters.referralName)
-            if (filters.leadType !== 'ALL') params.append('leadType', filters.leadType)
-            if (filters.startDate) params.append('startDate', filters.startDate)
-            if (filters.endDate) params.append('endDate', filters.endDate)
-
-            const res = await api.get(`/leads?${params.toString()}`)
-            setData(res.data || [])
+            if (tab === 'students') {
+                const res = await studentsApi.getAll()
+                setData(res.data.students || [])
+            } else if (tab === 'employers') {
+                const res = await employerRequestApi.getAll()
+                setData(res.data.data || [])
+            } else if (tab === 'consultancy') {
+                const res = await consultancyApi.getInvitations()
+                setData(res.data.invitations || [])
+            }
         } catch (error) {
-            console.error('Failed to fetch global data:', error)
-            toast.error('Failed to load data')
+            console.error(error)
+            toast.error(`Failed to load ${tab} data`)
         } finally {
-            setIsLoading(false)
+            setLoading(false)
         }
-    }, [filters])
-
-    React.useEffect(() => {
-        fetchData()
-    }, [fetchData])
-
-    const handleFilterChange = (key: string, value: string) => {
-        setFilters(prev => ({ ...prev, [key]: value }))
     }
 
-    const resetFilters = () => {
-        setFilters({
-            name: '',
-            phone: '',
-            email: '',
-            college: '',
-            district: '',
-            pinCode: '',
-            qualification: '',
-            referralName: '',
-            leadType: 'ALL',
-            startDate: '',
-            endDate: ''
-        })
-    }
+    const exportToCSV = () => {
+        if (data.length === 0) {
+            toast.error("No data to export")
+            return
+        }
 
-    const handleExportExcel = () => {
-        try {
-            const dataToExport = data.map(item => ({
-                Name: item.name,
-                Email: item.email || '',
-                Mobile: item.phone || '',
-                Type: item.leadType,
-                College: item.college || '',
-                Qualification: item.qualification || '',
-                District: item.district || item.location || '',
-                PinCode: item.pinCode || '',
-                Referral: item.referralName || item.source || '',
-                Date: format(new Date(item.createdAt), 'dd MMM yyyy')
-            }))
-            
-            
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("GlobalData");
+        const filteredData = data.filter(item => 
+            JSON.stringify(item).toLowerCase().includes(searchTerm.toLowerCase())
+        )
+
+        if (filteredData.length === 0) {
+            toast.error("No data matches current search")
+            return
+        }
+
+        // Get headers
+        const headers = Object.keys(filteredData[0]).filter(key => typeof filteredData[0][key] !== 'object')
         
-        if (dataToExport && dataToExport.length > 0) {
-            worksheet.columns = Object.keys(dataToExport[0]).map(key => ({ header: key, key }));
-            worksheet.addRows(dataToExport);
-        }
-        
-        workbook.xlsx.writeBuffer().then((buffer) => {
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `GlobalData_Export_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-            toast.success("Exported successfully")
-        } catch (error) {
-            toast.error("Failed to export")
-        }
+        // Convert data to CSV format
+        const csvContent = [
+            headers.join(','),
+            ...filteredData.map(item => 
+                headers.map(header => {
+                    const val = item[header]
+                    // Escape commas and quotes for CSV
+                    const stringVal = val === null || val === undefined ? '' : String(val)
+                    return `"${stringVal.replace(/"/g, '""')}"`
+                }).join(',')
+            )
+        ].join('\n')
+
+        // Trigger download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+        link.setAttribute('href', url)
+        link.setAttribute('download', `${activeTab}_export_${new Date().toISOString().split('T')[0]}.csv`)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        toast.success("Export successful!")
     }
+
+    const filteredData = data.filter(item => 
+        JSON.stringify(item).toLowerCase().includes(searchTerm.toLowerCase())
+    )
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mx-auto max-w-7xl space-y-6 p-6">
+            <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                        <Database className="w-8 h-8 text-indigo-600" />
-                        Global Data
-                    </h1>
-                    <p className="text-muted-foreground">Centralized database for all registrations, events, and leads.</p>
+                    <h1 className="text-3xl font-bold">Global Data Management</h1>
+                    <p className="mt-2 text-muted-foreground">
+                        Centralized view to search, filter, and export all system data.
+                    </p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={resetFilters}>Clear Filters</Button>
-                    <Button onClick={handleExportExcel} className="bg-emerald-600 hover:bg-emerald-700">
-                        <Download className="mr-2 h-4 w-4" />
-                        Export Data
-                    </Button>
-                </div>
+                <Button onClick={exportToCSV} className="bg-green-600 hover:bg-green-700">
+                    <FileDown className="mr-2 h-4 w-4" /> Export CSV
+                </Button>
             </div>
 
-            {/* Filters Section */}
-            <Card>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                        <Filter className="w-4 h-4" /> Advanced Filtering
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        <Input placeholder="Search Name..." value={filters.name} onChange={e => handleFilterChange('name', e.target.value)} />
-                        <Input placeholder="Search Mobile..." value={filters.phone} onChange={e => handleFilterChange('phone', e.target.value)} />
-                        <Input placeholder="Search Email..." value={filters.email} onChange={e => handleFilterChange('email', e.target.value)} />
-                        
-                        <Select value={filters.leadType} onValueChange={v => handleFilterChange('leadType', v)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Registration Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ALL">All Types</SelectItem>
-                                <SelectItem value="EVENT">Event Registration</SelectItem>
-                                <SelectItem value="TRAINING">Course Training</SelectItem>
-                                <SelectItem value="JOB_ENQUIRY">Job Enquiry</SelectItem>
-                                <SelectItem value="GENERAL">General</SelectItem>
-                            </SelectContent>
-                        </Select>
+            <div className="flex border-b">
+                {['students', 'employers', 'consultancy'].map(tab => (
+                    <button 
+                        key={tab}
+                        onClick={() => setActiveTab(tab as any)}
+                        className={`px-6 py-3 text-sm font-medium border-b-2 capitalize transition-colors
+                            ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300'}
+                        `}
+                    >
+                        {tab}
+                    </button>
+                ))}
+            </div>
 
-                        <Input placeholder="Search College..." value={filters.college} onChange={e => handleFilterChange('college', e.target.value)} />
-                        <Input placeholder="Search Qualification..." value={filters.qualification} onChange={e => handleFilterChange('qualification', e.target.value)} />
-                        <Input placeholder="Search District..." value={filters.district} onChange={e => handleFilterChange('district', e.target.value)} />
-                        <Input placeholder="Search Pin Code..." value={filters.pinCode} onChange={e => handleFilterChange('pinCode', e.target.value)} />
-                        <Input placeholder="Search Referral..." value={filters.referralName} onChange={e => handleFilterChange('referralName', e.target.value)} />
+            <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder={`Search ${activeTab}...`} 
+                        className="pl-9"
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Button variant="outline" size="icon" onClick={() => fetchData(activeTab)} disabled={loading}>
+                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
+            </div>
 
-                        <div className="flex gap-2 col-span-1 lg:col-span-2">
-                            <Input type="date" title="Start Date" value={filters.startDate} onChange={e => handleFilterChange('startDate', e.target.value)} />
-                            <ArrowRight className="w-6 h-6 mt-2 text-muted-foreground" />
-                            <Input type="date" title="End Date" value={filters.endDate} onChange={e => handleFilterChange('endDate', e.target.value)} />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Data Table */}
-            <Card>
-                <CardContent className="p-0">
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/50">
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Contact Info</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>College / Qual.</TableHead>
-                                    <TableHead>Location Details</TableHead>
-                                    <TableHead>Referral/Source</TableHead>
+            <div className="border rounded-lg bg-card overflow-hidden">
+                <div className="overflow-x-auto max-h-[600px]">
+                    <Table>
+                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                            {data.length > 0 && (
+                                <TableRow>
+                                    {Object.keys(data[0]).filter(k => typeof data[0][k] !== 'object').slice(0, 7).map(key => (
+                                        <TableHead key={key} className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</TableHead>
+                                    ))}
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="h-48 text-center">
-                                            <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-500 mb-2" />
-                                            <p className="text-muted-foreground">Fetching data...</p>
-                                        </TableCell>
+                            )}
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="h-64 text-center">
+                                        <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                                    </TableCell>
+                                </TableRow>
+                            ) : filteredData.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="h-64 text-center text-muted-foreground">
+                                        No records found.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                filteredData.map((item, i) => (
+                                    <TableRow key={item.id || i}>
+                                        {Object.keys(item).filter(k => typeof item[k] !== 'object').slice(0, 7).map((key, j) => (
+                                            <TableCell key={j} className="max-w-[200px] truncate" title={String(item[key])}>
+                                                {String(item[key])}
+                                            </TableCell>
+                                        ))}
                                     </TableRow>
-                                ) : data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
-                                            No records found matching your criteria.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    data.map((item) => (
-                                        <TableRow key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
-                                            <TableCell className="whitespace-nowrap">
-                                                {format(new Date(item.createdAt), 'dd MMM yyyy')}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {item.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm">{item.email}</div>
-                                                <div className="text-sm text-muted-foreground">{item.phone}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
-                                                    {item.leadType === 'EVENT' ? 'Event' : item.leadType}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm">{item.college || '-'}</div>
-                                                <div className="text-xs text-muted-foreground">{item.qualification || ''}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm">{item.district || item.location || '-'}</div>
-                                                <div className="text-xs text-muted-foreground">{item.pinCode ? `PIN: ${item.pinCode}` : ''}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {item.referralName || item.source || '-'}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+            <div className="text-sm text-muted-foreground text-right">
+                Showing {filteredData.length} of {data.length} total records
+            </div>
         </div>
     )
 }

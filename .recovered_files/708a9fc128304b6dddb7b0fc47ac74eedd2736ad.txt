@@ -1,0 +1,84 @@
+#!/bin/bash
+set -euo pipefail
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Techwell LMS — Zero-Downtime Production Deployment Script
+# Usage: ./deploy.sh
+# Requires: Docker + Docker Compose v2, .env file in project root
+# ─────────────────────────────────────────────────────────────────────────────
+
+COMPOSE_FILE="docker-compose.prod.yml"
+PROJECT_NAME="techwell"
+BACKUP_DIR="./db-backups"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  🚀 Techwell LMS — Production Deployment  v${TIMESTAMP}"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ── Step 0: Verify env file exists ───────────────────────────────────────────
+if [ ! -f ".env" ]; then
+    echo "❌ ERROR: .env file not found. Copy .env.example to .env and fill values."
+    exit 1
+fi
+
+# Load env to validate DATABASE_URL for backups
+source .env
+
+# ── Step 1: Database Backup (safety net before any schema changes) ────────────
+echo ""
+echo "📦 Step 1/5: Creating database backup..."
+mkdir -p "$BACKUP_DIR"
+
+if command -v pg_dump &> /dev/null; then
+    PGPASSWORD="${PGPASSWORD:-}" pg_dump "$DATABASE_URL" \
+        --no-owner --no-acl \
+        -f "$BACKUP_DIR/techwell_backup_${TIMESTAMP}.sql" 2>/dev/null || \
+    echo "⚠️  Could not create DB backup via pg_dump (skipping, Docker DB handles own backups)"
+else
+    echo "⚠️  pg_dump not available on this host. Ensure your DB has automated backups enabled."
+fi
+
+# ── Step 2: Pull latest code ─────────────────────────────────────────────────
+echo ""
+echo "📥 Step 2/5: Pulling latest code..."
+git pull origin main --ff-only || {
+    echo "❌ Git pull failed. Please ensure no local modifications and try again."
+    exit 1
+}
+
+# ── Step 3: Build new Docker images (without stopping current services) ───────
+echo ""
+echo "🔨 Step 3/5: Building Docker images (in parallel)..."
+docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" build --pull --no-cache
+
+# ── Step 4: Run DB schema sync (safe — only adds/alters, never drops with data) ──
+echo ""
+echo "🗄️  Step 4/5: Syncing database schema (prisma db push)..."
+echo "   ⚠️  This runs ONLY additive changes. No destructive operations."
+docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" run --rm migrate
+
+# ── Step 5: Rolling restart — backend first, then frontend ───────────────────
+echo ""
+echo "🔄 Step 5/5: Rolling restart of services..."
+
+# Backend: create new container before stopping old (zero-downtime with nginx upstream)
+docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d --no-deps --wait backend
+echo "   ✅ Backend restarted successfully."
+
+# Frontend: same approach
+docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d --no-deps --wait frontend
+echo "   ✅ Frontend restarted successfully."
+
+# Clean up dangling images from previous builds
+docker image prune -f --filter "until=24h" 2>/dev/null || true
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  🎉 Deployment Completed Successfully!"
+echo "  📋 Service Status:"
+docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" ps
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  💡 Monitor logs: docker compose -f ${COMPOSE_FILE} logs -f"
+echo ""

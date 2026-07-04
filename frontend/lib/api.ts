@@ -31,8 +31,11 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Token expired or invalid
+            // Token expired or invalid, or session expired from another device
             if (typeof window !== 'undefined') {
+                if (error.response?.data?.isSessionExpired) {
+                    alert('Session expired. You logged in from another device.');
+                }
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 // Optionally redirect to login
@@ -49,9 +52,11 @@ export const authApi = {
         email: string;
         password: string;
         name: string;
+        phone?: string;
         dob?: string;
         qualification?: string;
-        college?: string
+        college?: string;
+        referredByCode?: string;
     }) => api.post('/auth/register', data),
     verifyOtp: (data: { email: string; otp: string }) =>
         api.post('/auth/verify-otp', data),
@@ -60,7 +65,24 @@ export const authApi = {
     login: (data: { email: string; password: string }) =>
         api.post('/auth/login', data),
     refresh: () => api.post('/auth/refresh'),
+    setup2FA: () => api.post('/auth/2fa/setup'),
+    enable2FA: (data: { code: string }) => api.post('/auth/2fa/enable', data),
+    disable2FA: () => api.post('/auth/2fa/disable'),
+    verify2FA: (data: { code: string; tempToken: string; trustDevice?: boolean }) => api.post('/auth/2fa/verify', data),
 };
+
+export const consultancyApi = {
+    // Public Endpoints
+    verifyInvitation: (token: string) => api.get(`/consultancy/public/invite/${token}`),
+    submitAgreement: (token: string, data: any) => api.post(`/consultancy/public/invite/${token}/submit`, data),
+    
+    // Admin Endpoints
+    getDashboardStats: () => api.get('/consultancy/dashboard'),
+    getInvitations: (status?: string) => api.get('/consultancy/invitations', { params: { status } }),
+    createInvitation: (data: { name: string, email: string, phone?: string, customTerms?: string, jobRole?: string, feePercentage?: string }) => api.post('/consultancy/invitations', data),
+    updateInvitation: (id: string, data: { name: string, email: string, phone?: string, customTerms?: string, jobRole?: string, feePercentage?: string }) => api.put(`/consultancy/invitations/${id}`, data),
+    updateCandidateStatus: (id: string, status: string) => api.patch(`/consultancy/candidates/${id}/status`, { status })
+}
 
 // User API
 export const userApi = {
@@ -81,10 +103,31 @@ export const employerApi = {
 };
 
 export const uploadApi = {
-    upload: (formData: FormData) => api.post('/upload', formData, {
+    upload: (data: FormData) => api.post<{ url: string }>('/upload', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
 };
+
+export const gdprApi = {
+    getPreferences: () => api.get('/gdpr/preferences'),
+    updatePreferences: (data: { subscribedToNewsletter: boolean }) => api.post('/gdpr/preferences', data),
+    requestDeletion: () => api.post('/gdpr/delete-request'),
+};
+
+export const gdprAdminApi = {
+    getRequests: () => api.get('/admin/gdpr/requests'),
+    getUnsubscribed: () => api.get('/admin/gdpr/unsubscribed'),
+    processRequest: (id: string, action: 'PROCESS' | 'CANCEL') => api.patch(`/admin/gdpr/requests/${id}`, { action }),
+};
+
+export const referralApi = {
+    getMe: () => api.get('/referrals/me'),
+    generateCode: () => api.post('/referrals/generate'),
+    applyReferral: (data: { code: string }) => api.post('/referrals/apply', data),
+    getAdminStats: () => api.get('/referrals/stats'),
+};
+
+
 
 export const searchApi = {
     global: (query: string) => api.get('/search', { params: { q: query } })
@@ -105,14 +148,30 @@ export interface CoursePayload {
     courseType?: 'RECORDED' | 'LIVE' | 'HYBRID';
     hasInterviewPrep?: boolean;
     interviewPrice?: number;
+    jobPrep?: boolean;
+    fakeEnrolledCount?: number;
+    fakeRating?: number;
+    benefits?: unknown;
+    specialOffers?: unknown;
+    requireAdmissionFee?: boolean;
+    admissionFee?: number;
+    slug?: string;
+    seoTitle?: string;
+    metaDescription?: string;
+    targetKeywords?: string[];
+    faqs?: { question: string; answer: string }[];
+    careerOpportunities?: unknown;
+    salaryInsights?: unknown;
+    projects?: unknown;
+    prerequisites?: unknown;
+    learningOutcomes?: unknown;
+    toolsCovered?: string[];
     [key: string]: unknown;
-    mandatoryCourseIds?: string[];
-    suggestedCourseIds?: string[];
 }
 
 // Course API
 export const courseApi = {
-    getAll: (params?: { category?: string; search?: string; page?: number; limit?: number }) =>
+    getAll: (params?: { category?: string; search?: string; page?: number; limit?: number; jobPrep?: boolean }) =>
         api.get('/courses', { params }),
     getById: (id: string) => api.get(`/courses/${id}`),
     create: (data: CoursePayload) =>
@@ -135,21 +194,11 @@ export const courseApi = {
 
 // Employer Request API
 export const employerRequestApi = {
-    submit: (data: {
-        companyName: string;
-        employerName: string;
-        email: string;
-        phone: string;
-        website?: string;
-        address: string;
-        password: string;
-        confirmPassword: string;
-    }) => api.post('/employer-requests', data),
+    submit: (data: { name: string; designation: string; email: string; phone?: string }) => api.post('/employer-requests', data),
     getAll: () => api.get('/employer-requests'),
     getById: (id: string) => api.get(`/employer-requests/${id}`),
     approve: (id: string, data?: { adminNotes?: string }) => api.put(`/employer-requests/${id}/approve`, data),
     reject: (id: string, data: { rejectionReason: string }) => api.put(`/employer-requests/${id}/reject`, data),
-    cancelApproval: (id: string) => api.put(`/employer-requests/${id}/cancel-approval`),
 };
 
 // Interview API
@@ -188,36 +237,11 @@ export const paymentApi = {
     getConfig: () => api.get('/payments/config'),
     updateConfig: (data: unknown) => api.put('/payments/config', data),
     // Send amount (in rupees) and optional currency; backend will create order and return orderId, keyId and amount (in paise)
-    createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY', amount?: number, currency = 'INR', couponName?: string, selectedCourseIds?: string[]) =>
-        api.post('/payments/create-order', { courseId, type, amount, currency, couponName, additionalCourseIds: selectedCourseIds }),
+    createOrder: (courseId: string, type: 'COURSE_ONLY' | 'BUNDLE' | 'INTERVIEW_ONLY' = 'COURSE_ONLY', amount?: number, currency = 'INR') =>
+        api.post('/payments/create-order', { courseId, type, amount, currency }),
     // Backend expects fields: razorpay_order_id, razorpay_payment_id, razorpay_signature
     verifyPayment: (data: unknown) => api.post('/payments/verify-payment', data),
     getOrderStatus: (orderId: string) => api.get(`/payments/order-status/${orderId}`),
-};
-// coupon api
-export const couponApi = {
-    getAll: () => api.get('/coupons'),
-
-    create: (data: {
-        couponName: string;
-        discountPercentage: number;
-        expiryDate: string;
-        courseIds: string[];
-    }) =>
-        api.post('/coupons', data),
-
-    toggleActive: (id: string, isActive: boolean) =>
-        api.patch(`/coupons/${id}`, { isActive }),
-
-    delete: (id: string) =>
-        api.delete(`/coupons/${id}`),
-
-    validate: (data: {
-        couponName: string;
-        courseId: string;
-        amount: number;
-    }) =>
-        api.post('/coupons/validate', data),
 };
 
 // Certificate API
@@ -242,6 +266,8 @@ export const certificateApi = {
         defaultValidityMonths?: number | null;
         instituteName?: string;
         instituteLogoUrl?: string;
+        stampUrl?: string;
+        stampPosition?: string;
     }) => api.put('/certificates/admin/settings', data),
 
     // Templates
@@ -353,6 +379,7 @@ export const leadApi = {
     getCounts: () => api.get('/leads/counts'),
     create: (data: unknown) => api.post('/leads', data),
     capture: (data: unknown) => api.post('/leads/capture', data),
+    captureDemo: (data: unknown) => api.post('/leads/demo', data),
     markSeen: () => api.post('/leads/mark-seen'),
     update: (id: string, data: unknown) => api.put(`/leads/${id}`, data),
     delete: (id: string) => api.delete(`/leads/${id}`),
@@ -381,6 +408,7 @@ export const liveClassApi = {
 
 // Analytics API
 export const analyticsApi = {
+    getDashboard: () => api.get('/analytics/dashboard'),
     getInterviewStats: () => api.get('/analytics/interviews'),
     getBenchmark: () => api.get('/analytics/benchmark'),
 };
@@ -399,50 +427,22 @@ export const libraryApi = {
 
 // Students API (Admin)
 export const studentsApi = {
-    getAll: (params?: { search?: string; course?: string; batchId?: string; page?: number; limit?: number }) =>
+    getAll: (params?: { search?: string; course?: string; page?: number; limit?: number }) =>
         api.get('/admin/students', { params }),
-    // Allow optional fields: additionalCourseIds, amount, paymentMethod, orderId, status
-    markPaymentDone: (data: { studentId: string; courseId: string; additionalCourseIds?: string[]; amount?: number; paymentMethod?: string; orderId?: string; status?: string }) =>
-        api.post('/admin/transactions/manual-cash', data),
-    getAvailableForBatch: (courseId: string) =>
-        api.get('/admin/students', { params: { courseId, status: 'ACTIVE', limit: 1000 } }),
-};
-
-// Batches API (Admin)
-export const batchesApi = {
-    getAll: (params?: { search?: string; courseId?: string; page?: number; limit?: number }) =>
-        api.get('/admin/batches', { params }),
-    create: (data: { name: string; courseId: string; studentIds: string[] }) =>
-        api.post('/admin/batches', data),
-    complete: (id: string) =>
-        api.post(`/admin/batches/${id}/complete`),
-    update: (id: string, data: { name?: string; instructorId?: string; startDate?: string; endDate?: string; description?: string; maxStudents?: number }) =>
-        api.put(`/admin/batches/${id}`, data),
-};
-
-export const messagesApi = {
-    sendToAll: (data: { title: string; content: string; priority?: string }) =>
-        api.post('/messages/send-to-all', data),
-    sendToBatch: (data: { title: string; content: string; batchId: string; priority?: string }) =>
-        api.post('/messages/send-to-batch', data),
-    sendToCourse: (data: { title: string; content: string; courseId: string; priority?: string }) =>
-        api.post('/messages/send-to-course', data),
-    sendToStudent: (data: { title: string; content: string; studentId: string; priority?: string }) =>
-        api.post('/messages/send-to-student', data),
 };
 
 export const rbacApi = {
     getFeatures: () => api.get('/rbac/features'),
     getRoles: () => api.get('/rbac/roles'),
-    createRole: (data: {
-        name: string;
-        description?: string;
-        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }>
+    createRole: (data: { 
+        name: string; 
+        description?: string; 
+        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }> 
     }) => api.post('/rbac/roles', data),
-    updateRole: (id: string, data: {
-        name?: string;
-        description?: string;
-        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }>
+    updateRole: (id: string, data: { 
+        name?: string; 
+        description?: string; 
+        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }> 
     }) => api.put(`/rbac/roles/${id}`, data),
     deleteRole: (id: string) => api.delete(`/rbac/roles/${id}`),
 };
@@ -468,26 +468,33 @@ export const galleryApi = {
 };
 
 
-// Jobs API
-export const jobsApi = {
-    getAll: (params?: { type?: string; location?: string; status?: string }) => api.get('/jobs', { params }),
-    getAdminListings: () => api.get('/jobs/my/listings'),
-    create: (data: {
-        title: string;
-        description: string;
-        requirements?: string;
-        location: string;
-        type: string;
-        experience?: string;
-        salary?: string;
-        skills?: string;
-        clientName?: string;
-        shift?: string;
-    }) => api.post('/jobs', data),
-    getApplications: (id: string) => api.get(`/jobs/${id}/applications`),
-    update: (id: string, data: unknown) => api.put(`/jobs/${id}`, data),
-    delete: (id: string) => api.delete(`/jobs/${id}`),
-    updateApplicationStatus: (id: string, status: string) => api.patch(`/jobs/applications/${id}/status`, { status }),
+// Coupon API
+export const couponApi = {
+    getAll: () => api.get('/coupons'),
+    create: (data: { code: string; discountPercent: number; expiryDate: string; courseIds: string[]; usageLimit?: number | null }) => api.post('/coupons', data),
+    delete: (id: string) => api.delete(`/coupons/${id}`),
+    validate: (data: { code: string; courseId: string }) => api.post('/coupons/validate', data),
 };
 
 export default api;
+
+
+// Batches API
+export const batchesApi = {
+    getAll: (params?: any) => api.get('/batches', { params }),
+    getById: (id: string) => api.get(`/batches/${id}`),
+    create: (data: any) => api.post('/batches', data),
+    update: (id: string, data: any) => api.put(`/batches/${id}`, data),
+    complete: (id: string) => api.patch(`/batches/${id}/complete`),
+    getStudents: (id: string) => api.get(`/batches/${id}/students`),
+    getAvailableStudents: (id: string) => api.get(`/batches/${id}/available-students`),
+    addStudents: (id: string, data: { studentIds: string[] }) => api.post(`/batches/${id}/students`, data),
+    getAttendance: (id: string, date: string) => api.get(`/batches/${id}/attendance`, { params: { date } }),
+    markAttendance: (id: string, data: any) => api.post(`/batches/${id}/attendance`, data),
+    getNotes: (id: string) => api.get(`/batches/${id}/notes`),
+    addNote: (id: string, data: any) => api.post(`/batches/${id}/notes`, data),
+    updateNoteStatus: (id: string, noteId: string, data: any) => api.patch(`/batches/${id}/notes/${noteId}/status`, data),
+    scheduleLiveClass: (id: string, data: any) => api.post(`/batches/${id}/live-classes`, data),
+    scheduleInterviews: (id: string, data: any) => api.post(`/batches/${id}/ai-interviews`, data),
+};
+

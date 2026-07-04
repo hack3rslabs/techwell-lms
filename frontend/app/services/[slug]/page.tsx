@@ -4,12 +4,13 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, ArrowRight, ShieldCheck, Cpu, Code2, Cloud, Megaphone, Laptop, ArrowUpRight } from 'lucide-react'
+import { CheckCircle2, ArrowRight, ShieldCheck, Cpu, Code2, Cloud, Megaphone, Laptop, ArrowUpRight, Bot } from 'lucide-react'
 import Image from 'next/image'
 
 import CyberSecurityLandingPage from '@/components/services/CyberSecurityLandingPage'
 import ITSolutionsLandingPage from '@/components/services/ITSolutionsLandingPage'
 import SoftwareSolutionsLandingPage from '@/components/services/SoftwareSolutionsLandingPage'
+import DigitalMarketingLandingPage from '@/components/services/DigitalMarketingLandingPage'
 
 // --- CONTENT DATABASE ---
 // We write extensive, 700+ word SEO-oriented copy for each service to demonstrate authority.
@@ -83,6 +84,52 @@ const SERVICE_DATA = {
       ],
       conclusion: `In today's highly hostile digital age, a single, unforeseen security breach can cause utterly irreparable, catastrophic damage to your business operations, financial standing, and hard-earned corporate reputation.<br/><br/>With Techwell’s highly advanced, battle-tested Cyber Security solutions—backed by <strong>over 10 years of proven market excellence</strong>—you gain the ultimate peace of mind knowing that your entire organization is constantly protected by industry-leading Application Security testing, highly vigilant endpoint security, and unyielding, impenetrable Network Security.<br/><br/>Let Techwell fortify your digital perimeter so you can confidently operate and aggressively expand your business with absolute, unshakeable confidence.`
     }
+  },
+  'digital-marketing': {
+    title: 'Digital Marketing & Growth',
+    shortDesc: 'Comprehensive Digital Marketing solutions designed to exponentially scale your brand, drive high-intent traffic, and maximize ROI through data-driven strategies.',
+    icon: MegaphoneIcon,
+    themeColor: 'primary',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2000',
+    inlineImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800',
+    keywords: 'Digital Marketing, SEO, Social Media Marketing, Performance Marketing, Content Strategy, Brand Growth',
+    content: {
+      introduction: `In the intensely competitive digital era, having a phenomenal product or service is simply no longer enough if your target audience cannot easily find you. <strong>Digital Marketing</strong> is the essential, high-octane fuel that actively drives scalable, predictable revenue growth.<br/><br/>At Techwell, our elite marketing division does not believe in vanity metrics or generic, one-size-fits-all campaigns. We specialize in engineering highly complex, fiercely targeted, multi-channel performance marketing systems that are specifically designed to dominate your market niche and directly impact your corporate bottom line.<br/><br/>Our comprehensive digital strategies encompass aggressive, highly technical <strong>Search Engine Optimization (SEO)</strong> to ensure you capture high-intent organic traffic, coupled with meticulously optimized <strong>Pay-Per-Click (PPC)</strong> campaigns that deliver massive immediate ROI. We also architect profoundly engaging <strong>Social Media Marketing</strong> frameworks that transform casual browsers into fiercely loyal brand advocates, supported by a world-class <strong>Content Strategy</strong> that establishes your enterprise as the undisputed thought leader in your industry.`,
+      expertise: `Our marketing success is deeply rooted in our relentless, obsessive reliance on raw data and advanced analytics.<br/><br/>Over the years, we have successfully managed millions of dollars in ad spend, rigorously testing, tracking, and infinitely refining our conversion architectures across Google, Meta, LinkedIn, and emerging digital platforms. Our marketing architects don't just guess; they leverage highly advanced machine learning tools and deep predictive analytics to accurately forecast consumer behavior and instantly capitalize on highly profitable market trends.<br/><br/>From conducting incredibly granular keyword research that uncovers hidden, highly lucrative search verticals, to executing flawless, high-converting A/B split tests on enterprise landing pages, our highly systematic approach guarantees that absolutely every single dollar of your marketing budget is maximized for the highest possible return.`,
+      methodology: `Our execution is heavily phased, intensely collaborative, and fully transparent.<br/><br/>We initiate every partnership with a brutal, uncompromising audit of your current digital footprint, dissecting your competitors' strategies to identify massive gaps in the market. We then construct a highly detailed, 12-month digital growth roadmap.<br/><br/>Once deployed, our campaigns are continuously monitored by dedicated growth managers who provide you with real-time, highly visual reporting dashboards. We don't just run ads; we continuously optimize the entire customer journey from the very first click to the final, high-value corporate sale.`,
+      features: [
+        'Advanced, Technical Search Engine Optimization (SEO)',
+        'High-ROI, Data-Driven Performance Marketing (PPC)',
+        'Enterprise Social Media Strategy and Brand Building',
+        'Conversion Rate Optimization (CRO) for Landing Pages',
+        'Comprehensive Content Strategy and Thought Leadership',
+        'Advanced Web Analytics and Real-Time ROI Reporting'
+      ],
+      conclusion: `Stop wasting your marketing budget on disjointed, ineffective strategies that fail to generate real business.<br/><br/>Partner with Techwell to deploy a highly sophisticated, deeply analytical digital marketing engine that systematically captures market share and drives explosive revenue growth.`
+    }
+  },
+  'ai-automation': {
+    title: 'Enterprise AI Automation',
+    shortDesc: 'Unlock unprecedented operational velocity with custom AI Agents, RAG (Retrieval-Augmented Generation) pipelines, and n8n workflow automations.',
+    icon: BotIcon,
+    themeColor: 'primary',
+    image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=2000',
+    inlineImage: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800',
+    keywords: 'AI Automation, Retrieval-Augmented Generation, RAG, n8n workflows, Autonomous Agents, LLM Fine-Tuning, Business Process Automation, ChatGPT Enterprise',
+    content: {
+      introduction: `In the modern digital economy, human cognitive bandwidth is arguably the most valuable, yet vastly constrained, corporate resource. The advent of highly advanced Large Language Models (LLMs) has completely shattered traditional operational limitations.<br/><br/>At Techwell, our elite <strong>AI Automation</strong> division specializes in architecting and deploying completely bespoke, highly autonomous intelligence systems that fundamentally redefine how your enterprise processes data, interacts with clients, and executes complex daily workflows.<br/><br/>We are unparalleled experts in developing highly sophisticated <strong>Retrieval-Augmented Generation (RAG)</strong> pipelines. Unlike generic, off-the-shelf AI chatbots that frequently hallucinate and lack specific corporate context, our custom RAG architectures securely embed your proprietary, confidential corporate data directly into the AI's reasoning engine. This allows your internal teams and external clients to query vast, incredibly complex corporate databases, legal documents, and historical archives in natural language, receiving instant, hyper-accurate, perfectly cited responses.<br/><br/>Furthermore, we leverage cutting-edge integration platforms like <strong>n8n</strong> to seamlessly weave these advanced cognitive capabilities directly into your existing technological ecosystem. Our AI systems do not just answer questions; they actively trigger robust, multi-step automated workflows—updating CRMs, generating tailored financial reports, dynamically routing massive volumes of customer support tickets, and executing complex, logic-gated decisions without any human intervention.`,
+      expertise: `Techwell’s deep mastery of applied artificial intelligence is rooted in our profound understanding of both advanced machine learning architectures and complex enterprise business logic.<br/><br/>We do not simply resell API wrappers. Our world-class engineering team aggressively customizes, fine-tunes, and heavily optimizes advanced models (including OpenAI’s GPT-4, Anthropic’s Claude, and robust open-source alternatives like Llama 3) to precisely match your highly specific operational vernacular and strict security compliance requirements.<br/><br/>Our immense expertise in <strong>n8n workflow automation</strong> allows us to visually construct incredibly intricate, infinitely scalable logic chains that connect hundreds of disparate software platforms. Whether you need an autonomous agent that instantly analyzes incoming legal contracts and highlights risky clauses, or an AI-driven sales assistant that automatically researches prospects on LinkedIn and drafts hyper-personalized outreach sequences, our team possesses the elite technical acumen required to bring these sci-fi capabilities into your daily reality.<br/><br/>We prioritize absolute data sovereignty. Our AI architectures are meticulously designed with strict, military-grade data sandboxing, ensuring that your highly sensitive intellectual property is never inadvertently leaked or utilized to train public foundational models.`,
+      methodology: `Our deployment methodology for Enterprise AI Automation is highly structured, deeply analytical, and laser-focused on immediate ROI.<br/><br/>The engagement commences with a highly rigorous, top-down <strong>Cognitive Audit</strong> of your current business operations. We systematically identify incredibly high-friction, repetitive cognitive tasks that are currently bottlenecking your human workforce. Following this deep-dive analysis, we architect a highly detailed, phased automation roadmap.<br/><br/>During the rapid development phase, we meticulously construct the underlying vector databases and heavily optimize the embedding algorithms required for your custom <strong>RAG pipeline</strong>. We then leverage <strong>n8n</strong> to build the connective tissue, seamlessly integrating the new AI capabilities directly into your existing Slack channels, Salesforce instances, or custom ERPs.<br/><br/>Before full deployment, we conduct highly exhaustive "red-teaming" and aggressive logic testing to ensure the AI agents behave perfectly under stress and handle edge cases gracefully. Post-launch, we provide continuous model evaluation and active prompt optimization, ensuring your autonomous systems grow exponentially smarter and more efficient over time.`,
+      features: [
+        'Custom Retrieval-Augmented Generation (RAG) Architectures',
+        'Complex, Multi-Platform n8n Workflow Automation',
+        'Development of Highly Autonomous AI Agents',
+        'Secure, Sandboxed LLM Fine-Tuning and Prompt Engineering',
+        'Intelligent Document Processing and Data Extraction',
+        'Seamless Integration with Legacy CRMs and ERPs'
+      ],
+      conclusion: `The AI revolution is no longer a distant future; it is the immediate, absolute present. Enterprises that fail to aggressively adopt advanced cognitive automation will rapidly find themselves heavily outpaced and fundamentally outmaneuvered by highly optimized competitors.<br/><br/>By partnering with Techwell, you instantly acquire a massively powerful, highly customized digital workforce that never sleeps, never makes careless administrative errors, and processes data at an incomprehensible velocity.<br/><br/>Let us engineer the autonomous systems of tomorrow for your business today, permanently liberating your human talent to focus exclusively on highly strategic, creative growth initiatives.`
+    }
   }
 }
 
@@ -92,6 +139,7 @@ function Code2Icon({className}: {className?: string}) { return <Code2 className=
 function CloudIcon({className}: {className?: string}) { return <Cloud className={className} /> }
 function ShieldIcon({className}: {className?: string}) { return <ShieldCheck className={className} /> }
 function MegaphoneIcon({className}: {className?: string}) { return <Megaphone className={className} /> }
+function BotIcon({className}: {className?: string}) { return <Bot className={className} /> }
 
 // Dynamic Metadata Generation for SEO
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -137,6 +185,11 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   // Dedicated single-page website for Software Solutions
   if (resolvedParams.slug === 'software-solutions') {
     return <SoftwareSolutionsLandingPage data={data} />
+  }
+
+  // Dedicated single-page website for Digital Marketing
+  if (resolvedParams.slug === 'digital-marketing') {
+    return <DigitalMarketingLandingPage data={data} />
   }
 
   const Icon = data.icon

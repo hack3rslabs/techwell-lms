@@ -4,6 +4,24 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { authenticate, authorize } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
+const { z } = require('zod');
+
+const campusDriveSchema = z.object({
+    title: z.string().min(3, "Title must be at least 3 characters").max(100),
+    description: z.string().optional().nullable(),
+    skills: z.array(z.string()).default([]),
+    jobRole: z.string().optional().nullable(),
+    salary: z.string().optional().nullable(),
+    openings: z.union([z.number(), z.string().transform(v => parseInt(v) || 0)]).optional().nullable(),
+    isOffCampus: z.boolean().default(false),
+    targetYear: z.string().optional().nullable(),
+    location: z.string().optional().nullable(),
+    scheduledDate: z.string().datetime().optional().nullable(),
+    employerId: z.string().optional(),
+    participatingCompanies: z.array(z.any()).optional().default([]),
+    customFormFields: z.array(z.any()).optional().default([]),
+    brandingAssets: z.record(z.any()).optional().default({})
+});
 
 // Get all campus drives (Admin/Employer/Institute view based on role)
 router.get('/', authenticate, async (req, res) => {
@@ -40,33 +58,36 @@ router.get('/', authenticate, async (req, res) => {
 // Create a new Campus Drive (Employer or Admin)
 router.post('/', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN']), async (req, res) => {
     try {
-        const { title, description, skills, jobRole, salary, openings, isOffCampus, targetYear, location, scheduledDate } = req.body;
+        const validatedData = campusDriveSchema.parse(req.body);
         
         let employerId = req.user.id;
-        if (req.user.role === 'SUPER_ADMIN' && req.body.employerId) {
-            employerId = req.body.employerId; // Admin can create on behalf of employer
+        if (req.user.role === 'SUPER_ADMIN' && validatedData.employerId) {
+            employerId = validatedData.employerId; // Admin can create on behalf of employer
         }
 
         const drive = await prisma.campusDrive.create({
             data: {
-                title,
-                description,
-                skills,
-                jobRole,
-                salary,
-                openings: parseInt(openings) || null,
-                isOffCampus: isOffCampus || false,
-                targetYear,
-                location,
-                scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
+                title: validatedData.title,
+                description: validatedData.description,
+                skills: validatedData.skills,
+                jobRole: validatedData.jobRole,
+                salary: validatedData.salary,
+                openings: validatedData.openings || null,
+                isOffCampus: validatedData.isOffCampus,
+                targetYear: validatedData.targetYear,
+                location: validatedData.location,
+                scheduledDate: validatedData.scheduledDate ? new Date(validatedData.scheduledDate) : null,
                 employerId,
-                participatingCompanies: req.body.participatingCompanies || [],
-                customFormFields: req.body.customFormFields || [],
-                brandingAssets: req.body.brandingAssets || {}
+                participatingCompanies: validatedData.participatingCompanies,
+                customFormFields: validatedData.customFormFields,
+                brandingAssets: validatedData.brandingAssets
             }
         });
         res.status(201).json(drive);
     } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({ error: 'Validation failed', details: error.errors });
+        }
         console.error('Error creating campus drive:', error);
         res.status(500).json({ error: 'Failed to create campus drive' });
     }

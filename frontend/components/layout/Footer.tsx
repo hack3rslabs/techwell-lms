@@ -28,7 +28,7 @@ const policyLinks = [
     { label: "Contact Us", href: "/contact" },
     { label: "Support Center", href: "/support" },
     { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
+    { label: "Terms & Conditions", href: "/terms" },
     { label: "Cookies", href: "/cookies" },
     { label: "GDPR", href: "/gdpr" },
 ]

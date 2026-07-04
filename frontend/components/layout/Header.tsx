@@ -14,6 +14,12 @@ import {
     SheetContent,
     SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { GlobalSearch } from "@/components/shared/GlobalSearch"
 
 export function Header() {
@@ -37,7 +43,9 @@ export function Header() {
             items: [
                 { name: "IT Solutions", href: "/services/it-infrastructure", desc: "IT Support & Asset management." },
                 { name: "Software Solutions", href: "/services/software-development", desc: "Custom web development & ERP apps." },
-                { name: "Cyber Security", href: "/services/cyber-security", desc: "Application & network security." }
+                { name: "Cyber Security", href: "/services/cyber-security", desc: "Application & network security." },
+                { name: "Digital Marketing", href: "/services/digital-marketing", desc: "SEO, SMM & Content Strategy." },
+                { name: "AI Automation", href: "/services/ai-automation", desc: "RAG Pipelines & n8n Workflows." }
             ]
         },
         {
@@ -205,11 +213,33 @@ export function Header() {
                                     </Button>
                                 </Link>
 
-                                <Link href="/register">
-                                    <Button size="sm">
-                                        Sign up
-                                    </Button>
-                                </Link>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button size="sm">
+                                            Sign up <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-48">
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/register" className="cursor-pointer flex items-center">
+                                                <GraduationCap className="mr-2 h-4 w-4" />
+                                                Student / Learner
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/employer-register" className="cursor-pointer flex items-center">
+                                                <Building2 className="mr-2 h-4 w-4" />
+                                                Company / Employer
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/institute-register" className="cursor-pointer flex items-center">
+                                                <Briefcase className="mr-2 h-4 w-4" />
+                                                College / Institute
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </>
                         )}
 
@@ -311,14 +341,26 @@ export function Header() {
                                                     </Button>
                                                 </Link>
 
-                                                <Link
-                                                    href="/register"
-                                                    onClick={() => setIsOpen(false)}
-                                                >
-                                                    <Button className="w-full">
-                                                        Sign up
-                                                    </Button>
-                                                </Link>
+                                                <div className="pt-2 pb-1 border-t border-zinc-100 dark:border-zinc-800">
+                                                    <p className="text-xs font-semibold text-muted-foreground mb-2 px-1">Register As:</p>
+                                                    <div className="flex flex-col gap-2">
+                                                        <Link href="/register" onClick={() => setIsOpen(false)}>
+                                                            <Button className="w-full justify-start variant-outline" variant="outline" size="sm">
+                                                                <GraduationCap className="mr-2 h-4 w-4" /> Student
+                                                            </Button>
+                                                        </Link>
+                                                        <Link href="/employer-register" onClick={() => setIsOpen(false)}>
+                                                            <Button className="w-full justify-start variant-outline" variant="outline" size="sm">
+                                                                <Building2 className="mr-2 h-4 w-4" /> Employer
+                                                            </Button>
+                                                        </Link>
+                                                        <Link href="/institute-register" onClick={() => setIsOpen(false)}>
+                                                            <Button className="w-full justify-start variant-outline" variant="outline" size="sm">
+                                                                <Briefcase className="mr-2 h-4 w-4" /> Institute
+                                                            </Button>
+                                                        </Link>
+                                                    </div>
+                                                </div>
                                             </>
                                         )}
 

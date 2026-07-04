@@ -9,14 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
-    Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify,
-    List, ListOrdered, Link, Link2Off, Undo2, Redo2, Eraser, Highlighter, Indent, Outdent,
-    Sparkles, Loader2, Palette, Save, ArrowLeft, Eye, EyeOff, Type, ImageIcon, Quote,
-    Code, Minus, FileText, ChevronDown
+    Sparkles, Loader2, Save, ArrowLeft, Eye, EyeOff, Type, ImageIcon, FileText, ChevronDown
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getFullImageUrl } from '@/lib/image-utils'
 import DOMPurify from 'isomorphic-dompurify'
+import { RichTextEditor } from '@/components/editor/RichTextEditor'
 
 const BLOG_CATEGORIES = [
     "AI & Future Tech", "IT Careers", "Non-IT Careers", "Freshers Guide",
@@ -30,7 +28,6 @@ function BlogEditorContent() {
     const blogId = searchParams.get('id')
     const isEdit = !!blogId
 
-    const editorRef = useRef<HTMLDivElement>(null)
     const [isLoading, setIsLoading] = useState(isEdit)
     const [isSaving, setIsSaving] = useState(false)
     const [isUploadingCover, setIsUploadingCover] = useState(false)
@@ -77,39 +74,13 @@ function BlogEditorContent() {
         }
     }, [blogId, isEdit])
 
-    // Set content in editor when loaded
+    // Keep counts updated when content changes
     useEffect(() => {
-        if (!isLoading && editorRef.current && formData.content) {
-            const timer = setTimeout(() => {
-                if (editorRef.current) {
-                    editorRef.current.innerHTML = formData.content
-                    updateCounts()
-                }
-            }, 100)
-            return () => clearTimeout(timer)
-        }
-    }, [isLoading, formData.id])
-
-    const updateCounts = () => {
-        if (!editorRef.current) return
-        const text = editorRef.current.innerText || ''
+        const text = formData.content.replace(/<[^>]+>/g, '') // Strip HTML for raw text
         const words = text.trim() ? text.trim().split(/\s+/).length : 0
         setWordCount(words)
         setCharCount(text.length)
-    }
-
-    const handleEditorChange = () => {
-        if (editorRef.current) {
-            setFormData(prev => ({ ...prev, content: editorRef.current?.innerHTML || "" }))
-            updateCounts()
-        }
-    }
-
-    const execCmd = (cmd: string, value?: string) => {
-        document.execCommand(cmd, false, value)
-        editorRef.current?.focus()
-        handleEditorChange()
-    }
+    }, [formData.content])
 
     const handleAiGenerate = async () => {
         if (!aiTopic) { toast.error("Enter a topic"); return }
@@ -126,10 +97,6 @@ function BlogEditorContent() {
                 excerpt: res.data.summary || prev.excerpt,
                 content: textContent
             }))
-            if (editorRef.current) {
-                editorRef.current.innerHTML = textContent
-                updateCounts()
-            }
             toast.success("Blog content generated!")
         } catch {
             toast.error("AI generation failed")
@@ -268,80 +235,7 @@ function BlogEditorContent() {
                 {/* Formatting toolbar - only in edit mode */}
                 {!previewMode && (
                     <div className="flex flex-wrap items-center gap-1 px-4 py-1.5 border-t bg-slate-50/80 dark:bg-slate-800/50">
-                        {/* Undo/Redo */}
-                        <ToolbarBtn onClick={() => execCmd('undo')} title="Undo (Ctrl+Z)"><Undo2 className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('redo')} title="Redo (Ctrl+Y)"><Redo2 className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <Sep />
-
-                        {/* Block format */}
-                        <select
-                            onChange={e => { execCmd('formatBlock', e.target.value) }}
-                            defaultValue="<p>"
-                            className="text-xs bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 outline-none cursor-pointer h-7 font-medium text-slate-700 dark:text-slate-200"
-                        >
-                            <option value="<p>">Normal</option>
-                            <option value="<h1>">Heading 1</option>
-                            <option value="<h2>">Heading 2</option>
-                            <option value="<h3>">Heading 3</option>
-                            <option value="<h4>">Heading 4</option>
-                            <option value="<pre>">Code Block</option>
-                            <option value="<blockquote>">Quote</option>
-                        </select>
-
-                        {/* Font size */}
-                        <select
-                            onChange={e => execCmd('fontSize', e.target.value)}
-                            defaultValue="3"
-                            className="text-xs bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 outline-none cursor-pointer h-7 font-medium text-slate-700 dark:text-slate-200"
-                        >
-                            <option value="1">Small</option>
-                            <option value="2">13px</option>
-                            <option value="3">Normal</option>
-                            <option value="4">16px</option>
-                            <option value="5">Large</option>
-                            <option value="6">XL</option>
-                            <option value="7">XXL</option>
-                        </select>
-                        <Sep />
-
-                        {/* Text style */}
-                        <ToolbarBtn onClick={() => execCmd('bold')} title="Bold (Ctrl+B)"><Bold className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('italic')} title="Italic (Ctrl+I)"><Italic className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('underline')} title="Underline (Ctrl+U)"><Underline className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('strikeThrough')} title="Strikethrough"><Strikethrough className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <Sep />
-
-                        {/* Color */}
-                        <div className="flex items-center gap-1" title="Text Color">
-                            <Palette className="w-3 h-3 text-slate-400" />
-                            <input type="color" onChange={e => execCmd('foreColor', e.target.value)} className="w-5 h-5 p-0 border-0 rounded cursor-pointer" />
-                        </div>
-                        <div className="flex items-center gap-1" title="Highlight">
-                            <Highlighter className="w-3 h-3 text-slate-400" />
-                            <input type="color" defaultValue="#ffff00" onChange={e => execCmd('hiliteColor', e.target.value)} className="w-5 h-5 p-0 border-0 rounded cursor-pointer" />
-                        </div>
-                        <Sep />
-
-                        {/* Alignment */}
-                        <ToolbarBtn onClick={() => execCmd('justifyLeft')} title="Left"><AlignLeft className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('justifyCenter')} title="Center"><AlignCenter className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('justifyRight')} title="Right"><AlignRight className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('justifyFull')} title="Justify"><AlignJustify className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <Sep />
-
-                        {/* Lists */}
-                        <ToolbarBtn onClick={() => execCmd('insertUnorderedList')} title="Bullet List"><List className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('insertOrderedList')} title="Numbered List"><ListOrdered className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('outdent')} title="Outdent"><Outdent className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('indent')} title="Indent"><Indent className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <Sep />
-
-                        {/* Special */}
-                        <ToolbarBtn onClick={() => { const url = window.prompt("URL:"); if (url) execCmd('createLink', url) }} title="Insert Link"><Link className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('unlink')} title="Remove Link"><Link2Off className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('insertHorizontalRule')} title="Horizontal Line"><Minus className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <ToolbarBtn onClick={() => execCmd('removeFormat')} title="Clear Formatting"><Eraser className="w-3.5 h-3.5" /></ToolbarBtn>
-                        <Sep />
+                        {/* AI Toggle */}
 
                         {/* AI */}
                         <Button
@@ -455,15 +349,9 @@ function BlogEditorContent() {
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formData.content || '<p class="text-slate-400">No content yet...</p>') }}
                             />
                         ) : (
-                            <div
-                                ref={editorRef}
-                                contentEditable
-                                onInput={handleEditorChange}
-                                onBlur={handleEditorChange}
-                                suppressContentEditableWarning
-                                className="min-h-[60vh] outline-none prose prose-lg dark:prose-invert max-w-none leading-relaxed text-slate-800 dark:text-slate-200 focus:outline-none"
-                                style={{ direction: 'ltr' }}
-                                data-placeholder="Start writing your article here... Use the toolbar above to format, or click AI Write to generate content automatically."
+                            <RichTextEditor 
+                                value={formData.content} 
+                                onChange={(val) => setFormData(prev => ({ ...prev, content: val }))} 
                             />
                         )}
                     </div>
@@ -626,22 +514,7 @@ function BlogEditorContent() {
     )
 }
 
-function ToolbarBtn({ children, onClick, title }: { children: React.ReactNode; onClick: () => void; title?: string }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            title={title}
-            className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
-        >
-            {children}
-        </button>
-    )
-}
 
-function Sep() {
-    return <div className="h-4 w-px bg-slate-300 dark:bg-slate-600 mx-0.5" />
-}
 
 export default function BlogEditorPage() {
     return (

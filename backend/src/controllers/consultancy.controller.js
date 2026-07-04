@@ -90,7 +90,9 @@ exports.submitAgreement = async (req, res) => {
                 acceptedAt: new Date(),
                 browserInfo: req.headers['user-agent'],
                 ipAddress: req.ip || req.connection.remoteAddress,
-                locationCoords: data.locationCoords
+                locationCoords: data.locationCoords,
+                advanceFee: data.advanceFee ? parseFloat(data.advanceFee) : null,
+                totalFee: data.totalFee ? parseFloat(data.totalFee) : null
             }
         });
 
@@ -160,7 +162,7 @@ exports.getInvitations = async (req, res) => {
 
 exports.createInvitation = async (req, res) => {
     try {
-        const { name, email, phone, customTerms, jobRole, feePercentage, prefilledData } = req.body;
+        const { name, email, phone, customTerms, jobRole, feePercentage, prefilledData, advanceFee, totalFee } = req.body;
         
         const token = crypto.randomBytes(24).toString('hex');
         const expiresAt = new Date();
@@ -175,6 +177,8 @@ exports.createInvitation = async (req, res) => {
                 jobRole,
                 feePercentage,
                 prefilledData,
+                advanceFee: advanceFee ? parseFloat(advanceFee) : null,
+                totalFee: totalFee ? parseFloat(totalFee) : null,
                 token,
                 expiresAt,
                 status: 'INVITED'
@@ -208,7 +212,7 @@ exports.updateCandidateStatus = async (req, res) => {
 exports.updateInvitation = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email, phone, customTerms, jobRole, feePercentage, prefilledData } = req.body;
+        const { name, email, phone, customTerms, jobRole, feePercentage, prefilledData, advanceFee, totalFee } = req.body;
         
         const existing = await prisma.consultancyInvitation.findUnique({ where: { id } });
         if (!existing) return res.status(404).json({ message: "Invitation not found" });
@@ -216,11 +220,97 @@ exports.updateInvitation = async (req, res) => {
         
         const updated = await prisma.consultancyInvitation.update({
             where: { id },
-            data: { name, email, phone, customTerms, jobRole, feePercentage, prefilledData }
+            data: { 
+                name, email, phone, customTerms, jobRole, feePercentage, prefilledData,
+                advanceFee: advanceFee ? parseFloat(advanceFee) : null,
+                totalFee: totalFee ? parseFloat(totalFee) : null 
+            }
         });
         
         res.json({ success: true, invitation: updated });
     } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.autoMatchJobs = async (req, res) => {
+    try {
+        const { id } = req.params;
+        // id is invitation ID, which has agreement ID, which has candidate details.
+        const invitation = await prisma.consultancyInvitation.findUnique({
+            where: { id },
+            include: { agreement: true }
+        });
+
+        if (!invitation || !invitation.agreement) {
+            return res.status(400).json({ message: "Candidate agreement not found" });
+        }
+
+        const candidateSkills = invitation.agreement.skills || 'General';
+        const candidateExp = invitation.agreement.totalExperience || '0';
+        const candidateRole = invitation.jobRole || 'General';
+
+        // Fetch open jobs
+        const openJobs = await prisma.job.findMany({
+            where: { status: 'OPEN' },
+            take: 20
+        });
+
+        if (openJobs.length === 0) return res.json({ matches: [] });
+
+        if (!process.env.GEMINI_API_KEY) {
+            // Mock matches
+            const matches = openJobs.slice(0, 3).map((j, i) => ({
+                jobId: j.id,
+                title: j.title,
+                matchPercentage: 90 - (i * 10),
+                rationale: `(Mock) Job matches candidate role ${candidateRole}`
+            }));
+            return res.json({ matches });
+        }
+
+        const { GoogleGenerativeAI } = require('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const jobData = openJobs.map(j => ({
+            id: j.id,
+            title: j.title,
+            skills: j.skills,
+            experience: j.experience
+        }));
+
+        const prompt = `
+You are an expert Technical Recruiter AI for a Consultancy.
+Match the following Candidate against a list of Open Jobs and return the top 3 matches in a JSON array.
+
+=== CANDIDATE DETAILS ===
+Role: ${candidateRole}
+Skills: ${candidateSkills}
+Experience: ${candidateExp}
+
+=== OPEN JOBS ===
+${JSON.stringify(jobData)}
+
+=== INSTRUCTIONS ===
+Return ONLY a valid JSON array of objects (no markdown wrappers) with this exact structure:
+[
+  {
+    "jobId": "id string",
+    "title": "Job Title",
+    "matchPercentage": number (0-100),
+    "rationale": "1-2 short sentences explaining why they are a good fit."
+  }
+]
+`;
+
+        const result = await model.generateContent(prompt);
+        let cleanJson = result.response.text().replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim();
+        const aiMatches = JSON.parse(cleanJson);
+
+        res.json({ matches: aiMatches.sort((a, b) => b.matchPercentage - a.matchPercentage) });
+    } catch (error) {
+        console.error("Auto Match Error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
