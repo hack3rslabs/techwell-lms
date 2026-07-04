@@ -287,7 +287,7 @@ export default function AdsManagerPage() {
                                                     className="w-16 h-16 rounded overflow-hidden border bg-slate-50 flex items-center justify-center cursor-pointer hover:opacity-80 transition"
                                                     onClick={() => openPreview(ad)}
                                                 >
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    { }
                                                     <img src={ad.imageUrl} alt={ad.title} className="max-w-full max-h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
                                                 </div>
                                             </TableCell>

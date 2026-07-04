@@ -202,7 +202,7 @@ export default function EventsPage() {
                     <div className="hidden lg:flex flex-col gap-6 lg:col-span-2">
                         {ads.filter(ad => ['LEFT_1', 'LEFT_2', 'LEFT_SIDEBAR'].includes(ad.position)).map(ad => (
                             <a key={ad.id} href={ad.targetUrl || '#'} target="_blank" rel="noopener noreferrer" onClick={() => api.post(`/ads/${ad.id}/click`).catch(console.error)} className="block w-full rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ad-attention-grab">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                { }
                                 <img src={ad.imageUrl} alt={ad.title} className="w-full object-cover group-hover:scale-105 transition-transform" onError={(e) => (e.currentTarget.style.display = 'none')} />
                                 {(ad.businessName || ad.contactInfo) && (
                                     <div className="p-3 text-xs bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
@@ -234,7 +234,7 @@ export default function EventsPage() {
                                 <div key={event.id} className="group bg-white dark:bg-[#0B1121] rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 hover:shadow-xl transition-all duration-300">
                                     {event.imageUrl && (
                                         <div className="w-full h-48 md:h-64 rounded-xl overflow-hidden mb-6 bg-slate-100 dark:bg-slate-800/50">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            { }
                                             <img 
                                                 src={event.imageUrl} 
                                                 alt={event.title} 
@@ -317,7 +317,7 @@ export default function EventsPage() {
                     <div className="hidden lg:flex flex-col gap-6 lg:col-span-2">
                         {ads.filter(ad => ['RIGHT_1', 'RIGHT_2', 'RIGHT_SIDEBAR'].includes(ad.position)).map(ad => (
                             <a key={ad.id} href={ad.targetUrl || '#'} target="_blank" rel="noopener noreferrer" onClick={() => api.post(`/ads/${ad.id}/click`).catch(console.error)} className="block w-full rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ad-attention-grab">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                { }
                                 <img src={ad.imageUrl} alt={ad.title} className="w-full object-cover group-hover:scale-105 transition-transform" onError={(e) => (e.currentTarget.style.display = 'none')} />
                                 {(ad.businessName || ad.contactInfo) && (
                                     <div className="p-3 text-xs bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
@@ -335,7 +335,7 @@ export default function EventsPage() {
                             <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider text-center">Featured</h3>
                             {ads.map(ad => (
                                 <a key={ad.id} href={ad.targetUrl || '#'} target="_blank" rel="noopener noreferrer" onClick={() => api.post(`/ads/${ad.id}/click`).catch(console.error)} className="block w-full rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ad-attention-grab">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    { }
                                     <img src={ad.imageUrl} alt={ad.title} className="w-full object-cover group-hover:scale-105 transition-transform" onError={(e) => (e.currentTarget.style.display = 'none')} />
                                     {(ad.businessName || ad.contactInfo) && (
                                         <div className="p-3 text-xs bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">

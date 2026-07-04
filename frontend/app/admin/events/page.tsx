@@ -272,7 +272,7 @@ export default function AdminEventsPage() {
                                 <p className="text-xs text-muted-foreground">Recommended size: 1200x630px, High Quality.</p>
                                 {formData.imageUrl && (
                                     <div className="mt-2 w-full max-w-sm h-40 border rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        { }
                                         <img 
                                             src={formData.imageUrl} 
                                             alt="Preview" 

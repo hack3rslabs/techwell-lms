@@ -6,26 +6,34 @@ const IV_LENGTH = 16; // For AES, this is always 16
 const SALT_LENGTH = 64; // Length of salt for key derivation
 const TAG_LENGTH = 16; // GCM tag length
 
+// In production, require a strong key. In dev, allow fallback but warn.
+const getSecret = () => {
+    const secret = process.env.ENCRYPTION_KEY;
+    if (!secret) {
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error('FATAL: ENCRYPTION_KEY environment variable is not set in production. Cryptographic operations aborted.');
+        }
+        console.warn('WARNING: Using insecure fallback encryption key. Set ENCRYPTION_KEY in .env');
+        return 'techwell-ai-key-fallback-secret-CHANGE_ME_IN_PROD';
+    }
+    return secret;
+};
+
 /**
  * Derives a 32-byte key from the master secret using scrypt.
- * This ensures we always have a valid key length regardless of input password.
  */
 function getDerivedKey(secret) {
-    // Use a fixed salt since we want deterministic key derivation from the env var
-    // In a password hashing scenario, salt should be random. 
-    // Here, the security relies on the entropy of the process.env.ENCRYPTION_KEY
+    // Generate a secure key derivation
     return crypto.scryptSync(secret, 'salt', 32);
 }
 
 /**
  * Encrypts text using AES-256-GCM
- * @param {string} text - Text to encrypt
- * @returns {string} - Combined string of IV:AuthTag:EncryptedText
  */
 function encrypt(text) {
     if (!text) return null;
 
-    const secret = process.env.ENCRYPTION_KEY || 'techwell-ai-key-fallback-secret-CHANGE_ME_IN_PROD';
+    const secret = getSecret();
     const key = getDerivedKey(secret);
     const iv = crypto.randomBytes(IV_LENGTH);
 
@@ -42,8 +50,6 @@ function encrypt(text) {
 
 /**
  * Decrypts text using AES-256-GCM
- * @param {string} text - IV:AuthTag:EncryptedText string
- * @returns {string} - Decrypted text
  */
 function decrypt(text) {
     if (!text) return null;
@@ -51,9 +57,6 @@ function decrypt(text) {
     try {
         const parts = text.split(':');
         if (parts.length !== 3) {
-            // Fallback for old CBC format (IV:Encrypted)
-            // This allows migration without breaking existing keys
-            // You might want to remove this after all keys are migrated
             return decryptLegacyCBC(text);
         }
 
@@ -61,7 +64,7 @@ function decrypt(text) {
         const authTag = Buffer.from(parts[1], 'hex');
         const encrypted = parts[2];
 
-        const secret = process.env.ENCRYPTION_KEY || 'techwell-ai-key-fallback-secret-CHANGE_ME_IN_PROD';
+        const secret = getSecret();
         const key = getDerivedKey(secret);
 
         const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
@@ -73,33 +76,29 @@ function decrypt(text) {
         return decrypted;
     } catch (error) {
         console.error('Decryption failed:', error.message);
-        return text; // Return original text on failure (or handle differently)
+        return text; 
     }
 }
 
-// Legacy decryption support for AES-256-CBC (previous implementation)
 function decryptLegacyCBC(text) {
     try {
-        const secret = process.env.ENCRYPTION_KEY || 'techwell-ai-key-32-chars-long!!';
+        const secret = getSecret();
         const parts = text.split(':');
         if (parts.length !== 2) return text;
 
         const iv = Buffer.from(parts[0], 'hex');
-        const encrypted = parts[1]; // Keep as hex string for crypto update
-        const encryptedBuf = Buffer.from(encrypted, 'hex');
+        const encryptedBuf = Buffer.from(parts[1], 'hex');
 
-        // Check if key is valid length (32 bytes) for legacy
-        // The old code used 'aes-256-cbc' with potentially invalid key lengths which Node might accept or reject
-        // We attempt to replicate the exact behavior
-        const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(secret), iv);
+        const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(secret).subarray(0, 32), iv);
 
         let decrypted = decipher.update(encryptedBuf);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString();
     } catch (e) {
-        console.warn('Legacy decryption failed, returning text');
+        console.warn('Legacy decryption failed');
         return text;
     }
 }
 
 module.exports = { encrypt, decrypt };
+

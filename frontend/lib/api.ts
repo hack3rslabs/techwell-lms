@@ -474,7 +474,7 @@ export const galleryApi = {
 // Coupon API
 export const couponApi = {
     getAll: () => api.get('/coupons'),
-    create: (data: { code?: string; couponName?: string; discountPercent?: number; discountPercentage?: number; expiryDate: string; courseIds: string[]; usageLimit?: number | null }) => api.post('/coupons', data),
+    create: (data: { code?: string; couponName?: string; discountPercent?: number; discountPercentage?: number; startDate?: string; expiryDate: string; courseIds: string[]; usageLimit?: number | null }) => api.post('/coupons', data),
     delete: (id: string) => api.delete(`/coupons/${id}`),
     validate: (data: { code?: string; couponName?: string; courseId: string; amount?: number }) => api.post('/coupons/validate', data),
     toggleActive: (id: string, isActive: boolean) => api.patch(`/coupons/${id}/toggle`, { isActive }),
