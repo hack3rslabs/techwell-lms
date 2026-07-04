@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
+import { uploadApi } from '@/lib/api';
+import { getFullImageUrl } from '@/lib/image-utils';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { 
     ssr: false,
@@ -16,25 +18,64 @@ interface RichTextEditorProps {
 }
 
 export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+    const quillRef = useRef<any>(null);
+
+    const imageHandler = useCallback(() => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files ? input.files[0] : null;
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // Upload image to server
+                const res = await uploadApi.upload(formData);
+                const imageUrl = getFullImageUrl(res.data.url);
+
+                // Insert into editor
+                const quill = quillRef.current?.getEditor();
+                if (quill) {
+                    const range = quill.getSelection();
+                    const position = range ? range.index : 0;
+                    quill.insertEmbed(position, 'image', imageUrl);
+                }
+            } catch (error) {
+                console.error("Failed to upload image", error);
+                alert("Failed to upload image");
+            }
+        };
+    }, []);
+
     const modules = useMemo(() => ({
-        toolbar: [
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'font': [] }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-            [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-            [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-            [{ 'direction': 'rtl' }],                         // text direction
-            [{ 'align': [] }],
-            ['link', 'image', 'video', 'blockquote', 'code-block'],
-            ['clean']                                         // remove formatting button
-        ],
+        toolbar: {
+            container: [
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'font': [] }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+                [{ 'direction': 'rtl' }],                         // text direction
+                [{ 'align': [] }],
+                ['link', 'image', 'video', 'blockquote', 'code-block'],
+                ['clean']                                         // remove formatting button
+            ],
+            handlers: {
+                image: imageHandler
+            }
+        },
         clipboard: {
             matchVisual: false,
         }
-    }), []);
+    }), [imageHandler]);
 
     const formats = [
         'header', 'font', 'size',
@@ -48,6 +89,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     return (
         <div className="w-full prose-editor-container">
             <ReactQuill 
+                ref={quillRef}
                 theme="snow"
                 value={value}
                 onChange={onChange}

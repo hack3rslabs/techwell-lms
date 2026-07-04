@@ -1,115 +1,149 @@
-"use client"
+"use client";
 
-import React from 'react'
-import dynamic from 'next/dynamic'
-import 'react-quill/dist/quill.snow.css'
+import React, { useMemo, useRef, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import 'react-quill-new/dist/quill.snow.css';
+import { uploadApi } from '@/lib/api';
+import { getFullImageUrl } from '@/lib/image-utils';
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false, loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-md border" /> })
+const ReactQuill = dynamic(() => import('react-quill-new'), { 
+    ssr: false,
+    loading: () => <div className="h-64 flex items-center justify-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-muted-foreground animate-pulse">Loading Editor...</div>
+});
 
 interface RichTextEditorProps {
-    value: string
-    onChange: (value: string) => void
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
 }
 
-export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
-    const modules = {
-        toolbar: [
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'font': [] }],
-            [{ 'size': [] }],
-            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-            [{ 'align': [] }],
-            ['link', 'image', 'video'],
-            ['clean']
-        ],
-    }
+export default function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+    const quillRef = useRef<any>(null);
+
+    const imageHandler = useCallback(() => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files ? input.files[0] : null;
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // Upload image to server
+                const res = await uploadApi.upload(formData);
+                const imageUrl = getFullImageUrl(res.data.url);
+
+                // Insert into editor
+                const quill = quillRef.current?.getEditor();
+                if (quill) {
+                    const range = quill.getSelection();
+                    const position = range ? range.index : 0;
+                    quill.insertEmbed(position, 'image', imageUrl);
+                }
+            } catch (error) {
+                console.error("Failed to upload image", error);
+                alert("Failed to upload image");
+            }
+        };
+    }, []);
+
+    const modules = useMemo(() => ({
+        toolbar: {
+            container: [
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'font': [] }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+                [{ 'direction': 'rtl' }],                         // text direction
+                [{ 'align': [] }],
+                ['link', 'image', 'video', 'blockquote', 'code-block'],
+                ['clean']                                         // remove formatting button
+            ],
+            handlers: {
+                image: imageHandler
+            }
+        },
+        clipboard: {
+            matchVisual: false,
+        }
+    }), [imageHandler]);
+
+    const formats = [
+        'header', 'font', 'size',
+        'bold', 'italic', 'underline', 'strike',
+        'color', 'background',
+        'script', 'list', 'bullet', 'indent',
+        'direction', 'align',
+        'link', 'image', 'video', 'blockquote', 'code-block'
+    ];
 
     return (
-        <div className="bg-background rounded-md border text-foreground w-full">
+        <div className="w-full prose-editor-container">
             <ReactQuill 
-                theme="snow" 
-                value={value} 
-                onChange={onChange} 
+                ref={quillRef}
+                theme="snow"
+                value={value}
+                onChange={onChange}
                 modules={modules}
-                className="rich-text-editor h-[300px] pb-12 w-full max-w-full"
+                formats={formats}
+                placeholder={placeholder || "Start writing your rich text content..."}
+                className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-[400px]"
             />
             <style jsx global>{`
-                .rich-text-editor .ql-toolbar {
-                    border-top-left-radius: 0.375rem;
-                    border-top-right-radius: 0.375rem;
-                    border-color: hsl(var(--border));
-                    background: hsl(var(--muted) / 0.5);
+                .quill {
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 0.5rem;
+                    overflow: hidden;
                 }
-                .rich-text-editor .ql-container {
-                    border-bottom-left-radius: 0.375rem;
-                    border-bottom-right-radius: 0.375rem;
-                    border-color: hsl(var(--border));
+                .dark .quill {
+                    border-color: #1e293b;
+                }
+                .ql-toolbar.ql-snow {
+                    border: none;
+                    border-bottom: 1px solid #e2e8f0;
+                    background-color: #f8fafc;
+                    padding: 12px;
+                }
+                .dark .ql-toolbar.ql-snow {
+                    border-bottom-color: #1e293b;
+                    background-color: #0f172a;
+                }
+                .ql-container.ql-snow {
+                    border: none;
+                    font-size: 1.125rem;
                     font-family: inherit;
-                    font-size: 1rem;
+                    min-height: 400px;
                 }
-                .dark .rich-text-editor .ql-snow .ql-stroke {
-                    stroke: #e5e7eb;
+                .ql-editor {
+                    min-height: 400px;
+                    padding: 1.5rem;
+                    line-height: 1.8;
                 }
-                .dark .rich-text-editor .ql-snow .ql-fill, 
-                .dark .rich-text-editor .ql-snow .ql-stroke.ql-fill {
-                    fill: #e5e7eb;
+                .dark .ql-stroke {
+                    stroke: #94a3b8 !important;
                 }
-                .dark .rich-text-editor .ql-snow .ql-picker {
-                    color: #e5e7eb;
+                .dark .ql-fill {
+                    fill: #94a3b8 !important;
                 }
-                .dark .rich-text-editor .ql-snow.ql-toolbar button:hover, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button:hover, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar button:focus, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button:focus, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar button.ql-active, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button.ql-active, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-label:hover, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-label:hover, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-label.ql-active, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-label.ql-active, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-item:hover, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-item:hover, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-item.ql-selected, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
-                    color: #3b82f6;
+                .dark .ql-picker {
+                    color: #94a3b8 !important;
                 }
-                .dark .rich-text-editor .ql-snow.ql-toolbar button:hover .ql-stroke, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button:hover .ql-stroke, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar button:focus .ql-stroke, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button:focus .ql-stroke, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar button.ql-active .ql-stroke, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button.ql-active .ql-stroke, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar button:hover .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button:hover .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar button:focus .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button:focus .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar button.ql-active .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar button.ql-active .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter, 
-                .dark .rich-text-editor .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {
-                    stroke: #3b82f6;
-                }
-                .dark .rich-text-editor .ql-snow .ql-picker-options {
-                    background-color: hsl(var(--popover));
-                    border-color: hsl(var(--border));
+                .dark .ql-picker-options {
+                    background-color: #0f172a !important;
+                    border-color: #1e293b !important;
                 }
             `}</style>
         </div>
-    )
+    );
 }

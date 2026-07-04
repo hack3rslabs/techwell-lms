@@ -1,20 +1,15 @@
-import React, { useMemo, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
-import 'react-quill-new/dist/quill.snow.css'; // Import Quill styles
-import { uploadApi } from '@/lib/api';
+"use client";
 
-// Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(
-    async () => {
-        const { default: RQ } = await import('react-quill-new');
-        // A functional component wrapper is needed to forward refs if we needed to, 
-        // but dynamic handles the basic component
-        return function ForwardedQuill(props: any) {
-            return <RQ {...props} />;
-        };
-    },
-    { ssr: false, loading: () => <div className="h-32 w-full animate-pulse bg-muted rounded-md border" /> }
-);
+import React, { useMemo, useRef, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import 'react-quill-new/dist/quill.snow.css';
+import { uploadApi } from '@/lib/api';
+import { getFullImageUrl } from '@/lib/image-utils';
+
+const ReactQuill = dynamic(() => import('react-quill-new'), { 
+    ssr: false,
+    loading: () => <div className="h-64 flex items-center justify-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-muted-foreground animate-pulse">Loading Editor...</div>
+});
 
 interface RichTextEditorProps {
     value: string;
@@ -24,10 +19,8 @@ interface RichTextEditorProps {
 
 export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
     const quillRef = useRef<any>(null);
-    const [isUploading, setIsUploading] = useState(false);
 
-    // Custom image handler to upload image to our server instead of Base64
-    const imageHandler = () => {
+    const imageHandler = useCallback(() => {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
@@ -37,74 +30,120 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
             const file = input.files ? input.files[0] : null;
             if (!file) return;
 
-            setIsUploading(true);
+            const formData = new FormData();
+            formData.append('file', file);
+
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-                
-                // Upload via API
+                // Upload image to server
                 const res = await uploadApi.upload(formData);
-                const url = res.data.url;
+                const imageUrl = getFullImageUrl(res.data.url);
 
                 // Insert into editor
-                // To get the quill instance from the dynamic import is tricky, 
-                // so we use a standard class based approach internally if we had a direct ref.
-                // For simplicity with dynamic import, we'll try to get it from the DOM or wrap it differently if it fails.
-                
-                // Fallback: If we can't easily grab the ref instance due to dynamic import wrapper,
-                // we can just append it to the current value, but that's not cursor-aware.
-                // Let's implement a safe cursor-aware insert if the ref works.
-                if (quillRef.current) {
-                    const quill = quillRef.current.getEditor();
-                    const range = quill.getSelection(true);
-                    quill.insertEmbed(range.index, 'image', url);
-                    quill.setSelection(range.index + 1);
-                } else {
-                    // Fallback if ref is unavailable
-                    onChange(value + `<img src="${url}" alt="Uploaded Image" />`);
+                const quill = quillRef.current?.getEditor();
+                if (quill) {
+                    const range = quill.getSelection();
+                    const position = range ? range.index : 0;
+                    quill.insertEmbed(position, 'image', imageUrl);
                 }
-
             } catch (error) {
-                console.error('Image upload failed:', error);
-                alert('Failed to upload image. Please try again.');
-            } finally {
-                setIsUploading(false);
+                console.error("Failed to upload image", error);
+                alert("Failed to upload image");
             }
         };
-    };
+    }, []);
 
-    // Memoize modules to prevent re-rendering issues with Quill
     const modules = useMemo(() => ({
         toolbar: {
             container: [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                ['link', 'image'],
-                ['clean']
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'font': [] }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+                [{ 'direction': 'rtl' }],                         // text direction
+                [{ 'align': [] }],
+                ['link', 'image', 'video', 'blockquote', 'code-block'],
+                ['clean']                                         // remove formatting button
             ],
             handlers: {
                 image: imageHandler
             }
+        },
+        clipboard: {
+            matchVisual: false,
         }
-    }), [value]);
+    }), [imageHandler]);
+
+    const formats = [
+        'header', 'font', 'size',
+        'bold', 'italic', 'underline', 'strike',
+        'color', 'background',
+        'script', 'list', 'bullet', 'indent',
+        'direction', 'align',
+        'link', 'image', 'video', 'blockquote', 'code-block'
+    ];
 
     return (
-        <div className="relative">
-            {isUploading && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 rounded-md">
-                    <span className="text-sm font-medium animate-pulse text-primary">Uploading Image...</span>
-                </div>
-            )}
+        <div className="w-full prose-editor-container">
             <ReactQuill 
                 ref={quillRef}
                 theme="snow"
                 value={value}
                 onChange={onChange}
                 modules={modules}
-                placeholder={placeholder || 'Start typing...'}
-                className="bg-white rounded-md max-h-[500px] overflow-y-auto"
+                formats={formats}
+                placeholder={placeholder || "Start writing your rich text content..."}
+                className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-[400px]"
             />
+            <style jsx global>{`
+                .quill {
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 0.5rem;
+                    overflow: hidden;
+                }
+                .dark .quill {
+                    border-color: #1e293b;
+                }
+                .ql-toolbar.ql-snow {
+                    border: none;
+                    border-bottom: 1px solid #e2e8f0;
+                    background-color: #f8fafc;
+                    padding: 12px;
+                }
+                .dark .ql-toolbar.ql-snow {
+                    border-bottom-color: #1e293b;
+                    background-color: #0f172a;
+                }
+                .ql-container.ql-snow {
+                    border: none;
+                    font-size: 1.125rem;
+                    font-family: inherit;
+                    min-height: 400px;
+                }
+                .ql-editor {
+                    min-height: 400px;
+                    padding: 1.5rem;
+                    line-height: 1.8;
+                }
+                .dark .ql-stroke {
+                    stroke: #94a3b8 !important;
+                }
+                .dark .ql-fill {
+                    fill: #94a3b8 !important;
+                }
+                .dark .ql-picker {
+                    color: #94a3b8 !important;
+                }
+                .dark .ql-picker-options {
+                    background-color: #0f172a !important;
+                    border-color: #1e293b !important;
+                }
+            `}</style>
         </div>
     );
 }
