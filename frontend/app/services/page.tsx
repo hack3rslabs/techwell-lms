@@ -58,6 +58,7 @@ const STATIC_SERVICES = [
             'Social Media Marketing',
             'Pay-Per-Click (PPC) Advertising',
             'Content Strategy & Branding'
+        ]
     },
     {
         id: 's-6',

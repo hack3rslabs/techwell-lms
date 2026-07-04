@@ -276,7 +276,11 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
                                                 <input type="checkbox" checked={selectedIds.has(c.id)}
                                                     onChange={e => {
                                                         const next = new Set(selectedIds);
-                                                        e.target.checked ? next.add(c.id) : next.delete(c.id);
+                                                        if (e.target.checked) {
+                                                            next.add(c.id);
+                                                        } else {
+                                                            next.delete(c.id);
+                                                        }
                                                         setSelectedIds(next);
                                                     }} className="rounded" />
                                             </td>

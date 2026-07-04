@@ -16,6 +16,14 @@ export default function IntegrationsManager() {
   const [metaWaForm, setMetaWaForm] = useState({ accessToken: '', phoneNumberId: '', businessAccountId: '' });
   const [openAiForm, setOpenAiForm] = useState({ apiKey: '', model: 'gpt-4o-mini' });
 
+  function fetchIntegrations() {
+    fetch('/api/admin/automation-studio/integrations')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setIntegrations(data.data);
+      });
+  }
+
   useEffect(() => {
     fetchIntegrations();
     
@@ -32,14 +40,6 @@ export default function IntegrationsManager() {
 
     return () => clearInterval(waInterval);
   }, []);
-
-  const fetchIntegrations = () => {
-    fetch('/api/admin/automation-studio/integrations')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setIntegrations(data.data);
-      });
-  };
 
   const handleSave = async () => {
     let configPayload = {};

@@ -10,11 +10,7 @@ import { toast } from "@/components/ui/use-toast"
 export default function ConsultancyClosed() {
     const [candidates, setCandidates] = useState<any[]>([])
 
-    useEffect(() => {
-        fetchCandidates()
-    }, [])
-
-    const fetchCandidates = async () => {
+    async function fetchCandidates() {
         try {
             const res = await consultancyApi.getInvitations()
             const closedCandidates = res.data.invitations.filter((i: any) => i.agreement && (i.status === "CLOSED" || i.status === "COMPLETED"))
@@ -23,6 +19,10 @@ export default function ConsultancyClosed() {
             console.error("Failed to fetch candidates", error)
         }
     }
+
+    useEffect(() => {
+        fetchCandidates()
+    }, [])
 
     const handleRestore = async (id: string) => {
         try {

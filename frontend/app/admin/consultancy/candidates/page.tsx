@@ -9,11 +9,7 @@ import { ExternalLink, FileText, Download } from "lucide-react"
 export default function ConsultancyCandidates() {
     const [candidates, setCandidates] = useState<any[]>([])
 
-    useEffect(() => {
-        fetchCandidates()
-    }, [])
-
-    const fetchCandidates = async () => {
+    async function fetchCandidates() {
         try {
             // Reusing getInvitations but filtering or handling in UI for now
             // since candidates are essentially invitations that have agreements.
@@ -24,6 +20,10 @@ export default function ConsultancyCandidates() {
             console.error("Failed to fetch candidates", error)
         }
     }
+
+    useEffect(() => {
+        fetchCandidates()
+    }, [])
 
     return (
         <div className="space-y-6">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { Building2, Users, MapPin, Calendar, ExternalLink } from "lucide-react"
+import Link from 'next/link';
 
 type CampusDrive = {
     id: string;
@@ -56,9 +57,9 @@ export default function AdminCampusDrives() {
                         </p>
                     </div>
                     <div className="shrink-0">
-                        <a href="/admin/campus-drives/create" className="btn bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
+                        <Link href="/admin/campus-drives/create" className="btn bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
                             + Create Job Mela / Drive
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>

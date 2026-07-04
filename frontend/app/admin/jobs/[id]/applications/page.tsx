@@ -84,7 +84,7 @@ export default function JobApplicationsPage() {
 
     const handleUpdateStatus = async (appId: string, newStatus: string) => {
         try {
-            await jobsApi.updateApplicationStatus(appId, newStatus);
+            await jobsApi.updateApplicationStatus(params.id as string, appId, newStatus);
             toast.success(`Status updated to ${newStatus}`);
             fetchData();
         } catch (_error) {
