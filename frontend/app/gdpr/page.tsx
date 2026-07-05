@@ -111,10 +111,10 @@ export default function GDPRPage() {
                         <CardContent className="pt-6">
                             <h2 className="text-xl font-bold text-primary mb-3">Exercise Your Rights</h2>
                             <p className="text-muted-foreground mb-4">
-                            If you have questions about these rights or wish to exercise them, please contact our Data Protection Officer at:
+                            If you have questions about these rights or wish to exercise them, please contact us at:
                             <br />
-                            <Link href="mailto:info@techwell.co.in" className="text-primary hover:underline font-medium">
-                                info@techwell.co.in
+                            <Link href="mailto:dpo@techwell.co.in" className="text-primary hover:underline font-medium">
+                                dpo@techwell.co.in
                             </Link>
                         </p>
                             <p className="text-sm text-muted-foreground mt-4">
