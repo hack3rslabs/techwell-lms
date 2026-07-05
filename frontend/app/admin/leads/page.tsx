@@ -27,7 +27,8 @@ import {
     MessageCircle,
     Eye,
     Clock,
-    UserCheck
+    UserCheck,
+    Wand2
 } from 'lucide-react'
 import { exportToCSV } from '@/lib/export-utils'
 import api, { leadApi } from '@/lib/api'
@@ -63,6 +64,9 @@ export default function LeadsPage() {
         courseName?: string
         createdAt: string
         assignedTo?: string
+        aiSummary?: string
+        aiNextBestAction?: string
+        aiPriority?: string
     }
     const [leads, setLeads] = React.useState<Lead[]>([])
     const [staffUsers, setStaffUsers] = React.useState<{id: string, name: string}[]>([])
@@ -89,6 +93,7 @@ export default function LeadsPage() {
     const [newLogType, setNewLogType] = React.useState('CALL')
     const [newLogNotes, setNewLogNotes] = React.useState('')
     const [isLoggingActivity, setIsLoggingActivity] = React.useState(false)
+    const [isGeneratingAI, setIsGeneratingAI] = React.useState(false)
 
     // Filters
     const [statusFilter, setStatusFilter] = React.useState('ALL')
@@ -349,6 +354,21 @@ export default function LeadsPage() {
             alert('Failed to save log')
         } finally {
             setIsLoggingActivity(false)
+        }
+    }
+
+    const handleGenerateAI = async () => {
+        if (!historyLead) return
+        setIsGeneratingAI(true)
+        try {
+            const res = await api.post(`/leads/${historyLead.id}/ai/summary`)
+            setHistoryLead(res.data.data) // Update local lead with new AI fields
+            setLeads(prev => prev.map(l => l.id === historyLead.id ? res.data.data : l))
+        } catch (error) {
+            console.error(error)
+            alert('Failed to generate AI summary')
+        } finally {
+            setIsGeneratingAI(false)
         }
     }
 
@@ -813,6 +833,45 @@ export default function LeadsPage() {
                                 Log
                             </Button>
                         </div>
+
+                        <div className="flex justify-end">
+                            <Button variant="outline" onClick={handleGenerateAI} disabled={isGeneratingAI} className="border-purple-200 text-purple-700 hover:bg-purple-50">
+                                {isGeneratingAI ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
+                                Generate AI Insights
+                            </Button>
+                        </div>
+
+                        {historyLead?.aiSummary && (
+                            <Card className="border-purple-200 bg-purple-50/50">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-semibold flex items-center gap-2 text-purple-800">
+                                        <Wand2 className="h-4 w-4" /> AI Lead Insights
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <div>
+                                        <h4 className="text-xs font-semibold text-purple-900/60 uppercase mb-1">Summary</h4>
+                                        <p className="text-sm text-purple-900">{historyLead.aiSummary}</p>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <h4 className="text-xs font-semibold text-purple-900/60 uppercase mb-1">Next Best Action</h4>
+                                            <p className="text-sm font-medium text-purple-900">{historyLead.aiNextBestAction}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-semibold text-purple-900/60 uppercase mb-1">Priority</h4>
+                                            <Badge variant="outline" className={
+                                                historyLead.aiPriority === 'HIGH' ? 'border-red-200 text-red-700 bg-red-50' :
+                                                historyLead.aiPriority === 'MEDIUM' ? 'border-orange-200 text-orange-700 bg-orange-50' :
+                                                'border-green-200 text-green-700 bg-green-50'
+                                            }>
+                                                {historyLead.aiPriority}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
 
                         <div className="space-y-4 mt-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
                             {historyLogs.length === 0 ? (

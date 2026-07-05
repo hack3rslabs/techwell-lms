@@ -767,6 +767,101 @@ Return ONLY a JSON array with:
         if (overallScore >= 70) return `Good job. Solid ${role} capabilities with room to grow technical depth.`;
         return `Potential identified, but focus on fundamentals and STAR method clarity.`;
     }
+
+    /**
+     * Generate a concise summary and Next Best Action for a CRM Lead
+     */
+    async generateLeadSummary(leadData) {
+        const prompt = `
+        You are an expert sales assistant. Please analyze the following lead data and provide a concise summary and the next best action.
+        Lead Name: ${leadData.name}
+        Email: ${leadData.email || 'N/A'}
+        Source: ${leadData.source}
+        Status: ${leadData.status}
+        Interested Role/Course: ${leadData.interestedRole || leadData.courseName || 'N/A'}
+        Notes: ${leadData.notes || 'None'}
+        Recent Activities: ${JSON.stringify(leadData.activities || [])}
+        
+        Respond ONLY in JSON format with exactly three fields:
+        {
+          "summary": "A 2-3 sentence summary of the lead's profile and history.",
+          "nextBestAction": "A specific, actionable next step for the sales rep.",
+          "priority": "HIGH, MEDIUM, or LOW"
+        }
+        `;
+
+        try {
+            const ai = await this.getAIProvider();
+            
+            if (ai.provider === 'OPENAI') {
+                const response = await ai.client.chat.completions.create({
+                    model: ai.model,
+                    messages: [{ role: "user", content: prompt }],
+                    response_format: { type: "json_object" }
+                });
+                return JSON.parse(response.choices[0].message.content);
+            } else if (ai.provider === 'GEMINI') {
+                const result = await ai.model.generateContent(prompt);
+                const text = result.response.text();
+                // strip markdown formatting if any
+                const jsonText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(jsonText);
+            }
+        } catch (error) {
+            console.error('[AI] Lead Summary Error:', error);
+            return {
+                summary: "Error generating summary.",
+                nextBestAction: "Review lead manually.",
+                priority: "MEDIUM"
+            };
+        }
+    }
+
+    /**
+     * Draft a follow-up email for a lead based on context
+     */
+    async draftLeadEmail(leadData, tone = 'Professional') {
+        const prompt = `
+        You are a highly skilled sales copywriter. Draft a follow-up email to the following lead.
+        The tone should be ${tone}. Keep it concise, persuasive, and personalized.
+
+        Lead Name: ${leadData.name}
+        Interested In: ${leadData.interestedRole || leadData.courseName || 'our programs'}
+        Current Status: ${leadData.status}
+        Notes: ${leadData.notes || 'None'}
+        Recent Activities: ${JSON.stringify(leadData.activities || [])}
+
+        Respond ONLY in JSON format with two fields:
+        {
+          "subject": "The email subject line",
+          "body": "The full email body. Use line breaks where appropriate."
+        }
+        `;
+
+        try {
+            const ai = await this.getAIProvider();
+            
+            if (ai.provider === 'OPENAI') {
+                const response = await ai.client.chat.completions.create({
+                    model: ai.model,
+                    messages: [{ role: "user", content: prompt }],
+                    response_format: { type: "json_object" }
+                });
+                return JSON.parse(response.choices[0].message.content);
+            } else if (ai.provider === 'GEMINI') {
+                const result = await ai.model.generateContent(prompt);
+                const text = result.response.text();
+                const jsonText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(jsonText);
+            }
+        } catch (error) {
+            console.error('[AI] Email Draft Error:', error);
+            return {
+                subject: "Following up on your inquiry",
+                body: "Hi " + leadData.name + ",\n\nI am following up on your recent inquiry. Please let me know when you are available for a quick chat.\n\nBest,\nSales Team"
+            };
+        }
+    }
 }
 
 module.exports = new AIService();

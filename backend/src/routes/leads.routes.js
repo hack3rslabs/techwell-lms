@@ -1158,4 +1158,60 @@ router.post('/:id/reminder', authenticate, checkPermission('LEADS'), async (req,
     }
 });
 
+/**
+ * @route   POST /api/leads/:id/ai/summary
+ * @desc    Generate AI summary for a lead
+ * @access  Private
+ */
+router.post('/:id/ai/summary', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const lead = await prisma.lead.findUnique({
+            where: { id: req.params.id },
+            include: { activityLogs: true }
+        });
+
+        if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+        const aiService = require('../services/ai.service');
+        const aiInsight = await aiService.generateLeadSummary(lead);
+
+        const updatedLead = await prisma.lead.update({
+            where: { id: req.params.id },
+            data: {
+                aiSummary: aiInsight.summary,
+                aiNextBestAction: aiInsight.nextBestAction,
+                aiPriority: aiInsight.priority
+            }
+        });
+
+        return res.json({ message: 'AI Summary generated', data: updatedLead });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/leads/:id/ai/draft-email
+ * @desc    Draft an AI follow-up email
+ * @access  Private
+ */
+router.post('/:id/ai/draft-email', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const { tone } = req.body;
+        const lead = await prisma.lead.findUnique({
+            where: { id: req.params.id },
+            include: { activityLogs: true }
+        });
+
+        if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+        const aiService = require('../services/ai.service');
+        const draft = await aiService.draftLeadEmail(lead, tone || 'Professional');
+
+        return res.json({ draft });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

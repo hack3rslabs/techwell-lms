@@ -39,12 +39,11 @@ export default function EmailComposer({ lead, isOpen, onClose }: EmailComposerPr
         if (!lead) return
         setIsGenerating(true)
         try {
-            const res = await api.post('/ai/draft-email', {
-                leadId: lead.id,
-                topic: "Follow up regarding inquiry"
+            const res = await api.post(`/leads/${lead.id}/ai/draft-email`, {
+                tone: "Professional and Persuasive"
             })
-            setSubject(res.data.subject)
-            setBody(res.data.body)
+            setSubject(res.data.draft.subject)
+            setBody(res.data.draft.body)
             toast.success("Email drafted by AI")
         } catch (error) {
             console.error(error)

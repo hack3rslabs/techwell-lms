@@ -897,6 +897,9 @@ model Lead {
   resumeUrl         String?
   skills            String[]
   companyName       String?
+  aiSummary         String?
+  aiNextBestAction  String?
+  aiPriority        String?
   district          String?
   pinCode           String?
   referralName      String?
