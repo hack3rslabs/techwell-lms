@@ -881,7 +881,9 @@ router.get('/webhook/meta', async (req, res) => {
     if (mode && token) {
         if (token === 'techwell_meta_secret') {
             console.log('WEBHOOK_VERIFIED');
-            res.status(200).type('text/plain').send(challenge);
+            // Prevent Reflected XSS by sanitizing challenge
+            const sanitize = (str) => (str ? String(str).replace(/[<>"'&]/g, '') : '');
+            res.status(200).type('text/plain').send(sanitize(challenge));
         } else {
             res.sendStatus(403);
         }
