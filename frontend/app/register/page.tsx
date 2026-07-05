@@ -115,93 +115,142 @@ export default function RegisterPage() {
 
     if (step === 'otp') {
         return (
-            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background via-background to-primary/5">
-                <div className="w-full max-w-md space-y-6">
-                    <div className="flex justify-center">
-                        <Link href="/">
-                            <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
-                            <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
-                        </Link>
+            <div className="min-h-screen flex">
+                {/* Left side - Branding */}
+                <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center bg-black">
+                    <img
+                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                        alt="Students learning"
+                        className="absolute inset-0 w-full h-full object-cover opacity-50"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+                    <div className="relative z-10 p-12 max-w-xl text-center">
+                        <h1 className="text-4xl font-bold text-white mb-6">Verify Your Email</h1>
+                        <p className="text-lg text-white/90">You're one step away from joining thousands of students building their tech careers.</p>
                     </div>
-                    <Card className="border-muted shadow-xl backdrop-blur-sm bg-background/80">
-                        <CardHeader className="text-center pt-8">
-                            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                                <Mail className="w-8 h-8 text-primary" />
-                            </div>
-                            <CardTitle className="text-2xl font-bold">Verify your email</CardTitle>
-                            <CardDescription className="text-base mt-2">
-                                We&apos;ve sent a 6-digit code to <br />
-                                <span className="font-semibold text-foreground">{email}</span>
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="px-8 pb-8">
-                            <form onSubmit={handleVerifyOtp} className="space-y-6">
-                                {error && (
-                                    <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg animate-in fade-in zoom-in duration-300">
-                                        {error}
-                                    </div>
-                                )}
-                                
-                                <div className="flex justify-center flex-col items-center gap-4">
-                                    <InputOTP maxLength={6} value={otpValue} onChange={setOtpValue} disabled={isLoading}>
-                                        <InputOTPGroup className="gap-2">
-                                            <InputOTPSlot index={0} className="w-12 h-14 text-lg border-2" />
-                                            <InputOTPSlot index={1} className="w-12 h-14 text-lg border-2" />
-                                            <InputOTPSlot index={2} className="w-12 h-14 text-lg border-2" />
-                                            <InputOTPSlot index={3} className="w-12 h-14 text-lg border-2" />
-                                            <InputOTPSlot index={4} className="w-12 h-14 text-lg border-2" />
-                                            <InputOTPSlot index={5} className="w-12 h-14 text-lg border-2" />
-                                        </InputOTPGroup>
-                                    </InputOTP>
-                                </div>
+                </div>
 
-                                <Button type="submit" className="w-full h-12 text-base font-semibold shadow-lg transition-all" disabled={isLoading || otpValue.length !== 6}>
-                                    {isLoading ? (
-                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...</>
-                                    ) : 'Verify Code'}
-                                </Button>
-                            </form>
-                        </CardContent>
-                        <CardFooter className="flex flex-col border-t border-border px-8 py-6">
-                            <div className="text-sm text-muted-foreground mb-4">
-                                Didn&apos;t receive the code?
-                            </div>
-                            {timeLeft > 0 ? (
-                                <div className="text-sm font-medium text-foreground">
-                                    Resend code in <span className="text-primary">{timeLeft}s</span>
+                {/* Right side - Form */}
+                <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-12 bg-background">
+                    <div className="w-full max-w-md space-y-6">
+                        <div className="flex justify-center mb-8">
+                            <Link href="/">
+                                <Image src="/images/favicon/Logo light.svg" alt="Techwell" width={200} height={60} className="dark:hidden" priority />
+                                <Image src="/images/favicon/Logo dark.svg" alt="Techwell" width={200} height={60} className="hidden dark:block" priority />
+                            </Link>
+                        </div>
+                        <Card className="border-muted shadow-2xl backdrop-blur-sm bg-background/95">
+                            <CardHeader className="text-center pt-8">
+                                <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                    <Mail className="w-8 h-8 text-primary" />
                                 </div>
-                            ) : (
-                                <Button variant="outline" className="w-full" onClick={handleResendOtp} disabled={isLoading}>
-                                    Resend Code
-                                </Button>
-                            )}
-                            <div className="mt-6 text-sm">
-                                <button type="button" onClick={() => setStep('form')} className="text-primary hover:underline font-medium flex items-center gap-1">
-                                    &larr; Back to registration
-                                </button>
-                            </div>
-                        </CardFooter>
-                    </Card>
+                                <CardTitle className="text-2xl font-bold">Verify your email</CardTitle>
+                                <CardDescription className="text-base mt-2">
+                                    We&apos;ve sent a 6-digit code to <br />
+                                    <span className="font-semibold text-foreground">{email}</span>
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="px-8 pb-8">
+                                <form onSubmit={handleVerifyOtp} className="space-y-6">
+                                    {error && (
+                                        <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg animate-in fade-in zoom-in duration-300">
+                                            {error}
+                                        </div>
+                                    )}
+                                    
+                                    <div className="flex justify-center flex-col items-center gap-4">
+                                        <InputOTP maxLength={6} value={otpValue} onChange={setOtpValue} disabled={isLoading}>
+                                            <InputOTPGroup className="gap-2">
+                                                <InputOTPSlot index={0} className="w-12 h-14 text-lg border-2 border-primary/20" />
+                                                <InputOTPSlot index={1} className="w-12 h-14 text-lg border-2 border-primary/20" />
+                                                <InputOTPSlot index={2} className="w-12 h-14 text-lg border-2 border-primary/20" />
+                                                <InputOTPSlot index={3} className="w-12 h-14 text-lg border-2 border-primary/20" />
+                                                <InputOTPSlot index={4} className="w-12 h-14 text-lg border-2 border-primary/20" />
+                                                <InputOTPSlot index={5} className="w-12 h-14 text-lg border-2 border-primary/20" />
+                                            </InputOTPGroup>
+                                        </InputOTP>
+                                    </div>
+
+                                    <Button type="submit" className="w-full h-12 text-base font-semibold shadow-lg transition-all" disabled={isLoading || otpValue.length !== 6}>
+                                        {isLoading ? (
+                                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...</>
+                                        ) : 'Verify Code'}
+                                    </Button>
+                                </form>
+                            </CardContent>
+                            <CardFooter className="flex flex-col border-t border-border px-8 py-6 bg-muted/10">
+                                <div className="text-sm text-muted-foreground mb-4">
+                                    Didn&apos;t receive the code?
+                                </div>
+                                {timeLeft > 0 ? (
+                                    <div className="text-sm font-medium text-foreground">
+                                        Resend code in <span className="text-primary">{timeLeft}s</span>
+                                    </div>
+                                ) : (
+                                    <Button variant="outline" className="w-full border-primary/20 hover:bg-primary/5" onClick={handleResendOtp} disabled={isLoading}>
+                                        Resend Code
+                                    </Button>
+                                )}
+                                <div className="mt-6 text-sm">
+                                    <button type="button" onClick={() => setStep('form')} className="text-primary hover:underline font-medium flex items-center gap-1">
+                                        &larr; Back to registration
+                                    </button>
+                                </div>
+                            </CardFooter>
+                        </Card>
+                    </div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background via-background to-primary/5">
-            <div className="w-full max-w-xl space-y-6">
-                <div className="flex justify-center">
-                    <Link href="/">
-                        <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
-                        <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
-                    </Link>
+        <div className="min-h-screen flex">
+            {/* Left side - Branding & Image */}
+            <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center bg-black">
+                <img
+                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                    alt="Students learning"
+                    className="absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+                <div className="absolute inset-0 bg-primary/10 mix-blend-overlay" />
+                
+                <div className="relative z-10 p-12 max-w-xl">
+                    <h1 className="text-5xl font-extrabold text-white mb-6 leading-tight">Master Tech Skills <br/><span className="text-primary/90">With AI.</span></h1>
+                    <p className="text-xl text-white/90 mb-8">Join 10,000+ students accelerating their careers through personalized mock interviews, adaptive coding courses, and expert mentorship.</p>
+                    <div className="flex gap-4">
+                        <div className="bg-background/20 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                            <h3 className="text-white font-bold text-2xl">95%</h3>
+                            <p className="text-white/80 text-sm">Placement Rate</p>
+                        </div>
+                        <div className="bg-background/20 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                            <h3 className="text-white font-bold text-2xl">50+</h3>
+                            <p className="text-white/80 text-sm">Hiring Partners</p>
+                        </div>
+                        <div className="bg-background/20 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                            <h3 className="text-white font-bold text-2xl">24/7</h3>
+                            <p className="text-white/80 text-sm">AI Mentor Access</p>
+                        </div>
+                    </div>
                 </div>
-                <Card className="border-muted shadow-xl backdrop-blur-sm bg-background/80">
-                    <CardHeader className="text-center pt-8">
-                        <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-                        <CardDescription>Join Techwell and start your journey</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6 px-10">
+            </div>
+
+            {/* Right side - Form */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-12 bg-background overflow-y-auto">
+                <div className="w-full max-w-xl space-y-6">
+                    <div className="flex justify-center mb-6">
+                        <Link href="/">
+                            <Image src="/images/favicon/Logo light.svg" alt="Techwell" width={220} height={60} className="dark:hidden" priority />
+                            <Image src="/images/favicon/Logo dark.svg" alt="Techwell" width={220} height={60} className="hidden dark:block" priority />
+                        </Link>
+                    </div>
+                    <Card className="border-0 shadow-none bg-transparent">
+                        <CardHeader className="text-center pt-0 pb-8">
+                            <CardTitle className="text-3xl font-bold">Create Account</CardTitle>
+                            <CardDescription className="text-base mt-2">Join Techwell and start your journey</CardDescription>
+                        </CardHeader>
+                        <CardContent className="px-2 sm:px-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
                                 <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg animate-in fade-in zoom-in duration-300">
