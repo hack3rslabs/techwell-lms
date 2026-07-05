@@ -61,7 +61,7 @@ export default function ViewAgreement() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Badge variant={agreement.status === 'DRAFT' ? 'secondary' : (agreement.status === 'SENT' ? 'default' : 'success')} className="text-sm px-3 py-1 mr-2">
+                    <Badge variant={agreement.status === 'DRAFT' ? 'secondary' : (agreement.status === 'SENT' ? 'default' : 'default')} className="text-sm px-3 py-1 mr-2">
                         {agreement.status}
                     </Badge>
                     
