@@ -134,7 +134,14 @@ class AIService {
      * Determine the interview phase based on question count and max questions
      * Phase: OPENING (first 5 HR), TECHNICAL (middle), CLOSING (last 5 HR)
      */
-    getInterviewPhase(questionCount, maxQuestions) {
+    getInterviewPhase(questionCount, maxQuestions, mode = 'FULL') {
+        if (mode === 'QUICK_TECH') {
+            return { phase: 'TECHNICAL', indexInPhase: questionCount };
+        }
+        if (mode === 'QUICK_HR') {
+            return { phase: 'TECHNICAL', indexInPhase: questionCount }; // We'll treat HR mode as tech round but force behavioral questions
+        }
+
         const OPENING_COUNT = 5;
         const CLOSING_COUNT = 5;
         const technicalCount = Math.max(0, maxQuestions - OPENING_COUNT - CLOSING_COUNT);
@@ -269,14 +276,14 @@ class AIService {
 
             // Determine max questions from duration
             const maxQuestions = this.getMaxQuestionsFromDuration(interview.duration || 30);
-            console.log(`[generateNextQuestion] Q#${questionCount + 1} of ${maxQuestions} (${interview.duration}min)`);
+            console.log(`[generateNextQuestion] Q#${questionCount + 1} of ${maxQuestions} (${interview.duration}min, Mode: ${interview.mode})`);
 
             if (questionCount >= maxQuestions) {
                 return null; // End Interview
             }
 
             // Determine phase
-            const phaseInfo = this.getInterviewPhase(questionCount, maxQuestions);
+            const phaseInfo = this.getInterviewPhase(questionCount, maxQuestions, interview.mode);
             phase = phaseInfo.phase;
             const indexInPhase = phaseInfo.indexInPhase;
 
@@ -336,7 +343,16 @@ class AIService {
 
             // Determine if this is an HR behavioral question mid-tech round
             const technicalQuestionIndex = indexInPhase + 1;
-            const isHrBehavioral = technicalQuestionIndex % 4 === 0; // Every 4th tech question = behavioral
+            
+            let isHrBehavioral = false;
+            if (interview.mode === 'QUICK_HR') {
+                isHrBehavioral = true;
+            } else if (interview.mode === 'QUICK_TECH') {
+                isHrBehavioral = false;
+            } else {
+                isHrBehavioral = technicalQuestionIndex % 4 === 0; // Every 4th tech question = behavioral in FULL mode
+            }
+            
             const questionType = isHrBehavioral ? 'BEHAVIORAL' : 'TECHNICAL';
             const avatarRole = isHrBehavioral ? 'HR Manager' : 'Tech Lead';
 

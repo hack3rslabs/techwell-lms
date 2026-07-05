@@ -144,14 +144,33 @@ export default function FeedbackPage({ params }: { params: { id: string } }) {
                                 <div className="h-2 w-2 rounded-full bg-red-500"></div> Areas to Improve
                             </h3>
                             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                                {evaluation.improvements.map((imp: string, i: number) => (
+                                {evaluation.weaknesses && evaluation.weaknesses.map((imp: string, i: number) => (
                                     <li key={i}>{imp}</li>
                                 ))}
                             </ul>
                         </div>
                     </div>
+                    
+                    {evaluation.recommendations && evaluation.recommendations.length > 0 && (
+                        <div className="mt-6 border-t pt-4">
+                            <h3 className="font-semibold text-purple-700 mb-3 flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-purple-500"></div> Action Items
+                            </h3>
+                            <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                                {evaluation.recommendations.map((rec: string, i: number) => (
+                                    <li key={i}>{rec}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
+
+            <div className="flex justify-end mb-4">
+                 <Button onClick={() => router.push("/student/career-hub/mock-interview")}>
+                     Start Quick Drill on Weaknesses 🚀
+                 </Button>
+            </div>
 
             <div className="space-y-4">
                 <h3 className="text-xl font-bold">Question by Question Breakdown</h3>

@@ -489,6 +489,7 @@ model Interview {
   createdAt       DateTime             @default(now())
   linkedCourseId  String?
   duration        Int                  @default(30)
+  mode            String               @default("FULL")
   technology      String?
   selectedAvatars String[]
   aiAvatarUrl     String?

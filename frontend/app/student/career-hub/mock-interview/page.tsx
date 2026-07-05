@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/auth-context'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
 export default function MockInterviewDashboard() {
     const { user } = useAuth()
@@ -20,17 +21,20 @@ export default function MockInterviewDashboard() {
     const [isCreating, setIsCreating] = useState(false)
     const [openDialog, setOpenDialog] = useState(false)
     const [stats, setStats] = useState({ total: 0, completed: 0, averageScore: 0 })
+    const [trendData, setTrendData] = useState<any[]>([])
 
     const [formData, setFormData] = useState({
         role: '',
         domain: '',
         technology: '',
         experience: '0',
+        interviewMode: 'FULL'
     })
 
     useEffect(() => {
         fetchInterviews()
         fetchStats()
+        fetchTrendData()
     }, [])
 
     const fetchInterviews = async () => {
@@ -53,6 +57,15 @@ export default function MockInterviewDashboard() {
         }
     }
 
+    const fetchTrendData = async () => {
+        try {
+            const res = await api.get('/interviews/stats/trend')
+            setTrendData(res.data.trend || [])
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     const handleCreate = async (e: any) => {
         e.preventDefault()
         setIsCreating(true)
@@ -65,7 +78,8 @@ export default function MockInterviewDashboard() {
                 technology: formData.technology,
                 resumeUrl: null,
                 difficulty,
-                duration: 30  // default; user picks this on the pre-interview screen
+                interviewMode: formData.interviewMode,
+                duration: formData.interviewMode === 'FULL' ? 30 : 10
             })
             toast.success('Interview created! Configure your session.')
             setOpenDialog(false)
@@ -104,6 +118,27 @@ export default function MockInterviewDashboard() {
                     </Card>
                 </div>
             </div>
+
+            {trendData.length > 0 && (
+                <Card className="w-full">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Performance Trend</CardTitle>
+                        <CardDescription>Your technical and overall score progression</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={trendData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
+                                <Tooltip />
+                                <Line type="monotone" dataKey="Overall" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="Technical" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -179,12 +214,52 @@ export default function MockInterviewDashboard() {
                                     ))}
                                 </div>
                             </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold">⚡ Interview Mode</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[
+                                        { label: 'Full Interview', value: 'FULL', desc: 'HR + Tech + HR' },
+                                        { label: 'Quick Tech', value: 'QUICK_TECH', desc: 'Tech Only' },
+                                        { label: 'Quick HR', value: 'QUICK_HR', desc: 'Behavioral Only' },
+                                    ].map(opt => (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => setFormData({...formData, interviewMode: opt.value})}
+                                            className={`p-2 rounded-lg border text-center text-xs transition-all ${
+                                                formData.interviewMode === opt.value
+                                                    ? 'border-primary bg-primary/10 text-primary font-bold'
+                                                    : 'border-slate-200 hover:border-slate-300'
+                                            }`}
+                                        >
+                                            <div className="font-semibold">{opt.label}</div>
+                                            <div className="text-muted-foreground">{opt.desc}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 space-y-1">
                                 <p className="font-semibold">📋 Your interview will follow this structure:</p>
-                                <p>→ <strong>5 HR Opening Questions</strong> (Self intro, Strengths, Goals...)</p>
-                                <p>→ <strong>Technical Questions</strong> based on your role & skills</p>
-                                <p>→ <strong>5 HR Closing Questions</strong> (Salary, Notice Period...)</p>
-                                <p className="text-blue-600">You will choose the interviewer panel & duration on the next screen.</p>
+                                {formData.interviewMode === 'FULL' && (
+                                    <>
+                                        <p>→ <strong>5 HR Opening Questions</strong> (Self intro, Strengths, Goals...)</p>
+                                        <p>→ <strong>Technical Questions</strong> based on your role & skills</p>
+                                        <p>→ <strong>5 HR Closing Questions</strong> (Salary, Notice Period...)</p>
+                                        <p className="text-blue-600 mt-2">Duration: ~30 minutes.</p>
+                                    </>
+                                )}
+                                {formData.interviewMode === 'QUICK_TECH' && (
+                                    <>
+                                        <p>→ <strong>Direct Technical Questions</strong> based on your role & skills</p>
+                                        <p className="text-blue-600 mt-2">Duration: ~10 minutes. HR phase skipped.</p>
+                                    </>
+                                )}
+                                {formData.interviewMode === 'QUICK_HR' && (
+                                    <>
+                                        <p>→ <strong>Behavioral & Situational Questions</strong> only.</p>
+                                        <p className="text-blue-600 mt-2">Duration: ~10 minutes. Technical phase skipped.</p>
+                                    </>
+                                )}
                             </div>
                             <div className="flex justify-end gap-3 pt-2">
                                 <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>Cancel</Button>
