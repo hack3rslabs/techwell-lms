@@ -680,8 +680,11 @@ router.post('/import', authenticate, checkPermission('LEADS'), upload.single('fi
         return res.status(400).json({ error: 'No CSV file uploaded' });
     }
 
+    const path = require('path');
+    const safePath = path.resolve('uploads/temp', path.basename(req.file.path));
+
     const results = [];
-    fs.createReadStream(req.file.path)
+    fs.createReadStream(safePath)
         .pipe(csv())
         .on('data', (data) => results.push(data))
         .on('end', async () => {
@@ -711,7 +714,7 @@ router.post('/import', authenticate, checkPermission('LEADS'), upload.single('fi
                 });
 
                 // Cleanup temp file
-                fs.unlinkSync(req.file.path);
+                fs.unlinkSync(safePath);
 
                 res.json({ message: `Successfully imported ${createdCount.count} leads` });
             } catch (error) {
@@ -878,7 +881,7 @@ router.get('/webhook/meta', async (req, res) => {
     if (mode && token) {
         if (token === 'techwell_meta_secret') {
             console.log('WEBHOOK_VERIFIED');
-            res.status(200).send(challenge);
+            res.status(200).type('text/plain').send(challenge);
         } else {
             res.sendStatus(403);
         }

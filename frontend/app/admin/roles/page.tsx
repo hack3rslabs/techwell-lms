@@ -308,46 +308,46 @@ export default function AdminUsersPage() {
     }
 
     const renderTable = (data: User[]) => (
-        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
             <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-foreground">
-                    <thead className="bg-muted/50 border-b border-border">
+                <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80">
                         <tr>
-                            <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">User Profile</th>
-                            <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Access Level</th>
-                            <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Status</th>
-                            <th className="p-4 font-bold text-muted-foreground uppercase text-[10px] text-right">Actions</th>
+                            <th className="p-5 font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase text-[11px]">User Profile</th>
+                            <th className="p-5 font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase text-[11px]">Access Level</th>
+                            <th className="p-5 font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase text-[11px]">Status</th>
+                            <th className="p-5 font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase text-[11px] text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                         {data.length === 0 ? (
                             <tr><td colSpan={4} className="p-20 text-center opacity-50"><p className="text-sm font-bold">No users found</p></td></tr>
                         ) : (
                             data.map(user => (
-                                <tr key={user.id} className="hover:bg-muted/50 transition-colors group">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{user.name[0]}</div>
+                                <tr key={user.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors duration-300 group">
+                                    <td className="p-5">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 border border-indigo-200/50 dark:border-indigo-700/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300 shadow-sm transition-transform group-hover:scale-105">{user.name[0]}</div>
                                             <div>
-                                                <div className="font-bold">{user.name} {user.regId && <Badge variant="outline" className="ml-1 text-[8px] px-1 h-4">{user.regId}</Badge>}</div>
-                                                <div className="text-[11px] text-muted-foreground">{user.email}</div>
+                                                <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center">{user.name} {user.regId && <Badge variant="outline" className="ml-2 text-[9px] px-1.5 h-5 border-slate-200 dark:border-slate-700 text-slate-500 bg-white/50 dark:bg-slate-900/50">{user.regId}</Badge>}</div>
+                                                <div className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">{user.email}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-4">
-                                        <Badge variant="outline" className={`${getRoleBadgeColor(user.role)} text-[10px] uppercase font-bold`}>
+                                    <td className="p-5">
+                                        <Badge variant="outline" className={`${getRoleBadgeColor(user.role)} text-[10px] uppercase tracking-wider font-bold shadow-sm`}>
                                             {user.systemRole?.name || user.role}
                                         </Badge>
                                     </td>
-                                    <td className="p-4">
-                                        {user.isActive ? <Badge className="bg-green-500/10 text-green-500 border-none text-[9px]">ACTIVE</Badge> : <Badge className="bg-red-500/10 text-red-500 border-none text-[9px]">LOCKED</Badge>}
+                                    <td className="p-5">
+                                        {user.isActive ? <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/50 text-[10px] shadow-sm uppercase tracking-wider">ACTIVE</Badge> : <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200/50 dark:border-rose-800/50 text-[10px] shadow-sm uppercase tracking-wider">LOCKED</Badge>}
                                     </td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditUserModal(user)}><Edit2 className="h-4 w-4" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/admin/users/${user.id}`)}><Eye className="h-4 w-4" /></Button>
+                                    <td className="p-5 text-right">
+                                        <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30 rounded-full transition-colors" onClick={() => openEditUserModal(user)}><Edit2 className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-full transition-colors" onClick={() => router.push(`/admin/users/${user.id}`)}><Eye className="h-4 w-4" /></Button>
                                             {!isSuperAdminRole(user.systemRole?.name || user.role) && (
-                                                <Button variant="ghost" size="icon" className={`h-8 w-8 ${user.isActive ? 'text-red-500' : 'text-green-500'}`} onClick={() => toggleUserStatus(user.id, user.isActive)}>
+                                                <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-full transition-colors ${user.isActive ? 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30' : 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'}`} onClick={() => toggleUserStatus(user.id, user.isActive)}>
                                                     {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                                                 </Button>
                                             )}
@@ -366,33 +366,33 @@ export default function AdminUsersPage() {
     )
 
     const renderRolesTable = () => (
-        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
             <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-foreground">
-                    <thead className="bg-muted/50 border-b border-border">
+                <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80">
                         <tr>
-                            <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Role Name</th>
-                            <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Description</th>
-                            <th className="p-4 font-bold text-muted-foreground uppercase text-[10px] text-right">Actions</th>
+                            <th className="p-5 font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase text-[11px]">Role Name</th>
+                            <th className="p-5 font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase text-[11px]">Description</th>
+                            <th className="p-5 font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase text-[11px] text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                         {roles.map(role => (
-                            <tr key={role.id} className="hover:bg-muted/50 transition-colors group">
-                                <td className="p-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="font-bold">{role.name}</div>
-                                        {role.isSystem && <Badge className="text-[8px] h-4 px-1 uppercase bg-blue-500/10 text-blue-400 border-none">System</Badge>}
+                            <tr key={role.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors duration-300 group">
+                                <td className="p-5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="font-bold text-slate-900 dark:text-slate-100">{role.name}</div>
+                                        {role.isSystem && <Badge className="text-[9px] h-5 px-2 uppercase bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200/50 dark:border-blue-800/50 shadow-sm tracking-wider">System</Badge>}
                                     </div>
                                 </td>
-                                <td className="p-4 text-xs text-muted-foreground">{role.description || "Custom role"}</td>
-                                <td className="p-4 text-right">
-                                    <div className="flex justify-end gap-1">
+                                <td className="p-5 text-xs text-slate-500 dark:text-slate-400">{role.description || "Custom role"}</td>
+                                <td className="p-5 text-right">
+                                    <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                                         {!isSuperAdminRole(role.name) && (
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => openEditRoleModal(role)}><Edit2 className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30 rounded-full transition-colors" onClick={() => openEditRoleModal(role)}><Edit2 className="h-4 w-4" /></Button>
                                         )}
                                         {!role.isSystem && (
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => { setRoleToDelete(role); setIsDeleteRoleOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/30 rounded-full transition-colors" onClick={() => { setRoleToDelete(role); setIsDeleteRoleOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
                                         )}
                                     </div>
                                 </td>
@@ -422,10 +422,10 @@ export default function AdminUsersPage() {
             </div>
 
             <Tabs defaultValue="users" className="w-full" onValueChange={setActiveTab}>
-                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                    <TabsList className="bg-muted/50 border border-border p-1 h-12 rounded-xl">
-                        <TabsTrigger value="users" className="rounded-lg data-[state=active]:bg-primary h-full px-8 text-xs font-bold uppercase">User Directory</TabsTrigger>
-                        <TabsTrigger value="roles" className="rounded-lg data-[state=active]:bg-primary h-full px-8 text-xs font-bold uppercase">Roles & Access</TabsTrigger>
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <TabsList className="bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 p-1.5 h-14 rounded-2xl shadow-sm backdrop-blur-md">
+                        <TabsTrigger value="users" className="rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm h-full px-8 text-xs font-bold uppercase tracking-wider text-slate-500 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white transition-all">User Directory</TabsTrigger>
+                        <TabsTrigger value="roles" className="rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm h-full px-8 text-xs font-bold uppercase tracking-wider text-slate-500 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white transition-all">Roles & Access</TabsTrigger>
                     </TabsList>
                     <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                         <div className="w-full md:w-48">

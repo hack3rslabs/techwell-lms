@@ -69,7 +69,7 @@ function BlogEditorContent() {
                         content: blog.content,
                         excerpt: blog.summary || '',
                         status: blog.status,
-                        tags: blog.tags ? blog.tags.join(', ') : '',
+                        tags: Array.isArray(blog.tags) ? blog.tags.join(', ') : (typeof blog.tags === 'string' ? blog.tags : ''),
                         coverImage: blog.coverImage || '',
                         category: blog.category || '',
                         metaTitle: blog.metaTitle || '',
@@ -158,6 +158,7 @@ function BlogEditorContent() {
                 const res = await api.post('/blogs', payload)
                 setFormData(prev => ({ ...prev, id: res.data.id }))
                 toast.success('Blog created successfully!')
+                router.replace(`/admin/blogs/editor?id=${res.data.id}`)
             }
             if (statusOverride) {
                 setFormData(prev => ({ ...prev, status: statusOverride }))

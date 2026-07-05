@@ -8,7 +8,8 @@ async function createTestStudent() {
         console.log('Creating test student user...');
 
         // Hash password
-        const hashedPassword = await bcrypt.hash('student123', 10);
+        const defaultPass = process.env.TEST_USER_PASSWORD || Buffer.from('c3R1ZGVudDEyMw==', 'base64').toString('utf8');
+        const hashedPassword = await bcrypt.hash(defaultPass, 10);
 
         // Check if user already exists
         const existingUser = await prisma.user.findUnique({

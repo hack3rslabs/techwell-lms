@@ -89,6 +89,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
     return (
         <div className="w-full prose-editor-container">
             <ReactQuill 
+                // @ts-expect-error - ReactQuill types are outdated for React 19/Next 14 ref forwarding
                 ref={quillRef}
                 theme="snow"
                 value={value}

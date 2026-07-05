@@ -88,6 +88,7 @@ router.get('/verify/:uniqueId', async (req, res, next) => {
             where: {
                 OR: [
                     { uniqueId: req.params.uniqueId },
+                    { regId: req.params.uniqueId },
                     { user: { regId: req.params.uniqueId } }
                 ]
             },
@@ -229,6 +230,7 @@ router.post('/generate', authenticate, async (req, res, next) => {
             data: {
                 uniqueId,
                 userId,
+                regId: user.regId,
                 courseId,
                 enrollmentId: certificateEnrollmentId,
                 studentName: user.name,
@@ -319,6 +321,7 @@ router.post('/generate-bulk', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), a
                 data: {
                     uniqueId,
                     userId: user.id,
+                    regId: user.regId,
                     courseId: course.id,
                     enrollmentId: enrollment.id,
                     studentName: user.name,
@@ -433,6 +436,7 @@ router.post('/bulk-generate', authenticate, checkPermission('CERTIFICATES'), asy
                     data: {
                         uniqueId,
                         userId,
+                        regId: user.regId,
                         courseId,
                         enrollmentId: enrollment.id,
                         studentName: user.name,
