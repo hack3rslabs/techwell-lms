@@ -20,7 +20,8 @@ const createInterviewSchema = z.object({
     selectedAvatars: z.array(z.string()).optional(),
     technology: z.string().optional(),
     resumeUrl: z.string().optional(),
-    jobDescription: z.string().optional()
+    jobDescription: z.string().optional(),
+    interviewMode: z.string().optional().default("FULL")
 });
 
 /**
@@ -243,6 +244,7 @@ router.post('/', authenticate, async (req, res, next) => {
         const interview = await prisma.interview.create({
             data: {
                 ...validatedData,
+                mode: validatedData.interviewMode,
                 userId: userId,
                 status: 'SCHEDULED'
             }
@@ -358,6 +360,46 @@ router.get('/stats/summary', authenticate, async (req, res, next) => {
         });
     } catch (error) {
         console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/interviews/stats/trend
+ * @desc    Get recent score trend
+ * @access  Private
+ */
+router.get('/stats/trend', authenticate, async (req, res, next) => {
+    try {
+        const interviews = await prisma.interview.findMany({
+            where: { userId: req.user.id, status: 'COMPLETED' },
+            orderBy: { completedAt: 'asc' },
+            take: 10,
+            select: {
+                completedAt: true,
+                role: true,
+                evaluation: {
+                    select: {
+                        overallScore: true,
+                        technicalScore: true,
+                        communicationScore: true
+                    }
+                }
+            }
+        });
+        
+        const trend = interviews.map((inv, index) => ({
+            name: `Int ${index + 1}`,
+            date: inv.completedAt,
+            role: inv.role,
+            Overall: inv.evaluation?.overallScore || 0,
+            Technical: inv.evaluation?.technicalScore || 0,
+            Communication: inv.evaluation?.communicationScore || 0
+        }));
+
+        res.json({ trend });
+    } catch (error) {
+        console.error(`[Interview Trend Error]:`, error);
         next(error);
     }
 });

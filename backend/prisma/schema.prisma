@@ -48,7 +48,8 @@ model User {
   batchNotes                  BatchNote[]
   blogPosts                   BlogPost[]
   candidateProfile            CandidateProfile?
-  certificates                Certificate[]
+  certificates                Certificate[]             @relation("CertificateUser")
+  approvedCertificates        Certificate[]             @relation("CertificateApprover")
   Course                      Course[]
   assignedDemos               DemoSchedule[]            @relation("AssignedDemoTo")
   employerProfile             EmployerProfile?
@@ -91,6 +92,11 @@ model User {
   bulkUploads                 BulkUploadLog[]
   consultancyCoordsAsEmployer ConsultancyCoordination[] @relation("EmployerCoordination")
   consultancyCoordsAsAdmin    ConsultancyCoordination[] @relation("AdminCoordination")
+  blogComments                BlogComment[]
+  customerId                  String?
+  customer                    Customer?                 @relation(fields: [customerId], references: [id])
+  assignedLeads               Lead[]                    @relation("AssignedLeads")
+  assignedCustomers           Customer[]                @relation("AssignedCustomers")
 }
 
 model SystemRole {
@@ -483,6 +489,7 @@ model Interview {
   createdAt       DateTime             @default(now())
   linkedCourseId  String?
   duration        Int                  @default(30)
+  mode            String               @default("FULL")
   technology      String?
   selectedAvatars String[]
   aiAvatarUrl     String?
@@ -691,32 +698,49 @@ model Message {
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
+enum CertificateStatus {
+  PENDING
+  ISSUED
+  REVOKED
+  EXPIRED
+}
+
 model Certificate {
-  id              String               @id @default(cuid())
-  uniqueId        String               @unique
-  userId          String
-  courseId        String
-  enrollmentId    String
-  studentName     String
-  courseName      String
-  courseCategory  String?
-  issueDate       DateTime             @default(now())
-  expiryDate      DateTime?
-  templateId      String?
-  signatureUrl    String?
-  signatoryName   String?
-  signatoryTitle  String?
-  verificationUrl String?
-  isValid         Boolean              @default(true)
-  grade           String?
-  score           Float?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  endDate         DateTime?
-  startDate       DateTime?
-  course          Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  template        CertificateTemplate? @relation(fields: [templateId], references: [id])
-  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String               @id @default(cuid())
+  uniqueId         String               @unique
+  userId           String?
+  regId            String?
+  courseId         String
+  enrollmentId     String
+  studentName      String
+  courseName       String
+  courseCategory   String?
+  issueDate        DateTime             @default(now())
+  expiryDate       DateTime?
+  templateId       String?
+  signatureUrl     String?
+  signatoryName    String?
+  signatoryTitle   String?
+  verificationUrl  String?
+  isValid          Boolean              @default(true)
+  status           CertificateStatus    @default(ISSUED)
+  revokedAt        DateTime?
+  revocationReason String?
+  approvedById     String?
+  downloads        Int                  @default(0)
+  instituteId      String               @default("default")
+  qrCodeUrl        String?
+  blockchainTxId   String?
+  grade            String?
+  score            Float?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  endDate          DateTime?
+  startDate        DateTime?
+  course           Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  template         CertificateTemplate? @relation(fields: [templateId], references: [id])
+  user             User?                @relation("CertificateUser", fields: [userId], references: [id], onDelete: SetNull)
+  approvedBy       User?                @relation("CertificateApprover", fields: [approvedById], references: [id])
 }
 
 model CertificateTemplate {
@@ -728,6 +752,8 @@ model CertificateTemplate {
   isDefault    Boolean       @default(false)
   isActive     Boolean       @default(true)
   layout       Json?
+  canvasData   Json?
+  instituteId  String        @default("default")
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   certificates Certificate[]
@@ -747,6 +773,8 @@ model CertificateSettings {
   logoPosition          String   @default("header")
   logoSize              String   @default("medium")
   signatureSize         String   @default("medium")
+  approvalRequired      Boolean  @default(false)
+  autoIssueOnCompletion Boolean  @default(true)
   borderStyle           String   @default("classic")
   backgroundUrl         String?
   defaultValidityMonths Int?
@@ -829,55 +857,66 @@ model LiveClass {
 }
 
 model Lead {
-  id               String             @id @default(cuid())
-  name             String
-  email            String?
-  phone            String?
-  college          String?
-  qualification    String?
-  dob              DateTime?
-  location         String?
-  gender           String?
-  source           String
-  status           LeadStatus         @default(NEW)
-  notes            String?
-  assignedTo       String?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  adGroupId        String?
-  adId             String?
-  campaignId       String?
-  platform         String?
-  courseId         String?
-  courseName       String?
-  lifecycleStage   LeadLifecycleStage @default(NEW)
-  placementStatus  String?
-  resumeBuilt      Boolean            @default(false)
-  revenueGenerated Float              @default(0)
-  whatsappOptIn    Boolean            @default(true)
-  atsScore         Float              @default(0)
-  category         String?
-  currentCTC       String?
-  expectedCTC      String?
-  experienceLevel  String?
-  interestedRole   String?
-  leadType         String             @default("GENERAL")
-  noticePeriod     String?
-  parsedText       String?
-  paymentStatus    String             @default("UNPAID")
-  readinessScore   Float              @default(0)
-  resumeUrl        String?
-  skills           String[]
-  companyName      String?
-  district         String?
-  pinCode          String?
-  referralName     String?
-  candidateProfile CandidateProfile?
-  demoSchedules    DemoSchedule[]
-  reminders        FollowUpReminder[]
-  activityLogs     LeadActivityLog[]
-  tasks            Task[]
-  whatsappLogs     WhatsAppChatLog[]
+  id                String             @id @default(cuid())
+  name              String
+  email             String?
+  phone             String?
+  college           String?
+  qualification     String?
+  dob               DateTime?
+  location          String?
+  gender            String?
+  source            String
+  status            LeadStatus         @default(NEW)
+  notes             String?
+  assignedTo        String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  adGroupId         String?
+  adId              String?
+  campaignId        String?
+  platform          String?
+  courseId          String?
+  courseName        String?
+  lifecycleStage    LeadLifecycleStage @default(NEW)
+  placementStatus   String?
+  resumeBuilt       Boolean            @default(false)
+  revenueGenerated  Float              @default(0)
+  whatsappOptIn     Boolean            @default(true)
+  atsScore          Float              @default(0)
+  category          String?
+  currentCTC        String?
+  expectedCTC       String?
+  experienceLevel   String?
+  interestedRole    String?
+  leadType          String             @default("GENERAL")
+  noticePeriod      String?
+  parsedText        String?
+  paymentStatus     String             @default("UNPAID")
+  readinessScore    Float              @default(0)
+  resumeUrl         String?
+  skills            String[]
+  companyName       String?
+  aiSummary         String?
+  aiNextBestAction  String?
+  aiPriority        String?
+  district          String?
+  pinCode           String?
+  referralName      String?
+  candidateProfile  CandidateProfile?
+  demoSchedules     DemoSchedule[]
+  tags              String[]           @default([])
+  customFields      Json?
+  assignedToId      String?
+  assignee          User?              @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  followUpTasks     FollowUpTask[]
+  communicationLogs CommunicationLog[]
+  reminders         FollowUpReminder[]
+  activityLogs      LeadActivityLog[]
+  tasks             Task[]
+  whatsappLogs      WhatsAppChatLog[]
+  customerId        String?
+  customer          Customer?          @relation(fields: [customerId], references: [id])
 }
 
 model WhatsAppChatLog {
@@ -956,20 +995,62 @@ model TaskComment {
 }
 
 model BlogPost {
-  id          String     @id @default(cuid())
-  title       String
-  slug        String     @unique
-  content     String
-  summary     String?
-  coverImage  String?
-  status      BlogStatus @default(DRAFT)
-  tags        Json?
-  authorId    String
-  publishedAt DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  category    String?
-  author      User       @relation(fields: [authorId], references: [id])
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  content            String
+  summary            String?
+  coverImage         String?
+  status             BlogStatus    @default(DRAFT)
+  tags               Json?
+  authorId           String
+  publishedAt        DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  category           String?
+  author             User          @relation(fields: [authorId], references: [id])
+  views              Int           @default(0)
+  ctr                Float         @default(0)
+  leadsGenerated     Int           @default(0)
+  metaTitle          String?
+  metaDescription    String?
+  canonicalUrl       String?
+  keywords           Json?
+  readingTime        Int           @default(0)
+  ctaSettings        Json?
+  scheduledPublishAt DateTime?
+  autoArchiveAt      DateTime?
+  versions           BlogVersion[]
+  comments           BlogComment[]
+}
+
+model BlogVersion {
+  id         String   @id @default(cuid())
+  blogPostId String
+  content    String
+  summary    String?
+  savedAt    DateTime @default(now())
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+}
+
+model BlogComment {
+  id         String        @id @default(cuid())
+  blogPostId String
+  userId     String?
+  guestName  String?
+  guestEmail String?
+  content    String
+  status     CommentStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  blogPost   BlogPost      @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  user       User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Ticket {
@@ -1440,6 +1521,8 @@ model CandidateProfile {
   state           String?
   lead            Lead?                 @relation(fields: [leadId], references: [id])
   user            User?                 @relation(fields: [userId], references: [id])
+  customerId      String?
+  customer        Customer?             @relation(fields: [customerId], references: [id])
 }
 
 model LeadActivityLog {
@@ -2145,6 +2228,9 @@ enum BlogStatus {
   PUBLISHED
   ARCHIVED
   IN_REVIEW
+  REVIEW
+  SEO_OPTIMIZATION
+  SCHEDULED
 }
 
 enum TaskStatus {
@@ -2391,25 +2477,25 @@ enum HiringMode {
 }
 
 model CampusDrive {
-  id                  String                 @id @default(cuid())
+  id                  String            @id @default(cuid())
   employerId          String
-  isOffCampus         Boolean                @default(false)
+  isOffCampus         Boolean           @default(false)
   eligibilityCriteria Json?
-  title         String
-  description   String?
-  skills        String[]          @default([])
-  jobRole       String?
-  salary        String?
-  openings      Int?
-  hiringMode    HiringMode        @default(CAMPUS)
-  status        CampusDriveStatus @default(REQUESTED)
-  targetYear    String? // Graduation year e.g. "2024"
-  departments   String[]          @default([])
-  location      String?
-  scheduledDate DateTime?
-  completedDate DateTime?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  title               String
+  description         String?
+  skills              String[]          @default([])
+  jobRole             String?
+  salary              String?
+  openings            Int?
+  hiringMode          HiringMode        @default(CAMPUS)
+  status              CampusDriveStatus @default(REQUESTED)
+  targetYear          String? // Graduation year e.g. "2024"
+  departments         String[]          @default([])
+  location            String?
+  scheduledDate       DateTime?
+  completedDate       DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
   // Dynamic Job Mela Builder Configs
   participatingCompanies Json? // List of companies with name, logo, roles, etc.
@@ -2419,9 +2505,9 @@ model CampusDrive {
   hostName               String?
   hostLogo               String?
 
-  employer  User                   @relation("EmployerCampusDrives", fields: [employerId], references: [id])
+  employer   User                   @relation("EmployerCampusDrives", fields: [employerId], references: [id])
   institutes CampusDriveInstitute[]
-  students  CampusDriveStudent[]
+  students   CampusDriveStudent[]
 }
 
 model CampusDriveInstitute {
@@ -2439,20 +2525,20 @@ model CampusDriveInstitute {
 }
 
 model CampusDriveStudent {
-  id        String   @id @default(cuid())
-  driveId   String
-  userId    String
-  
+  id      String @id @default(cuid())
+  driveId String
+  userId  String
+
   targetEmployerId String? // Added for Multi-Company Job Melas
   targetRole       String? // Added for Multi-Company Job Melas
-  
+
   status         String   @default("ELIGIBLE") // ELIGIBLE, INVITED, APPLIED, SHORTLISTED, TECH_INTERVIEW, HR_INTERVIEW, SELECTED, OFFERED, JOINED, REJECTED
   resumeUrl      String?
   offerLetterUrl String?
   ctc            String?
   atsScore       Float    @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   drive CampusDrive @relation(fields: [driveId], references: [id], onDelete: Cascade)
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -2489,3 +2575,253 @@ model ConsultancyCoordination {
   techwellAdmin User      @relation("AdminCoordination", fields: [techwellAdminId], references: [id])
 }
 
+model Customer {
+  id               String    @id @default(cuid())
+  email            String?   @unique
+  phone            String?   @unique
+  name             String
+  globalLeadScore  Float     @default(0)
+  lifetimeValue    Float     @default(0)
+  lastContactedAt  DateTime?
+  primarySource    String?
+  aiSummary        String?
+  aiNextBestAction String?
+  aiPriority       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  users             User[]
+  leads             Lead[]
+  candidateProfiles CandidateProfile[]
+  pipelines         PipelineDeal[]
+  callLogs          CallLog[]
+  proposals         Proposal[]
+  invoices          Invoice[]
+  tags              String[]           @default([])
+  customFields      Json?
+  assignedToId      String?
+  assignee          User?              @relation("AssignedCustomers", fields: [assignedToId], references: [id])
+  followUpTasks     FollowUpTask[]
+  communicationLogs CommunicationLog[]
+  agreements        ClientAgreement[]
+}
+
+model Pipeline {
+  id        String          @id @default(cuid())
+  name      String
+  vertical  String
+  isActive  Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  stages    PipelineStage[]
+  deals     PipelineDeal[]
+}
+
+model PipelineStage {
+  id         String         @id @default(cuid())
+  pipelineId String
+  name       String
+  orderIndex Int
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  pipeline   Pipeline       @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  deals      PipelineDeal[]
+}
+
+model PipelineDeal {
+  id                String        @id @default(cuid())
+  customerId        String
+  pipelineId        String
+  stageId           String
+  title             String
+  value             Float         @default(0)
+  probability       Int           @default(0)
+  status            String        @default("OPEN") // OPEN, WON, LOST
+  assignedTo        String?
+  expectedCloseDate DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  customer          Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  pipeline          Pipeline      @relation(fields: [pipelineId], references: [id])
+  stage             PipelineStage @relation(fields: [stageId], references: [id])
+}
+
+model CallLog {
+  id           String   @id @default(cuid())
+  customerId   String
+  agentId      String?
+  duration     Int      @default(0) // seconds
+  direction    String   @default("OUTBOUND") // INBOUND, OUTBOUND
+  status       String   @default("COMPLETED")
+  recordingUrl String?
+  aiSummary    String?
+  notes        String?
+  timestamp    DateTime @default(now())
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Proposal {
+  id         String    @id @default(cuid())
+  customerId String
+  title      String
+  fileUrl    String?
+  status     String    @default("DRAFT") // DRAFT, SENT, ACCEPTED, REJECTED
+  value      Float     @default(0)
+  validUntil DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id         String    @id @default(cuid())
+  customerId String
+  invoiceNum String    @unique
+  amount     Float
+  status     String    @default("UNPAID") // UNPAID, PAID, CANCELLED
+  dueDate    DateTime?
+  fileUrl    String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model FollowUpTask {
+  id          String    @id @default(cuid())
+  leadId      String?
+  customerId  String?
+  title       String
+  description String?
+  dueDate     DateTime
+  status      String    @default("PENDING")
+  assignedTo  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lead        Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model CommunicationLog {
+  id         String    @id @default(cuid())
+  leadId     String?
+  customerId String?
+  type       String
+  direction  String
+  status     String
+  content    String?
+  metadata   Json?
+  timestamp  DateTime  @default(now())
+  lead       Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+
+model AgreementTemplate {
+  id          String   @id @default(cuid())
+  vertical    String
+  title       String
+  content     String   // HTML or rich text template
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  agreements  ClientAgreement[]
+}
+
+model LegalClause {
+  id          String   @id @default(cuid())
+  title       String
+  category    String   // NDA, SLA, REFUND, IP, etc.
+  content     String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ClientAgreement {
+  id                String   @id @default(cuid())
+  agreementNum      String   @unique
+  customerId        String
+  templateId        String?
+  vertical          String
+  title             String
+  status            String   @default("DRAFT") // DRAFT, SENT, SIGNED, ACTIVE, EXPIRED, RENEWED, CANCELLED
+  content           String   // The full rich text content
+  totalValue        Float    @default(0)
+  taxPercentage     Float    @default(0)
+  taxAmount         Float    @default(0)
+  grandTotal        Float    @default(0)
+  validFrom         DateTime?
+  validUntil        DateTime?
+  pdfUrl            String?
+  clientSignature   String?  // Base64 or URL
+  clientSignedAt    DateTime?
+  clientIp          String?
+  adminSignature    String?
+  adminSignedAt     DateTime?
+  adminId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  customer          Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  template          AgreementTemplate? @relation(fields: [templateId], references: [id])
+  milestones        AgreementMilestone[]
+  versions          AgreementVersion[]
+}
+
+model AgreementMilestone {
+  id            String   @id @default(cuid())
+  agreementId   String
+  title         String
+  description   String?
+  amount        Float
+  dueDate       DateTime?
+  status        String   @default("PENDING") // PENDING, COMPLETED, INVOICED, PAID
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  agreement     ClientAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+}
+
+model AgreementVersion {
+  id            String   @id @default(cuid())
+  agreementId   String
+  versionNum    Int
+  content       String
+  changes       String?
+  createdAt     DateTime @default(now())
+
+  agreement     ClientAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+}
+
+
+model SeoMetadata {
+  id          String   @id @default(cuid())
+  path        String   @unique
+  title       String?
+  description String?
+  keywords    String?
+  canonical   String?
+  ogImage     String?
+  noIndex     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RedirectRule {
+  id          String   @id @default(cuid())
+  source      String   @unique
+  destination String
+  permanent   Boolean  @default(true) // 301 if true, 302 if false
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SeoAnalytics {
+  id          String   @id @default(cuid())
+  path        String
+  type        String   // e.g., "404", "SLOW_LOAD"
+  userAgent   String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+}

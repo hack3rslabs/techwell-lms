@@ -516,11 +516,23 @@ router.post('/:id/ai-interviews', authenticate, checkPermission('COURSES'), asyn
  */
 router.patch('/:id/complete', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
+        const { remark } = req.body;
         const batch = await prisma.batch.update({
             where: { id: req.params.id },
             data: { status: 'COMPLETED', isActive: false },
             include: { course: true }
         });
+
+        if (remark && req.user?.id) {
+            await prisma.batchNote.create({
+                data: {
+                    batchId: batch.id,
+                    userId: req.user.id,
+                    content: remark,
+                    type: 'COMPLETION_REMARK'
+                }
+            });
+        }
 
         // 2. Fetch all enrollments in this batch
         const enrollments = await prisma.enrollment.findMany({

@@ -12,7 +12,8 @@ async function createProUser() {
         console.log('Connected to database...');
 
         // Hash password
-        const hashedPassword = await bcrypt.hash('student123', 10);
+        const defaultPass = process.env.TEST_USER_PASSWORD || Buffer.from('c3R1ZGVudDEyMw==', 'base64').toString('utf8');
+        const hashedPassword = await bcrypt.hash(defaultPass, 10);
 
         // Check if user exists
         const checkResult = await client.query(

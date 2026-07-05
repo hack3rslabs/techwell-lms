@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle2, ArrowRight, ShieldCheck, Cpu, Code2, Cloud, Megaphone, Laptop, ArrowUpRight, Bot } from 'lucide-react'
 import Image from 'next/image'
+import DOMPurify from 'isomorphic-dompurify'
 
 import CyberSecurityLandingPage from '@/components/services/CyberSecurityLandingPage'
 import ITSolutionsLandingPage from '@/components/services/ITSolutionsLandingPage'
@@ -249,7 +250,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               </div>
               <p 
                 className="text-slate-600 dark:text-slate-300 leading-loose text-[17px] font-light"
-                dangerouslySetInnerHTML={{ __html: data.content.introduction }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.introduction) }}
               />
             </div>
 
@@ -265,7 +266,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               </div>
               <p 
                 className="text-slate-600 dark:text-slate-300 leading-loose text-[17px] font-light"
-                dangerouslySetInnerHTML={{ __html: data.content.expertise }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.expertise) }}
               />
             </div>
 
@@ -295,7 +296,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               </div>
               <p 
                 className="text-slate-600 dark:text-slate-300 leading-loose text-[17px] font-light"
-                dangerouslySetInnerHTML={{ __html: data.content.methodology }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.methodology) }}
               />
             </div>
 
@@ -306,7 +307,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               </h2>
               <p 
                 className="text-slate-700 dark:text-slate-300 leading-relaxed text-[17px]"
-                dangerouslySetInnerHTML={{ __html: data.content.conclusion }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.conclusion) }}
               />
             </div>
           </div>

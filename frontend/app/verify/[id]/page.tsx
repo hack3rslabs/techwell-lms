@@ -106,22 +106,24 @@ export default function VerifyCertificatePage() {
         setIsExporting(true)
 
         try {
-            // Create a printable version
-            const printWindow = window.open('', '_blank')
+            const certHtml = generateCertificateHTML(certificate, getVerificationUrl())
+            const blob = new Blob([certHtml], { type: 'text/html' })
+            const url = URL.createObjectURL(blob)
+            
+            const printWindow = window.open(url, '_blank')
             if (!printWindow) {
                 alert('Please allow pop-ups to download the certificate')
                 setIsExporting(false)
                 return
             }
 
-            const certHtml = generateCertificateHTML(certificate, getVerificationUrl())
-            printWindow.document.write(certHtml)
-            printWindow.document.close()
-
             // Wait for content to load, then trigger print
             printWindow.onload = () => {
                 printWindow.print()
-                printWindow.onafterprint = () => printWindow.close()
+                printWindow.onafterprint = () => {
+                    printWindow.close()
+                    URL.revokeObjectURL(url)
+                }
             }
         } catch (error) {
             console.error('Failed to generate PDF:', error)

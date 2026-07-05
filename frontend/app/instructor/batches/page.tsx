@@ -75,7 +75,7 @@ export default function BatchesPage() {
                 api.get('/trainer/batches'),
                 api.get('/courses/my-courses')
             ])
-            setBatches(batchesRes.data)
+            setBatches(batchesRes.data || [])
             setCourses(coursesRes.data || [])
         } catch (error) {
             console.error('Failed to fetch data:', error)

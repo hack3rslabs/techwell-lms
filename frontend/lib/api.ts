@@ -249,10 +249,14 @@ export const paymentApi = {
 export const certificateApi = {
     // Certificates
     getAll: () => api.get('/certificates'),
+    getStats: () => api.get('/certificates/analytics/stats'),
+    getMyCertificates: () => api.get('/certificates/me'),
     getById: (id: string) => api.get(`/certificates/${id}`),
     verify: (uniqueId: string) => api.get(`/certificates/verify/${uniqueId}`),
     generate: (data: { userId: string; courseId: string; enrollmentId: string; grade?: string; score?: number }) =>
         api.post('/certificates/generate', data),
+    generateBulk: (data: { courseId?: string; batchId?: string; studentIds?: string[]; userIds?: string[]; grade?: string; templateId?: string }) =>
+        api.post('/certificates/generate-bulk', data),
     invalidate: (id: string) => api.put(`/certificates/${id}/invalidate`),
 
     // Settings
@@ -269,6 +273,8 @@ export const certificateApi = {
         instituteLogoUrl?: string;
         stampUrl?: string;
         stampPosition?: string;
+        approvalRequired?: boolean;
+        autoIssueOnCompletion?: boolean;
     }) => api.put('/certificates/admin/settings', data),
 
     // Templates
@@ -489,7 +495,7 @@ export const batchesApi = {
     getById: (id: string) => api.get(`/batches/${id}`),
     create: (data: any) => api.post('/batches', data),
     update: (id: string, data: any) => api.put(`/batches/${id}`, data),
-    complete: (id: string) => api.patch(`/batches/${id}/complete`),
+    complete: (id: string, data?: any) => api.patch(`/batches/${id}/complete`, data),
     getStudents: (id: string) => api.get(`/batches/${id}/students`),
     getAvailableStudents: (id: string) => api.get(`/batches/${id}/available-students`),
     addStudents: (id: string, data: { studentIds: string[] }) => api.post(`/batches/${id}/students`, data),

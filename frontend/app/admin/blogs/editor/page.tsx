@@ -48,7 +48,12 @@ function BlogEditorContent() {
         status: 'DRAFT' as string,
         tags: '',
         coverImage: '',
-        category: ''
+        category: '',
+        metaTitle: '',
+        metaDescription: '',
+        canonicalUrl: '',
+        scheduledPublishAt: '',
+        autoArchiveAt: ''
     })
 
     // Load existing blog for editing
@@ -64,9 +69,14 @@ function BlogEditorContent() {
                         content: blog.content,
                         excerpt: blog.summary || '',
                         status: blog.status,
-                        tags: blog.tags ? blog.tags.join(', ') : '',
+                        tags: Array.isArray(blog.tags) ? blog.tags.join(', ') : (typeof blog.tags === 'string' ? blog.tags : ''),
                         coverImage: blog.coverImage || '',
-                        category: blog.category || ''
+                        category: blog.category || '',
+                        metaTitle: blog.metaTitle || '',
+                        metaDescription: blog.metaDescription || '',
+                        canonicalUrl: blog.canonicalUrl || '',
+                        scheduledPublishAt: blog.scheduledPublishAt ? new Date(blog.scheduledPublishAt).toISOString().slice(0, 16) : '',
+                        autoArchiveAt: blog.autoArchiveAt ? new Date(blog.autoArchiveAt).toISOString().slice(0, 16) : ''
                     })
                 })
                 .catch(() => toast.error("Failed to load blog post"))
@@ -134,7 +144,12 @@ function BlogEditorContent() {
                 status: statusOverride || formData.status,
                 coverImage: formData.coverImage,
                 category: formData.category,
-                tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : []
+                tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
+                metaTitle: formData.metaTitle,
+                metaDescription: formData.metaDescription,
+                canonicalUrl: formData.canonicalUrl,
+                scheduledPublishAt: formData.scheduledPublishAt ? new Date(formData.scheduledPublishAt).toISOString() : null,
+                autoArchiveAt: formData.autoArchiveAt ? new Date(formData.autoArchiveAt).toISOString() : null
             }
             if (formData.id) {
                 await api.put(`/blogs/${formData.id}`, payload)
@@ -143,6 +158,7 @@ function BlogEditorContent() {
                 const res = await api.post('/blogs', payload)
                 setFormData(prev => ({ ...prev, id: res.data.id }))
                 toast.success('Blog created successfully!')
+                router.replace(`/admin/blogs/editor?id=${res.data.id}`)
             }
             if (statusOverride) {
                 setFormData(prev => ({ ...prev, status: statusOverride }))
@@ -168,45 +184,44 @@ function BlogEditorContent() {
     }
 
     return (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-slate-950 overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex flex-col bg-[#f8fafc] dark:bg-[#0f172a] overflow-hidden selection:bg-blue-200 dark:selection:bg-blue-900 font-sans">
             {/* Top Toolbar */}
-            <div className="sticky top-0 z-50 border-b bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-sm">
-                <div className="flex items-center justify-between px-4 py-2 gap-3">
+            <div className="sticky top-0 z-50 border-b border-white/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.03)]">
+                <div className="flex items-center justify-between px-6 py-3 gap-3">
                     {/* Left: back + meta info */}
-                    <div className="flex items-center gap-3 min-w-0">
-                        <Button variant="ghost" size="sm" onClick={() => router.push('/admin/blogs')} className="shrink-0">
-                            <ArrowLeft className="h-4 w-4 mr-1" />
-                            Blogs
+                    <div className="flex items-center gap-4 min-w-0">
+                        <Button variant="ghost" size="sm" onClick={() => router.push('/admin/blogs')} className="shrink-0 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full transition-all">
+                            <ArrowLeft className="h-4 w-4 mr-1.5" />
+                            Back
                         </Button>
-                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                            <span className="flex items-center gap-1">
-                                <FileText className="h-3 w-3" />
+                        <div className="h-5 w-px bg-slate-300 dark:bg-slate-700" />
+                        <div className="flex items-center gap-3 text-[13px] font-medium text-slate-500 dark:text-slate-400 flex-wrap">
+                            <span className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2.5 py-1 rounded-full shadow-sm border border-slate-200 dark:border-slate-700">
+                                <FileText className="h-3.5 w-3.5 text-blue-500" />
                                 {wordCount} words
                             </span>
-                            <span>·</span>
-                            <span>{charCount} chars</span>
-                            <span>·</span>
-                            <span>~{readingTime} min read</span>
+                            <span className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2.5 py-1 rounded-full shadow-sm border border-slate-200 dark:border-slate-700">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                ~{readingTime} min read
+                            </span>
                         </div>
                         <Badge
-                            variant={formData.status === 'PUBLISHED' ? 'default' : 'secondary'}
-                            className="shrink-0 text-xs"
+                            className={`shrink-0 text-[11px] uppercase tracking-wider px-2 py-0.5 shadow-sm ${formData.status === 'PUBLISHED' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 text-white border-none' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-none'}`}
                         >
                             {formData.status}
                         </Badge>
                     </div>
 
                     {/* Right: actions */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setPreviewMode(!previewMode)}
-                            className="gap-1.5"
+                            className="gap-1.5 rounded-full border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all"
                         >
-                            {previewMode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                            {previewMode ? 'Edit' : 'Preview'}
+                            {previewMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            {previewMode ? 'Edit Mode' : 'Preview'}
                         </Button>
 
                         <Button
@@ -214,9 +229,9 @@ function BlogEditorContent() {
                             size="sm"
                             onClick={() => handleSave('DRAFT')}
                             disabled={isSaving}
-                            className="gap-1.5"
+                            className="gap-1.5 rounded-full border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all"
                         >
-                            <Save className="h-3.5 w-3.5" />
+                            <Save className="h-4 w-4" />
                             Save Draft
                         </Button>
 
@@ -224,58 +239,59 @@ function BlogEditorContent() {
                             size="sm"
                             onClick={() => handleSave('PUBLISHED')}
                             disabled={isSaving}
-                            className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5"
+                            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white gap-1.5 rounded-full shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] transition-all hover:-translate-y-0.5 px-6"
                         >
-                            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                            Publish
+                            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                            Publish Post
                         </Button>
                     </div>
                 </div>
 
                 {/* Formatting toolbar - only in edit mode */}
                 {!previewMode && (
-                    <div className="flex flex-wrap items-center gap-1 px-4 py-1.5 border-t bg-slate-50/80 dark:bg-slate-800/50">
+                    <div className="flex flex-wrap items-center gap-1 px-6 py-2 border-t border-slate-200/60 dark:border-slate-700/60 bg-white/40 dark:bg-slate-900/40">
                         {/* AI Toggle */}
-
-                        {/* AI */}
                         <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={() => setShowAiPanel(!showAiPanel)}
-                            className="h-7 px-2 gap-1.5 text-xs font-medium text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950"
+                            className="h-8 px-4 gap-2 text-[13px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 hover:bg-purple-50 dark:hover:bg-purple-950/50 rounded-full border border-purple-200 dark:border-purple-800/30 transition-all shadow-sm"
                         >
-                            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                            AI Write
-                            <ChevronDown className={`w-3 h-3 transition-transform ${showAiPanel ? 'rotate-180' : ''}`} />
+                            <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
+                            AI Assistant
+                            <ChevronDown className={`w-3.5 h-3.5 text-purple-500 transition-transform duration-300 ${showAiPanel ? 'rotate-180' : ''}`} />
                         </Button>
                     </div>
                 )}
 
                 {/* AI Panel */}
                 {showAiPanel && !previewMode && (
-                    <div className="px-4 py-3 border-t bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Input
-                                placeholder="Topic: e.g. Breaking into DevOps in 2025"
-                                value={aiTopic}
-                                onChange={e => setAiTopic(e.target.value)}
-                                className="bg-white dark:bg-slate-800 h-8 text-xs w-80"
-                            />
+                    <div className="px-6 py-4 border-t border-purple-100 dark:border-purple-900/50 bg-gradient-to-b from-purple-50/80 to-white/90 dark:from-purple-950/40 dark:to-slate-900/90 backdrop-blur-md shadow-inner transition-all duration-500">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative">
+                                <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
+                                <Input
+                                    placeholder="Topic: e.g. Breaking into DevOps in 2025"
+                                    value={aiTopic}
+                                    onChange={e => setAiTopic(e.target.value)}
+                                    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur border-purple-200 dark:border-purple-800 focus:border-purple-400 focus:ring-purple-400/20 pl-9 h-10 text-sm w-96 rounded-xl shadow-sm transition-all hover:shadow-md"
+                                />
+                            </div>
                             <Input
                                 placeholder="Keywords (comma separated)"
                                 value={aiKeywords}
                                 onChange={e => setAiKeywords(e.target.value)}
-                                className="bg-white dark:bg-slate-800 h-8 text-xs w-64"
+                                className="bg-white/80 dark:bg-slate-800/80 backdrop-blur border-purple-200 dark:border-purple-800 focus:border-purple-400 focus:ring-purple-400/20 h-10 text-sm w-72 rounded-xl shadow-sm transition-all hover:shadow-md"
                             />
                             <Button
                                 type="button"
                                 onClick={handleAiGenerate}
                                 disabled={isGeneratingAi}
                                 size="sm"
-                                className="bg-purple-600 hover:bg-purple-700 text-white h-8 text-xs"
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 px-6 rounded-xl shadow-[0_4px_14px_0_rgba(168,85,247,0.39)] hover:shadow-[0_6px_20px_rgba(168,85,247,0.23)] transition-all hover:-translate-y-0.5"
                             >
-                                {isGeneratingAi ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Generating...</> : <><Sparkles className="w-3.5 h-3.5 mr-1.5" />Generate with AI</>}
+                                {isGeneratingAi ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Generating Magic...</> : <><Sparkles className="w-4 h-4 mr-2" />Generate Article</>}
                             </Button>
                         </div>
                     </div>
@@ -283,42 +299,44 @@ function BlogEditorContent() {
             </div>
 
             {/* Main content area */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden relative">
                 {/* Editor / Preview */}
-                <div className="flex-1 overflow-y-auto">
-                    <div className="max-w-4xl mx-auto px-6 py-10">
+                <div className="flex-1 overflow-y-auto scroll-smooth">
+                    <div className="max-w-4xl mx-auto px-6 py-12">
                         {/* Cover image */}
                         {formData.coverImage && (
-                            <div className="mb-8 relative rounded-2xl overflow-hidden shadow-lg">
+                            <div className="mb-10 relative rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] group transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.16)] border border-slate-100 dark:border-slate-800">
                                 <Image
                                     src={getFullImageUrl(formData.coverImage)}
                                     alt="Cover"
                                     width={1200}
                                     height={400}
-                                    className="w-full h-56 object-cover"
+                                    className="w-full h-72 object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
                                 {!previewMode && (
-                                    <button
-                                        onClick={() => setFormData(prev => ({ ...prev, coverImage: '' }))}
-                                        className="absolute top-3 right-3 bg-black/60 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-black/80 transition-colors"
-                                    >
-                                        Remove
-                                    </button>
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                        <button
+                                            onClick={() => setFormData(prev => ({ ...prev, coverImage: '' }))}
+                                            className="bg-white/20 hover:bg-red-500 backdrop-blur-md text-white text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-xl"
+                                        >
+                                            Remove Cover
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         )}
 
                         {/* Title */}
                         {previewMode ? (
-                            <h1 className="text-4xl font-bold text-slate-900 dark:text-white leading-tight mb-4">
+                            <h1 className="text-5xl font-extrabold text-slate-900 dark:text-white leading-[1.1] mb-6 tracking-tight">
                                 {formData.title || 'Untitled Post'}
                             </h1>
                         ) : (
                             <textarea
                                 value={formData.title}
                                 onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                                placeholder="Write your compelling blog title here..."
-                                className="w-full text-4xl font-bold text-slate-900 dark:text-white bg-transparent border-none outline-none resize-none leading-tight mb-4 placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                                placeholder="Post Title..."
+                                className="w-full text-5xl font-extrabold text-slate-900 dark:text-white bg-transparent border-none outline-none resize-none leading-[1.1] mb-6 tracking-tight placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-all focus:placeholder:opacity-50"
                                 rows={2}
                             />
                         )}
@@ -326,7 +344,7 @@ function BlogEditorContent() {
                         {/* Excerpt */}
                         {previewMode ? (
                             formData.excerpt && (
-                                <p className="text-xl text-slate-500 dark:text-slate-400 leading-relaxed mb-8 border-l-4 border-blue-500 pl-4">
+                                <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 border-l-4 border-indigo-500 pl-6 py-2 bg-gradient-to-r from-indigo-50/50 to-transparent dark:from-indigo-900/10 rounded-r-2xl">
                                     {formData.excerpt}
                                 </p>
                             )
@@ -334,18 +352,18 @@ function BlogEditorContent() {
                             <textarea
                                 value={formData.excerpt}
                                 onChange={e => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                                placeholder="Write a short excerpt or summary (shown in blog listings)..."
-                                className="w-full text-lg text-slate-500 dark:text-slate-400 bg-transparent border-none outline-none resize-none leading-relaxed mb-8 placeholder:text-slate-300 dark:placeholder:text-slate-600 border-l-4 border-blue-200 pl-4"
+                                placeholder="Add a captivating summary..."
+                                className="w-full text-xl text-slate-600 dark:text-slate-400 bg-transparent border-none outline-none resize-none leading-relaxed mb-10 placeholder:text-slate-400/60 dark:placeholder:text-slate-600 border-l-4 border-indigo-200 focus:border-indigo-500 pl-6 py-2 transition-all"
                                 rows={2}
                             />
                         )}
 
-                        <hr className="border-slate-200 dark:border-slate-700 mb-8" />
+                        <hr className="border-slate-200 dark:border-slate-800/60 mb-10" />
 
                         {/* Content Editor / Preview */}
                         {previewMode ? (
                             <div
-                                className="prose prose-lg dark:prose-invert max-w-none leading-relaxed text-slate-800 dark:text-slate-200"
+                                className="prose prose-xl prose-slate dark:prose-invert max-w-none leading-loose text-slate-800 dark:text-slate-200 prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-2xl prose-img:shadow-lg"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formData.content || '<p class="text-slate-400">No content yet...</p>') }}
                             />
                         ) : (
@@ -358,37 +376,41 @@ function BlogEditorContent() {
                 </div>
 
                 {/* Right Sidebar - Meta */}
-                <div className={`w-72 border-l bg-slate-50/50 dark:bg-slate-900/50 overflow-y-auto shrink-0 transition-all duration-300 ${showMeta ? '' : 'hidden'}`}>
-                    <div className="p-4 space-y-5">
+                <div className={`w-80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-l border-white/20 dark:border-slate-700/50 overflow-y-auto shrink-0 transition-all duration-300 shadow-[[-10px_0_30px_rgba(0,0,0,0.03)]] ${showMeta ? 'translate-x-0' : 'translate-x-full absolute right-0 h-full'}`}>
+                    <div className="p-6 space-y-8">
                         {/* Sidebar header */}
-                        <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-sm text-slate-700 dark:text-slate-300">Post Settings</h3>
-                            <button onClick={() => setShowMeta(false)} className="text-xs text-muted-foreground hover:text-foreground">Hide</button>
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-700/60">
+                            <h3 className="font-bold text-base bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">Settings & SEO</h3>
+                            <button onClick={() => setShowMeta(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors bg-slate-100 dark:bg-slate-800 p-1.5 rounded-full">
+                                <ArrowLeft className="h-4 w-4 rotate-180" />
+                            </button>
                         </div>
 
                         {/* Status */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Status</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Status</label>
                             <Select value={formData.status} onValueChange={v => setFormData(prev => ({ ...prev, status: v }))}>
-                                <SelectTrigger className="h-9 text-sm">
+                                <SelectTrigger className="h-10 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-indigo-500/20">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="rounded-xl shadow-xl border-slate-100 dark:border-slate-700">
                                     <SelectItem value="DRAFT">📝 Draft</SelectItem>
+                                    <SelectItem value="REVIEW">👀 In Review</SelectItem>
                                     <SelectItem value="PUBLISHED">✅ Published</SelectItem>
+                                    <SelectItem value="SCHEDULED">⏰ Scheduled</SelectItem>
                                     <SelectItem value="ARCHIVED">📦 Archived</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
                         {/* Category */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Category</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Category</label>
                             <Select value={formData.category} onValueChange={v => setFormData(prev => ({ ...prev, category: v }))}>
-                                <SelectTrigger className="h-9 text-sm">
+                                <SelectTrigger className="h-10 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-indigo-500/20">
                                     <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="rounded-xl shadow-xl border-slate-100 dark:border-slate-700">
                                     {BLOG_CATEGORIES.map(cat => (
                                         <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                     ))}
@@ -397,25 +419,25 @@ function BlogEditorContent() {
                         </div>
 
                         {/* Tags */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Tags</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Tags</label>
                             <Input
                                 value={formData.tags}
                                 onChange={e => setFormData(prev => ({ ...prev, tags: e.target.value }))}
                                 placeholder="Tech, Career, Interview..."
-                                className="h-9 text-sm"
+                                className="h-10 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-indigo-500/20"
                             />
-                            <p className="text-[11px] text-muted-foreground">Comma separated</p>
+                            <p className="text-[10px] text-slate-400">Comma separated for better discovery</p>
                         </div>
 
                         {/* Cover Image */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
-                                <ImageIcon className="h-3 w-3" />
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                <ImageIcon className="h-3.5 w-3.5" />
                                 Cover Image
                             </label>
-                            <div className="space-y-2">
-                                <label className="flex items-center justify-center h-20 w-full border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:border-blue-400 transition-colors text-xs text-muted-foreground hover:text-blue-500">
+                            <div className="space-y-3">
+                                <label className="flex items-center justify-center h-24 w-full border-2 border-dashed border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-all duration-300 text-sm text-indigo-500 hover:text-indigo-600 font-medium shadow-inner">
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -424,67 +446,101 @@ function BlogEditorContent() {
                                         className="hidden"
                                     />
                                     {isUploadingCover ? (
-                                        <span className="flex items-center gap-1.5"><Loader2 className="h-4 w-4 animate-spin" />Uploading...</span>
+                                        <span className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" />Uploading...</span>
                                     ) : (
-                                        <span className="flex flex-col items-center gap-1">
-                                            <ImageIcon className="h-5 w-5 text-slate-400" />
-                                            Click to upload
+                                        <span className="flex flex-col items-center gap-1.5">
+                                            <ImageIcon className="h-6 w-6 opacity-60" />
+                                            Upload High-Res Cover
                                         </span>
                                     )}
                                 </label>
                                 {formData.coverImage && (
-                                    <div className="relative rounded-lg overflow-hidden">
+                                    <div className="relative rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700 group">
                                         <Image
                                             src={getFullImageUrl(formData.coverImage)}
                                             alt="Cover"
                                             width={280}
                                             height={120}
-                                            className="w-full h-28 object-cover"
+                                            className="w-full h-32 object-cover"
                                         />
-                                        <button
-                                            onClick={() => setFormData(prev => ({ ...prev, coverImage: '' }))}
-                                            className="absolute top-2 right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-medium"
-                                        >Remove</button>
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button
+                                                onClick={() => setFormData(prev => ({ ...prev, coverImage: '' }))}
+                                                className="bg-red-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg hover:bg-red-600 transform hover:scale-105 transition-all"
+                                            >Remove</button>
+                                        </div>
                                     </div>
                                 )}
-                                <p className="text-[10px] text-muted-foreground">Recommended: 1200×630px</p>
+                            </div>
+                        </div>
+
+                        <hr className="my-6 border-slate-200/60 dark:border-slate-700/60" />
+
+                        {/* SEO Optimization */}
+                        <div className="space-y-4">
+                            <label className="text-[11px] font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-teal-500 uppercase tracking-widest flex items-center gap-1.5">
+                                <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> SEO Magic
+                            </label>
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-medium text-slate-500">Meta Title</label>
+                                <Input value={formData.metaTitle} onChange={e => setFormData(prev => ({...prev, metaTitle: e.target.value}))} placeholder="60 chars max" className="h-10 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-emerald-500/20" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-medium text-slate-500">Meta Description</label>
+                                <textarea value={formData.metaDescription} onChange={e => setFormData(prev => ({...prev, metaDescription: e.target.value}))} placeholder="155 chars max" className="w-full text-sm p-3 border border-slate-200 dark:border-slate-700 rounded-xl h-24 bg-white dark:bg-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all resize-none" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-medium text-slate-500">Canonical URL</label>
+                                <Input value={formData.canonicalUrl} onChange={e => setFormData(prev => ({...prev, canonicalUrl: e.target.value}))} placeholder="https://techwell.com/..." className="h-10 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-emerald-500/20" />
+                            </div>
+                        </div>
+
+                        <hr className="my-6 border-slate-200/60 dark:border-slate-700/60" />
+
+                        {/* Scheduling */}
+                        <div className="space-y-4">
+                            <label className="text-[11px] font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500 uppercase tracking-widest">Publishing Timeline</label>
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-medium text-slate-500">Schedule Publish</label>
+                                <Input type="datetime-local" value={formData.scheduledPublishAt} onChange={e => setFormData(prev => ({...prev, scheduledPublishAt: e.target.value}))} className="h-10 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-blue-500/20" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-medium text-slate-500">Auto Archive</label>
+                                <Input type="datetime-local" value={formData.autoArchiveAt} onChange={e => setFormData(prev => ({...prev, autoArchiveAt: e.target.value}))} className="h-10 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-blue-500/20" />
                             </div>
                         </div>
 
                         {/* Stats */}
-                        <div className="bg-white dark:bg-slate-800 rounded-xl p-3 space-y-2 border">
-                            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">📊 Content Stats</p>
-                            <div className="grid grid-cols-2 gap-2 text-center">
-                                <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-2">
-                                    <p className="text-lg font-bold text-blue-600">{wordCount}</p>
-                                    <p className="text-[10px] text-muted-foreground">Words</p>
+                        <div className="bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-4 shadow-inner border border-slate-200 dark:border-slate-700/50 mt-8">
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Live Stats</p>
+                            <div className="grid grid-cols-2 gap-3 text-center">
+                                <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700">
+                                    <p className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-br from-blue-600 to-indigo-600">{wordCount}</p>
+                                    <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1">Words</p>
                                 </div>
-                                <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-2">
-                                    <p className="text-lg font-bold text-green-600">{readingTime}m</p>
-                                    <p className="text-[10px] text-muted-foreground">Read Time</p>
+                                <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700">
+                                    <p className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-br from-emerald-500 to-teal-500">{readingTime}m</p>
+                                    <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1">Read Time</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Quick save */}
-                        <div className="space-y-2 pt-2">
+                        <div className="space-y-3 pt-4 pb-20">
                             <Button
                                 onClick={() => handleSave()}
                                 disabled={isSaving}
-                                className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                                size="sm"
+                                className="w-full gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 text-white rounded-xl h-11 shadow-md hover:shadow-lg transition-all"
                             >
                                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                                Save Changes
+                                Save Draft
                             </Button>
                             <Button
                                 onClick={() => handleSave('PUBLISHED')}
                                 disabled={isSaving || formData.status === 'PUBLISHED'}
-                                variant="outline"
-                                className="w-full gap-2 text-green-700 border-green-300 hover:bg-green-50"
-                                size="sm"
+                                className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl h-11 shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)] transition-all hover:-translate-y-0.5 border-none"
                             >
-                                Publish Now
+                                Publish Post
                             </Button>
                         </div>
                     </div>
@@ -494,9 +550,10 @@ function BlogEditorContent() {
                 {!showMeta && (
                     <button
                         onClick={() => setShowMeta(true)}
-                        className="fixed right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-slate-800 border border-l-0 rounded-l-lg px-2 py-4 text-xs text-muted-foreground hover:text-foreground shadow-md"
+                        className="fixed right-4 bottom-8 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full p-4 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.16)] transform hover:-translate-y-1 transition-all duration-300 group"
                     >
-                        <Type className="h-4 w-4" />
+                        <Type className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                        <span className="sr-only">Open Settings</span>
                     </button>
                 )}
             </div>
