@@ -8,6 +8,7 @@ import { ArrowLeft, FileText, Send, Edit, Download, CheckCircle, Clock } from 'l
 import { Badge } from '@/components/ui/badge'
 import api from '@/lib/api'
 import { toast } from 'react-hot-toast'
+import DOMPurify from 'isomorphic-dompurify'
 
 export default function ViewAgreement() {
     const params = useParams()
@@ -100,7 +101,7 @@ export default function ViewAgreement() {
                 <CardContent className="p-10 bg-white min-h-[600px]">
                     <div 
                         className="prose prose-slate max-w-none"
-                        dangerouslySetInnerHTML={{ __html: agreement.content }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(agreement.content) }}
                     />
                 </CardContent>
             </Card>
