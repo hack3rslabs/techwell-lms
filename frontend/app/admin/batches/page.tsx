@@ -12,6 +12,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
+import { Label } from '@/components/ui/label'
 import {
     Select,
     SelectContent,
@@ -24,6 +25,8 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
+    DialogDescription,
 } from '@/components/ui/dialog'
 import { batchesApi, courseApi, studentsApi } from '@/lib/api'
 import { useToast } from '@/components/ui/use-toast'
@@ -76,6 +79,8 @@ export default function BatchesPage() {
     const [selectedBatchForEdit, setSelectedBatchForEdit] = React.useState<BatchRecord | null>(null)
     const [editName, setEditName] = React.useState('')
     const [isUpdating, setIsUpdating] = React.useState(false)
+    const [completeBatchId, setCompleteBatchId] = React.useState<string | null>(null)
+    const [completionRemark, setCompletionRemark] = React.useState("")
 
     const handleEditClick = (batch: BatchRecord) => {
         setSelectedBatchForEdit(batch)
@@ -161,17 +166,16 @@ export default function BatchesPage() {
         }
     }, [])
     
-    const handleCompleteBatch = async (batchId: string) => {
-        if (!confirm("Are you sure you want to mark this batch as COMPLETED? This will automatically generate certificates for all students and cannot be undone.")) {
-            return;
-        }
-
+    const confirmCompleteBatch = async () => {
+        if (!completeBatchId) return;
         try {
-            const res = await batchesApi.complete(batchId);
+            const res = await batchesApi.complete(completeBatchId, { remark: completionRemark });
             toast({
                 title: "Success",
                 description: res.data.message || "Batch completed successfully.",
             });
+            setCompleteBatchId(null);
+            setCompletionRemark("");
             fetchBatches(pagination.page);
         } catch (error: any) {
             console.error('Failed to complete batch:', error);
@@ -328,7 +332,7 @@ export default function BatchesPage() {
                                                         variant="ghost" 
                                                         size="sm" 
                                                         className="gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                                        onClick={() => handleCompleteBatch(batch.id)}
+                                                        onClick={() => setCompleteBatchId(batch.id)}
                                                     >
                                                         <CheckCircle2 className="h-4 w-4" />
                                                         Complete
@@ -480,6 +484,32 @@ export default function BatchesPage() {
                             </div>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={!!completeBatchId} onOpenChange={(open) => !open && setCompleteBatchId(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Complete Batch</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to mark this batch as COMPLETED? 
+                            This will automatically generate certificates for all eligible students. 
+                            This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Completion Remark / Note (Optional)</Label>
+                            <Input 
+                                placeholder="E.g. Final assessments cleared, all topics covered..."
+                                value={completionRemark}
+                                onChange={(e) => setCompletionRemark(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setCompleteBatchId(null)}>Cancel</Button>
+                        <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={confirmCompleteBatch}>Confirm & Complete</Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

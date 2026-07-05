@@ -25,6 +25,8 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             coursesCount,
             enrollmentsCount,
             interviewsCount,
+            leadsCount,
+            campusDrivesCount,
             revenueData
         ] = await Promise.all([
             // Only count users if permitted, else 0
@@ -40,6 +42,8 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             prisma.interview.count({
                 where: req.user.instituteId ? { user: { instituteId: req.user.instituteId } } : {}
             }),
+            prisma.lead.count(),
+            prisma.campusDrive.count(),
             // Only agg revenue if permitted, else 0
             rules.viewFinance ? prisma.payment.aggregate({
                 _sum: { amount: true },
@@ -65,6 +69,8 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             courses: coursesCount,
             enrollments: enrollmentsCount,
             interviews: interviewsCount,
+            leads: leadsCount,
+            campusDrives: campusDrivesCount,
             revenue: revenueData._sum.amount || 0,
             recentActivity: recentEnrollments
         });
@@ -312,6 +318,52 @@ router.patch('/enrollments/:id/status', authenticate, authorize('SUPER_ADMIN', '
             data: { status }
         });
         res.json({ enrollment });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/admin/students/available-for-batch
+ * @desc    Get all students enrolled in a course who are not assigned to a batch
+ * @access  Private/Admin
+ */
+router.get('/students/available-for-batch', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res, next) => {
+    try {
+        const { courseId } = req.query;
+        if (!courseId) {
+            return res.status(400).json({ error: 'Course ID is required' });
+        }
+
+        const enrollments = await prisma.enrollment.findMany({
+            where: {
+                courseId,
+                batchId: null,
+                status: 'ACTIVE'
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                    }
+                }
+            }
+        });
+
+        const students = enrollments.map(e => ({
+            id: e.user.id,
+            userId: e.user.id,
+            name: e.user.name,
+            email: e.user.email,
+            phone: e.user.phone,
+            progress: e.progress,
+            enrollmentStatus: e.status
+        }));
+
+        res.json({ students });
     } catch (error) {
         next(error);
     }

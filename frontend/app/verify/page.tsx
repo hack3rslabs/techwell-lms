@@ -48,7 +48,7 @@ export default function VerificationPortal() {
                 </div>
                 <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-3">Credential Verification</h1>
                 <p className="text-slate-500 max-w-lg mx-auto">
-                    Verify the authenticity of Techwell Consulting certificates. Enter the unique Certificate ID below.
+                    Verify the authenticity of Techwell Consulting certificates. Enter the unique Certificate ID or Registration ID below.
                 </p>
             </div>
 
@@ -58,7 +58,7 @@ export default function VerificationPortal() {
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                             <Input 
-                                placeholder="e.g. TW-CERT-1A2B3C4D" 
+                                placeholder="e.g. TW-CERT-1A2B3C4D or C3HLABS-123" 
                                 className="pl-10 h-12 bg-slate-50 border-slate-200 focus-visible:ring-slate-900 text-lg uppercase"
                                 value={searchId}
                                 onChange={(e) => setSearchId(e.target.value.toUpperCase())}

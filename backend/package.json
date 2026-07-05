@@ -12,7 +12,8 @@
         "db:prepare": "npm run db:generate && npm run db:push && npm run db:seed",
         "db:studio": "prisma studio",
         "build": "npm run db:generate",
-        "test": "jest"
+        "test": "jest",
+        "lint": "eslint src/**/*.js"
     },
     "dependencies": {
         "@google/generative-ai": "^0.24.1",
@@ -49,7 +50,10 @@
         "zod": "^3.24.1"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "cross-env": "^10.1.0",
+        "eslint": "^10.6.0",
+        "globals": "^17.7.0",
         "jest": "^30.4.2",
         "nodemon": "^3.1.9",
         "prisma": "6.12.0",

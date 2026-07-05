@@ -89,7 +89,6 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
     return (
         <div className="w-full prose-editor-container">
             <ReactQuill 
-                // @ts-expect-error - react-quill-new typings are missing ref
                 ref={quillRef}
                 theme="snow"
                 value={value}

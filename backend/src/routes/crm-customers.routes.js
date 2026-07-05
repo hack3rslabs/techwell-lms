@@ -5,6 +5,50 @@ const prisma = new PrismaClient();
 const { authenticate, checkPermission } = require('../middleware/auth');
 
 /**
+ * @route   GET /api/crm/customers
+ * @desc    Get all customers
+ * @access  Private
+ */
+router.get('/', authenticate, async (req, res) => {
+    try {
+        const customers = await prisma.customer.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(customers);
+    } catch (error) {
+        console.error('Error fetching customers:', error);
+        res.status(500).json({ error: 'Failed to fetch customers' });
+    }
+});
+
+/**
+ * @route   POST /api/crm/customers
+ * @desc    Create a new customer
+ * @access  Private
+ */
+router.post('/', authenticate, async (req, res) => {
+    try {
+        const { name, companyName, email, phone } = req.body;
+        if (!name) return res.status(400).json({ error: 'Name is required' });
+
+        // Concatenate company name if provided, or store as plain name
+        const finalName = companyName ? `${name} (${companyName})` : name;
+
+        const customer = await prisma.customer.create({
+            data: {
+                name: finalName,
+                email: email || undefined,
+                phone: phone || undefined
+            }
+        });
+        res.json(customer);
+    } catch (error) {
+        console.error('Error creating customer:', error);
+        res.status(500).json({ error: 'Failed to create customer' });
+    }
+});
+
+/**
  * @route   GET /api/crm/customers/:id/360-view
  * @desc    Get aggregated 360-degree view of a customer
  * @access  Private (Admin/Staff)

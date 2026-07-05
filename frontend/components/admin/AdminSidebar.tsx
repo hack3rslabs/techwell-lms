@@ -248,7 +248,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                         </div>
                     )}
                     {onToggleCollapse && (
-                        <Button variant="ghost" size="icon" onClick={onToggleCollapse} className="shrink-0 hidden md:flex">
+                        <Button variant="outline" size="icon" onClick={onToggleCollapse} className="shrink-0 hidden md:flex">
                             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                         </Button>
                     )}
@@ -356,14 +356,15 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                 </div>
 
                 {/* Footer */}
-                <div className="border-t p-3 flex-shrink-0">
+                <div className={cn("border-t p-3 flex-shrink-0", isCollapsed ? "flex justify-center" : "")}>
                     <Button
                         variant="ghost"
-                        className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+                        className={cn("text-red-500 hover:text-red-600 hover:bg-red-50", isCollapsed ? "w-10 h-10 p-0" : "w-full justify-start")}
                         onClick={logout}
+                        title="Sign Out"
                     >
-                        <LogOut className="h-5 w-5 mr-3" />
-                        Sign Out
+                        <LogOut className={cn("h-5 w-5", isCollapsed ? "" : "mr-3")} />
+                        {!isCollapsed && "Sign Out"}
                     </Button>
                 </div>
 

@@ -41,7 +41,8 @@ import {
 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportToCSV } from '@/lib/export-utils'
-import { certificateApi } from '@/lib/api'
+import { certificateApi, studentsApi, courseApi, batchesApi } from '@/lib/api'
+import { toast } from 'sonner'
 
 interface Certificate {
     id: string
@@ -110,6 +111,19 @@ export default function CertificatesPage() {
     const [newTemplate, setNewTemplate] = useState({ name: '', description: '', designUrl: '', isDefault: false })
     const [stats, setStats] = useState({ total: 0, issued: 0, pending: 0, revoked: 0, downloads: 0 })
 
+    // Batch Generation State
+    const [isBatchModalOpen, setIsBatchModalOpen] = useState(false)
+    const [generationType, setGenerationType] = useState<'COURSE' | 'BATCH'>('COURSE')
+    const [batchCourses, setBatchCourses] = useState<any[]>([])
+    const [selectedBatchCourse, setSelectedBatchCourse] = useState('')
+    const [selectedBatchId, setSelectedBatchId] = useState('')
+    const [selectedTemplateId, setSelectedTemplateId] = useState('')
+    const [batchStudents, setBatchStudents] = useState<any[]>([])
+    const [selectedBatchStudents, setSelectedBatchStudents] = useState<string[]>([])
+    const [isGeneratingBatch, setIsGeneratingBatch] = useState(false)
+    
+    const [batchesList, setBatchesList] = useState<any[]>([])
+
     // Fetch data on mount
     useEffect(() => {
         fetchData()
@@ -119,25 +133,112 @@ export default function CertificatesPage() {
         setIsLoading(true)
         try {
             const [certsRes, templatesRes, settingsRes, statsRes] = await Promise.all([
-                certificateApi.getAll(),
-                certificateApi.getTemplates(),
-                certificateApi.getSettings(),
-                fetch('/api/certificates/analytics/stats').then(r => r.json()) // Temporary inline fetch
+                certificateApi.getAll().catch(() => ({ data: { certificates: [] } })),
+                certificateApi.getTemplates().catch(() => ({ data: { templates: [] } })),
+                certificateApi.getSettings().catch(() => ({ data: { settings: null } })),
+                certificateApi.getStats().catch(() => ({ data: { total: 0, issued: 0, pending: 0, revoked: 0, downloads: 0 } }))
             ])
-            setCertificates(certsRes.data.certificates || [])
-            setTemplates(templatesRes.data.templates || [])
-            setSettings(settingsRes.data.settings)
-            if (statsRes && !statsRes.error) setStats(statsRes)
+            setCertificates(certsRes?.data?.certificates || [])
+            setTemplates(templatesRes?.data?.templates || [])
+            setSettings(settingsRes?.data?.settings)
+            if (statsRes?.data) setStats(statsRes.data)
         } catch (error) {
             console.error('Failed to fetch certificate data:', error)
-            // Use mock data as fallback
-            setCertificates([
-                { id: '1', uniqueId: 'CERT-2026-00001', studentName: 'John Doe', courseName: 'Advanced JavaScript', issueDate: '2026-01-15', isValid: true, status: 'ISSUED', downloads: 2 },
-                { id: '2', uniqueId: 'CERT-2026-00002', studentName: 'Jane Smith', courseName: 'React Fundamentals', issueDate: '2026-01-20', isValid: true, status: 'ISSUED', downloads: 0 },
-                { id: '3', uniqueId: 'CERT-2026-00003', studentName: 'Alice Wong', courseName: 'Cybersecurity 101', issueDate: '2026-01-22', isValid: false, status: 'PENDING', downloads: 0 }
-            ])
+            setCertificates([])
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    const openBatchModal = async () => {
+        setIsBatchModalOpen(true)
+        try {
+            const res = await courseApi.getAll()
+            setBatchCourses(res.data.courses || [])
+            const batchesRes = await batchesApi.getAll()
+            setBatchesList(batchesRes.data.batches || [])
+        } catch (error) {
+            console.error('Failed to fetch data for batch modal', error)
+        }
+    }
+
+    const handleCourseSelectForBatch = async (courseId: string) => {
+        setSelectedBatchCourse(courseId)
+        setBatchStudents([])
+        setSelectedBatchStudents([])
+        if (!courseId) return
+        
+        try {
+            const res = await studentsApi.getAll()
+            const allStudents = res.data.students || []
+            const enrolled = allStudents.filter((s: any) => s.courseId === courseId)
+            
+            const uniqueStudentsMap = new Map()
+            enrolled.forEach((s: any) => {
+                if (s.userId && !uniqueStudentsMap.has(s.userId)) {
+                    uniqueStudentsMap.set(s.userId, s)
+                }
+            })
+            const students = Array.from(uniqueStudentsMap.values())
+            setBatchStudents(students)
+            setSelectedBatchStudents(students.map((s: any) => s.userId))
+        } catch (error) {
+            console.error('Failed to fetch students for course', error)
+        }
+    }
+
+    const handleBatchSelect = async (batchId: string) => {
+        setSelectedBatchId(batchId)
+        setBatchStudents([])
+        setSelectedBatchStudents([])
+        if (!batchId) return
+        
+        try {
+            const res = await batchesApi.getStudents(batchId)
+            const students = res.data.data || []
+            const uniqueStudentsMap = new Map()
+            students.forEach((s: any) => {
+                if (s.id && !uniqueStudentsMap.has(s.id)) {
+                    uniqueStudentsMap.set(s.id, s)
+                }
+            })
+            const uniqueStudents = Array.from(uniqueStudentsMap.values())
+            setBatchStudents(uniqueStudents)
+            setSelectedBatchStudents(uniqueStudents.map((s: any) => s.id))
+        } catch (error) {
+            console.error('Failed to fetch students for batch', error)
+        }
+    }
+
+    const handleGenerateBatch = async () => {
+        const isReady = generationType === 'COURSE' ? selectedBatchCourse : selectedBatchId
+        if (!isReady || selectedBatchStudents.length === 0) return
+        
+        let courseIdForGeneration = selectedBatchCourse
+        if (generationType === 'BATCH') {
+            const batch = batchesList.find(b => b.id === selectedBatchId)
+            if (batch) courseIdForGeneration = batch.courseId
+        }
+        
+        setIsGeneratingBatch(true)
+        try {
+            const data = {
+                courseId: selectedBatchCourse || undefined,
+                batchId: selectedBatchId || undefined,
+                studentIds: selectedBatchStudents,
+                templateId: selectedTemplateId || undefined
+            }
+            const res = await certificateApi.generateBulk(data)
+            if (res.data) {
+                toast.success('Batch generation complete!')
+                setIsBatchModalOpen(false)
+                fetchData() // Refresh list
+            }
+        } catch (error) {
+            console.error('Batch generation failed', error)
+            toast.error('Failed to generate certificates')
+        } finally {
+            setIsGeneratingBatch(false)
         }
     }
 
@@ -353,10 +454,16 @@ export default function CertificatesPage() {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <Button variant="outline" onClick={handleExportAll}>
-                                <Download className="mr-2 h-4 w-4" />
-                                Export All
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button variant="default" onClick={openBatchModal}>
+                                    <Award className="mr-2 h-4 w-4" />
+                                    Batch Generate
+                                </Button>
+                                <Button variant="outline" onClick={handleExportAll}>
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Export All
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? (
@@ -463,6 +570,132 @@ export default function CertificatesPage() {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
+
+                    {/* Batch Generate Dialog */}
+                    <Dialog open={isBatchModalOpen} onOpenChange={setIsBatchModalOpen}>
+                        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle>Batch Generate Certificates</DialogTitle>
+                                <DialogDescription>Select a target and the students to generate certificates for.</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                                <div className="flex gap-4 mb-4">
+                                    <Button 
+                                        variant={generationType === 'COURSE' ? 'default' : 'outline'} 
+                                        onClick={() => { setGenerationType('COURSE'); setBatchStudents([]); setSelectedBatchStudents([]); setSelectedBatchCourse(''); setSelectedBatchId(''); }}
+                                    >
+                                        By Course
+                                    </Button>
+                                    <Button 
+                                        variant={generationType === 'BATCH' ? 'default' : 'outline'} 
+                                        onClick={() => { setGenerationType('BATCH'); setBatchStudents([]); setSelectedBatchStudents([]); setSelectedBatchCourse(''); setSelectedBatchId(''); }}
+                                    >
+                                        By Created Batch
+                                    </Button>
+                                </div>
+                            
+                                {generationType === 'COURSE' ? (
+                                    <div className="space-y-2">
+                                        <Label>Select Course</Label>
+                                        <select 
+                                            className="w-full h-10 px-3 rounded-md border bg-background"
+                                            value={selectedBatchCourse}
+                                            onChange={(e) => handleCourseSelectForBatch(e.target.value)}
+                                        >
+                                            <option value="">-- Select a course --</option>
+                                            {batchCourses.map(course => (
+                                                <option key={course.id} value={course.id}>{course.title}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Label>Select Batch</Label>
+                                        <select 
+                                            className="w-full h-10 px-3 rounded-md border bg-background"
+                                            value={selectedBatchId}
+                                            onChange={(e) => handleBatchSelect(e.target.value)}
+                                        >
+                                            <option value="">-- Select a batch --</option>
+                                            {batchesList.map(batch => (
+                                                <option key={batch.id} value={batch.id}>{batch.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                <div className="space-y-2 mt-4">
+                                    <Label>Select Template (Optional)</Label>
+                                    <select 
+                                        className="w-full h-10 px-3 rounded-md border bg-background"
+                                        value={selectedTemplateId}
+                                        onChange={(e) => setSelectedTemplateId(e.target.value)}
+                                    >
+                                        <option value="">-- Use Default Template --</option>
+                                        {templates.map(t => (
+                                            <option key={t.id} value={t.id}>{t.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {(selectedBatchCourse || selectedBatchId) && (
+                                    <div className="space-y-2 border rounded-md p-4 mt-4">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <Label>Eligible Students ({batchStudents.length})</Label>
+                                            <Button 
+                                                variant="outline" size="sm" 
+                                                onClick={() => setSelectedBatchStudents(
+                                                    selectedBatchStudents.length === batchStudents.length 
+                                                    ? [] 
+                                                    : batchStudents.map(s => s.id || s.userId)
+                                                )}
+                                            >
+                                                {selectedBatchStudents.length === batchStudents.length ? 'Deselect All' : 'Select All'}
+                                            </Button>
+                                        </div>
+                                        {batchStudents.length > 0 ? (
+                                            <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                                                {batchStudents.map(student => {
+                                                    const sId = student.id || student.userId;
+                                                    return (
+                                                    <div key={sId} className="flex items-center space-x-2">
+                                                        <Switch 
+                                                            checked={selectedBatchStudents.includes(sId)}
+                                                            onCheckedChange={(checked) => {
+                                                                if (checked) {
+                                                                    setSelectedBatchStudents([...selectedBatchStudents, sId])
+                                                                } else {
+                                                                    setSelectedBatchStudents(selectedBatchStudents.filter(id => id !== sId))
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Label>{student.name} ({student.email})</Label>
+                                                    </div>
+                                                )})}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground text-center py-4">No enrolled students found for this selection.</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setIsBatchModalOpen(false)}>Cancel</Button>
+                                <Button 
+                                    onClick={handleGenerateBatch} 
+                                    disabled={
+                                        (generationType === 'COURSE' && !selectedBatchCourse) || 
+                                        (generationType === 'BATCH' && !selectedBatchId) || 
+                                        selectedBatchStudents.length === 0 || 
+                                        isGeneratingBatch
+                                    }
+                                >
+                                    {isGeneratingBatch && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Generate {selectedBatchStudents.length} Certificates
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </TabsContent>
 
                 {/* TEMPLATES TAB */}
@@ -537,17 +770,26 @@ export default function CertificatesPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="aspect-[4/3] bg-muted rounded-lg flex items-center justify-center mb-4">
-                                        {template.previewUrl || template.designUrl ? (
-                                            <Image
-                                                src={template.previewUrl || template.designUrl}
-                                                alt={template.name}
-                                                width={200}
-                                                height={150}
-                                                className="max-h-full object-contain"
-                                            />
-                                        ) : (
-                                            <FileImage className="h-12 w-12 text-muted-foreground" />
-                                        )}
+                                        {(() => {
+                                            const src = template.previewUrl || template.designUrl;
+                                            if (src && (src.startsWith('http') || src.startsWith('/'))) {
+                                                return (
+                                                    <Image
+                                                        src={src}
+                                                        alt={template.name}
+                                                        width={200}
+                                                        height={150}
+                                                        className="max-h-full object-contain"
+                                                    />
+                                                )
+                                            }
+                                            return (
+                                                <div className="flex flex-col items-center text-muted-foreground">
+                                                    <FileImage className="h-12 w-12 mb-2 opacity-50" />
+                                                    <span className="text-xs">{src ? `Design: ${src}` : 'No Preview'}</span>
+                                                </div>
+                                            )
+                                        })()}
                                     </div>
                                     <div className="flex gap-2">
                                         {!template.isDefault && (

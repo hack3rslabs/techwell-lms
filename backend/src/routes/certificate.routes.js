@@ -84,8 +84,14 @@ router.get('/', authenticate, async (req, res, next) => {
  */
 router.get('/verify/:uniqueId', async (req, res, next) => {
     try {
-        const certificate = await prisma.certificate.findUnique({
-            where: { uniqueId: req.params.uniqueId },
+        const certificate = await prisma.certificate.findFirst({
+            where: {
+                OR: [
+                    { uniqueId: req.params.uniqueId },
+                    { user: { regId: req.params.uniqueId } }
+                ]
+            },
+            orderBy: { createdAt: 'desc' },
             select: {
                 uniqueId: true,
                 studentName: true,
@@ -96,7 +102,8 @@ router.get('/verify/:uniqueId', async (req, res, next) => {
                 grade: true,
                 isValid: true,
                 signatoryName: true,
-                signatoryTitle: true
+                signatoryTitle: true,
+                status: true
             }
         });
 
@@ -244,6 +251,99 @@ router.post('/generate', authenticate, async (req, res, next) => {
             message: status === 'PENDING' ? 'Certificate request submitted for approval' : 'Certificate generated successfully',
             certificate
         });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/certificates/generate-bulk
+ * @desc    Generate certificates for multiple users
+ * @access  Private/Admin
+ */
+router.post('/generate-bulk', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+    try {
+        const { courseId, batchId, userIds, studentIds, grade, templateId } = req.body;
+        
+        const finalUserIds = userIds || studentIds;
+        let finalCourseId = courseId;
+
+        if (!finalCourseId && batchId) {
+            const batch = await prisma.batch.findUnique({ where: { id: batchId } });
+            if (batch) finalCourseId = batch.courseId;
+        }
+        
+        if (!finalCourseId || !finalUserIds || !Array.isArray(finalUserIds)) {
+            return res.status(400).json({ error: 'courseId and an array of studentIds are required' });
+        }
+
+        const settings = await prisma.certificateSettings.findFirst() || {
+            prefix: 'CERT',
+            yearInId: true,
+            sequenceDigits: 5,
+            currentSequence: 0
+        };
+
+        const results = [];
+        let currentSeq = settings.currentSequence;
+
+        for (const userId of finalUserIds) {
+            // Check if already exists
+            const existing = await prisma.certificate.findFirst({
+                where: { userId, courseId: finalCourseId }
+            });
+
+            if (existing) {
+                results.push({ userId, status: 'skipped', reason: 'Certificate already exists for this course' });
+                continue;
+            }
+
+            // Get user, course and enrollment details
+            const [user, course, enrollment] = await Promise.all([
+                prisma.user.findUnique({ where: { id: userId } }),
+                prisma.course.findUnique({ where: { id: finalCourseId } }),
+                prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: finalCourseId } } })
+            ]);
+
+            if (!user || !course || !enrollment) {
+                results.push({ userId, status: 'failed', reason: 'User, Course or Enrollment not found' });
+                continue;
+            }
+
+            currentSeq++;
+            const yearStr = settings.yearInId ? `${new Date().getFullYear()}-` : '';
+            const seqStr = String(currentSeq).padStart(settings.sequenceDigits, '0');
+            const uniqueId = `${settings.prefix}-${yearStr}${seqStr}`;
+
+            const certificate = await prisma.certificate.create({
+                data: {
+                    uniqueId,
+                    userId: user.id,
+                    courseId: course.id,
+                    enrollmentId: enrollment.id,
+                    studentName: user.name,
+                    courseName: course.title,
+                    courseCategory: course.category || '',
+                    issueDate: new Date(),
+                    grade: grade || null,
+                    templateId: templateId || undefined,
+                    signatoryName: settings.defaultSignatoryName || 'Admin',
+                    status: 'ISSUED',
+                    isValid: true
+                }
+            });
+            results.push({ userId, status: 'success', certificateId: certificate.uniqueId });
+        }
+
+        // Update sequence
+        if (currentSeq > settings.currentSequence) {
+            await prisma.certificateSettings.update({
+                where: { id: settings.id },
+                data: { currentSequence: currentSeq }
+            });
+        }
+
+        res.status(201).json({ message: 'Bulk generation complete', results });
     } catch (error) {
         next(error);
     }

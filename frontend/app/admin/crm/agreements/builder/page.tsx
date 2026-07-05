@@ -7,10 +7,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Save, ArrowLeft, Send } from 'lucide-react'
-import axios from 'axios'
+import { Save, ArrowLeft, Send, Plus } from 'lucide-react'
+import api from '@/lib/api'
 import { toast } from 'react-hot-toast'
 import dynamic from 'next/dynamic'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 // Dynamically import react-quill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill-new'), {
@@ -25,6 +33,15 @@ export default function AgreementBuilder() {
 
     const [loading, setLoading] = useState(false)
     const [customers, setCustomers] = useState<any[]>([])
+    const [isAddClientOpen, setIsAddClientOpen] = useState(false)
+    
+    // Quick Add Client Form
+    const [newClient, setNewClient] = useState({
+        name: '',
+        companyName: '',
+        email: '',
+        phone: ''
+    })
     
     const [formData, setFormData] = useState({
         customerId: '',
@@ -51,17 +68,33 @@ export default function AgreementBuilder() {
 
     const fetchCustomers = async () => {
         try {
-            const res = await axios.get('/api/crm/customers')
-            // Assuming endpoint returns list of customers
+            const res = await api.get('/crm/customers')
             setCustomers(res.data)
         } catch (error) {
             console.error("Failed to fetch customers")
         }
     }
 
+    const handleCreateClient = async () => {
+        if (!newClient.name || !newClient.email) {
+            toast.error("Name and Email are required")
+            return
+        }
+        try {
+            const res = await api.post('/crm/customers', newClient)
+            toast.success("Client added successfully")
+            setCustomers([...customers, res.data])
+            setFormData(prev => ({ ...prev, customerId: res.data.id }))
+            setIsAddClientOpen(false)
+            setNewClient({ name: '', companyName: '', email: '', phone: '' })
+        } catch (error) {
+            toast.error("Failed to add client")
+        }
+    }
+
     const fetchAgreement = async (id: string) => {
         try {
-            const res = await axios.get(`/api/crm/agreements/${id}`)
+            const res = await api.get(`/crm/agreements/${id}`)
             const agr = res.data
             setFormData({
                 customerId: agr.customerId,
@@ -87,13 +120,14 @@ export default function AgreementBuilder() {
             const payload = { ...formData, status }
 
             if (agreementId) {
-                await axios.put(`/api/crm/agreements/${agreementId}`, payload)
+                await api.put(`/crm/agreements/${agreementId}`, payload)
                 toast.success("Agreement updated successfully")
+                router.push(`/admin/crm/agreements/${agreementId}`)
             } else {
-                await axios.post('/api/crm/agreements', payload)
+                const res = await api.post('/crm/agreements', payload)
                 toast.success("Agreement created successfully")
+                router.push(`/admin/crm/agreements/${res.data.id}`)
             }
-            router.push('/admin/crm/agreements')
         } catch (error: any) {
             console.error(error)
             toast.error(error.response?.data?.error || "Failed to save agreement")
@@ -137,18 +171,54 @@ export default function AgreementBuilder() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Select Client</Label>
+                                <div className="flex items-center justify-between">
+                                    <Label>Select Client</Label>
+                                    {!agreementId && (
+                                        <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="ghost" size="sm" className="h-6 px-2 text-primary">
+                                                    <Plus className="h-3 w-3 mr-1" /> Add New
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>Add New Client</DialogTitle>
+                                                    <DialogDescription>Quickly add a new client to build an agreement for them.</DialogDescription>
+                                                </DialogHeader>
+                                                <div className="space-y-4 py-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Client Name *</Label>
+                                                        <Input value={newClient.name} onChange={e => setNewClient(prev => ({...prev, name: e.target.value}))} />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Company Name</Label>
+                                                        <Input value={newClient.companyName} onChange={e => setNewClient(prev => ({...prev, companyName: e.target.value}))} />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Email *</Label>
+                                                        <Input type="email" value={newClient.email} onChange={e => setNewClient(prev => ({...prev, email: e.target.value}))} />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Phone</Label>
+                                                        <Input value={newClient.phone} onChange={e => setNewClient(prev => ({...prev, phone: e.target.value}))} />
+                                                    </div>
+                                                    <Button className="w-full" onClick={handleCreateClient}>Save Client</Button>
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
+                                    )}
+                                </div>
                                 <Select
                                     value={formData.customerId}
                                     onValueChange={(val) => setFormData(prev => ({ ...prev, customerId: val }))}
-                                    disabled={!!agreementId} // Don't allow changing client after creation
+                                    disabled={!!agreementId}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select a client..." />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {customers.map(c => (
-                                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                            <SelectItem key={c.id} value={c.id}>{c.name} {c.companyName ? `(${c.companyName})` : ''}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>

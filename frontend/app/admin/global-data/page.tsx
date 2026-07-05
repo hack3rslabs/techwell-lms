@@ -13,6 +13,13 @@ export default function GlobalDataPage() {
     const [data, setData] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
+    const [isAdvancedFiltersOpen, setIsAdvancedFiltersOpen] = useState(false)
+    const [filters, setFilters] = useState({
+        status: 'ALL',
+        source: 'ALL',
+        dynamicField: '',
+        dynamicValue: ''
+    })
 
     useEffect(() => {
         fetchData(activeTab)
@@ -23,7 +30,15 @@ export default function GlobalDataPage() {
         try {
             if (tab === 'students') {
                 const res = await studentsApi.getAll()
-                setData(res.data.students || [])
+                // Deduplicate students by email or userId to fix the enrollment duplication issue
+                const uniqueStudentsMap = new Map()
+                res.data.students?.forEach((s: any) => {
+                    const key = s.email || s.userId
+                    if (!uniqueStudentsMap.has(key)) {
+                        uniqueStudentsMap.set(key, s)
+                    }
+                })
+                setData(Array.from(uniqueStudentsMap.values()))
             } else if (tab === 'employers') {
                 const res = await employerRequestApi.getAll()
                 setData(res.data.data || [])
@@ -83,9 +98,33 @@ export default function GlobalDataPage() {
         toast.success("Export successful!")
     }
 
-    const filteredData = data.filter(item => 
-        JSON.stringify(item).toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredData = data.filter(item => {
+        // 1. Search text filter
+        const matchesSearch = JSON.stringify(item).toLowerCase().includes(searchTerm.toLowerCase())
+        if (!matchesSearch) return false
+
+        // 2. Advanced filters
+        if (filters.status !== 'ALL') {
+            const itemStatus = item.status || item.publishStatus || ''
+            if (itemStatus.toLowerCase() !== filters.status.toLowerCase()) return false
+        }
+        
+        if (filters.source !== 'ALL') {
+            const itemSource = item.source || item.industry || ''
+            if (itemSource.toLowerCase() !== filters.source.toLowerCase()) return false
+        }
+        
+        // 3. Dynamic Field filter
+        if (filters.dynamicField && filters.dynamicValue) {
+            const val = item[filters.dynamicField];
+            const stringVal = val === null || val === undefined ? '' : String(val).toLowerCase();
+            if (!stringVal.includes(filters.dynamicValue.toLowerCase())) return false;
+        }
+
+        return true
+    })
+
+    const availableFields = data.length > 0 ? Object.keys(data[0]).filter(k => typeof data[0][k] !== 'object') : []
 
     return (
         <div className="mx-auto max-w-7xl space-y-6 p-6">
@@ -125,10 +164,78 @@ export default function GlobalDataPage() {
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <Button 
+                    variant={isAdvancedFiltersOpen ? "default" : "outline"} 
+                    onClick={() => setIsAdvancedFiltersOpen(!isAdvancedFiltersOpen)}
+                >
+                    Advanced Filters
+                </Button>
                 <Button variant="outline" size="icon" onClick={() => fetchData(activeTab)} disabled={loading}>
                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 </Button>
             </div>
+
+            {isAdvancedFiltersOpen && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg bg-muted/20">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Status</label>
+                        <select 
+                            className="w-full h-10 px-3 rounded-md border bg-background text-sm"
+                            value={filters.status}
+                            onChange={e => setFilters({...filters, status: e.target.value})}
+                        >
+                            <option value="ALL">All Statuses</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="APPROVED">Approved</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Category / Source</label>
+                        <select 
+                            className="w-full h-10 px-3 rounded-md border bg-background text-sm"
+                            value={filters.source}
+                            onChange={e => setFilters({...filters, source: e.target.value})}
+                        >
+                            <option value="ALL">All Categories</option>
+                            <option value="ORGANIC">Organic</option>
+                            <option value="REFERRAL">Referral</option>
+                            <option value="IT">IT</option>
+                            <option value="Healthcare">Healthcare</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-medium">Custom Field Filter</label>
+                        <div className="flex gap-2">
+                            <select 
+                                className="w-1/3 h-10 px-3 rounded-md border bg-background text-sm"
+                                value={filters.dynamicField}
+                                onChange={e => setFilters({...filters, dynamicField: e.target.value})}
+                            >
+                                <option value="">Select Field...</option>
+                                {availableFields.map(f => <option key={f} value={f}>{f}</option>)}
+                            </select>
+                            <Input 
+                                placeholder="Value contains..." 
+                                className="flex-1"
+                                value={filters.dynamicValue}
+                                onChange={e => setFilters({...filters, dynamicValue: e.target.value})}
+                                disabled={!filters.dynamicField}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-end col-span-full">
+                        <Button 
+                            variant="secondary" 
+                            className="w-full"
+                            onClick={() => setFilters({ status: 'ALL', source: 'ALL', dynamicField: '', dynamicValue: '' })}
+                        >
+                            Reset Filters
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             <div className="border rounded-lg bg-card overflow-hidden">
                 <div className="overflow-x-auto max-h-[600px]">

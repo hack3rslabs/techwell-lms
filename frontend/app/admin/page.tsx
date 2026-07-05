@@ -14,10 +14,15 @@ import {
     Video,
     TrendingUp,
     Search,
-    UserCheck,
     Loader2,
     BarChart3,
-    BrainCircuit
+    BrainCircuit,
+    Magnet,
+    Building2,
+    Activity,
+    Plus,
+    Calendar,
+    Briefcase
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { AdminReportModal } from '@/components/admin/report-modal'
@@ -59,13 +64,15 @@ export default function AdminDashboard() {
     const [users, setUsers] = React.useState<User[]>([])
     const [_courses, setCourses] = React.useState<Course[]>([])
 
-    // Updated Stats State
     const [stats, setStats] = React.useState({
         users: 0,
         courses: 0,
         enrollments: 0,
         interviews: 0,
-        revenue: 0
+        leads: 0,
+        campusDrives: 0,
+        revenue: 0,
+        recentActivity: [] as any[]
     })
 
     const [isLoading, setIsLoading] = React.useState(true)
@@ -196,67 +203,45 @@ export default function AdminDashboard() {
                 </div>
             ) : (
                 <div className="space-y-8">
-                    {/* Stats Grid */}
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    {/* Advanced Stats Grid */}
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                         {hasPermission('FINANCE') && (
-                            <>
-                                <Card
-                                    className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-green-500 hover:-translate-y-1"
-                                    onClick={() => router.push('/admin/finance')}
-                                >
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                                            Total Revenue
-                                        </CardTitle>
-                                        <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">₹</div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">₹{stats.revenue.toLocaleString()}</div>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            +20.1% from last month
-                                        </p>
-                                    </CardContent>
-                                </Card>
-
-                                <Card
-                                    className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-emerald-500 hover:-translate-y-1"
-                                    onClick={() => router.push('/admin/finance?tab=profit')}
-                                >
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                                            Net Profit
-                                        </CardTitle>
-                                        <TrendingUp className="h-4 w-4 text-emerald-500" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold text-emerald-600">₹{(stats.revenue * 0.8).toLocaleString()}</div>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            80% Margin (Est.)
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </>
-                        )}
-
-                        {hasPermission('USERS') && (
                             <Card
-                                className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-blue-500 hover:-translate-y-1"
-                                onClick={() => router.push('/admin/roles')}
+                                className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-green-500 hover:-translate-y-1 col-span-1 xl:col-span-2"
+                                onClick={() => router.push('/admin/finance')}
                             >
                                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                                        Total Users
+                                        Total Revenue
                                     </CardTitle>
-                                    <Users className="h-4 w-4 text-blue-500" />
+                                    <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">₹</div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{stats.users}</div>
+                                    <div className="text-2xl font-bold">₹{stats.revenue.toLocaleString()}</div>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        +180 new this month
+                                        +20.1% from last month
                                     </p>
                                 </CardContent>
                             </Card>
                         )}
+
+                        <Card
+                            className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-blue-500 hover:-translate-y-1"
+                            onClick={() => router.push('/admin/roles')}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                    Total Users
+                                </CardTitle>
+                                <Users className="h-4 w-4 text-blue-500" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{stats.users}</div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    +180 new this month
+                                </p>
+                            </CardContent>
+                        </Card>
 
                         <Card
                             className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-orange-500 hover:-translate-y-1"
@@ -275,25 +260,44 @@ export default function AdminDashboard() {
                                 </p>
                             </CardContent>
                         </Card>
-
+                        
                         <Card
                             className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-purple-500 hover:-translate-y-1"
-                            onClick={() => router.push('/admin/interviews')}
+                            onClick={() => router.push('/admin/leads')}
                         >
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Interviews Conducted
+                                    CRM Leads
                                 </CardTitle>
-                                <Video className="h-4 w-4 text-purple-500" />
+                                <Magnet className="h-4 w-4 text-purple-500" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats.interviews}</div>
+                                <div className="text-2xl font-bold">{stats.leads || 0}</div>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    AI & Manual Sessions
+                                    Active prospects in pipeline
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card
+                            className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-indigo-500 hover:-translate-y-1"
+                            onClick={() => router.push('/admin/campus-drives')}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                    Campus Drives
+                                </CardTitle>
+                                <Building2 className="h-4 w-4 text-indigo-500" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{stats.campusDrives || 0}</div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Ongoing hiring drives
                                 </p>
                             </CardContent>
                         </Card>
                     </div>
+
 
                     {/* Charts & Quick Actions Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -302,7 +306,68 @@ export default function AdminDashboard() {
                             <AdminCharts stats={stats} />
                         </div>
 
-                        
+                        {/* Right Sidebar Area: Activity & Actions */}
+                        <div className="space-y-6">
+                            {/* Quick Actions */}
+                            <Card className="border-t-4 border-t-blue-500">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-lg">Quick Actions</CardTitle>
+                                </CardHeader>
+                                <CardContent className="grid grid-cols-2 gap-3">
+                                    <Button variant="outline" className="h-20 flex-col gap-2 bg-slate-50 dark:bg-slate-900/50 hover:border-blue-500 hover:text-blue-600" onClick={() => router.push('/admin/blogs/editor')}>
+                                        <Plus className="h-5 w-5" />
+                                        <span className="text-xs">Create Blog</span>
+                                    </Button>
+                                    <Button variant="outline" className="h-20 flex-col gap-2 bg-slate-50 dark:bg-slate-900/50 hover:border-indigo-500 hover:text-indigo-600" onClick={() => router.push('/admin/campus-drives')}>
+                                        <Building2 className="h-5 w-5" />
+                                        <span className="text-xs">New Drive</span>
+                                    </Button>
+                                    <Button variant="outline" className="h-20 flex-col gap-2 bg-slate-50 dark:bg-slate-900/50 hover:border-purple-500 hover:text-purple-600" onClick={() => router.push('/admin/crm/pipelines')}>
+                                        <Briefcase className="h-5 w-5" />
+                                        <span className="text-xs">Pipeline</span>
+                                    </Button>
+                                    <Button variant="outline" className="h-20 flex-col gap-2 bg-slate-50 dark:bg-slate-900/50 hover:border-orange-500 hover:text-orange-600" onClick={() => router.push('/admin/events')}>
+                                        <Calendar className="h-5 w-5" />
+                                        <span className="text-xs">New Event</span>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+
+                            {/* Recent Activity */}
+                            <Card className="h-[400px] flex flex-col">
+                                <CardHeader className="pb-3 border-b">
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Activity className="h-5 w-5 text-blue-500" />
+                                        Recent Activity
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex-1 overflow-y-auto p-0">
+                                    {stats.recentActivity && stats.recentActivity.length > 0 ? (
+                                        <div className="divide-y">
+                                            {stats.recentActivity.map((activity, i) => (
+                                                <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors flex gap-4 items-start">
+                                                    <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full mt-1 shrink-0">
+                                                        <GraduationCap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium">
+                                                            <span className="font-bold">{activity.user?.name}</span> enrolled in <span className="font-bold text-blue-600">{activity.course?.title}</span>
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                            {new Date(activity.enrolledAt).toLocaleDateString()} at {new Date(activity.enrolledAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                                            No recent activity found.
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 </div>
             )}

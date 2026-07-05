@@ -246,7 +246,7 @@ export default function DashboardPage() {
 
             // Secondary fetches (non-blocking)
             try {
-                const certsRes = await certificateApi.getAll()
+                const certsRes = await certificateApi.getMyCertificates()
                 setCertificates(certsRes.data.certificates || certsRes.data || [])
             } catch (err) {
                 console.error("Dashboard: Failed to load certificates", err)
@@ -911,7 +911,7 @@ export default function DashboardPage() {
                                             </div>
                                         )}
 
-                                        <Button size="sm" variant="outline" className="w-full" onClick={() => router.push(`/certificate/${cert.id}`)}>
+                                        <Button size="sm" variant="outline" className="w-full" onClick={() => router.push(`/certificates/${cert.uniqueId}`)}>
                                             <Download className="h-4 w-4 mr-2" />
                                             View Certificate
                                         </Button>

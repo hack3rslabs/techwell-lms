@@ -12,19 +12,19 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || ''); // Requi
 const createBlogSchema = z.object({
     title: z.string().min(5),
     content: z.string().min(20),
-    summary: z.string().optional(),
+    summary: z.string().optional().or(z.literal('')),
     tags: z.any().optional(),
-    category: z.string().optional(),
+    category: z.string().optional().or(z.literal('')),
     status: z.enum(['DRAFT', 'IN_REVIEW', 'REVIEW', 'SEO_OPTIMIZATION', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
     coverImage: z.string().url().optional().or(z.literal('')),
-    metaTitle: z.string().optional(),
-    metaDescription: z.string().optional(),
-    canonicalUrl: z.string().url().optional(),
+    metaTitle: z.string().optional().or(z.literal('')),
+    metaDescription: z.string().optional().or(z.literal('')),
+    canonicalUrl: z.string().url().optional().or(z.literal('')),
     keywords: z.any().optional(),
     readingTime: z.number().optional(),
     ctaSettings: z.any().optional(),
-    scheduledPublishAt: z.string().datetime().optional().nullable(),
-    autoArchiveAt: z.string().datetime().optional().nullable(),
+    scheduledPublishAt: z.string().datetime().optional().nullable().or(z.literal('')),
+    autoArchiveAt: z.string().datetime().optional().nullable().or(z.literal('')),
 });
 
 /**
@@ -115,6 +115,10 @@ router.post('/', authenticate, checkPermission('BLOGS'), async (req, res, next) 
     try {
         const body = { ...req.body };
         if (body.coverImage === '') body.coverImage = undefined;
+        if (body.canonicalUrl === '') body.canonicalUrl = undefined;
+        if (body.scheduledPublishAt === '') body.scheduledPublishAt = null;
+        if (body.autoArchiveAt === '') body.autoArchiveAt = null;
+        
         const data = createBlogSchema.parse(body);
 
         let slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -145,6 +149,9 @@ router.put('/:id', authenticate, checkPermission('BLOGS'), async (req, res, next
         const { id } = req.params;
         const body = { ...req.body };
         if (body.coverImage === '') body.coverImage = undefined;
+        if (body.canonicalUrl === '') body.canonicalUrl = undefined;
+        if (body.scheduledPublishAt === '') body.scheduledPublishAt = null;
+        if (body.autoArchiveAt === '') body.autoArchiveAt = null;
         
         const updateData = { ...body };
         if (updateData.status === 'PUBLISHED') updateData.publishedAt = new Date();

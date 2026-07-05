@@ -308,10 +308,10 @@ export default function AdminUsersPage() {
     }
 
     const renderTable = (data: User[]) => (
-        <div className="rounded-2xl border border-white/10 glass-card overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-white/5 border-b border-white/10">
+                <table className="w-full text-sm text-left text-foreground">
+                    <thead className="bg-muted/50 border-b border-border">
                         <tr>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">User Profile</th>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Access Level</th>
@@ -324,7 +324,7 @@ export default function AdminUsersPage() {
                             <tr><td colSpan={4} className="p-20 text-center opacity-50"><p className="text-sm font-bold">No users found</p></td></tr>
                         ) : (
                             data.map(user => (
-                                <tr key={user.id} className="hover:bg-white/5 transition-colors group">
+                                <tr key={user.id} className="hover:bg-muted/50 transition-colors group">
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{user.name[0]}</div>
@@ -366,10 +366,10 @@ export default function AdminUsersPage() {
     )
 
     const renderRolesTable = () => (
-        <div className="rounded-2xl border border-white/10 glass-card overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-white/5 border-b border-white/10">
+                <table className="w-full text-sm text-left text-foreground">
+                    <thead className="bg-muted/50 border-b border-border">
                         <tr>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Role Name</th>
                             <th className="p-4 font-bold text-muted-foreground uppercase text-[10px]">Description</th>
@@ -378,7 +378,7 @@ export default function AdminUsersPage() {
                     </thead>
                     <tbody className="divide-y divide-white/5">
                         {roles.map(role => (
-                            <tr key={role.id} className="hover:bg-white/5 transition-colors group">
+                            <tr key={role.id} className="hover:bg-muted/50 transition-colors group">
                                 <td className="p-4">
                                     <div className="flex items-center gap-2">
                                         <div className="font-bold">{role.name}</div>
@@ -408,32 +408,32 @@ export default function AdminUsersPage() {
     if (!hasPermission('USERS')) return <div className="flex flex-col items-center justify-center min-h-[400px] text-center"><ShieldAlert className="h-16 w-16 text-muted-foreground mb-4" /><h2 className="text-2xl font-bold">Access Denied</h2></div>
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight italic uppercase">Users & <span className="text-primary">Roles</span></h1>
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Users & Roles</h1>
                     <p className="text-muted-foreground text-sm">Manage platform accounts and access hierarchies.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" className="glass border-white/10 rounded-xl h-11 px-6" onClick={handleExportExcel}><Download className="mr-2 h-4 w-4" /> Export</Button>
-                    <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg rounded-xl h-11 px-6" onClick={() => setIsUserModalOpen(true)}><Plus className="mr-2 h-4 w-4" /> Create User</Button>
-                    <Button variant="secondary" className="glass border-white/10 rounded-xl h-11 px-6" onClick={openCreateRoleModal}><Shield className="mr-2 h-4 w-4" /> Create Role</Button>
+                    <Button variant="outline" className=" border-border rounded-xl h-11 px-6" onClick={handleExportExcel}><Download className="mr-2 h-4 w-4" /> Export</Button>
+                    <Button className="bg-primary hover:bg-primary/90  shadow-lg rounded-xl h-11 px-6" onClick={() => setIsUserModalOpen(true)}><Plus className="mr-2 h-4 w-4" /> Create User</Button>
+                    <Button variant="secondary" className=" border-border rounded-xl h-11 px-6" onClick={openCreateRoleModal}><Shield className="mr-2 h-4 w-4" /> Create Role</Button>
                 </div>
             </div>
 
             <Tabs defaultValue="users" className="w-full" onValueChange={setActiveTab}>
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                    <TabsList className="bg-white/5 border border-white/10 p-1 h-12 rounded-xl">
+                    <TabsList className="bg-muted/50 border border-border p-1 h-12 rounded-xl">
                         <TabsTrigger value="users" className="rounded-lg data-[state=active]:bg-primary h-full px-8 text-xs font-bold uppercase">User Directory</TabsTrigger>
                         <TabsTrigger value="roles" className="rounded-lg data-[state=active]:bg-primary h-full px-8 text-xs font-bold uppercase">Roles & Access</TabsTrigger>
                     </TabsList>
                     <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                         <div className="w-full md:w-48">
                             <Select value={selectedRole} onValueChange={setSelectedRole}>
-                                <SelectTrigger className="h-11 glass-input rounded-xl border-white/10">
+                                <SelectTrigger className="h-11 bg-background rounded-xl border-border">
                                     <SelectValue placeholder="All Roles" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-[#0a0a0b] border-white/10">
+                                <SelectContent className="bg-background border-border">
                                     <SelectItem value="all">All Roles</SelectItem>
                                     {roles.map(role => (
                                         <SelectItem key={role.id} value={role.name}>{role.name}</SelectItem>
@@ -442,7 +442,7 @@ export default function AdminUsersPage() {
                             </Select>
                         </div>
                         <div className="relative w-full md:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Search records..." className="pl-10 h-11 glass-input rounded-xl" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Search records..." className="pl-10 h-11 bg-background rounded-xl" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                         </div>
                     </div>
                 </div>
@@ -454,20 +454,20 @@ export default function AdminUsersPage() {
             <CreateUserModal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} onSuccess={fetchUsers} />
 
             <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
-                <DialogContent className="max-w-4xl bg-[#0a0a0b] border-white/10 max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl bg-background border-border max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle className="text-2xl font-black italic uppercase text-primary">{isEditingRole ? 'Update Role' : 'New System Role'}</DialogTitle></DialogHeader>
                     <div className="space-y-6 py-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Internal Name</Label><Input className="glass-input h-11 border-white/10 rounded-xl" value={newRoleData.name} onChange={e => setNewRoleData(prev => ({ ...prev, name: e.target.value }))} /></div>
-                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Input className="glass-input h-11 border-white/10 rounded-xl" value={newRoleData.description} onChange={e => setNewRoleData(prev => ({ ...prev, description: e.target.value }))} /></div>
+                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Internal Name</Label><Input className="bg-background h-11 border-border rounded-xl" value={newRoleData.name} onChange={e => setNewRoleData(prev => ({ ...prev, name: e.target.value }))} /></div>
+                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Input className="bg-background h-11 border-border rounded-xl" value={newRoleData.description} onChange={e => setNewRoleData(prev => ({ ...prev, description: e.target.value }))} /></div>
                         </div>
-                        <div className="border rounded-xl border-white/10 overflow-hidden">
-                            <table className="w-full text-xs text-left">
-                                <thead className="bg-white/5 border-b border-white/10"><tr><th className="p-3 font-bold uppercase">Module</th><th className="p-3 font-bold uppercase text-center">Read</th><th className="p-3 font-bold uppercase text-center">Write</th><th className="p-3 font-bold uppercase text-center">Disable</th></tr></thead>
+                        <div className="border rounded-xl border-border overflow-hidden">
+                            <table className="w-full text-xs text-left text-foreground">
+                                <thead className="bg-muted/50 border-b border-border"><tr><th className="p-3 font-bold uppercase text-muted-foreground">Module</th><th className="p-3 font-bold uppercase text-center text-muted-foreground">Read</th><th className="p-3 font-bold uppercase text-center text-muted-foreground">Write</th><th className="p-3 font-bold uppercase text-center text-muted-foreground">Disable</th></tr></thead>
                                 <tbody>
                                     {Array.from(new Set(permissions.map(p => p.module || 'General'))).map(moduleName => (
                                         <React.Fragment key={moduleName}>
-                                            <tr className="bg-white/5"><td colSpan={4} className="p-2 px-3 font-black text-[9px] uppercase text-primary/70">{moduleName}</td></tr>
+                                            <tr className="bg-muted/50"><td colSpan={4} className="p-2 px-3 font-black text-[9px] uppercase text-primary/70">{moduleName}</td></tr>
                                             {permissions.filter(p => (p.module || 'General') === moduleName).map(perm => {
                                                 const p = newRoleData.permissions.find(pr => pr.featureId === perm.id) || { canRead: false, canWrite: false, isDisabled: false };
                                                 return (
@@ -484,35 +484,35 @@ export default function AdminUsersPage() {
                             </table>
                         </div>
                     </div>
-                    <DialogFooter><Button variant="outline" className="glass border-white/10 rounded-xl" onClick={() => setIsCreateFormOpen(false)}>Cancel</Button><Button className="bg-primary hover:bg-primary/90 rounded-xl" onClick={handleSaveRole}>Save Configuration</Button></DialogFooter>
+                    <DialogFooter><Button variant="outline" className=" border-border rounded-xl" onClick={() => setIsCreateFormOpen(false)}>Cancel</Button><Button className="bg-primary hover:bg-primary/90 rounded-xl" onClick={handleSaveRole}>Save Configuration</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={isDeleteUserOpen} onOpenChange={setIsDeleteUserOpen}>
-                <DialogContent className="bg-[#0a0a0b] border-white/10"><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete User</DialogTitle></DialogHeader>
+                <DialogContent className="bg-background border-border"><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete User</DialogTitle></DialogHeader>
                     <p className="text-sm text-muted-foreground">Are you sure you want to delete <b>{userToDelete?.name}</b>? This action is permanent.</p>
-                    <DialogFooter><Button variant="outline" className="glass" onClick={() => setIsDeleteUserOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteUser}>Confirm Delete</Button></DialogFooter>
+                    <DialogFooter><Button variant="outline" className="" onClick={() => setIsDeleteUserOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteUser}>Confirm Delete</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={isDeleteRoleOpen} onOpenChange={setIsDeleteRoleOpen}>
-                <DialogContent className="bg-[#0a0a0b] border-white/10"><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete Role</DialogTitle></DialogHeader>
+                <DialogContent className="bg-background border-border"><DialogHeader><DialogTitle className="text-xl font-black text-red-500 uppercase italic">Delete Role</DialogTitle></DialogHeader>
                     <p className="text-sm text-muted-foreground">Are you sure you want to delete the <b>{roleToDelete?.name}</b> role?</p>
-                    <DialogFooter><Button variant="outline" className="glass" onClick={() => setIsDeleteRoleOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteRole}>Confirm Delete</Button></DialogFooter>
+                    <DialogFooter><Button variant="outline" className="" onClick={() => setIsDeleteRoleOpen(false)}>Cancel</Button><Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteRole}>Confirm Delete</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
-                <DialogContent className="bg-[#0a0a0b] border-white/10">
+                <DialogContent className="bg-background border-border">
                     <DialogHeader><DialogTitle className="text-xl font-black uppercase italic text-primary">Edit User</DialogTitle></DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
                             <Label>Name</Label>
-                            <Input className="glass-input border-white/10" value={editUserData.name} onChange={e => setEditUserData(prev => ({ ...prev, name: e.target.value }))} />
+                            <Input className="bg-background border-border" value={editUserData.name} onChange={e => setEditUserData(prev => ({ ...prev, name: e.target.value }))} />
                         </div>
                         <div className="space-y-2">
                             <Label>Phone</Label>
-                            <Input className="glass-input border-white/10" value={editUserData.phone} onChange={e => setEditUserData(prev => ({ ...prev, phone: e.target.value }))} />
+                            <Input className="bg-background border-border" value={editUserData.phone} onChange={e => setEditUserData(prev => ({ ...prev, phone: e.target.value }))} />
                         </div>
                         <div className="space-y-2">
                             <Label>Status</Label>
@@ -523,7 +523,7 @@ export default function AdminUsersPage() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" className="glass" onClick={() => setIsEditUserOpen(false)}>Cancel</Button>
+                        <Button variant="outline" className="" onClick={() => setIsEditUserOpen(false)}>Cancel</Button>
                         <Button className="bg-primary hover:bg-primary/90" onClick={handleUpdateUser}>Save Changes</Button>
                     </DialogFooter>
                 </DialogContent>

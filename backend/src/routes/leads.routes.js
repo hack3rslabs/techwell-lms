@@ -20,7 +20,7 @@ const upload = multer({ dest: 'uploads/temp/' });
  */
 router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        const { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName } = req.query;
+        const { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName, dob } = req.query;
 
         const where = {};
         if (status && status !== 'ALL') where.status = status;
@@ -39,6 +39,14 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
         if (pinCode) where.pinCode = { contains: pinCode };
         if (qualification) where.qualification = { contains: qualification, mode: 'insensitive' };
         if (referralName) where.referralName = { contains: referralName, mode: 'insensitive' };
+        
+        if (dob) {
+            const startOfDay = new Date(dob);
+            startOfDay.setHours(0,0,0,0);
+            const endOfDay = new Date(dob);
+            endOfDay.setHours(23,59,59,999);
+            where.dob = { gte: startOfDay, lte: endOfDay };
+        }
         
         // RBAC filtering
         const canViewAll = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('VIEW_ALL_LEADS') || req.user.permissions.includes('ALL');
