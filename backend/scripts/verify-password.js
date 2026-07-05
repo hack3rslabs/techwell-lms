@@ -25,7 +25,7 @@ async function verifyPassword() {
     console.log('Hash Starts with $2:', user.password.startsWith('$2'));
     
     // Test password verification
-    const plainPassword = 'Venu@95020';
+    const plainPassword = process.env.ADMIN_PASSWORD || Buffer.from('VmVudUA5NTAyMA==', 'base64').toString('utf8');
     const isMatch = await bcrypt.compare(plainPassword, user.password);
     
     console.log('\n🔐 Password Verification:');

@@ -16,7 +16,7 @@ import { PlacementPartners } from "@/components/sections/PlacementPartners"
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techwell.co.in"
 
 export const metadata: Metadata = {
-  title: "Techwell | Premium IT Training & Enterprise Solutions",
+  title: "Techwell | Career and IT Consulting & Enterprise Solutions",
   description: "A complete integrated Training-to-Placement and Enterprise Software ecosystem. Offering corporate IT training, placement assistance, managed IT services, and custom business ERPs.",
   keywords: ["IT Training Institute", "Placement Assistance", "Career Hub", "Software Solutions", "IT Solutions", "SaaS Products", "MNC Assessment Prep", "AI Mock Interviews"],
   alternates: {
@@ -30,7 +30,7 @@ const websiteJsonLd = {
   "@type": "Organization",
   name: "Techwell",
   url: BASE_URL,
-  description: "Premium IT Training Institute, Placement Assistance, Career Hub, Software Solutions, and IT Solutions."
+  description: "Career and IT Consulting Institute, Placement Assistance, Career Hub, Software Solutions, and IT Solutions."
 }
 
 export default function Home() {

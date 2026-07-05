@@ -4,14 +4,17 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 const { generateRegId } = require('../utils/regIdGenerator');
 
-// Initialize with Dummy Keys if missing
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_dummy12345';
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'secret_dummy12345';
+// Initialize Razorpay only if keys are present
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
-const instance = new Razorpay({
-    key_id: RAZORPAY_KEY_ID,
-    key_secret: RAZORPAY_KEY_SECRET
-});
+let instance = null;
+if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
+    instance = new Razorpay({
+        key_id: RAZORPAY_KEY_ID,
+        key_secret: RAZORPAY_KEY_SECRET
+    });
+}
 
 class PaymentService {
     /**
@@ -33,8 +36,8 @@ class PaymentService {
         };
 
         try {
-            // Mock response if using dummy keys that RAZORPAY SDK rejects
-            if (RAZORPAY_KEY_ID.includes('dummy')) {
+            // Mock response if using dummy mode (no keys provided)
+            if (!instance) {
                 const mockOrder = {
                     id: `order_${Date.now()}`,
                     amount: options.amount,
@@ -81,7 +84,7 @@ class PaymentService {
      * Verify Payment Signature
      */
     async verifyPayment(orderId, paymentId, signature) {
-        if (RAZORPAY_KEY_ID.includes('dummy')) {
+        if (!instance) {
             // Mock verification
             await this._handleSuccess(orderId, paymentId);
             return { verified: true };

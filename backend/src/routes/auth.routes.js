@@ -19,9 +19,13 @@ const { authenticate } = require('../middleware/auth');
 const twoFactorService = require('../services/twoFactor.service');
 
 // Validation schemas
+const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 const registerSchema = z.object({
     email: z.string().email('Invalid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password: z.string()
+        .min(8, 'Password must be at least 8 characters')
+        .regex(passwordComplexityRegex, 'Password must contain at least one uppercase, lowercase, number and special character'),
     name: z.string().min(2, 'Name must be at least 2 characters'),
     phone: z.string().regex(/^[6-9]\d{9}$/, 'Must be a valid 10-digit Indian mobile number').optional(),
     referredByCode: z.string().optional(),
@@ -38,6 +42,11 @@ const pendingRegistrations = new Map();
 // In-memory store for password resets (OTP verification)
 const passwordResets = new Map();
 const OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+
+// In-memory store for account lockouts
+const loginAttempts = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 // Use crypto.randomInt for cryptographically secure OTP (OWASP A02: Cryptographic Failures)
 const crypto = require('crypto');
@@ -298,6 +307,18 @@ router.post('/login', authLimiter, async (req, res, next) => {
     try {
         const validatedData = loginSchema.parse(req.body);
 
+        // Check for lockout
+        const attemptsData = loginAttempts.get(validatedData.email);
+        if (attemptsData && attemptsData.count >= MAX_LOGIN_ATTEMPTS) {
+            if (Date.now() - attemptsData.firstAttempt < LOCKOUT_DURATION_MS) {
+                console.log(`Login blocked: Account locked for email ${validatedData.email}`);
+                return res.status(429).json({ error: 'Account temporarily locked due to too many failed attempts. Try again later.' });
+            } else {
+                // Reset lockout if duration passed
+                loginAttempts.delete(validatedData.email);
+            }
+        }
+
         // Find user
         const user = await prisma.user.findUnique({
             where: { email: validatedData.email },
@@ -324,8 +345,17 @@ router.post('/login', authLimiter, async (req, res, next) => {
 
         if (!isPasswordValid) {
             console.log(`Login failed: Invalid password for user ${validatedData.email}`);
+            
+            // Record failed attempt
+            const currentAttempts = loginAttempts.get(validatedData.email) || { count: 0, firstAttempt: Date.now() };
+            currentAttempts.count += 1;
+            loginAttempts.set(validatedData.email, currentAttempts);
+
             return res.status(401).json({ error: 'Invalid email or password' });
         }
+
+        // Successful login, clear failed attempts
+        loginAttempts.delete(validatedData.email);
 
         // Check if active
         if (!user.isActive) {

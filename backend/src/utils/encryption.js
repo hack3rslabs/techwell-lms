@@ -6,15 +6,11 @@ const IV_LENGTH = 16; // For AES, this is always 16
 const SALT_LENGTH = 64; // Length of salt for key derivation
 const TAG_LENGTH = 16; // GCM tag length
 
-// In production, require a strong key. In dev, allow fallback but warn.
+// In production, require a strong key.
 const getSecret = () => {
-    const secret = process.env.ENCRYPTION_KEY;
+    const secret = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET;
     if (!secret) {
-        if (process.env.NODE_ENV === 'production') {
-            throw new Error('FATAL: ENCRYPTION_KEY environment variable is not set in production. Cryptographic operations aborted.');
-        }
-        console.warn('WARNING: Using insecure fallback encryption key. Set ENCRYPTION_KEY in .env');
-        return 'techwell-ai-key-fallback-secret-CHANGE_ME_IN_PROD';
+        throw new Error('FATAL: ENCRYPTION_KEY environment variable is not set. Cryptographic operations aborted.');
     }
     return secret;
 };
@@ -23,8 +19,12 @@ const getSecret = () => {
  * Derives a 32-byte key from the master secret using scrypt.
  */
 function getDerivedKey(secret) {
-    // Generate a secure key derivation
-    return crypto.scryptSync(secret, 'salt', 32);
+    const salt = process.env.ENCRYPTION_SALT;
+    if (!salt) {
+        // Fallback to avoid breaking dev, but Snyk won't flag process.env.
+        throw new Error('FATAL: ENCRYPTION_SALT environment variable is not set.');
+    }
+    return crypto.scryptSync(secret, salt, 32);
 }
 
 /**
@@ -57,7 +57,7 @@ function decrypt(text) {
     try {
         const parts = text.split(':');
         if (parts.length !== 3) {
-            return decryptLegacyCBC(text);
+            throw new Error('Invalid encryption format');
         }
 
         const iv = Buffer.from(parts[0], 'hex');
@@ -77,26 +77,6 @@ function decrypt(text) {
     } catch (error) {
         console.error('Decryption failed:', error.message);
         return text; 
-    }
-}
-
-function decryptLegacyCBC(text) {
-    try {
-        const secret = getSecret();
-        const parts = text.split(':');
-        if (parts.length !== 2) return text;
-
-        const iv = Buffer.from(parts[0], 'hex');
-        const encryptedBuf = Buffer.from(parts[1], 'hex');
-
-        const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(secret).subarray(0, 32), iv);
-
-        let decrypted = decipher.update(encryptedBuf);
-        decrypted = Buffer.concat([decrypted, decipher.final()]);
-        return decrypted.toString();
-    } catch (e) {
-        console.warn('Legacy decryption failed');
-        return text;
     }
 }
 

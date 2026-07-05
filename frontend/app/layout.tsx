@@ -23,12 +23,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://techwell.co.in"),
   title: {
-    default: "Techwell | AI-Powered Learning & Career Platform",
+    default: "Techwell | AI Career and Business Consulting",
     template: "%s | Techwell"
   },
   description: "Accelerate your tech career with AI-powered mock interviews, personalized adaptive courses, and direct placement support. Join 10,000+ successful students.",
   keywords: [
-    "AI-Powered Learning",
+    "AI Career and Business Consulting",
     "Tech Career Platform",
     "AI Mock Interviews",
     "Tailored Coding Courses",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: "https://techwell.co.in",
     siteName: "Techwell",
-    title: "Techwell | AI-Powered Learning",
+    title: "Techwell | AI Career and Business Consulting",
     description: "Launch your tech career with AI-mock interviews and personalized courses. Bridge the gap between campus and corporate.",
     images: [
       {
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Techwell | AI-Powered Learning & Jobs",
+    title: "Techwell | AI Career and Business Consulting",
     description: "Master tech skills with AI. Ace interviews. Get placed.",
     images: ["/og-image.png"],
     creator: "@techwell_edu",

@@ -6,7 +6,7 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // Initialize the WhatsApp Web Client when the module loads
-whatsappWebClient.initialize();
+// whatsappWebClient.initialize();
 
 // Get all integrations
 router.get('/', async (req, res) => {

@@ -26,6 +26,7 @@ export default function RegisterPage() {
     const [dob, setDob] = React.useState('')
     const [qualification, setQualification] = React.useState('')
     const [college, setCollege] = React.useState('')
+    const [referredByCode, setReferredByCode] = React.useState('')
     const [showPassword, setShowPassword] = React.useState(false)
     const [isLoading, setIsLoading] = React.useState(false)
     const [error, setError] = React.useState('')
@@ -68,7 +69,7 @@ export default function RegisterPage() {
         setIsLoading(true)
 
         try {
-            await register(email, password, name, dob, qualification, college)
+            await register(email, password, name, dob, qualification, college, referredByCode)
             setStep('otp')
             setTimeLeft(60) // 60 seconds before resend is allowed
         } catch (err: unknown) {
@@ -279,6 +280,20 @@ export default function RegisterPage() {
                                     placeholder="Enter your college name"
                                     value={college}
                                     onChange={(e) => setCollege(e.target.value)}
+                                    disabled={isLoading}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="referredByCode" className="text-sm font-medium">
+                                    Referral Code <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+                                </label>
+                                <Input
+                                    id="referredByCode"
+                                    type="text"
+                                    placeholder="Enter referral code if you have one"
+                                    value={referredByCode}
+                                    onChange={(e) => setReferredByCode(e.target.value)}
                                     disabled={isLoading}
                                 />
                             </div>

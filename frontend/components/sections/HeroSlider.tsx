@@ -21,7 +21,7 @@ const SLIDES = [
     titleLine2Highlight: "Enterprises.",
     titleGradient1: "from-indigo-400 via-sky-400 to-teal-300",
     titleGradient2: "from-amber-200 via-orange-400 to-rose-400",
-    description: "Techwell is a premium IT Training Institute, your dedicated Placement & Career Hub, and an elite Software & IT Solutions provider. We bridge the gap between learning and leading.",
+    description: "Techwell is a Career and IT Consulting Hub, your dedicated Placement Center, and an elite Software & IT Solutions provider. We bridge the gap between learning and leading.",
     primaryCtaText: "Start Your Career",
     primaryCtaLink: "/courses",
     secondaryCtaText: "Enterprise Solutions",

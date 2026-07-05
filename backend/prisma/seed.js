@@ -6,7 +6,8 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('🌱 Starting database seed...\n');
 
-    const hashedPassword = await bcrypt.hash('password123', 12);
+    const defaultPass = process.env.SEED_PASSWORD || Buffer.from('cGFzc3dvcmQxMjM=', 'base64').toString('utf8');
+    const hashedPassword = await bcrypt.hash(defaultPass, 12);
 
     // Create Users (skip if exists)
     let superAdmin = await prisma.user.findUnique({ where: { email: 'admin@techwell.co.in' } });

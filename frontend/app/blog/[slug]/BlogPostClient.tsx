@@ -2,16 +2,17 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Calendar, User, ArrowLeft, Tag, Loader2, Clock, Heart, Share2, Star, MessageSquare } from 'lucide-react'
+import { Calendar, User, ArrowLeft, Clock, MessageSquare, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import api from '@/lib/api'
 import DOMPurify from 'isomorphic-dompurify'
 import { getFullImageUrl } from '@/lib/image-utils'
 import { toast } from 'sonner'
+import { useAuth } from '@/lib/auth-context'
 
 interface BlogPost {
     id: string
@@ -24,29 +25,27 @@ interface BlogPost {
     createdAt: string
     author?: { name: string, avatar?: string }
     tags?: string[]
-    likesCount?: number
-    sharesCount?: number
-    ratingAvg?: number
-    ratingCount?: number
+    views: number
+    readingTime: number
+    ctaSettings?: any
+    comments?: Array<{
+        id: string
+        content: string
+        createdAt: string
+        user?: { name: string, avatar?: string }
+        guestName?: string
+    }>
 }
 
-export default function BlogPostClient() {
-    const params = useParams()
-    const _router = useRouter()
-    const slug = params.slug as string
-
+export default function BlogPostClient({ slug }: { slug: string }) {
+    const { user } = useAuth()
     const [post, setPost] = React.useState<BlogPost | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
     const [error, setError] = React.useState<string | null>(null)
-
-    // Interactive states
-    const [likesCount, setLikesCount] = React.useState(0)
-    const [sharesCount, setSharesCount] = React.useState(0)
-    const [ratingAvg, setRatingAvg] = React.useState(0)
-    const [ratingCount, setRatingCount] = React.useState(0)
-    const [comments, setComments] = React.useState<any[]>([])
-    const [newComment, setNewComment] = React.useState("")
-    const [submittingComment, setSubmittingComment] = React.useState(false)
+    const [commentText, setCommentText] = React.useState('')
+    const [guestName, setGuestName] = React.useState('')
+    const [guestEmail, setGuestEmail] = React.useState('')
+    const [isSubmitting, setIsSubmitting] = React.useState(false)
 
     React.useEffect(() => {
         const fetchPost = async () => {
@@ -55,6 +54,10 @@ export default function BlogPostClient() {
             try {
                 const res = await api.get(`/blogs/${slug}`)
                 setPost(res.data)
+                // Track view
+                if (res.data?.id) {
+                    api.post(`/blogs/${res.data.id}/view`).catch(console.error)
+                }
             } catch (err: any) {
                 console.error(err)
                 setError(err.response?.data?.error || 'Failed to load blog post')
@@ -65,268 +68,206 @@ export default function BlogPostClient() {
         fetchPost()
     }, [slug])
 
-    React.useEffect(() => {
-        if (post) {
-            setLikesCount(post.likesCount || 0)
-            setSharesCount(post.sharesCount || 0)
-            setRatingAvg(post.ratingAvg || 0)
-            setRatingCount(post.ratingCount || 0)
-
-            const fetchComments = async () => {
-                try {
-                    const res = await api.get(`/blogs/${post.id}/comments`)
-                    setComments(res.data)
-                } catch (err) {
-                    console.error("Error loading comments:", err)
-                }
-            }
-            fetchComments()
-        }
-    }, [post])
-
-    const handleLike = async () => {
-        try {
-            const res = await api.post(`/blogs/${post?.id}/like`)
-            setLikesCount(res.data.likesCount)
-            toast.success("Article liked!")
-        } catch {
-            toast.error("Failed to like article")
-        }
-    }
-
-    const handleShare = async () => {
-        try {
-            await api.post(`/blogs/${post?.id}/share`)
-            setSharesCount(prev => prev + 1)
-            if (typeof window !== "undefined") {
-                await navigator.clipboard.writeText(window.location.href)
-                toast.success("Link copied! Share it with your friends.")
-            }
-        } catch {
-            toast.error("Failed to share article")
-        }
-    }
-
-    const handleRate = async (rating: number) => {
-        try {
-            const res = await api.post(`/blogs/${post?.id}/rate`, { rating })
-            setRatingAvg(res.data.ratingAvg)
-            setRatingCount(res.data.ratingCount)
-            toast.success(`You rated this article ${rating} stars!`)
-        } catch {
-            toast.error("Failed to submit rating")
-        }
-    }
-
     const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!newComment.trim()) return
-        setSubmittingComment(true)
+        if (!commentText.trim()) return
+        if (!user && (!guestName || !guestEmail)) {
+            toast.error("Please enter your name and email to comment.")
+            return
+        }
+
+        setIsSubmitting(true)
         try {
-            const res = await api.post(`/blogs/${post?.id}/comments`, { content: newComment })
-            setComments(prev => [res.data, ...prev])
-            setNewComment("")
-            toast.success("Comment posted successfully!")
-        } catch {
-            toast.error("Please login to post a comment.")
+            await api.post(`/blogs/${post?.id}/comments`, {
+                content: commentText,
+                guestName,
+                guestEmail
+            })
+            toast.success("Comment submitted for moderation!")
+            setCommentText('')
+        } catch (error) {
+            toast.error("Failed to submit comment.")
         } finally {
-            setSubmittingComment(false)
+            setIsSubmitting(false)
+        }
+    }
+
+    const trackCtaClick = () => {
+        if (post?.id) {
+            api.post(`/blogs/${post.id}/click-cta`).catch(console.error)
         }
     }
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="animate-spin h-12 w-12 text-primary" />
+            <div className="min-h-[60vh] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
         )
     }
 
     if (error || !post) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+            <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 text-center">
                 <h2 className="text-2xl font-bold mb-4">{error || 'Post not found'}</h2>
                 <Link href="/blog">
-                    <Button>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Blog
-                    </Button>
+                    <Button><ArrowLeft className="mr-2 h-4 w-4" />Back to Blog</Button>
                 </Link>
             </div>
         )
     }
 
-    const wordsPerMinute = 200
-    const textLength = post.content.split(/\s+/).length
-    const readingTime = Math.ceil(textLength / wordsPerMinute)
-
-    const isHtml = /<[a-z][\s\S]*>/i.test(post.content)
-    const sanitizedContent = isHtml 
-        ? DOMPurify.sanitize(post.content)
-        : DOMPurify.sanitize(post.content)
-            .split(/\n+/)
-            .map(paragraph => paragraph.trim())
-            .filter(Boolean)
-            .map(paragraph => `<p>${paragraph}</p>`)
-            .join('')
-
     return (
-        <article className="min-h-screen py-12">
-            <div className="container max-w-4xl">
-                {/* Back Button */}
+        <article className="min-h-screen py-12 bg-white dark:bg-slate-950">
+            {/* Schema.org Article JSON-LD */}
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BlogPosting",
+                "headline": post.title,
+                "image": post.coverImage ? [getFullImageUrl(post.coverImage)] : [],
+                "datePublished": post.publishedAt || post.createdAt,
+                "author": [{ "@type": "Person", "name": post.author?.name || 'Admin' }]
+            }) }} />
+
+            <div className="container max-w-4xl px-4 md:px-6">
                 <div className="mb-8">
                     <Link href="/blog">
-                        <Button variant="ghost" size="sm" className="pl-0 hover:bg-transparent hover:text-primary">
+                        <Button variant="ghost" size="sm" className="pl-0 hover:bg-transparent text-muted-foreground hover:text-primary transition-colors">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Blog
                         </Button>
                     </Link>
                 </div>
 
-                {/* Cover Image */}
                 {post.coverImage && (
-                    <div className="relative aspect-video w-full mb-8 overflow-hidden rounded-xl border">
+                    <div className="relative aspect-video w-full mb-8 overflow-hidden rounded-2xl shadow-lg border">
                         <Image
                             src={getFullImageUrl(post.coverImage)}
                             alt={post.title}
-                            width={800}
-                            height={450}
-                            className="object-cover w-full h-full"
+                            fill
+                            className="object-cover"
+                            priority
                         />
                     </div>
                 )}
 
-                {/* Blog Header */}
-                <header className="mb-12">
-                    <div className="flex flex-wrap items-center gap-4 mb-4">
+                <header className="mb-10 text-center md:text-left">
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6">
                         {post.tags?.map(tag => (
-                            <Badge key={tag} variant="secondary">{tag}</Badge>
-                        )) || <Badge variant="secondary">Article</Badge>}
-
-                        <div className="flex items-center text-sm text-muted-foreground">
-                            <Calendar className="mr-1 h-4 w-4" />
-                            {new Date(post.publishedAt || post.createdAt).toLocaleDateString()}
+                            <Badge key={tag} variant="secondary" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                {tag}
+                            </Badge>
+                        ))}
+                        
+                        <div className="flex items-center text-sm text-muted-foreground font-medium">
+                            <Calendar className="mr-1.5 h-4 w-4" />
+                            {new Date(post.publishedAt || post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </div>
-
-                        <div className="flex items-center text-sm text-muted-foreground">
-                            <Clock className="mr-1 h-4 w-4" />
-                            {readingTime} min read
+                        
+                        <div className="flex items-center text-sm text-muted-foreground font-medium">
+                            <Clock className="mr-1.5 h-4 w-4" />
+                            {post.readingTime || Math.ceil(post.content.split(/\s+/).length / 200)} min read
                         </div>
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                    <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight tracking-tight text-slate-900 dark:text-white">
                         {post.title}
                     </h1>
 
-                    <div className="flex items-center gap-4 pt-4 border-t">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border">
+                    <div className="flex items-center justify-center md:justify-start gap-4 pt-6 border-t dark:border-slate-800">
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border">
                             {post.author?.avatar ? (
-                                <Image src={post.author.avatar} alt={post.author.name} width={40} height={40} className="h-full w-full object-cover" />
+                                <Image src={post.author.avatar} alt={post.author.name} width={48} height={48} className="h-full w-full object-cover" />
                             ) : (
-                                <User className="h-5 w-5 text-primary" />
+                                <User className="h-6 w-6 text-primary" />
                             )}
                         </div>
-                        <div>
-                            <p className="font-medium">{post.author?.name || 'Admin'}</p>
-                            <p className="text-xs text-muted-foreground">Author</p>
+                        <div className="text-left">
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">{post.author?.name || 'Admin'}</p>
+                            <p className="text-sm text-muted-foreground">Techwell Expert</p>
                         </div>
                     </div>
                 </header>
 
-                {/* Content */}
-                <div
-                    className="prose prose-lg dark:prose-invert max-w-none mb-12"
-                    dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+                <div 
+                    className="prose prose-lg dark:prose-invert max-w-none mb-12 prose-headings:font-bold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-xl"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                 />
 
-                {/* Interaction Section (Likes, Shares, Rating) */}
-                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                    <div className="flex items-center gap-4">
-                        <Button variant="outline" size="sm" onClick={handleLike} className="flex items-center gap-2 hover:text-red-500 transition-colors">
-                            <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-                            <span>Like ({likesCount})</span>
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleShare} className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-                            <Share2 className="w-4 h-4 text-blue-500" />
-                            <span>Share ({sharesCount})</span>
-                        </Button>
+                {/* CTA Block Injection */}
+                {post.ctaSettings && post.ctaSettings.url && (
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-8 mb-12 text-center shadow-xl">
+                        <h3 className="text-2xl font-bold mb-3">{post.ctaSettings.headline || "Ready to take the next step?"}</h3>
+                        <p className="mb-6 opacity-90">{post.ctaSettings.subheadline || "Join our community and boost your career."}</p>
+                        <Link href={post.ctaSettings.url} onClick={trackCtaClick} target="_blank">
+                            <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100 font-bold px-8">
+                                {post.ctaSettings.buttonText || "Learn More"}
+                            </Button>
+                        </Link>
                     </div>
+                )}
 
-                    <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-500">Rate Article:</span>
-                        <div className="flex items-center gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <button 
-                                    key={star} 
-                                    onClick={() => handleRate(star)} 
-                                    className="hover:scale-110 transition-transform"
-                                >
-                                    <Star className={`w-5 h-5 ${star <= Math.round(ratingAvg) ? 'text-amber-500 fill-amber-500' : 'text-slate-300'}`} />
-                                </button>
-                            ))}
-                        </div>
-                        <span className="text-xs text-slate-500 font-bold ml-1">
-                            {ratingAvg.toFixed(1)} ({ratingCount} ratings)
-                        </span>
-                    </div>
-                </div>
+                <hr className="my-10 border-slate-200 dark:border-slate-800" />
 
                 {/* Comments Section */}
-                <section className="space-y-6 mb-12 border-t pt-8">
-                    <div className="flex items-center gap-2 text-slate-900 font-black text-lg">
-                        <MessageSquare className="w-5 h-5 text-indigo-600" />
-                        <span>Discussion ({comments.length})</span>
-                    </div>
-
-                    <form onSubmit={handleCommentSubmit} className="space-y-3">
-                        <Textarea
-                            placeholder="Add your thoughts or questions about this article..."
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            required
-                            className="bg-white min-h-[100px]"
+                <section className="mb-12">
+                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white">
+                        <MessageSquare className="h-6 w-6 text-primary" /> 
+                        Comments ({post.comments?.length || 0})
+                    </h3>
+                    
+                    <form onSubmit={handleCommentSubmit} className="mb-10 bg-slate-50 dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <h4 className="font-semibold mb-4">Leave a Reply</h4>
+                        {!user && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <Input placeholder="Name *" required value={guestName} onChange={e => setGuestName(e.target.value)} />
+                                <Input type="email" placeholder="Email *" required value={guestEmail} onChange={e => setGuestEmail(e.target.value)} />
+                            </div>
+                        )}
+                        <Textarea 
+                            placeholder="Write your comment..." 
+                            required 
+                            rows={4} 
+                            value={commentText}
+                            onChange={e => setCommentText(e.target.value)}
+                            className="mb-4 bg-white dark:bg-slate-950"
                         />
-                        <div className="flex justify-end">
-                            <Button type="submit" disabled={submittingComment}>
-                                {submittingComment && <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />}
-                                Post Comment
-                            </Button>
-                        </div>
+                        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+                            {isSubmitting ? 'Submitting...' : <><Send className="h-4 w-4 mr-2" /> Post Comment</>}
+                        </Button>
                     </form>
 
-                    <div className="space-y-4 pt-4">
-                        {comments.length > 0 ? comments.map((comment) => (
-                            <div key={comment.id} className="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl flex items-start gap-3">
-                                <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold overflow-hidden">
+                    <div className="space-y-6">
+                        {post.comments?.map(comment => (
+                            <div key={comment.id} className="flex gap-4">
+                                <div className="h-10 w-10 shrink-0 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
                                     {comment.user?.avatar ? (
-                                        <Image src={comment.user.avatar} alt={comment.user.name} width={32} height={32} className="h-full w-full object-cover" />
+                                        <Image src={comment.user.avatar} alt="User" width={40} height={40} className="object-cover" />
                                     ) : (
-                                        <User className="h-4 w-4 text-slate-500" />
+                                        <User className="h-5 w-5 text-slate-500" />
                                     )}
                                 </div>
-                                <div className="space-y-1">
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-xs font-bold text-slate-950">{comment.user?.name || "User"}</span>
-                                        <span className="text-[10px] text-slate-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-semibold text-slate-900 dark:text-slate-100">
+                                            {comment.user?.name || comment.guestName || 'Anonymous'}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date(comment.createdAt).toLocaleDateString()}
+                                        </span>
                                     </div>
-                                    <p className="text-xs text-slate-700 leading-normal">{comment.content}</p>
+                                    <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                                        {comment.content}
+                                    </p>
                                 </div>
                             </div>
-                        )) : (
-                            <p className="text-sm text-slate-400 text-center py-6">No comments yet. Start the conversation!</p>
+                        ))}
+                        
+                        {post.comments?.length === 0 && (
+                            <p className="text-center text-muted-foreground py-4">No comments yet. Be the first to share your thoughts!</p>
                         )}
                     </div>
                 </section>
-
-                {/* Footer */}
-                <footer className="border-t pt-8">
-                    <div className="flex justify-between items-center">
-                        <div className="flex gap-2" />
-                        <Link href="/blog">
-                            <Button variant="outline">View all articles</Button>
-                        </Link>
-                    </div>
-                </footer>
             </div>
         </article>
     )

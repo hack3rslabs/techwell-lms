@@ -20,7 +20,7 @@ const upload = multer({ dest: 'uploads/temp/' });
  */
 router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        const { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName } = req.query;
+        const { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName, dob } = req.query;
 
         const where = {};
         if (status && status !== 'ALL') where.status = status;
@@ -39,6 +39,14 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
         if (pinCode) where.pinCode = { contains: pinCode };
         if (qualification) where.qualification = { contains: qualification, mode: 'insensitive' };
         if (referralName) where.referralName = { contains: referralName, mode: 'insensitive' };
+        
+        if (dob) {
+            const startOfDay = new Date(dob);
+            startOfDay.setHours(0,0,0,0);
+            const endOfDay = new Date(dob);
+            endOfDay.setHours(23,59,59,999);
+            where.dob = { gte: startOfDay, lte: endOfDay };
+        }
         
         // RBAC filtering
         const canViewAll = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('VIEW_ALL_LEADS') || req.user.permissions.includes('ALL');
@@ -672,8 +680,11 @@ router.post('/import', authenticate, checkPermission('LEADS'), upload.single('fi
         return res.status(400).json({ error: 'No CSV file uploaded' });
     }
 
+    const path = require('path');
+    const safePath = path.resolve('uploads/temp', path.basename(req.file.path));
+
     const results = [];
-    fs.createReadStream(req.file.path)
+    fs.createReadStream(safePath)
         .pipe(csv())
         .on('data', (data) => results.push(data))
         .on('end', async () => {
@@ -703,7 +714,7 @@ router.post('/import', authenticate, checkPermission('LEADS'), upload.single('fi
                 });
 
                 // Cleanup temp file
-                fs.unlinkSync(req.file.path);
+                fs.unlinkSync(safePath);
 
                 res.json({ message: `Successfully imported ${createdCount.count} leads` });
             } catch (error) {
@@ -870,7 +881,7 @@ router.get('/webhook/meta', async (req, res) => {
     if (mode && token) {
         if (token === 'techwell_meta_secret') {
             console.log('WEBHOOK_VERIFIED');
-            res.status(200).send(challenge);
+            res.status(200).type('text/plain').send(challenge);
         } else {
             res.sendStatus(403);
         }
@@ -1142,6 +1153,62 @@ router.post('/:id/reminder', authenticate, checkPermission('LEADS'), async (req,
         });
 
         return res.status(201).json({ message: 'Reminder scheduled successfully', reminder });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/leads/:id/ai/summary
+ * @desc    Generate AI summary for a lead
+ * @access  Private
+ */
+router.post('/:id/ai/summary', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const lead = await prisma.lead.findUnique({
+            where: { id: req.params.id },
+            include: { activityLogs: true }
+        });
+
+        if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+        const aiService = require('../services/ai.service');
+        const aiInsight = await aiService.generateLeadSummary(lead);
+
+        const updatedLead = await prisma.lead.update({
+            where: { id: req.params.id },
+            data: {
+                aiSummary: aiInsight.summary,
+                aiNextBestAction: aiInsight.nextBestAction,
+                aiPriority: aiInsight.priority
+            }
+        });
+
+        return res.json({ message: 'AI Summary generated', data: updatedLead });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/leads/:id/ai/draft-email
+ * @desc    Draft an AI follow-up email
+ * @access  Private
+ */
+router.post('/:id/ai/draft-email', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const { tone } = req.body;
+        const lead = await prisma.lead.findUnique({
+            where: { id: req.params.id },
+            include: { activityLogs: true }
+        });
+
+        if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+        const aiService = require('../services/ai.service');
+        const draft = await aiService.draftLeadEmail(lead, tone || 'Professional');
+
+        return res.json({ draft });
     } catch (error) {
         next(error);
     }

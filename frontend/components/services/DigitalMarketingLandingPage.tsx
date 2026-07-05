@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowUpRight, BarChart, Globe, Search, Smartphone, CheckCircle2 } from 'lucide-react'
+import DOMPurify from 'isomorphic-dompurify'
 
 export default function DigitalMarketingLandingPage({ data }: { data: any }) {
   return (
@@ -57,7 +58,7 @@ export default function DigitalMarketingLandingPage({ data }: { data: any }) {
               </div>
               <p 
                 className="text-slate-600 dark:text-slate-300 leading-loose text-[17px] font-light"
-                dangerouslySetInnerHTML={{ __html: data.content.introduction }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.introduction) }}
               />
             </div>
 
@@ -101,7 +102,7 @@ export default function DigitalMarketingLandingPage({ data }: { data: any }) {
               </div>
               <p 
                 className="text-slate-600 dark:text-slate-300 leading-loose text-[17px] font-light"
-                dangerouslySetInnerHTML={{ __html: data.content.methodology }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.methodology) }}
               />
             </div>
 

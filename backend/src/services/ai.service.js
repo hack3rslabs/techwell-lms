@@ -134,7 +134,14 @@ class AIService {
      * Determine the interview phase based on question count and max questions
      * Phase: OPENING (first 5 HR), TECHNICAL (middle), CLOSING (last 5 HR)
      */
-    getInterviewPhase(questionCount, maxQuestions) {
+    getInterviewPhase(questionCount, maxQuestions, mode = 'FULL') {
+        if (mode === 'QUICK_TECH') {
+            return { phase: 'TECHNICAL', indexInPhase: questionCount };
+        }
+        if (mode === 'QUICK_HR') {
+            return { phase: 'TECHNICAL', indexInPhase: questionCount }; // We'll treat HR mode as tech round but force behavioral questions
+        }
+
         const OPENING_COUNT = 5;
         const CLOSING_COUNT = 5;
         const technicalCount = Math.max(0, maxQuestions - OPENING_COUNT - CLOSING_COUNT);
@@ -269,14 +276,14 @@ class AIService {
 
             // Determine max questions from duration
             const maxQuestions = this.getMaxQuestionsFromDuration(interview.duration || 30);
-            console.log(`[generateNextQuestion] Q#${questionCount + 1} of ${maxQuestions} (${interview.duration}min)`);
+            console.log(`[generateNextQuestion] Q#${questionCount + 1} of ${maxQuestions} (${interview.duration}min, Mode: ${interview.mode})`);
 
             if (questionCount >= maxQuestions) {
                 return null; // End Interview
             }
 
             // Determine phase
-            const phaseInfo = this.getInterviewPhase(questionCount, maxQuestions);
+            const phaseInfo = this.getInterviewPhase(questionCount, maxQuestions, interview.mode);
             phase = phaseInfo.phase;
             const indexInPhase = phaseInfo.indexInPhase;
 
@@ -336,7 +343,16 @@ class AIService {
 
             // Determine if this is an HR behavioral question mid-tech round
             const technicalQuestionIndex = indexInPhase + 1;
-            const isHrBehavioral = technicalQuestionIndex % 4 === 0; // Every 4th tech question = behavioral
+            
+            let isHrBehavioral = false;
+            if (interview.mode === 'QUICK_HR') {
+                isHrBehavioral = true;
+            } else if (interview.mode === 'QUICK_TECH') {
+                isHrBehavioral = false;
+            } else {
+                isHrBehavioral = technicalQuestionIndex % 4 === 0; // Every 4th tech question = behavioral in FULL mode
+            }
+            
             const questionType = isHrBehavioral ? 'BEHAVIORAL' : 'TECHNICAL';
             const avatarRole = isHrBehavioral ? 'HR Manager' : 'Tech Lead';
 
@@ -750,6 +766,101 @@ Return ONLY a JSON array with:
         if (overallScore >= 85) return `Outstanding! You show excellent potential as a ${role}.`;
         if (overallScore >= 70) return `Good job. Solid ${role} capabilities with room to grow technical depth.`;
         return `Potential identified, but focus on fundamentals and STAR method clarity.`;
+    }
+
+    /**
+     * Generate a concise summary and Next Best Action for a CRM Lead
+     */
+    async generateLeadSummary(leadData) {
+        const prompt = `
+        You are an expert sales assistant. Please analyze the following lead data and provide a concise summary and the next best action.
+        Lead Name: ${leadData.name}
+        Email: ${leadData.email || 'N/A'}
+        Source: ${leadData.source}
+        Status: ${leadData.status}
+        Interested Role/Course: ${leadData.interestedRole || leadData.courseName || 'N/A'}
+        Notes: ${leadData.notes || 'None'}
+        Recent Activities: ${JSON.stringify(leadData.activities || [])}
+        
+        Respond ONLY in JSON format with exactly three fields:
+        {
+          "summary": "A 2-3 sentence summary of the lead's profile and history.",
+          "nextBestAction": "A specific, actionable next step for the sales rep.",
+          "priority": "HIGH, MEDIUM, or LOW"
+        }
+        `;
+
+        try {
+            const ai = await this.getAIProvider();
+            
+            if (ai.provider === 'OPENAI') {
+                const response = await ai.client.chat.completions.create({
+                    model: ai.model,
+                    messages: [{ role: "user", content: prompt }],
+                    response_format: { type: "json_object" }
+                });
+                return JSON.parse(response.choices[0].message.content);
+            } else if (ai.provider === 'GEMINI') {
+                const result = await ai.model.generateContent(prompt);
+                const text = result.response.text();
+                // strip markdown formatting if any
+                const jsonText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(jsonText);
+            }
+        } catch (error) {
+            console.error('[AI] Lead Summary Error:', error);
+            return {
+                summary: "Error generating summary.",
+                nextBestAction: "Review lead manually.",
+                priority: "MEDIUM"
+            };
+        }
+    }
+
+    /**
+     * Draft a follow-up email for a lead based on context
+     */
+    async draftLeadEmail(leadData, tone = 'Professional') {
+        const prompt = `
+        You are a highly skilled sales copywriter. Draft a follow-up email to the following lead.
+        The tone should be ${tone}. Keep it concise, persuasive, and personalized.
+
+        Lead Name: ${leadData.name}
+        Interested In: ${leadData.interestedRole || leadData.courseName || 'our programs'}
+        Current Status: ${leadData.status}
+        Notes: ${leadData.notes || 'None'}
+        Recent Activities: ${JSON.stringify(leadData.activities || [])}
+
+        Respond ONLY in JSON format with two fields:
+        {
+          "subject": "The email subject line",
+          "body": "The full email body. Use line breaks where appropriate."
+        }
+        `;
+
+        try {
+            const ai = await this.getAIProvider();
+            
+            if (ai.provider === 'OPENAI') {
+                const response = await ai.client.chat.completions.create({
+                    model: ai.model,
+                    messages: [{ role: "user", content: prompt }],
+                    response_format: { type: "json_object" }
+                });
+                return JSON.parse(response.choices[0].message.content);
+            } else if (ai.provider === 'GEMINI') {
+                const result = await ai.model.generateContent(prompt);
+                const text = result.response.text();
+                const jsonText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(jsonText);
+            }
+        } catch (error) {
+            console.error('[AI] Email Draft Error:', error);
+            return {
+                subject: "Following up on your inquiry",
+                body: "Hi " + leadData.name + ",\n\nI am following up on your recent inquiry. Please let me know when you are available for a quick chat.\n\nBest,\nSales Team"
+            };
+        }
     }
 }
 

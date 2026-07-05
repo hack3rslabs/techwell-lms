@@ -290,7 +290,7 @@ router.post('/parse-upload', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'ST
         if (!req.file) {
             return res.status(400).json({ error: 'No resume file uploaded' });
         }
-        tempPath = req.file.path;
+        tempPath = path.resolve('uploads/temp', path.basename(req.file.path));
 
         // Parse PDF to text
         let extractedText = '';

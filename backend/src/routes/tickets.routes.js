@@ -58,7 +58,10 @@ router.post('/', authenticate, upload.single('attachment'), async (req, res, nex
 
         res.status(201).json(ticket);
     } catch (error) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) {
+            const safePath = path.resolve('uploads/tickets', path.basename(req.file.path));
+            fs.unlinkSync(safePath);
+        }
         next(error);
     }
 });
@@ -180,7 +183,10 @@ router.post('/:id/reply', authenticate, checkPermission('TICKETS'), upload.singl
 
         res.json(newMessage);
     } catch (error) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) {
+            const safePath = path.resolve('uploads/tickets', path.basename(req.file.path));
+            fs.unlinkSync(safePath);
+        }
         next(error);
     }
 });

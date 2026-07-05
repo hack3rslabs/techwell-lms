@@ -71,7 +71,10 @@ router.post('/profile-image', authenticate, upload.single('avatar'), async (req,
         });
         res.json({ message: 'Profile picture updated', avatar: avatarUrl, user });
     } catch (error) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) {
+            const safePath = path.resolve('uploads/avatars', path.basename(req.file.path));
+            fs.unlinkSync(safePath);
+        }
         next(error);
     }
 });
