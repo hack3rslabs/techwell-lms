@@ -27,7 +27,7 @@ const registerSchema = z.object({
         .min(8, 'Password must be at least 8 characters')
         .regex(passwordComplexityRegex, 'Password must contain at least one uppercase, lowercase, number and special character'),
     name: z.string().min(2, 'Name must be at least 2 characters'),
-    phone: z.string().regex(/^[6-9]\d{9}$/, 'Must be a valid 10-digit Indian mobile number').optional(),
+    phone: z.string().refine(val => !val || /^[6-9]\d{9}$/.test(val), 'Must be a valid 10-digit Indian mobile number').optional(),
     referredByCode: z.string().optional(),
     role: z.enum(['STUDENT', 'EMPLOYER', 'INSTITUTE_ADMIN']).default('STUDENT')
 });
