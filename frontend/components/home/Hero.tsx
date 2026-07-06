@@ -187,7 +187,7 @@ export function Hero() {
                     </div>
 
                     {/* Right Column: Dynamic Hero Carousel */}
-                    <div className="hidden lg:flex flex-1 justify-center relative w-full max-w-[750px]">
+                    <div className="flex flex-1 justify-center relative w-full max-w-[750px] mt-8 lg:mt-0">
                         <div className="relative w-full aspect-[4/3]">
                             {/* Abstract Decorative Elements behind carousel */}
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/30 rounded-full blur-[40px] animate-pulse" />
@@ -221,8 +221,8 @@ export function Hero() {
                                                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 bg-gradient-to-r ${slides[currentSlide].color}`}>
                                                     FEATURED
                                                 </div>
-                                                <h3 className="text-3xl font-bold mb-2">{slides[currentSlide].title}</h3>
-                                                <p className="text-white/80 text-lg">{slides[currentSlide].subtitle}</p>
+                                                <h3 className="text-2xl sm:text-3xl font-bold mb-2">{slides[currentSlide].title}</h3>
+                                                <p className="text-white/80 text-sm sm:text-lg">{slides[currentSlide].subtitle}</p>
                                             </motion.div>
                                         </div>
                                     </motion.div>
