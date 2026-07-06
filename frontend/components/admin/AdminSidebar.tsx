@@ -75,7 +75,6 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
 
     const routes: RouteConfig[] = [
          { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Overview" },
-         { label: "Global Data", icon: FileText, href: "/admin/global-data", permission: "ADMIN", group: "Overview" },
          
          // Requests
          { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "EMPLOYER_REQUESTS", group: "Requests" },
