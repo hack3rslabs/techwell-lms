@@ -61,7 +61,8 @@ interface Certificate {
     revocationReason?: string
     signatoryName?: string
     signatoryTitle?: string
-    template?: { name: string; previewUrl?: string }
+    templateId?: string
+    template?: CertificateTemplate
 }
 
 interface CertificateTemplate {
@@ -72,6 +73,7 @@ interface CertificateTemplate {
     previewUrl?: string
     isDefault: boolean
     isActive: boolean
+    canvasData?: any
 }
 
 interface CertificateSettings {
@@ -285,35 +287,107 @@ export default function CertificatesPage() {
     }
 
     const handleDownloadCertificate = (cert: Certificate) => {
-        const certContent = `
-            <!DOCTYPE html>
-            <html>
-            <head><title>Certificate - ${cert.uniqueId}</title></head>
-            <body style="font-family: Georgia, serif; text-align: center; padding: 60px; border: 3px double #1a365d;">
-                <h1 style="color: #1a365d; font-size: 36px;">Certificate of Completion</h1>
-                <p style="font-size: 18px; margin: 40px 0;">This is to certify that</p>
-                <h2 style="color: #2d3748; font-size: 32px; margin: 20px 0;">${cert.studentName}</h2>
-                <p style="font-size: 18px; margin: 40px 0;">has successfully completed</p>
-                <h3 style="color: #4a5568; font-size: 24px;">${cert.courseName}</h3>
-                ${cert.grade ? `<p style="margin-top: 30px;">Grade: <strong>${cert.grade}</strong></p>` : ''}
-                <p style="margin-top: 50px;">Date: ${new Date(cert.issueDate).toLocaleDateString()}</p>
-                <p style="font-size: 12px; color: #718096; margin-top: 20px;">Certificate ID: ${cert.uniqueId}</p>
-                ${cert.signatoryName ? `
-                    <div style="margin-top: 60px;">
-                        <p style="border-top: 1px solid #000; display: inline-block; padding-top: 10px;">
-                            ${cert.signatoryName}<br/>
-                            <small>${cert.signatoryTitle || ''}</small>
-                        </p>
-                    </div>
-                ` : ''}
-            </body>
-            </html>
-        `
+        let template = cert.template;
+        if (!template && cert.templateId) {
+            template = templates.find(t => t.id === cert.templateId);
+        }
+        if (!template && templates.length > 0) {
+            template = templates.find(t => t.isDefault) || templates[0];
+        }
+
+        let certContent = '';
+        if (template && template.canvasData) {
+            try {
+                const elements = typeof template.canvasData === 'string' ? JSON.parse(template.canvasData) : template.canvasData;
+                
+                let elementsHtml = elements.map((el: any) => {
+                    let text = el.value || '';
+                    text = text.replace('{{STUDENT_NAME}}', cert.studentName);
+                    text = text.replace('{{COURSE_NAME}}', cert.courseName);
+                    text = text.replace('{{ISSUE_DATE}}', new Date(cert.issueDate).toLocaleDateString());
+                    text = text.replace('{{CERT_ID}}', cert.uniqueId);
+                    text = text.replace('{{GRADE}}', cert.grade || '');
+                    
+                    if (el.type === 'qr') {
+                        // Very simple fallback for QR code printing (just shows text)
+                        return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); font-family: ${el.fontFamily}; font-size: ${el.fontSize}px; color: ${el.color};">
+                                <div style="border: 2px solid #000; padding: 10px; text-align: center;">QR: ${cert.uniqueId}</div>
+                            </div>`;
+                    }
+                    
+                    return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); font-family: ${el.fontFamily}; font-size: ${el.fontSize}px; color: ${el.color}; white-space: nowrap;">${text}</div>`;
+                }).join('\n');
+
+                const bgUrl = template.designUrl.startsWith('http') ? template.designUrl : window.location.origin + template.designUrl;
+                
+                certContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Certificate - ${cert.uniqueId}</title>
+                        <style>
+                            @page { size: landscape; margin: 0; }
+                            body { margin: 0; padding: 0; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: #fff; }
+                            .cert-container { 
+                                position: relative; 
+                                width: 1122px; 
+                                height: 793px; 
+                                background-image: url('${bgUrl}'); 
+                                background-size: contain; 
+                                background-position: center; 
+                                background-repeat: no-repeat;
+                                page-break-inside: avoid;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="cert-container">
+                            ${elementsHtml}
+                        </div>
+                        <script>
+                            window.onload = () => { setTimeout(() => window.print(), 500); }
+                        </script>
+                    </body>
+                    </html>
+                `;
+            } catch (error) {
+                console.error("Failed to parse canvasData", error);
+            }
+        }
+
+        if (!certContent) {
+            // Fallback
+            certContent = `
+                <!DOCTYPE html>
+                <html>
+                <head><title>Certificate - ${cert.uniqueId}</title></head>
+                <body style="font-family: Georgia, serif; text-align: center; padding: 60px; border: 3px double #1a365d;">
+                    <h1 style="color: #1a365d; font-size: 36px;">Certificate of Completion</h1>
+                    <p style="font-size: 18px; margin: 40px 0;">This is to certify that</p>
+                    <h2 style="color: #2d3748; font-size: 32px; margin: 20px 0;">${cert.studentName}</h2>
+                    <p style="font-size: 18px; margin: 40px 0;">has successfully completed</p>
+                    <h3 style="color: #4a5568; font-size: 24px;">${cert.courseName}</h3>
+                    ${cert.grade ? `<p style="margin-top: 30px;">Grade: <strong>${cert.grade}</strong></p>` : ''}
+                    <p style="margin-top: 50px;">Date: ${new Date(cert.issueDate).toLocaleDateString()}</p>
+                    <p style="font-size: 12px; color: #718096; margin-top: 20px;">Certificate ID: ${cert.uniqueId}</p>
+                    ${cert.signatoryName ? `
+                        <div style="margin-top: 60px;">
+                            <p style="border-top: 1px solid #000; display: inline-block; padding-top: 10px;">
+                                ${cert.signatoryName}<br/>
+                                <small>${cert.signatoryTitle || ''}</small>
+                            </p>
+                        </div>
+                    ` : ''}
+                </body>
+                </html>
+            `;
+        }
+
         const blob = new Blob([certContent], { type: 'text/html' })
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
-        link.download = `${cert.uniqueId}.html`
+        link.target = '_blank'
         link.click()
         URL.revokeObjectURL(url)
     }
