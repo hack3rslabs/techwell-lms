@@ -164,6 +164,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
          { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Deployments" },
          { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Deployments" },
          { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Deployments" },
+         { label: "Success Stories", icon: Star, href: "/admin/success-stories", permission: "ADMIN", group: "Deployments" },
          { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY", group: "Deployments" },
     ]
 

@@ -2825,3 +2825,15 @@ model SeoAnalytics {
   ipAddress   String?
   createdAt   DateTime @default(now())
 }
+
+
+model SuccessStory {
+  id        String   @id @default(cuid())
+  imagePath String
+  url       String?
+  altText   String?
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

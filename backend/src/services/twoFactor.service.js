@@ -38,16 +38,19 @@ async function generateQrCodeUrl(otpauthUri) {
     }
 }
 
+const { encrypt, decrypt } = require('../utils/encryption');
+
 /**
  * Verifies a 6-digit TOTP token against the secret.
  * @param {string} token - The 6-digit verification code.
- * @param {string} secret - The Base32 TOTP secret.
+ * @param {string} secret - The Base32 TOTP secret (can be encrypted).
  * @returns {Promise<boolean>} True if token is valid, false otherwise.
  */
 async function verifyToken(token, secret) {
     if (!token || !secret) return false;
     try {
-        const result = await verify({ token, secret, window: 1 });
+        const decryptedSecret = secret.includes(':') ? decrypt(secret) : secret;
+        const result = await verify({ token, secret: decryptedSecret, window: 1 });
         return !!result.valid;
     } catch (error) {
         console.error('Error verifying TOTP token:', error);

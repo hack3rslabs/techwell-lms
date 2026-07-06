@@ -639,10 +639,12 @@ router.post('/2fa/setup', authenticate, async (req, res, next) => {
         const otpauthUri = twoFactorService.generateOtpauthUri(req.user.email, secret);
         const qrCodeUrl = await twoFactorService.generateQrCodeUrl(otpauthUri);
 
+        const { encrypt } = require('../utils/encryption');
+
         // Store secret temporarily
         await prisma.user.update({
             where: { id: userId },
-            data: { twoFactorTempSecret: secret }
+            data: { twoFactorTempSecret: encrypt(secret) }
         });
 
         res.json({

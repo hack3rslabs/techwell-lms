@@ -127,6 +127,7 @@ app.use('/api/assessments', require('./routes/assessment.routes'));
 app.use('/api/quizzes', require('./routes/quiz.routes'));
 app.use('/api/operations', require('./routes/operations.routes'));
 app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
+app.use('/api/success-stories', require('./routes/success-stories.routes'));
 app.use('/api/services', require('./routes/service.routes'));
 app.use('/api/products', require('./routes/product.routes'));
 app.use('/api/clients', require('./routes/client.routes'));

@@ -19,10 +19,9 @@ const getSecret = () => {
  * Derives a 32-byte key from the master secret using scrypt.
  */
 function getDerivedKey(secret) {
-    const salt = process.env.ENCRYPTION_SALT;
-    if (!salt) {
-        // Fallback to avoid breaking dev, but Snyk won't flag process.env.
-        throw new Error('FATAL: ENCRYPTION_SALT environment variable is not set.');
+    const salt = process.env.ENCRYPTION_SALT || 'techwell_default_salt_fallback';
+    if (!process.env.ENCRYPTION_SALT) {
+        console.warn('WARNING: ENCRYPTION_SALT environment variable is not set. Using fallback salt.');
     }
     return crypto.scryptSync(secret, salt, 32);
 }
