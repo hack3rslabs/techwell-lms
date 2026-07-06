@@ -209,7 +209,7 @@ export default function RegisterPage() {
             {/* Left side - Branding & Image */}
             <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center bg-black">
                 <img
-                    src="/images/student_signup_background.png"
+                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
                     alt="Students learning"
                     className="absolute inset-0 w-full h-full object-cover opacity-60"
                 />
