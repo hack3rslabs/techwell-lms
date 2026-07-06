@@ -119,7 +119,7 @@ export default function RegisterPage() {
                 {/* Left side - Branding */}
                 <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center bg-black">
                     <img
-                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                        src="/images/student_signup_bg.png"
                         alt="Students learning"
                         className="absolute inset-0 w-full h-full object-cover opacity-50"
                     />
@@ -209,7 +209,7 @@ export default function RegisterPage() {
             {/* Left side - Branding & Image */}
             <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center bg-black">
                 <img
-                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                    src="/images/student_signup_bg.png"
                     alt="Students learning"
                     className="absolute inset-0 w-full h-full object-cover opacity-60"
                 />
