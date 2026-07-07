@@ -1,7 +1,7 @@
 services:
   migrate:
     build: ./backend
-    command: sh -c "npx prisma db push --accept-data-loss"
+    command: sh -c "npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss"
     environment:
       DATABASE_URL: ${DATABASE_URL:?}
       NODE_ENV: ${NODE_ENV:-beta}
