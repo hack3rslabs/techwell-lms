@@ -20,7 +20,7 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile
-    command: sh -c "npx prisma migrate deploy"
+    command: sh -c "npx prisma db push"
     environment:
       - DATABASE_URL=postgresql://admin:admin_password_change_me@db:5432/techwell?schema=public
     depends_on:
