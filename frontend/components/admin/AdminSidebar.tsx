@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
-    LayoutDashboard,
+    LayoutDashboard, BarChart3,
     Users,
     BookOpen,
     FileText,
@@ -53,6 +53,7 @@ interface RouteConfig {
     showLeadCounts?: boolean
     customContent?: React.ReactNode
     group?: string
+    subRoutes?: { label: string; href: string }[]
 }
 
 type SidebarProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -80,13 +81,17 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
          { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "EMPLOYER_REQUESTS", group: "Requests" },
          
          // Tracking
-         { label: "Lead Management", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Tracking", showLeadCounts: true },
+         { label: "Lead Management", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Tracking", showLeadCounts: true, subRoutes: [
+             { label: "Overview", href: "/admin/leads" },
+             { label: "Newsletters", href: "/admin/leads/newsletters" }
+         ]},
          { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Tracking" },
          { label: "Customer 360", icon: Users, href: "/admin/crm/customers", permission: "CENTRAL_CRM", group: "Tracking" },
          { label: "Sales Pipelines", icon: Briefcase, href: "/admin/crm/pipelines", permission: "CENTRAL_CRM", group: "Tracking" },
          { label: "Client Agreements", icon: FileText, href: "/admin/crm/agreements", permission: "CENTRAL_CRM", group: "Tracking" },
          { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Tracking" },
          { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Tracking" },
+         { label: "BI Studio", icon: BarChart3, href: "/admin/analytics/studio", permission: "REPORTS", group: "Tracking" },
          { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Tracking" },
          
          // Approve
@@ -248,15 +253,15 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                         </div>
                     )}
                     {onToggleCollapse && (
-                        <Button variant="outline" size="icon" onClick={onToggleCollapse} className="shrink-0 hidden md:flex">
-                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                        <Button variant="outline" size="sm" onClick={onToggleCollapse} className="shrink-0 hidden md:flex gap-1" title="Toggle Sidebar">
+                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <><ChevronLeft className="h-4 w-4" /><span className="text-xs">Hide</span></>}
                         </Button>
                     )}
                 </div>
 
                 {/* Search Bar */}
                 {!isCollapsed && (
-                    <div className="p-3 border-b">
+                    <div className="p-3 border-b sticky top-0 bg-background z-10 shadow-sm">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <input 

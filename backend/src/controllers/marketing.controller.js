@@ -179,3 +179,38 @@ exports.deleteCampaign = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+
+exports.subscribeNewsletter = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    // Check if lead already exists with this email
+    const existing = await prisma.lead.findFirst({
+      where: { email }
+    });
+
+    if (existing) {
+      return res.json({ success: true, message: 'Already subscribed!' });
+    }
+
+    // Create a new lead for the newsletter
+    const name = email.split('@')[0];
+    await prisma.lead.create({
+      data: {
+        name: name,
+        email: email,
+        source: 'NEWSLETTER',
+        status: 'NEW'
+      }
+    });
+
+    res.json({ success: true, message: 'Successfully subscribed to the newsletter!' });
+  } catch (error) {
+    console.error('[Newsletter] subscribe error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

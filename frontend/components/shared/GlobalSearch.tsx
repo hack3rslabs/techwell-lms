@@ -75,7 +75,7 @@ export function GlobalSearch() {
                 <Input
                     type="search"
                     placeholder="Search courses, mentors..."
-                    className="pl-8 w-[250px] lg:w-[320px] bg-background"
+                    className="pl-8 w-[180px] lg:w-[220px] xl:w-[300px] transition-all bg-background"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => { if (results) setIsOpen(true) }}

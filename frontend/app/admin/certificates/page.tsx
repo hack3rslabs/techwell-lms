@@ -37,7 +37,9 @@ import {
     Save,
     Loader2,
     CheckCircle,
-    XCircle
+    XCircle,
+    Printer,
+    Linkedin
 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportToCSV } from '@/lib/export-utils'
@@ -286,7 +288,12 @@ export default function CertificatesPage() {
         setIsPreviewOpen(true)
     }
 
-    const handleDownloadCertificate = (cert: Certificate) => {
+    const handleLinkedInShare = (uniqueId: string) => {
+        const url = `${window.location.origin}/certificates/${uniqueId}`;
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+    }
+
+        const handleActionCertificate = (cert: Certificate, action: 'download' | 'print') => {
         let template = cert.template;
         if (!template && cert.templateId) {
             template = templates.find(t => t.id === cert.templateId);
@@ -306,13 +313,22 @@ export default function CertificatesPage() {
                     text = text.replace('{{COURSE_NAME}}', cert.courseName);
                     text = text.replace('{{ISSUE_DATE}}', new Date(cert.issueDate).toLocaleDateString());
                     text = text.replace('{{CERT_ID}}', cert.uniqueId);
-                    text = text.replace('{{GRADE}}', cert.grade || '');
+                    text = text.replace('{{GRADE}}', cert.grade || 'N/A');
+                    text = text.replace('{{DURATION}}', '4 Months');
+                    text = text.replace('{{SIGNATORY_NAME}}', cert.signatoryName || 'Steven Wilson');
                     
-                    if (el.type === 'qr') {
-                        // Very simple fallback for QR code printing (just shows text)
+                    if (el.type === 'qr' || el.type === 'barcode') {
                         return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); font-family: ${el.fontFamily}; font-size: ${el.fontSize}px; color: ${el.color};">
-                                <div style="border: 2px solid #000; padding: 10px; text-align: center;">QR: ${cert.uniqueId}</div>
+                                <div style="border: 2px solid #000; padding: 10px; text-align: center; font-size: 12px; background: white;">
+                                    ||| || ||| |<br/>
+                                    ${cert.uniqueId}
+                                </div>
                             </div>`;
+                    }
+                    if (el.type === 'image' || text === '{{LOGO}}') {
+                        return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%);">
+                            <img src="${window.location.origin}/logo-dark.png" alt="Logo" style="height: 50px; object-fit: contain;" />
+                        </div>`;
                     }
                     
                     return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); font-family: ${el.fontFamily}; font-size: ${el.fontSize}px; color: ${el.color}; white-space: nowrap;">${text}</div>`;
@@ -344,9 +360,9 @@ export default function CertificatesPage() {
                         <div class="cert-container">
                             ${elementsHtml}
                         </div>
-                        <script>
+                        ${action === 'print' ? `<script>
                             window.onload = () => { setTimeout(() => window.print(), 500); }
-                        </script>
+                        </script>` : ''}
                     </body>
                     </html>
                 `;
@@ -593,9 +609,17 @@ export default function CertificatesPage() {
                                                         <Eye className="h-4 w-4 mr-1" />
                                                         View
                                                     </Button>
-                                                    <Button variant="ghost" size="sm" onClick={() => handleDownloadCertificate(cert)}>
+                                                    <Button variant="ghost" size="sm" onClick={() => handleActionCertificate(cert, 'download')}>
                                                         <Download className="h-4 w-4 mr-1" />
                                                         Download
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => handleActionCertificate(cert, 'print')}>
+                                                        <Printer className="h-4 w-4 mr-1" />
+                                                        Print
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => handleLinkedInShare(cert.uniqueId)}>
+                                                        <Linkedin className="h-4 w-4 mr-1 text-blue-600" />
+                                                        Share
                                                     </Button>
                                                 </TableCell>
                                             </TableRow>
@@ -637,9 +661,17 @@ export default function CertificatesPage() {
                             )}
                             <DialogFooter>
                                 <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>Close</Button>
-                                <Button onClick={() => previewCert && handleDownloadCertificate(previewCert)}>
+                                <Button onClick={() => previewCert && handleActionCertificate(previewCert, 'download')}>
                                     <Download className="h-4 w-4 mr-2" />
                                     Download
+                                </Button>
+                                <Button onClick={() => previewCert && handleActionCertificate(previewCert, 'print')}>
+                                    <Printer className="h-4 w-4 mr-2" />
+                                    Print
+                                </Button>
+                                <Button onClick={() => previewCert && handleLinkedInShare(previewCert.uniqueId)} variant="outline">
+                                    <Linkedin className="h-4 w-4 mr-2 text-blue-600" />
+                                    Share
                                 </Button>
                             </DialogFooter>
                         </DialogContent>

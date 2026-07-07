@@ -20,7 +20,6 @@ interface SuccessStory {
 }
 
 export default function SuccessStoriesPage() {
-    const { token } = useAuth();
     const [stories, setStories] = useState<SuccessStory[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -35,6 +34,7 @@ export default function SuccessStoriesPage() {
 
     const fetchStories = async () => {
         try {
+            const token = localStorage.getItem('token');
             const res = await api.get('/success-stories/admin', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -48,7 +48,7 @@ export default function SuccessStoriesPage() {
 
     useEffect(() => {
         fetchStories();
-    }, [token]);
+    }, []);
 
     const resetForm = () => {
         setEditingId(null);
@@ -71,6 +71,7 @@ export default function SuccessStoriesPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this success story?')) return;
         try {
+            const token = localStorage.getItem('token');
             await api.delete(`/success-stories/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -91,6 +92,7 @@ export default function SuccessStoriesPage() {
         formData.append('order', order.toString());
 
         try {
+            const token = localStorage.getItem('token');
             if (editingId) {
                 await api.put(`/success-stories/${editingId}`, formData, {
                     headers: { 
@@ -123,13 +125,10 @@ export default function SuccessStoriesPage() {
         <div className="container mx-auto py-8">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold">Success Stories (Google Reviews)</h1>
-                <Dialog open={isDialogOpen} onOpenChange={(open) => {
-                    setIsDialogOpen(open);
-                    if (!open) resetForm();
-                }}>
-                    <DialogTrigger asChild>
-                        <Button className="flex items-center gap-2"><Plus className="w-4 h-4" /> Add Story</Button>
-                    </DialogTrigger>
+                <Button className="flex items-center gap-2" onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+                    <Plus className="w-4 h-4" /> Add Story
+                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>{editingId ? 'Edit Success Story' : 'Add Success Story'}</DialogTitle>

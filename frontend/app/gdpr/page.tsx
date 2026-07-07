@@ -113,8 +113,8 @@ export default function GDPRPage() {
                             <p className="text-muted-foreground mb-4">
                             If you have questions about these rights or wish to exercise them, please contact us at:
                             <br />
-                            <Link href="mailto:dpo@techwell.co.in" className="text-primary hover:underline font-medium">
-                                dpo@techwell.co.in
+                            <Link href="mailto:info@techwell.co.in" className="text-primary hover:underline font-medium">
+                                info@techwell.co.in
                             </Link>
                         </p>
                             <p className="text-sm text-muted-foreground mt-4">

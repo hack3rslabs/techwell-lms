@@ -2755,6 +2755,8 @@ model ClientAgreement {
   pdfUrl            String?
   clientSignature   String?  // Base64 or URL
   clientSignedAt    DateTime?
+  clientPhotoUrl    String?  // Base64 or URL for live photo
+  clientPhotoAt     DateTime?
   clientIp          String?
   adminSignature    String?
   adminSignedAt     DateTime?
@@ -2836,4 +2838,27 @@ model SuccessStory {
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model AdminDocument {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  filePath    String
+  fileSize    Int      @default(0)
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+model NewsletterCampaign {
+  id          String    @id @default(uuid())
+  subject     String
+  htmlContent String    @db.Text
+  status      String    @default("DRAFT") // DRAFT, PUBLISHED, SENT
+  sentAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

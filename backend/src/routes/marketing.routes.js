@@ -4,6 +4,8 @@ const marketingController = require('../controllers/marketing.controller');
 const { authenticate: protect, authorize } = require('../middleware/auth');
 
 // Public routes for rendering landing pages and forms
+router.post('/newsletter/subscribe', marketingController.subscribeNewsletter);
+
 router.get('/landing-pages/public/:slug', marketingController.getLandingPageBySlug);
 router.get('/forms/public/:id', marketingController.getFormById);
 router.post('/landing-pages/views/:slug', marketingController.incrementPageViews);

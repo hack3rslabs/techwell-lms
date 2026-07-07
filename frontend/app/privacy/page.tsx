@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { Shield, Check, Lock, ShieldCheck, Database, ArrowLeft, Mail, User } from 'lucide-react'
+import { Shield, Check, Lock, ShieldCheck, Database, ArrowLeft, Mail, User, Briefcase } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 

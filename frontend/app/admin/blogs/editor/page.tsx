@@ -187,9 +187,9 @@ function BlogEditorContent() {
         <div className="fixed inset-0 z-[100] flex flex-col bg-[#f8fafc] dark:bg-[#0f172a] overflow-hidden selection:bg-blue-200 dark:selection:bg-blue-900 font-sans">
             {/* Top Toolbar */}
             <div className="sticky top-0 z-50 border-b border-white/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.03)]">
-                <div className="flex items-center justify-between px-6 py-3 gap-3">
+                <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 gap-3 sm:gap-3">
                     {/* Left: back + meta info */}
-                    <div className="flex items-center gap-4 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
                         <Button variant="ghost" size="sm" onClick={() => router.push('/admin/blogs')} className="shrink-0 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full transition-all">
                             <ArrowLeft className="h-4 w-4 mr-1.5" />
                             Back
@@ -213,7 +213,7 @@ function BlogEditorContent() {
                     </div>
 
                     {/* Right: actions */}
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
                         <Button
                             variant="outline"
                             size="sm"
@@ -375,8 +375,17 @@ function BlogEditorContent() {
                     </div>
                 </div>
 
+                
+                {/* Mobile overlay */}
+                {showMeta && (
+                    <div 
+                        className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40 md:hidden"
+                        onClick={() => setShowMeta(false)}
+                    />
+                )}
                 {/* Right Sidebar - Meta */}
-                <div className={`w-80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-l border-white/20 dark:border-slate-700/50 overflow-y-auto shrink-0 transition-all duration-300 shadow-[[-10px_0_30px_rgba(0,0,0,0.03)]] ${showMeta ? 'translate-x-0' : 'translate-x-full absolute right-0 h-full'}`}>
+
+                <div className={`w-full md:w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-l border-slate-200/50 dark:border-slate-700/50 overflow-y-auto shrink-0 transition-all duration-300 shadow-[[-10px_0_30px_rgba(0,0,0,0.1)]] z-50 ${showMeta ? 'translate-x-0 absolute md:relative right-0 inset-y-0' : 'translate-x-full absolute right-0 inset-y-0'}`}>
                     <div className="p-6 space-y-8">
                         {/* Sidebar header */}
                         <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-700/60">
@@ -484,10 +493,12 @@ function BlogEditorContent() {
                             <div className="space-y-2">
                                 <label className="text-[11px] font-medium text-slate-500">Meta Title</label>
                                 <Input value={formData.metaTitle} onChange={e => setFormData(prev => ({...prev, metaTitle: e.target.value}))} placeholder="60 chars max" className="h-10 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-emerald-500/20" />
+                                <p className={`text-[10px] text-right ${formData.metaTitle.length > 60 ? 'text-red-500 font-bold' : 'text-slate-400'}`}>{formData.metaTitle.length}/60 chars</p>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[11px] font-medium text-slate-500">Meta Description</label>
                                 <textarea value={formData.metaDescription} onChange={e => setFormData(prev => ({...prev, metaDescription: e.target.value}))} placeholder="155 chars max" className="w-full text-sm p-3 border border-slate-200 dark:border-slate-700 rounded-xl h-24 bg-white dark:bg-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all resize-none" />
+                                <p className={`text-[10px] text-right ${formData.metaDescription.length > 155 ? 'text-red-500 font-bold' : 'text-slate-400'}`}>{formData.metaDescription.length}/155 chars</p>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[11px] font-medium text-slate-500">Canonical URL</label>

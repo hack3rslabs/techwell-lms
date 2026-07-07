@@ -252,6 +252,8 @@ router.post('/capture', async (req, res, next) => {
                 campaignId: campaignId || null
             }
         });
+        notifyNewLead(lead);
+        notifyNewLead(lead);
         console.log('[Shared Interest→Leads] Lead created successfully:', { id: lead.id, email: lead.email, source });
  
         // Trigger AI Workflow Background Task
@@ -353,6 +355,7 @@ router.post('/demo', async (req, res, next) => {
                     notes
                 }
             });
+        notifyNewLead(lead);
         }
 
         // Try to create a DemoSchedule. Find a super admin to assign.
@@ -567,6 +570,8 @@ router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) 
                 referralName
             }
         });
+        notifyNewLead(lead);
+        notifyNewLead(lead);
 
         // Trigger AI Workflow Background Task
         AICore.trackEvent('lead.created', 'CRM', { leadId: lead.id, ...lead })
@@ -973,6 +978,8 @@ router.post('/webhook/generic', async (req, res) => {
                 notes: `Interest: ${category || 'General'}. JSON: ${JSON.stringify(req.body)}`
             }
         });
+        notifyNewLead(lead);
+        notifyNewLead(lead);
 
         res.status(201).json({ success: true, leadId: lead.id });
     } catch (error) {

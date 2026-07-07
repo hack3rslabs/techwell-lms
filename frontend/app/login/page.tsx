@@ -14,7 +14,7 @@ import { LoginCharacter } from '@/components/auth/LoginCharacter'
 export default function LoginPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const { login, isAuthenticated, user } = useAuth()
+    const { login, verify2FA, isAuthenticated, user } = useAuth()
 
     const [email, setEmail] = React.useState('')
     const [password, setPassword] = React.useState('')
@@ -23,6 +23,12 @@ export default function LoginPage() {
     const [error, setError] = React.useState('')
     const [charState, setCharState] = React.useState<"normal" | "shy" | "peeking">("normal")
     const [showIdleBanner, setShowIdleBanner] = React.useState(false)
+    
+    // 2FA state
+    const [show2FA, setShow2FA] = React.useState(false)
+    const [tempToken, setTempToken] = React.useState('')
+    const [twoFactorCode, setTwoFactorCode] = React.useState('')
+    const [trustDevice, setTrustDevice] = React.useState(false)
 
     React.useEffect(() => {
         if (isAuthenticated && user) {
@@ -49,10 +55,29 @@ export default function LoginPage() {
         setIsLoading(true)
 
         try {
-            await login(email, password)
-            // Relies on useEffect to handle role-based redirection
+            const res = await login(email, password)
+            if (res && res.require2FA) {
+                setTempToken(res.tempToken || '')
+                setShow2FA(true)
+            }
+            // Otherwise, useEffect handles redirection
         } catch (err: unknown) {
             const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Login failed. Please try again.'
+            setError(errorMessage)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handle2FASubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setError('')
+        setIsLoading(true)
+        try {
+            await verify2FA(twoFactorCode, tempToken, trustDevice)
+            // Relies on useEffect to handle role-based redirection
+        } catch (err: unknown) {
+            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Invalid 2FA code.'
             setError(errorMessage)
         } finally {
             setIsLoading(false)
@@ -117,11 +142,14 @@ export default function LoginPage() {
 
                         <Card className="border-muted shadow-2xl backdrop-blur-sm bg-background/90 rounded-2xl">
                             <CardHeader className="text-center pt-10 pb-6">
-                                <CardTitle className="text-3xl font-bold tracking-tight">Welcome Back</CardTitle>
-                                <CardDescription className="text-base">Sign in to your Techwell account</CardDescription>
+                                <CardTitle className="text-3xl font-bold tracking-tight">
+                                    {show2FA ? 'Two-Factor Verification' : 'Welcome Back'}
+                                </CardTitle>
+                                <CardDescription className="text-base">
+                                    {show2FA ? 'Enter the 6-digit code from your authenticator app' : 'Sign in to your Techwell account'}
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="px-8 pb-10">
-                                <form onSubmit={handleSubmit} className="space-y-5">
                                     {/* Idle session expired banner */}
                                 {showIdleBanner && (
                                     <div
@@ -143,16 +171,64 @@ export default function LoginPage() {
                                     </div>
                                 )}
 
-                                {error && (
+                                    {error && (
                                         <div className="p-4 text-sm font-medium text-red-500 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/30 animate-in fade-in zoom-in duration-300">
                                             {error}
                                         </div>
                                     )}
 
-                                    <div className="space-y-2.5">
-                                        <label htmlFor="email" className="text-sm font-semibold ml-1">
-                                            Email Address
-                                        </label>
+                                {show2FA ? (
+                                    <form onSubmit={handle2FASubmit} className="space-y-5">
+                                        <div className="space-y-2.5">
+                                            <label htmlFor="twoFactorCode" className="text-sm font-semibold ml-1">
+                                                Authenticator Code
+                                            </label>
+                                            <Input
+                                                id="twoFactorCode"
+                                                type="text"
+                                                placeholder="000000"
+                                                maxLength={6}
+                                                value={twoFactorCode}
+                                                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                                required
+                                                disabled={isLoading}
+                                                className="h-12 rounded-xl focus:ring-primary/20 text-center tracking-widest text-lg font-bold"
+                                            />
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <input 
+                                                type="checkbox" 
+                                                id="trustDevice" 
+                                                checked={trustDevice}
+                                                onChange={(e) => setTrustDevice(e.target.checked)}
+                                                className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                                            />
+                                            <label htmlFor="trustDevice" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                Trust this device for 30 days
+                                            </label>
+                                        </div>
+                                        <Button type="submit" className="w-full h-14 text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/25 rounded-xl transition-all active:scale-[0.98]" disabled={isLoading || twoFactorCode.length !== 6}>
+                                            {isLoading ? (
+                                                <>
+                                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                    Verifying...
+                                                </>
+                                            ) : (
+                                                'Verify Code'
+                                            )}
+                                        </Button>
+                                        <div className="mt-4 text-center">
+                                            <button type="button" onClick={() => setShow2FA(false)} className="text-sm text-primary hover:underline font-medium">
+                                                Back to Login
+                                            </button>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleSubmit} className="space-y-5">
+                                        <div className="space-y-2.5">
+                                            <label htmlFor="email" className="text-sm font-semibold ml-1">
+                                                Email Address
+                                            </label>
                                         <Input
                                             id="email"
                                             type="email"
@@ -211,7 +287,8 @@ export default function LoginPage() {
                                             'Sign In'
                                         )}
                                     </Button>
-                                </form>
+                                    </form>
+                                )}
 
                                 <div className="mt-8 pt-6 border-t border-muted/60 text-center text-sm">
                                     <span className="text-muted-foreground">New to Techwell? </span>

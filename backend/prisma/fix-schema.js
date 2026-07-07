@@ -1,48 +1,32 @@
 const fs = require('fs');
-const data = fs.readFileSync('schema.prisma', 'utf16le'); // Oh wait, let's read as utf8 and see if we can find it.
-const utf8Data = fs.readFileSync('schema.prisma', 'utf8');
 
-// The corrupted part is at the end. We know `model Invoice` ends before that.
-const invoiceEnd = utf8Data.indexOf('model Invoice {');
-if (invoiceEnd !== -1) {
-  const closingBrace = utf8Data.indexOf('}', invoiceEnd);
-  
-  if (closingBrace !== -1) {
-    const cleanContent = utf8Data.substring(0, closingBrace + 1);
-    
-    const newModels = `
+const path = 'E:/FinalProjects/techwell-lms/backend/prisma/schema.prisma';
+let content = fs.readFileSync(path, 'utf8');
 
-model FollowUpTask {
-  id          String    @id @default(cuid())
-  leadId      String?
-  customerId  String?
-  title       String
-  description String?
-  dueDate     DateTime
-  status      String    @default("PENDING")
-  assignedTo  String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  lead        Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
-}
+const regex = /  taxPercentage     Float    @default\(0\)\n  customer          Customer/m;
+const replacement = `  taxPercentage     Float    @default(0)
+  taxAmount         Float    @default(0)
+  grandTotal        Float    @default(0)
+  validFrom         DateTime?
+  validUntil        DateTime?
+  pdfUrl            String?
+  clientSignature   String?  // Base64 or URL
+  clientSignedAt    DateTime?
+  clientPhotoUrl    String?  // Base64 or URL for live photo
+  clientPhotoAt     DateTime?
+  clientIp          String?
+  adminSignature    String?
+  adminSignedAt     DateTime?
+  adminId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-model CommunicationLog {
-  id          String    @id @default(cuid())
-  leadId      String?
-  customerId  String?
-  type        String
-  direction   String
-  status      String
-  content     String?
-  metadata    Json?
-  timestamp   DateTime  @default(now())
-  lead        Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
-}
-`;
-    
-    fs.writeFileSync('schema.prisma', cleanContent + newModels, 'utf8');
-    console.log('Successfully fixed schema.prisma');
-  }
+  customer          Customer`;
+
+if (content.match(regex)) {
+    content = content.replace(regex, replacement);
+    fs.writeFileSync(path, content, 'utf8');
+    console.log("Schema restored successfully.");
+} else {
+    console.log("Could not find the broken block.");
 }

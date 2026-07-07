@@ -61,8 +61,10 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
+const xss = require('xss-clean');
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(xss());
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -83,6 +85,7 @@ app.use('/api/crm/customers', require('./routes/crm-customers.routes'));
 app.use('/api/crm/agreements', require('./routes/crm-agreements.routes'));
 app.use('/api/messaging', require('./routes/messaging.routes'));
 app.use('/api/analytics', require('./routes/analytics.routes'));
+app.use('/api/analytics/studio', require('./routes/analytics-studio.routes'));
 app.use('/api/ads', require('./routes/ads.routes'));
 app.use('/api/employers', require('./routes/employer.routes'));
 app.use('/api/interviews', interviewRoutes);
@@ -128,6 +131,7 @@ app.use('/api/quizzes', require('./routes/quiz.routes'));
 app.use('/api/operations', require('./routes/operations.routes'));
 app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
 app.use('/api/success-stories', require('./routes/success-stories.routes'));
+app.use('/api/documents', require('./routes/documents.routes'));
 app.use('/api/services', require('./routes/service.routes'));
 app.use('/api/products', require('./routes/product.routes'));
 app.use('/api/clients', require('./routes/client.routes'));
@@ -141,6 +145,7 @@ app.use('/api/linkedin', require('./routes/linkedin.routes'));
 app.use('/api/payroll', require('./routes/payroll.routes'));
 app.use('/api/admin/marketing', require('./routes/marketing.routes'));
 app.use('/api/promotions', require('./routes/promotions.routes'));
+app.use('/api/admin/newsletters', require('./routes/newsletter.routes'));
 app.use('/api/admin/automation-studio', require('./api/admin/automation-studio/index'));
 app.use('/api/twilio', twilioRouter);
 
@@ -208,6 +213,50 @@ process.on('unhandledRejection', (err) => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
+    
+// Auto-seed Super Admin
+async function seedSuperAdmin() {
+    try {
+        const bcrypt = require('bcryptjs');
+        const { PrismaClient } = require('@prisma/client');
+        const prisma = new PrismaClient();
+        const email = 'uttam@techwell.co.in';
+        const rawPassword = process.env.ADMIN_PASSWORD;
+        if (!rawPassword) return; // Skip if no password configured
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(rawPassword, salt);
+        
+        let admin = await prisma.user.findUnique({ where: { email } });
+        if (!admin) {
+            await prisma.user.create({
+                data: {
+                    email,
+                    password: hashedPassword,
+                    firstName: 'Uttam',
+                    lastName: 'Admin',
+                    name: 'Uttam Admin',
+                    role: 'SUPER_ADMIN',
+                    emailVerified: true
+                }
+            });
+            console.log(`[SEED] Created super admin: ${email}`);
+        } else {
+            // Ensure they have SUPER_ADMIN role and reset password if needed
+            await prisma.user.update({
+                where: { email },
+                data: { 
+                    role: 'SUPER_ADMIN',
+                    password: hashedPassword
+                }
+            });
+            console.log(`[SEED] Verified super admin: ${email}`);
+        }
+    } catch(err) {
+        console.error('[SEED] Error seeding super admin:', err);
+    }
+}
+seedSuperAdmin();
+
     server.listen(PORT, () => {
         console.log(`🚀 Techwell API running on http://localhost:${PORT}`);
         require('./ai-core/scheduler/followUpCron')();
