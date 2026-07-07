@@ -328,24 +328,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                                 )}
                                             </Link>
 
-                                            {route.label === "Lead Management" && !isCollapsed && (
-                                                <div className="ml-8 mt-1 space-y-1 border-l pl-3 border-slate-200 dark:border-slate-800">
-                                                    {[
-                                                        { label: "Job Enquiries", type: "JOB_ENQUIRY" },
-                                                        { label: "Training", type: "TRAINING" },
-                                                        { label: "Service Requests", type: "SERVICE_REQUEST" },
-                                                        { label: "Software Requests", type: "SOFTWARE_REQUEST" }
-                                                    ].map((subRoute) => (
-                                                        <Link
-                                                            key={subRoute.type}
-                                                            href={`/admin/leads?type=${subRoute.type}`}
-                                                            className="block text-xs text-muted-foreground hover:text-primary hover:bg-primary/5 p-2 rounded-md transition"
-                                                        >
-                                                            {subRoute.label}
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                            )}
+
                                             
                                             {route.customContent && isActive && !isCollapsed && (
                                                 <div className="ml-8 mt-1 space-y-1">
