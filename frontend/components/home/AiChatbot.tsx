@@ -105,14 +105,14 @@ export default function AiChatbot() {
             {!isOpen && (
                 <Button 
                     onClick={() => setIsOpen(true)}
-                    className="w-14 h-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 hover:scale-105 transition-transform flex items-center justify-center relative group"
+                    className="w-12 h-12 rounded-full shadow-2xl bg-primary hover:bg-primary/90 hover:scale-105 transition-transform flex items-center justify-center relative group"
                 >
-                    <MessageCircle className="w-6 h-6 text-white" />
+                    <MessageCircle className="w-5 h-5 text-white" />
                     <span className="absolute -top-1 -right-1 flex h-3 w-3">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                     </span>
-                    <div className="absolute right-16 px-3 py-1.5 bg-background text-foreground text-xs font-medium rounded-lg whitespace-nowrap shadow-xl border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <div className="absolute right-14 px-3 py-1.5 bg-background text-foreground text-xs font-medium rounded-lg whitespace-nowrap shadow-xl border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         Chat with us
                     </div>
                 </Button>

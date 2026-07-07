@@ -220,9 +220,8 @@ async function seedSuperAdmin() {
         const bcrypt = require('bcryptjs');
         const { PrismaClient } = require('@prisma/client');
         const prisma = new PrismaClient();
-        const email = 'uttam@techwell.co.in';
-        const rawPassword = process.env.ADMIN_PASSWORD;
-        if (!rawPassword) return; // Skip if no password configured
+        const email = 'admin@techwell.co.in';
+        const rawPassword = process.env.ADMIN_PASSWORD || 'password123';
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(rawPassword, salt);
         
