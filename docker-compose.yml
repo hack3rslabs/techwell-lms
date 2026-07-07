@@ -16,19 +16,6 @@ services:
     networks:
       - techwell_net
 
-  migrate:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
-    command: sh -c "npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss"
-    environment:
-      - DATABASE_URL=postgresql://admin:admin_password_change_me@db:5432/techwell?schema=public
-    depends_on:
-      - db
-    networks:
-      - techwell_net
-    restart: "no"
-
   backend:
     build: 
       context: ./backend
