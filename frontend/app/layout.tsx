@@ -88,7 +88,6 @@ export const metadata: Metadata = {
   },
 };
 
-import AiChatbot from "@/components/home/AiChatbot";
 
 export default function RootLayout({
   children,
@@ -121,7 +120,6 @@ export default function RootLayout({
               </div>
               <div className="print:hidden">
                 <FloatingCallButton />
-                <AiChatbot />
               </div>
 
             </BehaviorTrackingProvider>
