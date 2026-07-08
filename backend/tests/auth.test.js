@@ -44,7 +44,7 @@ describe('Authentication API Tests', () => {
             .post('/api/auth/login')
             .send({
                 email: 'test@example.com',
-                password: 'password123'
+                password: process.env.TEST_PASSWORD || 'dummy-test-password-123!'
             });
 
         expect(response.status).toBe(200);

@@ -23,7 +23,9 @@ import {
     Plus,
     Calendar,
     Briefcase,
-    Zap
+    Zap,
+    CheckSquare,
+    LifeBuoy
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { AdminReportModal } from '@/components/admin/report-modal'
@@ -73,6 +75,8 @@ export default function AdminDashboard() {
         leads: 0,
         campusDrives: 0,
         revenue: 0,
+        activeTasks: 0,
+        activeTickets: 0,
         recentActivity: [] as any[]
     })
 
@@ -276,7 +280,7 @@ export default function AdminDashboard() {
                                 </div>
                             </CardContent>
                         </Card>
-                        
+
                         <Card
                             className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
                             onClick={() => router.push('/admin/leads')}
@@ -317,6 +321,50 @@ export default function AdminDashboard() {
                                 <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.campusDrives || 0}</div>
                                 <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                                     <span>Ongoing hiring</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card
+                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                            onClick={() => router.push('/admin/tasks')}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-rose-500/10 to-red-500/10 blur-2xl group-hover:bg-rose-500/20 transition-all duration-500" />
+                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
+                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+                                    Active Tasks
+                                </CardTitle>
+                                <div className="h-10 w-10 rounded-2xl bg-rose-100 dark:bg-rose-900/30 border border-rose-200/50 dark:border-rose-800/50 flex items-center justify-center text-rose-600 dark:text-rose-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                    <CheckSquare className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent className="relative z-10 mt-2">
+                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.activeTasks || 0}</div>
+                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                                    <span>Pending action</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card
+                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                            onClick={() => router.push('/admin/support')}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-cyan-500/10 to-teal-500/10 blur-2xl group-hover:bg-cyan-500/20 transition-all duration-500" />
+                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
+                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+                                    Open Support Tickets
+                                </CardTitle>
+                                <div className="h-10 w-10 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 border border-cyan-200/50 dark:border-cyan-800/50 flex items-center justify-center text-cyan-600 dark:text-cyan-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                    <LifeBuoy className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent className="relative z-10 mt-2">
+                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.activeTickets || 0}</div>
+                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                                    <span>Requires attention</span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -382,7 +430,7 @@ export default function AdminDashboard() {
                                                         </p>
                                                         <p className="text-xs font-medium text-slate-500 dark:text-slate-500 mt-1.5 flex items-center gap-1.5">
                                                             <Calendar className="h-3 w-3" />
-                                                            {new Date(activity.enrolledAt).toLocaleDateString()} at {new Date(activity.enrolledAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                            {new Date(activity.enrolledAt).toLocaleDateString()} at {new Date(activity.enrolledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </p>
                                                     </div>
                                                 </div>

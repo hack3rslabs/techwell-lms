@@ -40,8 +40,8 @@ export function DatasetImporter() {
                     setColumns(cols)
                     setDataset(data)
                     // Auto-select first string col as X and first number col as Y
-                    let defaultX = cols[0]
-                    let defaultY = cols.find(c => typeof (data[0] as any)[c] === 'number') || cols[1] || cols[0]
+                    const defaultX = cols[0]
+                    const defaultY = cols.find(c => typeof (data[0] as any)[c] === 'number') || cols[1] || cols[0]
                     
                     setXAxis(defaultX)
                     setYAxis(defaultY)

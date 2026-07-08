@@ -17,9 +17,11 @@ import DOMPurify from 'isomorphic-dompurify'
 import { RichTextEditor } from '@/components/editor/RichTextEditor'
 
 const BLOG_CATEGORIES = [
-    "AI & Future Tech", "IT Careers", "Non-IT Careers", "Freshers Guide",
-    "Job Market & Economy", "Entrepreneurship", "Corporate & Laws",
-    "Finance & Wealth", "Internships & Experience", "Skill Development"
+    "Software Development", "Data Science & AI", "Cloud & DevOps", 
+    "Cybersecurity", "UI/UX Design", "Product Management",
+    "Career Guidance", "Tech Interviews", "Internships & Campus Drives",
+    "Student Success Stories", "Industry Trends", "Corporate Training",
+    "Freelancing & Remote Work", "Skill Development"
 ]
 
 function BlogEditorContent() {

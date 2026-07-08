@@ -35,25 +35,34 @@ const createBlogSchema = z.object({
 router.get('/', optionalAuth, async (req, res, next) => {
     try {
         const { status, search, category, page = 1, limit = 10 } = req.query;
-        const where = {};
+        const where = { AND: [] };
 
         // Visibility rules
         if (!req.user || !['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
-            where.status = 'PUBLISHED';
-        } else if (status) {
-            where.status = status;
+            where.AND.push({
+                OR: [
+                    { status: 'PUBLISHED' },
+                    { status: 'SCHEDULED', scheduledPublishAt: { lte: new Date() } }
+                ]
+            });
+        } else if (status && status !== 'ALL') {
+            where.AND.push({ status });
         }
 
         if (search) {
-            where.OR = [
-                { title: { contains: search, mode: 'insensitive' } },
-                { content: { contains: search, mode: 'insensitive' } }
-            ];
+            where.AND.push({
+                OR: [
+                    { title: { contains: search, mode: 'insensitive' } },
+                    { content: { contains: search, mode: 'insensitive' } }
+                ]
+            });
         }
         
-        if (category) {
-            where.category = category;
+        if (category && category !== 'ALL') {
+            where.AND.push({ category });
         }
+
+        if (where.AND.length === 0) delete where.AND;
 
         const blogs = await prisma.blogPost.findMany({
             where,
@@ -95,7 +104,11 @@ router.get('/:slugOrId', optionalAuth, async (req, res, next) => {
 
         if (!blog) return res.status(404).json({ error: 'Post not found' });
 
-        if (blog.status !== 'PUBLISHED') {
+        const isPubliclyVisible = 
+            blog.status === 'PUBLISHED' || 
+            (blog.status === 'SCHEDULED' && blog.scheduledPublishAt && new Date(blog.scheduledPublishAt) <= new Date());
+
+        if (!isPubliclyVisible) {
             if (!req.user || !['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
                 return res.status(404).json({ error: 'Post not found' });
             }

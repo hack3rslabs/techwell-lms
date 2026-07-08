@@ -307,7 +307,7 @@ export default function CertificatesPage() {
             try {
                 const elements = typeof template.canvasData === 'string' ? JSON.parse(template.canvasData) : template.canvasData;
                 
-                let elementsHtml = elements.map((el: any) => {
+                const elementsHtml = elements.map((el: any) => {
                     let text = el.value || '';
                     text = text.replace('{{STUDENT_NAME}}', cert.studentName);
                     text = text.replace('{{COURSE_NAME}}', cert.courseName);

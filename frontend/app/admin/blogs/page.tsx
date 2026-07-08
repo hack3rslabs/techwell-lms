@@ -22,6 +22,7 @@ interface Blog {
     leadsGenerated: number
     author?: { name: string }
     createdAt: string
+    scheduledPublishAt?: string
 }
 
 export default function BlogManagerPage() {
@@ -158,13 +159,20 @@ export default function BlogManagerPage() {
                                     </TableCell>
                                     <TableCell><Badge variant="outline">{blog.category || 'Uncategorized'}</Badge></TableCell>
                                     <TableCell>
-                                        <Badge variant={
-                                            blog.status === 'PUBLISHED' ? 'default' : 
-                                            blog.status === 'SCHEDULED' ? 'outline' : 
-                                            blog.status === 'REVIEW' ? 'secondary' : 'destructive'
-                                        }>
-                                            {blog.status}
-                                        </Badge>
+                                        <div className="flex flex-col items-start gap-1">
+                                            <Badge variant={
+                                                blog.status === 'PUBLISHED' ? 'default' : 
+                                                blog.status === 'SCHEDULED' ? 'outline' : 
+                                                blog.status === 'REVIEW' ? 'secondary' : 'destructive'
+                                            }>
+                                                {blog.status}
+                                            </Badge>
+                                            {blog.status === 'SCHEDULED' && blog.scheduledPublishAt && (
+                                                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                                    {format(new Date(blog.scheduledPublishAt), 'MMM d, h:mm a')}
+                                                </span>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell>{blog.author?.name || 'Unknown'}</TableCell>
                                     <TableCell className="text-right text-sm">

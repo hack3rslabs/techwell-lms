@@ -188,7 +188,7 @@ export default function SuccessStoriesPage() {
                     {stories.map((story) => (
                         <Card key={story.id} className={`overflow-hidden transition-all ${!story.isActive ? 'opacity-60 grayscale' : ''}`}>
                             <div className="aspect-video relative bg-muted flex items-center justify-center">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                { }
                                 <img 
                                     src={`${process.env.NEXT_PUBLIC_API_URL}${story.imagePath}`} 
                                     alt={story.altText || 'Success Story'}

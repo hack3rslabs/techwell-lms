@@ -163,7 +163,7 @@ app.use((req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
     console.error('API Error:', err);
-    
+
     // Handle Zod validation errors
     if (err.name === 'ZodError') {
         return res.status(400).json({
@@ -213,48 +213,52 @@ process.on('unhandledRejection', (err) => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
-    
-// Auto-seed Super Admin
-async function seedSuperAdmin() {
-    try {
-        const bcrypt = require('bcryptjs');
-        const { PrismaClient } = require('@prisma/client');
-        const prisma = new PrismaClient();
-        const email = 'admin@techwell.co.in';
-        const rawPassword = process.env.ADMIN_PASSWORD || 'password123';
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(rawPassword, salt);
-        
-        let admin = await prisma.user.findUnique({ where: { email } });
-        if (!admin) {
-            await prisma.user.create({
-                data: {
-                    email,
-                    password: hashedPassword,
-                    firstName: 'Uttam',
-                    lastName: 'Admin',
-                    name: 'Uttam Admin',
-                    role: 'SUPER_ADMIN',
-                    emailVerified: true
-                }
-            });
-            console.log(`[SEED] Created super admin: ${email}`);
-        } else {
-            // Ensure they have SUPER_ADMIN role and reset password if needed
-            await prisma.user.update({
-                where: { email },
-                data: { 
-                    role: 'SUPER_ADMIN',
-                    password: hashedPassword
-                }
-            });
-            console.log(`[SEED] Verified super admin: ${email}`);
+
+    // Auto-seed Super Admin
+    async function seedSuperAdmin() {
+        try {
+            const bcrypt = require('bcryptjs');
+            const { PrismaClient } = require('@prisma/client');
+            const prisma = new PrismaClient();
+            const email = 'admin@techwell.co.in';
+            const rawPassword = process.env.ADMIN_PASSWORD;
+            if (!rawPassword) {
+                console.error('[SEED] ADMIN_PASSWORD environment variable is missing.');
+                return;
+            }
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(rawPassword, salt);
+
+            let admin = await prisma.user.findUnique({ where: { email } });
+            if (!admin) {
+                await prisma.user.create({
+                    data: {
+                        email,
+                        password: hashedPassword,
+                        firstName: 'Uttam',
+                        lastName: 'Admin',
+                        name: 'Uttam Admin',
+                        role: 'SUPER_ADMIN',
+                        emailVerified: true
+                    }
+                });
+                console.log(`[SEED] Created super admin: ${email}`);
+            } else {
+                // Ensure they have SUPER_ADMIN role and reset password if needed
+                await prisma.user.update({
+                    where: { email },
+                    data: {
+                        role: 'SUPER_ADMIN',
+                        password: hashedPassword
+                    }
+                });
+                console.log(`[SEED] Verified super admin: ${email}`);
+            }
+        } catch (err) {
+            console.error('[SEED] Error seeding super admin:', err);
         }
-    } catch(err) {
-        console.error('[SEED] Error seeding super admin:', err);
     }
-}
-seedSuperAdmin();
+    seedSuperAdmin();
 
     server.listen(PORT, () => {
         console.log(`🚀 Techwell API running on http://localhost:${PORT}`);

@@ -140,7 +140,7 @@ function StoryCard({ story }: { story: SuccessStory }) {
     const content = (
         <Card className="h-full border-border/70 bg-card/95 shadow-sm overflow-hidden group hover:border-primary/50 transition-colors cursor-pointer relative">
             <CardContent className="p-0 relative aspect-auto min-h-[250px] flex items-center justify-center bg-muted/20">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img 
                     src={`${process.env.NEXT_PUBLIC_API_URL}${story.imagePath}`} 
                     alt={story.altText || "Student Review"}

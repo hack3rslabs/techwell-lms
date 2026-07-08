@@ -58,13 +58,15 @@ async function sendLeadEmailNotification(lead) {
  */
 async function sendGoogleSheetNotification(lead) {
     let webhookUrl = GOOGLE_SHEET_WEBHOOK_URL;
-    
+
     // If not in ENV, check Settings DB (optional)
     if (!webhookUrl) {
         try {
             const settings = await prisma.institute.findFirst();
             // Assuming you add this to some JSON config field later, or just rely on ENV
-        } catch (e) {}
+        } catch (e) {
+            console.error("Failed to fetch settings from DB", e);
+        }
     }
 
     if (!webhookUrl) {
