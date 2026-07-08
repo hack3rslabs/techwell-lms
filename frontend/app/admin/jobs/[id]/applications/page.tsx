@@ -197,10 +197,10 @@ export default function JobApplicationsPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {app.applicant?.aiScore ? (
+                                            {(app as any).applicant?.aiScore ? (
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-emerald-600">AI: {app.applicant.aiScore}/100</span>
-                                                    <span className="text-[10px] text-muted-foreground">STAR: {app.applicant.starScore}/100</span>
+                                                    <span className="text-xs font-bold text-emerald-600">AI: {(app as any).applicant.aiScore}/100</span>
+                                                    <span className="text-[10px] text-muted-foreground">STAR: {(app as any).applicant.starScore}/100</span>
                                                 </div>
                                             ) : (
                                                 <span className="text-xs text-muted-foreground">-</span>
