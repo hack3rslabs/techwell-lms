@@ -22,7 +22,11 @@ export default function DocumentsPage() {
     const [uploading, setUploading] = useState(false);
     const { toast } = useToast();
 
-    const [uploadData, setUploadData] = useState({
+    const [uploadData, setUploadData] = useState<{
+        name: string;
+        description: string;
+        file: File | null;
+    }>({
         name: '',
         description: '',
         file: null
@@ -37,7 +41,7 @@ export default function DocumentsPage() {
             setLoading(true);
             const res = await axios.get(`${API_URL}/documents`, { withCredentials: true });
             setDocuments(res.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to fetch documents", error);
             toast({
                 title: "Error",
@@ -77,7 +81,7 @@ export default function DocumentsPage() {
             setIsUploadModalOpen(false);
             setUploadData({ name: '', description: '', file: null });
             fetchDocuments();
-        } catch (error) {
+        } catch (error: any) {
             toast({
                 title: "Error",
                 description: error.response?.data?.error || "Failed to upload document.",
@@ -95,7 +99,7 @@ export default function DocumentsPage() {
             await axios.delete(`${API_URL}/documents/${id}`, { withCredentials: true });
             toast({ title: "Success", description: "Document deleted successfully." });
             fetchDocuments();
-        } catch (error) {
+        } catch (error: any) {
             toast({ title: "Error", description: "Failed to delete document.", variant: "destructive" });
         }
     };
