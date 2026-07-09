@@ -326,12 +326,12 @@ export default function CertificatesPage() {
                             </div>`;
                     }
                     if (el.type === 'image' || text === '{{LOGO}}') {
-                        return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%);">
+                        return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); background-color: white; padding: 10px; border-radius: 8px;">
                             <img src="${window.location.origin}/logo-dark.png" alt="Logo" style="height: 50px; object-fit: contain;" />
                         </div>`;
                     }
                     
-                    return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); font-family: ${el.fontFamily}; font-size: ${el.fontSize}px; color: ${el.color}; white-space: nowrap;">${text}</div>`;
+                    return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); font-family: ${el.fontFamily}; font-size: ${el.fontSize}px; color: ${el.color}; max-width: 90%; text-align: center; word-wrap: break-word;">${text}</div>`;
                 }).join('\n');
 
                 const bgUrl = template.designUrl.startsWith('http') ? template.designUrl : window.location.origin + template.designUrl;

@@ -97,6 +97,8 @@ model User {
   customer                    Customer?                 @relation(fields: [customerId], references: [id])
   assignedLeads               Lead[]                    @relation("AssignedLeads")
   assignedCustomers           Customer[]                @relation("AssignedCustomers")
+  consultingResources         ConsultingResource[]
+  consultingProjects          ConsultingProject[]
 }
 
 model SystemRole {
@@ -995,33 +997,53 @@ model TaskComment {
 }
 
 model BlogPost {
-  id                 String        @id @default(cuid())
+  id                 String          @id @default(cuid())
   title              String
-  slug               String        @unique
+  slug               String          @unique
   content            String
   summary            String?
   coverImage         String?
-  status             BlogStatus    @default(DRAFT)
+  status             BlogStatus      @default(DRAFT)
   tags               Json?
   authorId           String
   publishedAt        DateTime?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
   category           String?
-  author             User          @relation(fields: [authorId], references: [id])
-  views              Int           @default(0)
-  ctr                Float         @default(0)
-  leadsGenerated     Int           @default(0)
+  author             User            @relation(fields: [authorId], references: [id])
+  views              Int             @default(0)
+  ctr                Float           @default(0)
+  leadsGenerated     Int             @default(0)
+  likes              Int             @default(0)
+  dislikes           Int             @default(0)
   metaTitle          String?
   metaDescription    String?
   canonicalUrl       String?
   keywords           Json?
-  readingTime        Int           @default(0)
+  readingTime        Int             @default(0)
   ctaSettings        Json?
+  schemaOrg          Json?
+  faqSchema          Json?
+  openGraph          Json?
+  twitterCard        Json?
   scheduledPublishAt DateTime?
   autoArchiveAt      DateTime?
   versions           BlogVersion[]
   comments           BlogComment[]
+  reactions          BlogReaction[]
+}
+
+model BlogReaction {
+  id         String   @id @default(cuid())
+  blogPostId String
+  userId     String?
+  guestIp    String?
+  type       String   // "LIKE" or "DISLIKE"
+  createdAt  DateTime @default(now())
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@unique([blogPostId, userId])
 }
 
 model BlogVersion {
@@ -2121,6 +2143,9 @@ enum Role {
   STAFF
   INSTITUTE_ADMIN
   EMPLOYER
+  CONTENT_WRITER
+  SEO_EXECUTIVE
+  REVIEWER
 }
 
 enum Plan {
@@ -2225,12 +2250,12 @@ enum LeadLifecycleStage {
 
 enum BlogStatus {
   DRAFT
-  PUBLISHED
-  ARCHIVED
-  IN_REVIEW
   REVIEW
   SEO_OPTIMIZATION
+  APPROVED
   SCHEDULED
+  PUBLISHED
+  ARCHIVED
 }
 
 enum TaskStatus {
@@ -2597,6 +2622,7 @@ model Customer {
   callLogs          CallLog[]
   proposals         Proposal[]
   invoices          Invoice[]
+  consultingProjects ConsultingProject[]
   tags              String[]           @default([])
   customFields      Json?
   assignedToId      String?
@@ -2768,6 +2794,7 @@ model ClientAgreement {
   template          AgreementTemplate? @relation(fields: [templateId], references: [id])
   milestones        AgreementMilestone[]
   versions          AgreementVersion[]
+  consultingProject ConsultingProject?
 }
 
 model AgreementMilestone {
@@ -2861,4 +2888,75 @@ model NewsletterCampaign {
   sentAt      DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+enum ConsultingType {
+  BUSINESS
+  IT
+  SOFTWARE
+  WEB
+  CYBER_SECURITY
+  OTHER
+}
+
+enum ConsultingStatus {
+  ONBOARDING
+  PLANNING
+  EXECUTION
+  REVIEW
+  DELIVERY
+  ON_HOLD
+  CANCELLED
+}
+
+model ConsultingProject {
+  id          String            @id @default(cuid())
+  title       String
+  description String?           @db.Text
+  type        ConsultingType
+  status      ConsultingStatus  @default(ONBOARDING)
+  clientId    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Decimal?          @default(0)
+  agreementId String?           @unique
+  assigneeId  String?
+  webUrl      String?
+  commitment  String?           @db.Text
+  notes       String?           @db.Text
+  contacts    Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  milestones  ConsultingMilestone[]
+  resources   ConsultingResource[]
+  client      Customer?         @relation(fields: [clientId], references: [id])
+  agreement   ClientAgreement?  @relation(fields: [agreementId], references: [id])
+  assignee    User?             @relation(fields: [assigneeId], references: [id])
+}
+
+model ConsultingMilestone {
+  id          String            @id @default(cuid())
+  projectId   String
+  title       String
+  description String?           @db.Text
+  dueDate     DateTime?
+  isCompleted Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  project     ConsultingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ConsultingResource {
+  id             String            @id @default(cuid())
+  projectId      String
+  userId         String
+  role           String
+  hoursAllocated Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  project        ConsultingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user           User              @relation(fields: [userId], references: [id])
 }

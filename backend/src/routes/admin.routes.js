@@ -29,7 +29,8 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             campusDrivesCount,
             revenueData,
             activeTasksCount,
-            activeTicketsCount
+            activeTicketsCount,
+            activeProjectsCount
         ] = await Promise.all([
             // Only count users if permitted, else 0
             rules.manageUsers ? prisma.user.count({
@@ -60,6 +61,9 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             }),
             prisma.ticket.count({
                 where: req.user.role === 'SUPER_ADMIN' ? { status: { in: ['OPEN', 'IN_PROGRESS'] } } : { assignedTo: req.user.id, status: { in: ['OPEN', 'IN_PROGRESS'] } }
+            }),
+            prisma.consultingProject.count({
+                where: req.user.role === 'SUPER_ADMIN' ? { status: { not: 'COMPLETED' } } : { assigneeId: req.user.id, status: { not: 'COMPLETED' } }
             })
         ]);
 
@@ -83,6 +87,7 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             revenue: revenueData._sum.amount || 0,
             activeTasks: activeTasksCount,
             activeTickets: activeTicketsCount,
+            activeProjects: activeProjectsCount,
             recentActivity: recentEnrollments
         });
     } catch (error) {

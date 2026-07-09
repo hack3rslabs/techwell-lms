@@ -77,6 +77,7 @@ export default function AdminDashboard() {
         revenue: 0,
         activeTasks: 0,
         activeTickets: 0,
+        activeProjects: 0,
         recentActivity: [] as any[]
     })
 
@@ -343,6 +344,28 @@ export default function AdminDashboard() {
                                 <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.activeTasks || 0}</div>
                                 <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                                     <span>Pending action</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card
+                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                            onClick={() => router.push('/admin/consulting')}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-green-500/10 to-emerald-500/10 blur-2xl group-hover:bg-green-500/20 transition-all duration-500" />
+                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
+                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+                                    Consulting Projects
+                                </CardTitle>
+                                <div className="h-10 w-10 rounded-2xl bg-green-100 dark:bg-green-900/30 border border-green-200/50 dark:border-green-800/50 flex items-center justify-center text-green-600 dark:text-green-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                    <BrainCircuit className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent className="relative z-10 mt-2">
+                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.activeProjects || 0}</div>
+                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                                    <span>Active consulting</span>
                                 </div>
                             </CardContent>
                         </Card>

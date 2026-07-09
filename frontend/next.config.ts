@@ -53,6 +53,11 @@ const nextConfig: NextConfig = {
         hostname: "logo.clearbit.com",
         pathname: "**",
       },
+      {
+        protocol: "https",
+        hostname: "express.adobe.com",
+        pathname: "**",
+      },
     ],
   },
 };

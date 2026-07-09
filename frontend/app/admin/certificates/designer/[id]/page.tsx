@@ -227,7 +227,7 @@ export default function CertificateDesignerPage() {
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, el.id)}
                                 onClick={() => setSelectedElement(el.id)}
-                                className={"absolute cursor-move px-2 py-1 select-none whitespace-nowrap " + (selectedElement === el.id ? "ring-2 ring-primary bg-primary/10" : "hover:ring-1 hover:ring-primary/50")}
+                                className={"absolute cursor-move px-2 py-1 select-none text-center break-words max-w-[90%] " + (selectedElement === el.id ? "ring-2 ring-primary bg-primary/10" : "hover:ring-1 hover:ring-primary/50")}
                                 style={{
                                     left: el.x + "%",
                                     top: el.y + "%",

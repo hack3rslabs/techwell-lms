@@ -80,11 +80,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/images/favicon/Logo light.svg", media: "(prefers-color-scheme: light)" },
-      { url: "/images/favicon/Logo dark.svg", media: "(prefers-color-scheme: dark)" },
+      { url: "/logo-dark.png", type: "image/png", sizes: "any" },
+      { url: "/images/favicon/Logo dark.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/images/favicon/Logo dark.svg",
-    apple: "/images/favicon/Logo dark.svg",
+    shortcut: "/logo-dark.png",
+    apple: [
+      { url: "/logo-dark.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 

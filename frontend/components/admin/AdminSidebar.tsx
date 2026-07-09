@@ -39,6 +39,7 @@ import {
     ChevronRight,
     UserCheck,
     Inbox,
+    PenLine,
     type LucideIcon
 } from "lucide-react"
 
@@ -80,9 +81,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Overview" },
 
         // Internal Management & CRM
-        { label: "Central CRM", icon: UserCheck, href: "/admin/crm", permission: "CENTRAL_CRM", group: "Internal & CRM" },
-        { label: "Business Consulting", icon: Briefcase, href: "/admin/business-consulting", permission: "CENTRAL_CRM", group: "Internal & CRM" },
-        { label: "IT Consulting", icon: FileCode2, href: "/admin/it-consulting", permission: "CENTRAL_CRM", group: "Internal & CRM" },
+        { label: "Consulting Hub", icon: Briefcase, href: "/admin/consulting", permission: "CENTRAL_CRM", group: "Internal & CRM" },
         { label: "Employer Requests", icon: Inbox, href: "/admin/employer-requests", permission: "MANAGE_EMPLOYER_REQUESTS", group: "Internal & CRM" },
 
         // Tracking
@@ -170,11 +169,12 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Administration" },
         { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY", group: "Administration" },
         { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Administration" },
+        { label: "Documents", icon: FileText, href: "/admin/documents", permission: "ADMIN", group: "Administration" },
 
         // Deployments
+        { label: "Blog Posts", icon: PenLine, href: "/admin/posts", permission: "ADMIN", group: "Deployments" },
         { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Deployments" },
         { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER", group: "Deployments" },
-        { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "BLOGS", group: "Deployments" },
         { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Deployments" },
         { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Deployments" },
         { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Deployments" },
@@ -245,7 +245,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             {/* Sidebar */}
             <div
                 className={cn(
-                    "fixed left-0 top-0 z-40 h-screen border-r bg-background overflow-y-auto transition-all duration-300 md:translate-x-0",
+                    "fixed left-0 top-0 z-40 h-screen border-r bg-background flex flex-col transition-all duration-300 md:translate-x-0",
                     isCollapsed ? "w-20" : "w-64",
                     isMobileOpen ? "translate-x-0 w-64" : "-translate-x-full",
                     className
@@ -253,7 +253,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             >
 
                 {/* Header */}
-                <div className={cn("px-4 py-4 border-b flex items-center flex-shrink-0 h-16", isCollapsed ? "justify-center" : "justify-between")}>
+                <div className={cn("px-4 py-4 border-b flex flex-shrink-0 items-center h-16", isCollapsed ? "justify-center" : "justify-between")}>
                     {!isCollapsed && (
                         <div className="overflow-hidden">
                             <h2 className="text-xl font-bold text-primary truncate">Admin Panel</h2>
@@ -263,15 +263,21 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                         </div>
                     )}
                     {onToggleCollapse && (
-                        <Button variant="outline" size="sm" onClick={onToggleCollapse} className="shrink-0 hidden md:flex gap-1" title="Toggle Sidebar">
-                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <><ChevronLeft className="h-4 w-4" /><span className="text-xs">Hide</span></>}
+                        <Button 
+                            variant="outline" 
+                            size="icon" 
+                            onClick={onToggleCollapse} 
+                            className="shrink-0 hidden md:flex h-8 w-8 ml-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700" 
+                            title="Toggle Sidebar"
+                        >
+                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                         </Button>
                     )}
                 </div>
 
-                {/* Search Bar */}
+                {/* Search Bar - Frozen at Top */}
                 {!isCollapsed && (
-                    <div className="p-3 border-b sticky top-0 bg-background z-10 shadow-sm">
+                    <div className="p-3 border-b flex-shrink-0 bg-muted/20">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <input
@@ -279,14 +285,14 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                 placeholder="Search menus..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="h-9 w-full rounded-md border border-input bg-transparent pl-9 pr-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             />
                         </div>
                     </div>
                 )}
 
                 {/* Scrollable Menu ✅ */}
-                <div className="p-3">
+                <div className="p-3 flex-1 overflow-y-auto no-scrollbar">
                     <nav className="space-y-1 pb-6">
                         {Object.entries(
                             availableRoutes.reduce((acc, route) => {
@@ -366,6 +372,26 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                     </Button>
                 </div>
 
+                {/* Smart Footer Toggle */}
+                {onToggleCollapse && (
+                    <div className="border-t p-3 flex-shrink-0 bg-background hidden md:block">
+                        <Button 
+                            variant="outline" 
+                            className={cn("w-full flex items-center text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all shadow-sm", isCollapsed ? "justify-center px-0" : "justify-start px-2")}
+                            onClick={onToggleCollapse} 
+                            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                        >
+                            {isCollapsed ? (
+                                <ChevronRight className="h-5 w-5" />
+                            ) : (
+                                <>
+                                    <ChevronLeft className="h-5 w-5 mr-2" />
+                                    <span className="font-medium">Collapse Menu</span>
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Mobile Overlay */}
