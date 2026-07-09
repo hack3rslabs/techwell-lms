@@ -99,6 +99,7 @@ model User {
   assignedCustomers           Customer[]                @relation("AssignedCustomers")
   consultingResources         ConsultingResource[]
   consultingProjects          ConsultingProject[]
+  BlogReaction                BlogReaction[]
 }
 
 model SystemRole {
@@ -997,30 +998,30 @@ model TaskComment {
 }
 
 model BlogPost {
-  id                 String          @id @default(cuid())
+  id                 String         @id @default(cuid())
   title              String
-  slug               String          @unique
+  slug               String         @unique
   content            String
   summary            String?
   coverImage         String?
-  status             BlogStatus      @default(DRAFT)
+  status             BlogStatus     @default(DRAFT)
   tags               Json?
   authorId           String
   publishedAt        DateTime?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   category           String?
-  author             User            @relation(fields: [authorId], references: [id])
-  views              Int             @default(0)
-  ctr                Float           @default(0)
-  leadsGenerated     Int             @default(0)
-  likes              Int             @default(0)
-  dislikes           Int             @default(0)
+  author             User           @relation(fields: [authorId], references: [id])
+  views              Int            @default(0)
+  ctr                Float          @default(0)
+  leadsGenerated     Int            @default(0)
+  likes              Int            @default(0)
+  dislikes           Int            @default(0)
   metaTitle          String?
   metaDescription    String?
   canonicalUrl       String?
   keywords           Json?
-  readingTime        Int             @default(0)
+  readingTime        Int            @default(0)
   ctaSettings        Json?
   schemaOrg          Json?
   faqSchema          Json?
@@ -1038,7 +1039,7 @@ model BlogReaction {
   blogPostId String
   userId     String?
   guestIp    String?
-  type       String   // "LIKE" or "DISLIKE"
+  type       String // "LIKE" or "DISLIKE"
   createdAt  DateTime @default(now())
   blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
   user       User?    @relation(fields: [userId], references: [id])
@@ -2615,21 +2616,21 @@ model Customer {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  users             User[]
-  leads             Lead[]
-  candidateProfiles CandidateProfile[]
-  pipelines         PipelineDeal[]
-  callLogs          CallLog[]
-  proposals         Proposal[]
-  invoices          Invoice[]
+  users              User[]
+  leads              Lead[]
+  candidateProfiles  CandidateProfile[]
+  pipelines          PipelineDeal[]
+  callLogs           CallLog[]
+  proposals          Proposal[]
+  invoices           Invoice[]
   consultingProjects ConsultingProject[]
-  tags              String[]           @default([])
-  customFields      Json?
-  assignedToId      String?
-  assignee          User?              @relation("AssignedCustomers", fields: [assignedToId], references: [id])
-  followUpTasks     FollowUpTask[]
-  communicationLogs CommunicationLog[]
-  agreements        ClientAgreement[]
+  tags               String[]            @default([])
+  customFields       Json?
+  assignedToId       String?
+  assignee           User?               @relation("AssignedCustomers", fields: [assignedToId], references: [id])
+  followUpTasks      FollowUpTask[]
+  communicationLogs  CommunicationLog[]
+  agreements         ClientAgreement[]
 }
 
 model Pipeline {
@@ -2741,87 +2742,85 @@ model CommunicationLog {
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
 }
 
-
 model AgreementTemplate {
-  id          String   @id @default(cuid())
-  vertical    String
-  title       String
-  content     String   // HTML or rich text template
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  agreements  ClientAgreement[]
+  id         String            @id @default(cuid())
+  vertical   String
+  title      String
+  content    String // HTML or rich text template
+  isActive   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  agreements ClientAgreement[]
 }
 
 model LegalClause {
-  id          String   @id @default(cuid())
-  title       String
-  category    String   // NDA, SLA, REFUND, IP, etc.
-  content     String
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  title     String
+  category  String // NDA, SLA, REFUND, IP, etc.
+  content   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ClientAgreement {
-  id                String   @id @default(cuid())
-  agreementNum      String   @unique
-  customerId        String
-  templateId        String?
-  vertical          String
-  title             String
-  status            String   @default("DRAFT") // DRAFT, SENT, SIGNED, ACTIVE, EXPIRED, RENEWED, CANCELLED
-  content           String   // The full rich text content
-  totalValue        Float    @default(0)
-  taxPercentage     Float    @default(0)
-  taxAmount         Float    @default(0)
-  grandTotal        Float    @default(0)
-  validFrom         DateTime?
-  validUntil        DateTime?
-  pdfUrl            String?
-  clientSignature   String?  // Base64 or URL
-  clientSignedAt    DateTime?
-  clientPhotoUrl    String?  // Base64 or URL for live photo
-  clientPhotoAt     DateTime?
-  clientIp          String?
-  adminSignature    String?
-  adminSignedAt     DateTime?
-  adminId           String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id              String    @id @default(cuid())
+  agreementNum    String    @unique
+  customerId      String
+  templateId      String?
+  vertical        String
+  title           String
+  status          String    @default("DRAFT") // DRAFT, SENT, SIGNED, ACTIVE, EXPIRED, RENEWED, CANCELLED
+  content         String // The full rich text content
+  totalValue      Float     @default(0)
+  taxPercentage   Float     @default(0)
+  taxAmount       Float     @default(0)
+  grandTotal      Float     @default(0)
+  validFrom       DateTime?
+  validUntil      DateTime?
+  pdfUrl          String?
+  clientSignature String? // Base64 or URL
+  clientSignedAt  DateTime?
+  clientPhotoUrl  String? // Base64 or URL for live photo
+  clientPhotoAt   DateTime?
+  clientIp        String?
+  adminSignature  String?
+  adminSignedAt   DateTime?
+  adminId         String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  customer          Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  template          AgreementTemplate? @relation(fields: [templateId], references: [id])
+  customer          Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  template          AgreementTemplate?   @relation(fields: [templateId], references: [id])
   milestones        AgreementMilestone[]
   versions          AgreementVersion[]
   consultingProject ConsultingProject?
 }
 
 model AgreementMilestone {
-  id            String   @id @default(cuid())
-  agreementId   String
-  title         String
-  description   String?
-  amount        Float
-  dueDate       DateTime?
-  status        String   @default("PENDING") // PENDING, COMPLETED, INVOICED, PAID
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String    @id @default(cuid())
+  agreementId String
+  title       String
+  description String?
+  amount      Float
+  dueDate     DateTime?
+  status      String    @default("PENDING") // PENDING, COMPLETED, INVOICED, PAID
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  agreement     ClientAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  agreement ClientAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
 }
 
 model AgreementVersion {
-  id            String   @id @default(cuid())
-  agreementId   String
-  versionNum    Int
-  content       String
-  changes       String?
-  createdAt     DateTime @default(now())
+  id          String   @id @default(cuid())
+  agreementId String
+  versionNum  Int
+  content     String
+  changes     String?
+  createdAt   DateTime @default(now())
 
-  agreement     ClientAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  agreement ClientAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
 }
-
 
 model SeoMetadata {
   id          String   @id @default(cuid())
@@ -2847,14 +2846,13 @@ model RedirectRule {
 }
 
 model SeoAnalytics {
-  id          String   @id @default(cuid())
-  path        String
-  type        String   // e.g., "404", "SLOW_LOAD"
-  userAgent   String?
-  ipAddress   String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  path      String
+  type      String // e.g., "404", "SLOW_LOAD"
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime @default(now())
 }
-
 
 model SuccessStory {
   id        String   @id @default(cuid())
@@ -2867,7 +2865,6 @@ model SuccessStory {
   updatedAt DateTime @updatedAt
 }
 
-
 model AdminDocument {
   id          String   @id @default(cuid())
   name        String
@@ -2878,7 +2875,6 @@ model AdminDocument {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
-
 
 model NewsletterCampaign {
   id          String    @id @default(uuid())
@@ -2910,53 +2906,53 @@ enum ConsultingStatus {
 }
 
 model ConsultingProject {
-  id          String            @id @default(cuid())
+  id          String           @id @default(cuid())
   title       String
-  description String?           @db.Text
+  description String?          @db.Text
   type        ConsultingType
-  status      ConsultingStatus  @default(ONBOARDING)
+  status      ConsultingStatus @default(ONBOARDING)
   clientId    String?
   startDate   DateTime?
   endDate     DateTime?
-  budget      Decimal?          @default(0)
-  agreementId String?           @unique
+  budget      Decimal?         @default(0)
+  agreementId String?          @unique
   assigneeId  String?
   webUrl      String?
-  commitment  String?           @db.Text
-  notes       String?           @db.Text
+  commitment  String?          @db.Text
+  notes       String?          @db.Text
   contacts    Json?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
-  milestones  ConsultingMilestone[]
-  resources   ConsultingResource[]
-  client      Customer?         @relation(fields: [clientId], references: [id])
-  agreement   ClientAgreement?  @relation(fields: [agreementId], references: [id])
-  assignee    User?             @relation(fields: [assigneeId], references: [id])
+  milestones ConsultingMilestone[]
+  resources  ConsultingResource[]
+  client     Customer?             @relation(fields: [clientId], references: [id])
+  agreement  ClientAgreement?      @relation(fields: [agreementId], references: [id])
+  assignee   User?                 @relation(fields: [assigneeId], references: [id])
 }
 
 model ConsultingMilestone {
-  id          String            @id @default(cuid())
+  id          String    @id @default(cuid())
   projectId   String
   title       String
-  description String?           @db.Text
+  description String?   @db.Text
   dueDate     DateTime?
-  isCompleted Boolean           @default(false)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  isCompleted Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  project     ConsultingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project ConsultingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ConsultingResource {
-  id             String            @id @default(cuid())
+  id             String   @id @default(cuid())
   projectId      String
   userId         String
   role           String
-  hoursAllocated Int               @default(0)
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  hoursAllocated Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  project        ConsultingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user           User              @relation(fields: [userId], references: [id])
+  project ConsultingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User              @relation(fields: [userId], references: [id])
 }
