@@ -5,12 +5,12 @@ WORKDIR /app
 # Install dependencies
 RUN apk add --no-cache openssl libc6-compat
 COPY package*.json ./
-COPY prisma ./prisma/
 
 # Install dependencies
 RUN npm install
 
-# Generate client explicitly in case postinstall didn't
+# Copy Prisma schema and generate client
+COPY prisma ./prisma/
 RUN npx prisma generate
 
 # Copy source code
