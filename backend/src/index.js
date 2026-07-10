@@ -16,6 +16,28 @@ const { twilioRouter } = require('./ai-core/providers/twilio');
 
 const app = express();
 
+// Bulletproof Manual CORS Middleware
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && (origin.endsWith('techwell.co.in') || origin.includes('localhost') || origin.includes('192.168.'))) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (process.env.FRONTEND_URL) {
+        res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL.replace(/\/$/, ''));
+    } else {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-trust-token');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    // Explicitly handle preflight
+    if (req.method === 'OPTIONS') {
+        return res.status(204).end();
+    }
+    next();
+});
+
 // Security Middleware
 app.use(helmet({
     contentSecurityPolicy: {
@@ -42,27 +64,7 @@ app.use('/uploads', express.static(uploadsPath, {
     }
 }));
 
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        
-        const allowedOrigins = ['http://localhost:3000', 'http://192.168.29.183:3000'];
-        if (process.env.FRONTEND_URL) {
-            allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
-        }
 
-        if (origin.endsWith('techwell.co.in') || allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-        
-        console.warn('CORS Blocked Origin:', origin);
-        return callback(new Error('CORS policy error'), false);
-    },
-    credentials: true
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
