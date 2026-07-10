@@ -56,11 +56,6 @@ export default function PostsDashboard() {
     const [activeTab, setActiveTab] = useState('ALL');
     const { toast } = useToast();
 
-    useEffect(() => {
-        fetchPosts();
-        fetchAnalytics();
-    }, []);
-
     const fetchPosts = async () => {
         try {
             setLoading(true);
@@ -86,6 +81,11 @@ export default function PostsDashboard() {
             setAnalyticsLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchPosts();
+        fetchAnalytics();
+    }, []);
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this post?")) return;

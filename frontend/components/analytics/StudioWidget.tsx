@@ -27,10 +27,6 @@ export function StudioWidget({ title, type, metric, dimension, startDate, endDat
     const [loading, setLoading] = useState(true)
     const [total, setTotal] = useState(0)
 
-    useEffect(() => {
-        fetchData()
-    }, [metric, dimension, startDate, endDate])
-
     const fetchData = async () => {
         try {
             setLoading(true)
@@ -54,6 +50,10 @@ export function StudioWidget({ title, type, metric, dimension, startDate, endDat
             setLoading(false)
         }
     }
+
+    useEffect(() => {
+        fetchData()
+    }, [metric, dimension, startDate, endDate])
 
     const renderChart = () => {
         if (loading) {

@@ -34,12 +34,6 @@ export function QuizBuilderDialog({ lessonId, onClose }: QuizBuilderDialogProps)
     const [topic, setTopic] = useState('')
     const [count, setCount] = useState(5)
 
-    useEffect(() => {
-        if (lessonId) {
-            fetchQuizzes()
-        }
-    }, [lessonId])
-
     const fetchQuizzes = async () => {
         try {
             setIsLoading(true)
@@ -51,6 +45,12 @@ export function QuizBuilderDialog({ lessonId, onClose }: QuizBuilderDialogProps)
             setIsLoading(false)
         }
     }
+
+    useEffect(() => {
+        if (lessonId) {
+            fetchQuizzes()
+        }
+    }, [lessonId])
 
     const handleGenerate = async () => {
         if (!topic) return alert('Please enter a topic for AI generation')
