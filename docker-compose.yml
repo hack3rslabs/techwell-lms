@@ -31,8 +31,6 @@ services:
       - "5000:5000"
     depends_on:
       - db
-      migrate:
-        condition: service_completed_successfully
     networks:
       - techwell_net
 
