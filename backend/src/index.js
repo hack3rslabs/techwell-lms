@@ -42,7 +42,7 @@ app.use('/uploads', express.static(uploadsPath, {
     }
 }));
 
-app.use(cors({
+const corsOptions = {
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
         
@@ -58,8 +58,13 @@ app.use(cors({
         console.warn('CORS Blocked Origin:', origin);
         return callback(new Error('CORS policy error'), false);
     },
-    credentials: true
-}));
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-trust-token']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
