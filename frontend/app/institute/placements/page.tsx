@@ -7,11 +7,7 @@ export default function InstitutePlacements() {
     const [drives, setDrives] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchPlacements();
-    }, []);
-
-    const fetchPlacements = async () => {
+    async function fetchPlacements() {
         try {
             const res = await fetch('/api/campus-drives', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -23,7 +19,13 @@ export default function InstitutePlacements() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchPlacements();
+    }, []);
+;
 
     // Calculate mock stats
     const totalDrives = drives.length;

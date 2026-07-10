@@ -52,11 +52,7 @@ export default function StudentLibraryPage() {
     // View Modal State
     const [viewResource, setViewResource] = useState<Resource | null>(null);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
+    async function fetchData() {
         setLoading(true);
         try {
             const [catsRes, resRes] = await Promise.all([
@@ -70,7 +66,13 @@ export default function StudentLibraryPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+;
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();

@@ -23,11 +23,7 @@ export default function CMSManagerPage() {
     const [clientForm, setClientForm] = useState({ id: '', name: '', description: '', url: '', logoUrl: '', isActive: true })
     const [isEditing, setIsEditing] = useState(false)
 
-    useEffect(() => {
-        loadData()
-    }, [])
-
-    const loadData = async () => {
+    async function loadData() {
         setIsLoading(true)
         try {
             const [prodRes, cliRes] = await Promise.all([
@@ -42,6 +38,12 @@ export default function CMSManagerPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        loadData()
+    }, [])
+
 
     const handleProductSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

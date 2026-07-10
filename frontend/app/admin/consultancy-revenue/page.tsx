@@ -9,13 +9,7 @@ export default function ConsultancyRevenueDashboard() {
     const [records, setRecords] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (user && user.role === 'SUPER_ADMIN') {
-            fetchData();
-        }
-    }, [user]);
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
             
@@ -31,7 +25,15 @@ export default function ConsultancyRevenueDashboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        if (user && user.role === 'SUPER_ADMIN') {
+            fetchData();
+        }
+    }, [user]);
+;
 
     if (loading) return <div className="p-8">Loading analytics...</div>;
 

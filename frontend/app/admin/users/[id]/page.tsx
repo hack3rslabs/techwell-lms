@@ -78,11 +78,7 @@ export default function User360Page() {
 
     const ROLES_LIST = ["STUDENT", "INSTRUCTOR", "EMPLOYER", "ADMIN", "SUPER_ADMIN", "STAFF", "INSTITUTE_ADMIN"];
 
-    useEffect(() => {
-        fetchData()
-    }, [id])
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const [activityRes, usersRes] = await Promise.all([
                 api.get(`/users/${id}/activity`),
@@ -106,6 +102,12 @@ export default function User360Page() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchData()
+    }, [id])
+
 
     const handleRadioChange = (moduleId: string, value: string) => {
         const viewKey = `VIEW_${moduleId}`;

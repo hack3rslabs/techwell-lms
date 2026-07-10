@@ -9,7 +9,7 @@ const { authenticate, checkPermission } = require('../middleware/auth');
  * @desc    Get all customers
  * @access  Private
  */
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
     try {
         const customers = await prisma.customer.findMany({
             orderBy: { createdAt: 'desc' }
@@ -26,7 +26,7 @@ router.get('/', authenticate, async (req, res) => {
  * @desc    Create a new customer
  * @access  Private
  */
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
     try {
         const { name, companyName, email, phone } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
@@ -53,7 +53,7 @@ router.post('/', authenticate, async (req, res) => {
  * @desc    Get aggregated 360-degree view of a customer
  * @access  Private (Admin/Staff)
  */
-router.get('/:id/360-view', authenticate, async (req, res) => {
+router.get('/:id/360-view', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
     try {
         const { id } = req.params;
 

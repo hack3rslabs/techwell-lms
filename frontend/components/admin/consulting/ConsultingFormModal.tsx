@@ -36,6 +36,25 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
 
     const [contacts, setContacts] = useState<any[]>([]);
 
+    async function fetchData() {
+        try {
+            const [usersRes, staffRes, agreementsRes] = await Promise.all([
+                api.get('/users?role=STUDENT'), // Using student as client for now
+                api.get('/users?role=STAFF'),
+                api.get('/crm/agreements').catch(() => ({ data: { agreements: [] } }))
+            ]);
+            
+            if (usersRes.data.success || usersRes.data.users) setClients(usersRes.data.users || usersRes.data);
+            if (staffRes.data.success || staffRes.data.users) setStaff(staffRes.data.users || staffRes.data);
+            if (agreementsRes.data?.success || agreementsRes.data?.agreements) {
+                setAgreements(agreementsRes.data.agreements || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch form data", error);
+        }
+    }
+
+
     useEffect(() => {
         if (isOpen) {
             fetchData();
@@ -76,24 +95,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
             }
         }
     }, [isOpen, project]);
-
-    const fetchData = async () => {
-        try {
-            const [usersRes, staffRes, agreementsRes] = await Promise.all([
-                api.get('/users?role=STUDENT'), // Using student as client for now
-                api.get('/users?role=STAFF'),
-                api.get('/crm/agreements').catch(() => ({ data: { agreements: [] } }))
-            ]);
-            
-            if (usersRes.data.success || usersRes.data.users) setClients(usersRes.data.users || usersRes.data);
-            if (staffRes.data.success || staffRes.data.users) setStaff(staffRes.data.users || staffRes.data);
-            if (agreementsRes.data?.success || agreementsRes.data?.agreements) {
-                setAgreements(agreementsRes.data.agreements || []);
-            }
-        } catch (error) {
-            console.error("Failed to fetch form data", error);
-        }
-    };
+;
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;

@@ -77,11 +77,7 @@ export default function EmployerDashboard() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const [jobsRes, activityRes, analyticsRes] = await Promise.allSettled([
                 api.get('/jobs/my/listings'),
@@ -98,6 +94,12 @@ export default function EmployerDashboard() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const stats = useMemo(() => {
         if (analytics) return analytics.summary
@@ -146,7 +148,7 @@ export default function EmployerDashboard() {
     }
 
     const timeAgo = (dateStr: string) => {
-        const diff = Date.now() - new Date(dateStr).getTime()
+        const diff = new Date().getTime() - new Date(dateStr).getTime()
         const mins = Math.floor(diff / 60000)
         if (mins < 60) return `${mins}m ago`
         const hrs = Math.floor(mins / 60)

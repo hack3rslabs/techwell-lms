@@ -48,11 +48,7 @@ export default function SupportPage() {
         category: 'GENERAL'
     })
 
-    useEffect(() => {
-        fetchTickets()
-    }, [])
-
-    const fetchTickets = async () => {
+    async function fetchTickets() {
         setIsLoading(true)
         try {
             const res = await api.get('/tickets')
@@ -63,6 +59,12 @@ export default function SupportPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchTickets()
+    }, [])
+
 
     const handleCreateTicket = async () => {
         if (!newTicket.subject || !newTicket.description) {

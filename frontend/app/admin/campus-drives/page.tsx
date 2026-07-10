@@ -23,11 +23,7 @@ export default function AdminCampusDrives() {
     const [drives, setDrives] = useState<CampusDrive[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchDrives();
-    }, []);
-
-    const fetchDrives = async () => {
+    async function fetchDrives() {
         try {
             const res = await fetch('/api/campus-drives', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -39,7 +35,13 @@ export default function AdminCampusDrives() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchDrives();
+    }, []);
+;
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">

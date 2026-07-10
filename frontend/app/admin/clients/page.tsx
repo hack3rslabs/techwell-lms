@@ -32,11 +32,7 @@ export default function AdminClientsPage() {
         return { headers: { Authorization: `Bearer ${token}` } }
     }
 
-    React.useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         setLoadingData(true)
         try {
             const res = await axios.get(`${apiBase}/clients/admin/all`, getHeaders())
@@ -48,6 +44,12 @@ export default function AdminClientsPage() {
             setLoadingData(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const handleSaveClient = async (e: React.FormEvent) => {
         e.preventDefault()

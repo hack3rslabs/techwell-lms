@@ -6,15 +6,10 @@ import { useAuth } from '@/lib/auth-context'
 import api, { interviewApi, userApi } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import {
     Users,
     GraduationCap,
-    Video,
     TrendingUp,
-    Search,
-    Loader2,
     BarChart3,
     BrainCircuit,
     Magnet,
@@ -65,7 +60,7 @@ export default function AdminDashboard() {
     // ...
 
     const [users, setUsers] = React.useState<User[]>([])
-    const [_courses, setCourses] = React.useState<Course[]>([])
+    const [courses, setCourses] = React.useState<Course[]>([])
 
     const [stats, setStats] = React.useState({
         users: 0,
@@ -92,8 +87,6 @@ export default function AdminDashboard() {
         difficulty: 'INTERMEDIATE',
         content: ''
     })
-    const [_isTraining, setIsTraining] = React.useState(false)
-    const [_trainMessage, setTrainMessage] = React.useState<{ msg: string, type: 'success' | 'error' } | null>(null)
 
     React.useEffect(() => {
         if (!authLoading && (!isAuthenticated || !['SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN', 'STAFF', 'INSTRUCTOR', 'EMPLOYER'].includes(user?.role || ''))) {
@@ -132,42 +125,6 @@ export default function AdminDashboard() {
             fetchData()
         }
     }, [isAuthenticated, user, hasPermission])
-
-    const _toggleUserStatus = async (userId: string, isActive: boolean) => {
-        try {
-            await api.patch(`/users/${userId}/status`, { isActive: !isActive })
-            setUsers(users.map(u => u.id === userId ? { ...u, isActive: !isActive } : u))
-        } catch (error) {
-            console.error('Failed to update user status:', error)
-        }
-    }
-
-    const _handleTrainAI = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!trainingData.topic || !trainingData.content) return
-
-        setIsTraining(true)
-        setTrainMessage(null)
-        try {
-            await interviewApi.trainAI(trainingData)
-            setTrainMessage({ msg: 'Knowledge base updated successfully!', type: 'success' })
-            setTrainingData(prev => ({ ...prev, topic: '', content: '' })) // Reset form
-        } catch (error) {
-            console.error('Training failed:', error)
-            setTrainMessage({ msg: 'Failed to update knowledge base.', type: 'error' })
-        } finally {
-            setIsTraining(false)
-        }
-    }
-
-    const _filteredUsers = searchQuery
-        ? users.filter(u =>
-            u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.email.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        : users
-
-
 
     // Only check if user exists and is not a student
     // Layout already handles the detailed loading and redirect logic

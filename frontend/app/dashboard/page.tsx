@@ -405,9 +405,9 @@ export default function DashboardPage() {
                             {jobInterviews.slice(0, 3).map((interview) => {
                                 const interviewDate = new Date(interview.scheduledAt);
                                 const isToday = interviewDate.toDateString() === new Date().toDateString();
-                                const isTomorrow = interviewDate.toDateString() === new Date(Date.now() + 86400000).toDateString();
+                                const isTomorrow = interviewDate.toDateString() === new Date(new Date().getTime() + 86400000).toDateString();
                                 const isPast = interviewDate < new Date();
-                                const isWithinHour = !isPast && (interviewDate.getTime() - Date.now()) < 3600000;
+                                const isWithinHour = !isPast && (interviewDate.getTime() - new Date().getTime()) < 3600000;
                                 let borderClass = 'border-border';
                                 if (isWithinHour) {
                                     borderClass = 'border-green-500 shadow-lg shadow-green-500/10';

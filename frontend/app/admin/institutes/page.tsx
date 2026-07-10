@@ -21,13 +21,7 @@ export default function AdminInstitutes() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('ALL');
 
-    useEffect(() => {
-        if (user && user.role === 'SUPER_ADMIN') {
-            fetchInstitutes();
-        }
-    }, [user, filter]);
-
-    const fetchInstitutes = async () => {
+    async function fetchInstitutes() {
         try {
             const statusQuery = filter !== 'ALL' ? `?status=${filter}` : '';
             const res = await fetch(`/api/institutes${statusQuery}`, {
@@ -40,7 +34,15 @@ export default function AdminInstitutes() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        if (user && user.role === 'SUPER_ADMIN') {
+            fetchInstitutes();
+        }
+    }, [user, filter]);
+;
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         if (!confirm(`Are you sure you want to mark this institute as ${newStatus}?`)) return;

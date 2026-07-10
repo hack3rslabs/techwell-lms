@@ -45,13 +45,7 @@ export default function PipelineKanbanPage() {
     const [candidates, setCandidates] = useState<Candidate[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        if (params.id) {
-            fetchPipeline()
-        }
-    }, [params.id])
-
-    const fetchPipeline = async () => {
+    async function fetchPipeline() {
         try {
             // Ideally an endpoint that gets students in this drive
             // For now, let's mock it if the endpoint isn't fully ready or we use a custom one
@@ -75,6 +69,14 @@ export default function PipelineKanbanPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        if (params.id) {
+            fetchPipeline()
+        }
+    }, [params.id])
+
 
     const onDragEnd = async (result: DropResult) => {
         const { destination, source, draggableId } = result

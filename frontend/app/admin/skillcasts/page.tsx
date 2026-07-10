@@ -53,11 +53,7 @@ export default function AdminSkillcastPage() {
         thumbnail: ""
     })
 
-    useEffect(() => {
-        fetchSkillcasts()
-    }, [])
-
-    const fetchSkillcasts = async () => {
+    async function fetchSkillcasts() {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/skillcasts`)
             if (res.ok) {
@@ -71,6 +67,12 @@ export default function AdminSkillcastPage() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchSkillcasts()
+    }, [])
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

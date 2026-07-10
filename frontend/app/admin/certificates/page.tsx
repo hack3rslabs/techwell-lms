@@ -131,11 +131,8 @@ export default function CertificatesPage() {
     const [batchesList, setBatchesList] = useState<any[]>([])
 
     // Fetch data on mount
-    useEffect(() => {
-        fetchData()
-    }, [])
 
-    const fetchData = async () => {
+    async function fetchData() {
         setIsLoading(true)
         try {
             const [certsRes, templatesRes, settingsRes, statsRes] = await Promise.all([
@@ -155,6 +152,11 @@ export default function CertificatesPage() {
             setIsLoading(false)
         }
     }
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const openBatchModal = async () => {
         setIsBatchModalOpen(true)

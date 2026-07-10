@@ -32,36 +32,7 @@ export default function ConsultingDashboard({ type: initialType = 'ALL' }: { typ
     const [staff, setStaff] = useState<any[]>([]);
     const { toast } = useToast();
 
-    useEffect(() => {
-        fetchProjects();
-        fetchStaff();
-    }, []);
-
-    const fetchStaff = async () => {
-        try {
-            const res = await api.get(`/users?role=STAFF`);
-            if (res.data.success || res.data.users) {
-                setStaff(res.data.users || res.data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch staff", error);
-        }
-    };
-
-    const handleDelete = async (e: any, id: string) => {
-        e.stopPropagation();
-        if (!confirm("Are you sure you want to delete this project?")) return;
-        try {
-            await api.delete(`/consulting-projects/${id}`);
-            toast({ title: "Success", description: "Project deleted." });
-            fetchProjects();
-        } catch (error) {
-            console.error("Failed to delete project", error);
-            toast({ title: "Error", description: "Failed to delete project.", variant: "destructive" });
-        }
-    };
-
-    const fetchProjects = async () => {
+    async function fetchProjects() {
         try {
             setLoading(true);
             const res = await api.get(`/consulting-projects`);
@@ -78,7 +49,40 @@ export default function ConsultingDashboard({ type: initialType = 'ALL' }: { typ
         } finally {
             setLoading(false);
         }
+    }
+
+    async function fetchStaff() {
+        try {
+            const res = await api.get(`/users?role=STAFF`);
+            if (res.data.success || res.data.users) {
+                setStaff(res.data.users || res.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch staff", error);
+        }
+    }
+
+
+
+    useEffect(() => {
+        fetchProjects();
+        fetchStaff();
+    }, []);
+;
+
+    const handleDelete = async (e: any, id: string) => {
+        e.stopPropagation();
+        if (!confirm("Are you sure you want to delete this project?")) return;
+        try {
+            await api.delete(`/consulting-projects/${id}`);
+            toast({ title: "Success", description: "Project deleted." });
+            fetchProjects();
+        } catch (error) {
+            console.error("Failed to delete project", error);
+            toast({ title: "Error", description: "Failed to delete project.", variant: "destructive" });
+        }
     };
+;
 
     const handleDragEnd = async (result: DropResult) => {
         const { destination, source, draggableId } = result;

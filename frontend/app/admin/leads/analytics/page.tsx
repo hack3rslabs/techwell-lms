@@ -39,7 +39,7 @@ export default function LeadAnalytics() {
 
     // 1. Lead Scoring Engine (Mock logic for demo)
     const highlyEngaged = leads.filter(l => l.status === 'INTERESTED' || l.status === 'QUALIFIED').length
-    const avgScore = leads.length > 0 ? Math.floor(Math.random() * 40) + 50 : 0 // Simulate average score 50-90
+    const avgScore = leads.length > 0 ? 75 : 0 // Simulate average score 50-90
 
     // 2. Lost Lead Analysis
     const lostLeads = leads.filter(l => l.status === 'LOST')

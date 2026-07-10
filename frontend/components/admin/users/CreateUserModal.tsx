@@ -50,13 +50,6 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
         roleId: ""
     })
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchRoles()
-            setFormData({ name: "", email: "", password: "", phone: "", roleId: "" })
-        }
-    }, [isOpen])
-
     const fetchRoles = async () => {
         try {
             setIsLoadingRoles(true)
@@ -68,6 +61,13 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
             setIsLoadingRoles(false)
         }
     }
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchRoles()
+            setFormData({ name: "", email: "", password: "", phone: "", roleId: "" })
+        }
+    }, [isOpen])
 
     const handleSave = async () => {
         if (!formData.name || !formData.email || !formData.password || !formData.roleId) {

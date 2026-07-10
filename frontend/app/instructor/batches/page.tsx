@@ -65,11 +65,7 @@ export default function BatchesPage() {
         maxStudents: ''
     })
 
-    React.useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const [batchesRes, coursesRes] = await Promise.all([
                 api.get('/trainer/batches'),
@@ -83,6 +79,12 @@ export default function BatchesPage() {
             setLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const handleCreate = async () => {
         if (!formData.name || !formData.courseId) return

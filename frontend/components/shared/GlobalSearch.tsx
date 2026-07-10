@@ -25,19 +25,6 @@ export function GlobalSearch() {
     const [isOpen, setIsOpen] = React.useState(false)
     const searchRef = React.useRef<HTMLDivElement>(null)
 
-    // Quick debounce implementation if hook missing
-    React.useEffect(() => {
-        const timer = setTimeout(() => {
-            if (query.length >= 2) {
-                performSearch(query)
-            } else {
-                setResults(null)
-                setIsOpen(false)
-            }
-        }, 400)
-        return () => clearTimeout(timer)
-    }, [query])
-
     const performSearch = async (q: string) => {
         setIsLoading(true)
         try {
@@ -50,6 +37,19 @@ export function GlobalSearch() {
             setIsLoading(false)
         }
     }
+
+    // Quick debounce implementation if hook missing
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            if (query.length >= 2) {
+                performSearch(query)
+            } else {
+                setResults(null)
+                setIsOpen(false)
+            }
+        }, 400)
+        return () => clearTimeout(timer)
+    }, [query])
 
     // Close on click outside
     React.useEffect(() => {

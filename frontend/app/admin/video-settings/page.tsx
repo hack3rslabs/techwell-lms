@@ -87,6 +87,24 @@ export default function VideoSettingsPage() {
         platform: 'ZOOM'
     })
 
+    async function fetchData() {
+        try {
+            const [intRes, classRes, courseRes] = await Promise.all([
+                api.get('/video/integrations'),
+                api.get('/video/classes?upcoming=true'),
+                api.get('/courses', { params: { page: 1, limit: 100 } })
+            ])
+            setIntegrations(intRes.data || [])
+            setLiveClasses(classRes.data || [])
+            setCourses(courseRes.data?.courses || courseRes.data || [])
+        } catch (error) {
+            console.error("Failed to fetch video settings", error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+
     useEffect(() => {
         fetchData()
     }, [])
@@ -152,22 +170,6 @@ export default function VideoSettingsPage() {
         }
     }
 
-    const fetchData = async () => {
-        try {
-            const [intRes, classRes, courseRes] = await Promise.all([
-                api.get('/video/integrations'),
-                api.get('/video/classes?upcoming=true'),
-                api.get('/courses', { params: { page: 1, limit: 100 } })
-            ])
-            setIntegrations(intRes.data || [])
-            setLiveClasses(classRes.data || [])
-            setCourses(courseRes.data?.courses || courseRes.data || [])
-        } catch (error) {
-            console.error("Failed to fetch video settings", error)
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     const handleAddIntegration = async () => {
         try {

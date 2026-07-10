@@ -49,11 +49,7 @@ export default function EmailSettingsPage() {
         privateKey: ''
     })
 
-    React.useEffect(() => {
-        fetchConfigs()
-    }, [])
-
-    const fetchConfigs = async () => {
+    async function fetchConfigs() {
         try {
             const res = await api.get('/email-settings/config')
             setConfigs(res.data)
@@ -63,6 +59,12 @@ export default function EmailSettingsPage() {
             setIsLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchConfigs()
+    }, [])
+
 
     const handleSave = async () => {
         try {

@@ -51,20 +51,7 @@ function PostEditorContent() {
         slug: ''
     });
 
-    useEffect(() => {
-        if (isEdit && postId) {
-            fetchPost();
-        }
-    }, [isEdit, postId]);
-
-    useEffect(() => {
-        // Calculate rough word count
-        const text = formData.content.replace(/<[^>]+>/g, '');
-        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-        setWordCount(words);
-    }, [formData.content]);
-
-    const fetchPost = async () => {
+    async function fetchPost() {
         try {
             const res = await api.get(`/blogs/${postId}`);
             const post = res.data;
@@ -87,7 +74,22 @@ function PostEditorContent() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        if (isEdit && postId) {
+            fetchPost();
+        }
+    }, [isEdit, postId]);
+
+    useEffect(() => {
+        // Calculate rough word count
+        const text = formData.content.replace(/<[^>]+>/g, '');
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        setWordCount(words);
+    }, [formData.content]);
+;
 
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));

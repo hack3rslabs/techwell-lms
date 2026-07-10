@@ -38,54 +38,6 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
             }
         }
     }, [bannerPreview])
-
-    React.useEffect(() => {
-        if (initialCourseId) {
-            const fetchCourse = async () => {
-                try {
-                    const res = await courseApi.getById(initialCourseId)
-                    const c = res.data.course
-                    setBasicData({
-                        title: c.title,
-                        description: c.description,
-                        category: c.category,
-                        price: Number(c.price) || 0,
-                        discountPrice: Number(c.discountPrice) || 0,
-                        difficulty: c.difficulty,
-                        duration: Number(c.duration) || 0,
-                        courseCode: c.courseCode || '',
-                        bannerUrl: c.bannerUrl || '',
-                        jobRoles: c.jobRoles || [],
-                        courseType: c.courseType || 'RECORDED',
-                        hasInterviewPrep: c.hasInterviewPrep || false,
-                        interviewPrice: Number(c.interviewPrice) || 0,
-                        jobPrep: c.jobPrep || false,
-                        fakeEnrolledCount: Number(c.fakeEnrolledCount) || 0,
-                        fakeRating: Number(c.fakeRating) || 4.5,
-                        requireAdmissionFee: c.requireAdmissionFee ?? true,
-                        admissionFee: Number(c.admissionFee) ?? 1000,
-                        slug: c.slug || '',
-                        seoTitle: c.seoTitle || '',
-                        metaDescription: c.metaDescription || '',
-                        targetKeywords: c.targetKeywords || [],
-                        faqs: c.faqs || [],
-                        careerOpportunities: c.careerOpportunities || [],
-                        salaryInsights: c.salaryInsights || [],
-                        projects: c.projects || [],
-                        prerequisites: c.prerequisites || [],
-                        learningOutcomes: c.learningOutcomes || [],
-                        toolsCovered: c.toolsCovered || []
-                    })
-                    if (c.modules) {
-                        setModules(c.modules)
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch course", error)
-                }
-            }
-            fetchCourse()
-        }
-    }, [initialCourseId])
  
     // Step 1 Data
     const [basicData, setBasicData] = React.useState({
@@ -147,6 +99,55 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
     const [quizBuilderLessonId, setQuizBuilderLessonId] = React.useState<string | null>(null)
     const [isGenerating, setIsGenerating] = React.useState(false)
     const [expandedModuleIndexes, setExpandedModuleIndexes] = React.useState<number[]>([])
+
+    React.useEffect(() => {
+        if (!initialCourseId) return
+
+        const fetchCourse = async () => {
+            try {
+                const res = await courseApi.getById(initialCourseId)
+                const c = res.data.course
+                setBasicData({
+                    title: c.title,
+                    description: c.description,
+                    category: c.category,
+                    price: Number(c.price) || 0,
+                    discountPrice: Number(c.discountPrice) || 0,
+                    difficulty: c.difficulty,
+                    duration: Number(c.duration) || 0,
+                    courseCode: c.courseCode || '',
+                    bannerUrl: c.bannerUrl || '',
+                    jobRoles: c.jobRoles || [],
+                    courseType: c.courseType || 'RECORDED',
+                    hasInterviewPrep: c.hasInterviewPrep || false,
+                    interviewPrice: Number(c.interviewPrice) || 0,
+                    jobPrep: c.jobPrep || false,
+                    fakeEnrolledCount: Number(c.fakeEnrolledCount) || 0,
+                    fakeRating: Number(c.fakeRating) || 4.5,
+                    requireAdmissionFee: c.requireAdmissionFee ?? true,
+                    admissionFee: Number(c.admissionFee) ?? 1000,
+                    slug: c.slug || '',
+                    seoTitle: c.seoTitle || '',
+                    metaDescription: c.metaDescription || '',
+                    targetKeywords: c.targetKeywords || [],
+                    faqs: c.faqs || [],
+                    careerOpportunities: c.careerOpportunities || [],
+                    salaryInsights: c.salaryInsights || [],
+                    projects: c.projects || [],
+                    prerequisites: c.prerequisites || [],
+                    learningOutcomes: c.learningOutcomes || [],
+                    toolsCovered: c.toolsCovered || []
+                })
+                if (c.modules) {
+                    setModules(c.modules)
+                }
+            } catch (error) {
+                console.error("Failed to fetch course", error)
+            }
+        }
+
+        fetchCourse()
+    }, [initialCourseId, setBasicData, setModules])
 
     // Load categories from API
     const [dbCategories, setDbCategories] = React.useState<{ id: string; name: string; icon: string | null }[]>([])

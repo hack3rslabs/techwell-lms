@@ -24,11 +24,7 @@ export default function GalleryPage() {
     const [submitting, setSubmitting] = useState(false)
     const { toast } = useToast()
 
-    useEffect(() => {
-        fetchImages()
-    }, [])
-
-    const fetchImages = async () => {
+    async function fetchImages() {
         try {
             const res = await api.get("/admin/gallery")
             const data = res.data
@@ -41,6 +37,12 @@ export default function GalleryPage() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchImages()
+    }, [])
+
 
     const handleAddImage = async (e: React.FormEvent) => {
         e.preventDefault()
