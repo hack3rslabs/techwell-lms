@@ -14,8 +14,8 @@ export default function ConsultancyRevenueDashboard() {
             const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
             
             const [analyticsRes, recordsRes] = await Promise.all([
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consultancy-analytics/analytics`, { headers }),
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consultancy-analytics/coordination`, { headers })
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultancy-analytics/analytics`, { headers }),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultancy-analytics/coordination`, { headers })
             ]);
 
             if (analyticsRes.ok) setAnalytics(await analyticsRes.json());

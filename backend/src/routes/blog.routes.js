@@ -46,7 +46,7 @@ router.get('/', optionalAuth, async (req, res, next) => {
                 ]
             });
         } else if (status && status !== 'ALL') {
-            where.AND.push({ status });
+            where.AND.push({ status: status === 'IN_REVIEW' ? 'REVIEW' : status });
         }
 
         if (search) {

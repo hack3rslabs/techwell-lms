@@ -28,7 +28,7 @@ export default function AdminReferralsPage() {
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await api.get('/api/referrals/stats');
+                const response = await api.get('/referrals/stats');
                 if (response.data.success) {
                     setStats(response.data.data);
                 }

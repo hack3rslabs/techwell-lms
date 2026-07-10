@@ -5,7 +5,7 @@ const { authenticate: protect, authorize } = require('../middleware/auth');
 
 // Apply protection to all newsletter routes
 router.use(protect);
-router.use(authorize('ADMIN', 'SUPERADMIN'));
+router.use(authorize('ADMIN', 'SUPER_ADMIN'));
 
 router.get('/', newsletterController.getNewsletters);
 router.post('/', newsletterController.createNewsletter);
