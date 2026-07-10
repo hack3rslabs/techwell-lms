@@ -27,7 +27,12 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             interviewsCount,
             leadsCount,
             campusDrivesCount,
-            revenueData
+            revenueData,
+            activeTasksCount,
+            activeTicketsCount,
+            activeProjectsCount,
+            franchisesCount,
+            certificatesCount
         ] = await Promise.all([
             // Only count users if permitted, else 0
             rules.manageUsers ? prisma.user.count({
@@ -51,7 +56,19 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
                     status: 'SUCCESS',
                     ...(req.user.instituteId ? { course: { instituteId: req.user.instituteId } } : {})
                 }
-            }) : Promise.resolve({ _sum: { amount: 0 } })
+            }) : Promise.resolve({ _sum: { amount: 0 } }),
+            // New: Team Workflow Metrics
+            prisma.task.count({
+                where: req.user.role === 'SUPER_ADMIN' ? { status: { in: ['PENDING', 'IN_PROGRESS'] } } : { assignedTo: req.user.id, status: { in: ['PENDING', 'IN_PROGRESS'] } }
+            }),
+            prisma.ticket.count({
+                where: req.user.role === 'SUPER_ADMIN' ? { status: { in: ['OPEN', 'IN_PROGRESS'] } } : { assignedTo: req.user.id, status: { in: ['OPEN', 'IN_PROGRESS'] } }
+            }),
+            prisma.consultingProject.count({
+                where: req.user.role === 'SUPER_ADMIN' ? { status: { not: 'COMPLETED' } } : { assigneeId: req.user.id, status: { not: 'COMPLETED' } }
+            }),
+            prisma.franchise.count(),
+            prisma.certificate.count()
         ]);
 
         // Get recent enrollments for chart/list
@@ -72,6 +89,11 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             leads: leadsCount,
             campusDrives: campusDrivesCount,
             revenue: revenueData._sum.amount || 0,
+            activeTasks: activeTasksCount,
+            activeTickets: activeTicketsCount,
+            activeProjects: activeProjectsCount,
+            franchises: franchisesCount,
+            certificates: certificatesCount,
             recentActivity: recentEnrollments
         });
     } catch (error) {
@@ -382,7 +404,7 @@ router.get('/students', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF')
 
         // Build filter for enrollments
         const where = {};
-        
+
         if (status) {
             where.status = status;
         }
@@ -486,7 +508,7 @@ router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (r
         const skip = (Number(page) - 1) * Number(limit);
 
         const where = {};
-        
+
         if (action) {
             where.action = action;
         }
@@ -535,7 +557,7 @@ router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (r
                 where
             })
         ]);
-        
+
         // We need to resolve the user names for 'performedBy' since performedBy is a string ID
         // Often 'performedBy' could be 'SYSTEM' or an arbitrary ID
         const userIds = [...new Set(logs.map(log => log.performedBy).filter(id => id && id !== 'SYSTEM'))];
@@ -546,7 +568,7 @@ router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (r
                 select: { id: true, name: true, email: true, role: true }
             });
         }
-        
+
         const userMap = users.reduce((acc, user) => {
             acc[user.id] = user;
             return acc;
@@ -643,7 +665,7 @@ router.post('/reports/generate', authenticate, authorize('SUPER_ADMIN', 'ADMIN')
                     where
                 });
                 data = grouped.map(g => ({ name: g.status, value: g._count }));
-            } 
+            }
             else if (dimension === 'SOURCE') {
                 const grouped = await prisma.lead.groupBy({
                     by: ['source'],
@@ -666,7 +688,7 @@ router.post('/reports/generate', authenticate, authorize('SUPER_ADMIN', 'ADMIN')
 
         // ---------------- REVENUE ----------------
         else if (dataset === 'REVENUE') {
-            const where = { 
+            const where = {
                 createdAt: Object.keys(dateFilter).length ? dateFilter : undefined,
                 status: 'SUCCESS'
             };
@@ -846,7 +868,7 @@ router.get('/gdpr/unsubscribed', authenticate, authorize('SUPER_ADMIN', 'ADMIN')
 router.patch('/gdpr/requests/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
     try {
         const { action } = req.body; // 'PROCESS' or 'CANCEL'
-        
+
         if (action === 'PROCESS') {
             await prisma.user.update({
                 where: { id: req.params.id },

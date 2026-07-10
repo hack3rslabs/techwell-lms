@@ -1,13 +1,4 @@
 services:
-  migrate:
-    build: ./backend
-    command: sh -c "npx prisma db push"
-    environment:
-      DATABASE_URL: ${DATABASE_URL:?}
-      NODE_ENV: ${NODE_ENV:-production}
-    restart: "no"
-    exclude_from_hc: true
-
   backend:
     build: ./backend
     environment:
@@ -16,8 +7,6 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       FRONTEND_URL: ${FRONTEND_URL:?}
       NODE_ENV: ${NODE_ENV:-production}
-    depends_on:
-      - migrate
     volumes:
       - uploads_prod:/app/uploads
     restart: unless-stopped

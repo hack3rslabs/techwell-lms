@@ -131,8 +131,8 @@ export default function DashboardPage() {
     const searchParams = useSearchParams()
     const tabParam = searchParams.get('tab')
 
-    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume' | 'payments' | 'logs' | 'referrals'
-    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume', 'payments', 'logs', 'referrals']
+    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume' | 'payments' | 'logs' | 'referrals' | 'consulting'
+    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume', 'payments', 'logs', 'referrals', 'consulting']
 
     const [activeTab, setActiveTab] = React.useState<TabType>('overview')
 
@@ -148,6 +148,10 @@ export default function DashboardPage() {
     const handleTabChange = (newTab: TabType | 'jobs') => {
         if (newTab === 'jobs') {
             router.push('/jobs')
+            return
+        }
+        if (newTab === 'consulting') {
+            router.push('/dashboard/consulting')
             return
         }
         setActiveTab(newTab as TabType)
@@ -354,6 +358,7 @@ export default function DashboardPage() {
                         { id: 'applications', label: 'Applications', icon: Briefcase, count: applications.length },
                         { id: 'jobs', label: 'Find Jobs', icon: Target },
                         { id: 'certificates', label: 'Certificates', icon: Award, count: certificates.length },
+                        { id: 'consulting', label: 'Consulting', icon: Briefcase },
                         { id: 'resume', label: 'AI Resume', icon: FileText },
                         { id: 'payments', label: 'Payment History', icon: CreditCard },
                         { id: 'logs', label: 'Activity Logs', icon: Activity },

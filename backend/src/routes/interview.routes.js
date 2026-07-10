@@ -33,7 +33,15 @@ router.get('/', authenticate, async (req, res, next) => {
     try {
         const { status, page = 1, limit = 10 } = req.query;
 
-        const where = { userId: req.user.id };
+        const where = {};
+        const role = req.user.role;
+
+        if (!['SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'].includes(role)) {
+            where.userId = req.user.id;
+        } else if (role === 'FRANCHISE_ADMIN') {
+            where.user = { franchiseId: req.user.franchiseId };
+        }
+
         if (status) where.status = status;
 
         const [interviews, total] = await Promise.all([
@@ -53,6 +61,12 @@ router.get('/', authenticate, async (req, res, next) => {
                     evaluation: {
                         select: {
                             overallScore: true
+                        }
+                    },
+                    user: {
+                        select: {
+                            name: true,
+                            email: true
                         }
                     }
                 },

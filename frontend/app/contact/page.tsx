@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const contactInfo = [
-    { icon: Mail, label: 'Email', value: 'support@techwell.co.in', href: 'mailto:support@techwell.co.in' },
+    { icon: Mail, label: 'Email (Support)', value: 'support@techwell.co.in', href: 'mailto:support@techwell.co.in' },
+    { icon: Mail, label: 'Email (HR Management)', value: 'hr@techwell.co.in', href: 'mailto:hr@techwell.co.in' },
+    { icon: Mail, label: 'Email (Feedback, Info, etc.)', value: 'info@techwell.co.in', href: 'mailto:info@techwell.co.in' },
     { icon: Phone, label: 'Phone', value: '+91 7997473473', href: 'tel:+917997473473' },
     {
         icon: MapPin,

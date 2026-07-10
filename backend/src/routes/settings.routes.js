@@ -1,9 +1,25 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
+const { encrypt, decrypt } = require('../utils/encryption');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
+const SENSITIVE_FIELDS = [
+    'razorpayKeySecret',
+    'smtpPassword',
+    'zoomClientSecret',
+    'anthropicApiKey',
+    'googleMeetApiKey',
+    'msTeamsClientSecret',
+    'n8nAuthToken',
+    'openaiApiKey',
+    'paypalSecretKey',
+    'stripeSecretKey',
+    'twilioAuthToken',
+    'whatsappApiToken',
+    'webhookSecret'
+];
 /**
  * @route   GET /api/settings/public
  * @desc    Get public settings (Name, Logo)
@@ -53,6 +69,15 @@ router.get('/', authenticate, (req, res, next) => {
                 platformName: 'Techwell Academy'
             }
         });
+
+        // Decrypt sensitive fields before returning
+        SENSITIVE_FIELDS.forEach(field => {
+            if (settings[field] && settings[field].includes(':')) {
+                const decrypted = decrypt(settings[field]);
+                if (decrypted) settings[field] = decrypted;
+            }
+        });
+
         res.json(settings);
     } catch (error) {
         next(error);
@@ -79,9 +104,25 @@ router.put('/', authenticate, async (req, res, next) => {
         delete data.id;
         delete data.updatedAt;
 
+        // Encrypt sensitive fields
+        SENSITIVE_FIELDS.forEach(field => {
+            if (data[field]) {
+                const encrypted = encrypt(data[field]);
+                if (encrypted) data[field] = encrypted;
+            }
+        });
+
         const settings = await prisma.systemSettings.update({
             where: { id: 'default' },
             data: data
+        });
+
+        // Decrypt sensitive fields before returning the response
+        SENSITIVE_FIELDS.forEach(field => {
+            if (settings[field] && settings[field].includes(':')) {
+                const decrypted = decrypt(settings[field]);
+                if (decrypted) settings[field] = decrypted;
+            }
         });
 
         res.json({ message: 'Settings updated', settings });

@@ -31,7 +31,7 @@ async function main() {
             role: 'INSTITUTE_ADMIN',
             instituteId: institute.id, // Link to Institute
             isActive: true,
-            password: '$2a$12$V.o/P7.O.S./k/h.u.g.o.u.g.h.t.h.e.p.a.s.s.w.o.r.d' // Dummy hash
+            password: require('bcryptjs').hashSync(Math.random().toString(36).slice(-8), 10) // dynamically generated hash
         },
     });
 

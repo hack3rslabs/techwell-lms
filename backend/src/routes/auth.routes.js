@@ -27,7 +27,7 @@ const registerSchema = z.object({
         .min(8, 'Password must be at least 8 characters')
         .regex(passwordComplexityRegex, 'Password must contain at least one uppercase, lowercase, number and special character'),
     name: z.string().min(2, 'Name must be at least 2 characters'),
-    phone: z.string().regex(/^[6-9]\d{9}$/, 'Must be a valid 10-digit Indian mobile number').optional(),
+    phone: z.string().refine(val => !val || /^[6-9]\d{9}$/.test(val), 'Must be a valid 10-digit Indian mobile number').optional(),
     referredByCode: z.string().optional(),
     role: z.enum(['STUDENT', 'EMPLOYER', 'INSTITUTE_ADMIN']).default('STUDENT')
 });
@@ -458,7 +458,7 @@ router.post('/refresh', async (req, res, next) => {
         const token = authHeader.split(' ')[1];
 
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             // Check if user still exists
             const user = await prisma.user.findUnique({
@@ -639,10 +639,12 @@ router.post('/2fa/setup', authenticate, async (req, res, next) => {
         const otpauthUri = twoFactorService.generateOtpauthUri(req.user.email, secret);
         const qrCodeUrl = await twoFactorService.generateQrCodeUrl(otpauthUri);
 
+        const { encrypt } = require('../utils/encryption');
+
         // Store secret temporarily
         await prisma.user.update({
             where: { id: userId },
-            data: { twoFactorTempSecret: secret }
+            data: { twoFactorTempSecret: encrypt(secret) }
         });
 
         res.json({

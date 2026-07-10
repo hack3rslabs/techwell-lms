@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { Shield, Check, Lock, ShieldCheck, Database, ArrowLeft, Mail, User } from 'lucide-react'
+import { Shield, Check, Lock, ShieldCheck, Database, ArrowLeft, Mail, User, Briefcase } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -162,18 +162,30 @@ export default function PrivacyPage() {
                                 <span className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">6</span>
                                 Contact Us
                             </h2>
-                            <p className="text-muted-foreground mb-4">For privacy-related inquiries or to exercise your rights:</p>
+                            <p className="text-muted-foreground mb-4">
+                                If you have any questions about this Privacy Policy, please contact us at:
+                                <br />
+                                <Link href="mailto:info@techwell.co.in" className="text-primary hover:underline font-medium">
+                                    info@techwell.co.in
+                                </Link>
+                            </p>
                             <div className="flex flex-wrap gap-4">
                                 <Link href="mailto:privacy@techwell.co.in">
                                     <Button variant="outline" className="gap-2">
                                         <Mail className="h-4 w-4" />
-                                        privacy@techwell.co.in
+                                        Privacy Inquiries
                                     </Button>
                                 </Link>
-                                <Link href="mailto:dpo@techwell.co.in">
+                                <Link href="mailto:hr@techwell.co.in">
+                                    <Button variant="outline" className="gap-2">
+                                        <Briefcase className="h-4 w-4" />
+                                        HR Management
+                                    </Button>
+                                </Link>
+                                <Link href="mailto:compliance@techwell.co.in">
                                     <Button variant="outline" className="gap-2">
                                         <User className="h-4 w-4" />
-                                        Data Protection Officer
+                                        Compliance Officer
                                     </Button>
                                 </Link>
                             </div>

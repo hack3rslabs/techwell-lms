@@ -37,7 +37,7 @@ export function ScrollButton() {
     }
 
     return (
-        <div className="fixed bottom-8 right-8 z-[100]">
+        <div className="fixed bottom-[5.5rem] right-6 md:right-8 z-[100]">
             <Button
                 size="icon"
                 variant="outline"

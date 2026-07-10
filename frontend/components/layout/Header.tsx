@@ -246,7 +246,7 @@ export function Header() {
                     </div>
 
                     {/* Mobile Menu */}
-                    <div className="md:hidden">
+                    <div className="lg:hidden">
 
                         <Sheet open={isOpen} onOpenChange={setIsOpen}>
 

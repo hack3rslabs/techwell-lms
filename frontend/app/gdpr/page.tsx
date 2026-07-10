@@ -110,13 +110,13 @@ export default function GDPRPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-xl font-bold text-primary mb-3">Exercise Your Rights</h2>
-                            <p className="text-muted-foreground mb-4">Contact our Data Protection Officer:</p>
-                            <Link href="mailto:dpo@techwell.co.in">
-                                <Button className="gap-2">
-                                    <Mail className="h-4 w-4" />
-                                    dpo@techwell.co.in
-                                </Button>
+                            <p className="text-muted-foreground mb-4">
+                            If you have questions about these rights or wish to exercise them, please contact us at:
+                            <br />
+                            <Link href="mailto:info@techwell.co.in" className="text-primary hover:underline font-medium">
+                                info@techwell.co.in
                             </Link>
+                        </p>
                             <p className="text-sm text-muted-foreground mt-4">
                                 We will respond to your request within 30 days as required by GDPR.
                             </p>
