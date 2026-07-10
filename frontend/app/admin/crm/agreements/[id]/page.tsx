@@ -18,11 +18,7 @@ export default function ViewAgreement() {
     const [agreement, setAgreement] = useState<any>(null)
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        if (agreementId) fetchAgreement()
-    }, [agreementId])
-
-    const fetchAgreement = async () => {
+    async function fetchAgreement() {
         try {
             setLoading(true)
             const res = await api.get(`/crm/agreements/${agreementId}`)
@@ -33,6 +29,12 @@ export default function ViewAgreement() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        if (agreementId) fetchAgreement()
+    }, [agreementId])
+
 
     const handleSend = async () => {
         try {

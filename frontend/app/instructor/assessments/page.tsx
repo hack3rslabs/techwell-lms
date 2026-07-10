@@ -74,11 +74,7 @@ export default function AssessmentsPage() {
     const [feedbackValue, setFeedbackValue] = React.useState('')
     const [grading, setGrading] = React.useState(false)
 
-    React.useEffect(() => {
-        fetchSubmissions()
-    }, [])
-
-    const fetchSubmissions = async () => {
+    async function fetchSubmissions() {
         try {
             const res = await api.get('/trainer/assessments')
             setSubmissions(res.data || [])
@@ -90,6 +86,12 @@ export default function AssessmentsPage() {
             setLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchSubmissions()
+    }, [])
+
 
     const handleGrade = async () => {
         if (!selectedSubmission || !gradeValue) return

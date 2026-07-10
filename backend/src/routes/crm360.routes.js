@@ -1,11 +1,12 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { authenticate, checkPermission } = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET /api/crm/customers
-router.get('/customers', async (req, res) => {
+router.get('/customers', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
   try {
     const { search, page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
@@ -46,7 +47,7 @@ router.get('/customers', async (req, res) => {
 });
 
 // GET /api/crm/customers/:id/360-view
-router.get('/customers/:id/360-view', async (req, res) => {
+router.get('/customers/:id/360-view', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -86,7 +87,7 @@ router.get('/customers/:id/360-view', async (req, res) => {
 });
 
 // POST /api/crm/customers/merge
-router.post('/customers/merge', async (req, res) => {
+router.post('/customers/merge', authenticate, checkPermission('CENTRAL_CRM', 'write'), async (req, res) => {
   try {
     const { primaryId, secondaryIds } = req.body;
     // Logic to merge secondary customers into primary customer

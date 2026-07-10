@@ -74,11 +74,7 @@ export default function AdminJobs() {
         status: "OPEN"
     });
 
-    useEffect(() => {
-        fetchJobs();
-    }, []);
-
-    const fetchJobs = async () => {
+    async function fetchJobs() {
         try {
             setLoading(true);
             const res = await jobsApi.getAdminListings();
@@ -89,7 +85,13 @@ export default function AdminJobs() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchJobs();
+    }, []);
+;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

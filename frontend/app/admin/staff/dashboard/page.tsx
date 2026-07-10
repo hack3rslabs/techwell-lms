@@ -20,11 +20,7 @@ export default function StaffDashboardPage() {
         pendingWorksCount: 0, overdueTasks: [], overdueReminders: []
     })
 
-    React.useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const [goalsRes, calRes] = await Promise.all([
                 api.get('/staff/goals/current'),
@@ -38,6 +34,12 @@ export default function StaffDashboardPage() {
             setIsLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchData()
+    }, [])
+
 
     if (isLoading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
 

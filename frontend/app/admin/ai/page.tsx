@@ -63,12 +63,7 @@ export default function AdminAISettingsPage() {
         usageLimit: 0
     })
 
-    useEffect(() => {
-        fetchProviders()
-        fetchUsage()
-    }, [])
-
-    const fetchProviders = async () => {
+    async function fetchProviders() {
         try {
             const res = await api.get('/ai/providers')
             setProviders(res.data)
@@ -107,7 +102,8 @@ export default function AdminAISettingsPage() {
         }
     }
 
-    const fetchUsage = async () => {
+
+    async function fetchUsage() {
         try {
             const res = await api.get('/ai/usage')
             setUsage(res.data)
@@ -123,6 +119,14 @@ export default function AdminAISettingsPage() {
             })
         }
     }
+
+
+
+    useEffect(() => {
+        fetchProviders()
+        fetchUsage()
+    }, [])
+
 
     const handleAddProvider = async () => {
         try {

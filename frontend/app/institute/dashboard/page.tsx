@@ -24,13 +24,7 @@ export default function InstituteDashboard() {
     const [uploading, setUploading] = useState(false)
     const [uploadMode, setUploadMode] = useState(false)
 
-    useEffect(() => {
-        if (user && user.role === 'INSTITUTE_ADMIN') {
-            fetchData()
-        }
-    }, [user])
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             const [instRes, drivesRes, logsRes] = await Promise.all([
@@ -48,6 +42,14 @@ export default function InstituteDashboard() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        if (user && user.role === 'INSTITUTE_ADMIN') {
+            fetchData()
+        }
+    }, [user])
+
 
     const handleBulkUpload = async (e: React.FormEvent) => {
         e.preventDefault()

@@ -83,11 +83,7 @@ export default function InstructorStudentsPage() {
     const [studentProgress, setStudentProgress] = React.useState<StudentProgress | null>(null)
     const [loadingProgress, setLoadingProgress] = React.useState(false)
 
-    React.useEffect(() => {
-        fetchData()
-    }, [selectedBatch])
-
-    const fetchData = async () => {
+    async function fetchData() {
         setLoading(true)
         try {
             const [studentsRes, batchesRes] = await Promise.all([
@@ -102,6 +98,12 @@ export default function InstructorStudentsPage() {
             setLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchData()
+    }, [selectedBatch])
+
 
     const fetchStudentProgress = async (studentId: string, courseId: string) => {
         setLoadingProgress(true)

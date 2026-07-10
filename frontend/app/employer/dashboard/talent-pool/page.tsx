@@ -34,11 +34,7 @@ export default function TalentPoolPage() {
     const [minScore, setMinScore] = useState("");
     const router = useRouter();
 
-    useEffect(() => {
-        fetchTalent();
-    }, []);
-
-    const fetchTalent = async () => {
+    async function fetchTalent() {
         setLoading(true);
         try {
             const params = new URLSearchParams();
@@ -51,7 +47,13 @@ export default function TalentPoolPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchTalent();
+    }, []);
+;
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();

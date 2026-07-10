@@ -22,11 +22,7 @@ export default function ClientAgreementView() {
     const [photo, setPhoto] = useState<string | null>(null)
     const sigCanvas = useRef<any>(null)
 
-    useEffect(() => {
-        if (id) fetchAgreement(id)
-    }, [id])
-
-    const fetchAgreement = async (agreementId: string) => {
+    async function fetchAgreement(agreementId: string) {
         try {
             setLoading(true)
             const res = await axios.get(`/api/crm/agreements/public/${agreementId}`)
@@ -38,6 +34,12 @@ export default function ClientAgreementView() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        if (id) fetchAgreement(id)
+    }, [id])
+
 
     const handleClearSignature = () => {
         sigCanvas.current?.clear()

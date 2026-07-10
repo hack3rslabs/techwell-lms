@@ -37,11 +37,7 @@ export default function EmployerJobsPage() {
     const [searchQuery, setSearchQuery] = useState("")
     const router = useRouter()
 
-    useEffect(() => {
-        fetchJobs()
-    }, [])
-
-    const fetchJobs = async () => {
+    async function fetchJobs() {
         try {
             const res = await api.get('/jobs/my/listings')
             setJobs(res.data)
@@ -51,6 +47,12 @@ export default function EmployerJobsPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchJobs()
+    }, [])
+
 
     const deleteJob = async (job: Job) => {
         if (!window.confirm(`Delete "${job.title}"?`)) return

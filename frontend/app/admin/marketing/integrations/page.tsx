@@ -31,11 +31,7 @@ export default function IntegrationsPage() {
         return { headers: { Authorization: `Bearer ${token}` } }
     }
 
-    React.useEffect(() => {
-        fetchIntegrations()
-    }, [])
-
-    const fetchIntegrations = async () => {
+    async function fetchIntegrations() {
         try {
             const res = await axios.get(`${apiBase}/leads/integrations`, getHeaders())
             setIntegrations(res.data || [])
@@ -45,6 +41,12 @@ export default function IntegrationsPage() {
             setLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchIntegrations()
+    }, [])
+
 
     const handleSave = async () => {
         setIsSaving(true)

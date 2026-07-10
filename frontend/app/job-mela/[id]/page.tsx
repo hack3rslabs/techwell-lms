@@ -53,13 +53,7 @@ export default function JobMelaRegistration() {
     const [selections, setSelections] = useState<Record<string, { role: string; location: string }>>({});
     const [expandedCompany, setExpandedCompany] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (params.id) {
-            fetchDriveDetails(params.id as string);
-        }
-    }, [params.id]);
-
-    const fetchDriveDetails = async (id: string) => {
+    async function fetchDriveDetails(id: string) {
         try {
             const res = await fetch(`/api/campus-drives/${id}`);
             const data = await res.json();
@@ -79,7 +73,15 @@ export default function JobMelaRegistration() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        if (params.id) {
+            fetchDriveDetails(params.id as string);
+        }
+    }, [params.id]);
+;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));

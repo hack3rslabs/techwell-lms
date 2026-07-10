@@ -8,7 +8,7 @@ export function BehaviorTrackingProvider({ children }: { children: React.ReactNo
     const { user } = useAuth();
     const { sessionId } = useBehaviorTracker(user?.id);
 
-    try {
+    
 
         return (
             <>
@@ -16,10 +16,5 @@ export function BehaviorTrackingProvider({ children }: { children: React.ReactNo
                 <SmartIntentPopup sessionId={sessionId} userId={user?.id} />
             </>
         );
-    } catch (error) {
-        // If there's an error (e.g., useAuth not available), just render children
-        console.error('[BehaviorTrackingProvider] Error:', error);
-        return <>{children}</>;
-    }
 }
 

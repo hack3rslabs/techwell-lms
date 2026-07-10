@@ -48,6 +48,25 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
     const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({})
     const { toast } = useToast()
 
+    const loadFeatures = async () => {
+        try {
+            setIsLoading(true)
+            const res = await rbacApi.getFeatures()
+            setFeatures(res.data)
+            if (!roleToEdit) {
+                const initialPerms: Record<string, Permission> = {}
+                res.data.forEach((f: Feature) => {
+                    initialPerms[f.id] = { featureId: f.id, canRead: false, canWrite: false, isDisabled: false }
+                })
+                setPermissions(initialPerms)
+            }
+        } catch {
+            toast({ title: "Error", description: "Failed to load features", variant: "destructive" })
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     useEffect(() => {
         if (isOpen) {
             loadFeatures()
@@ -71,25 +90,6 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
             }
         }
     }, [isOpen, roleToEdit])
-
-    const loadFeatures = async () => {
-        try {
-            setIsLoading(true)
-            const res = await rbacApi.getFeatures()
-            setFeatures(res.data)
-            if (!roleToEdit) {
-                const initialPerms: Record<string, Permission> = {}
-                res.data.forEach((f: Feature) => {
-                    initialPerms[f.id] = { featureId: f.id, canRead: false, canWrite: false, isDisabled: false }
-                })
-                setPermissions(initialPerms)
-            }
-        } catch {
-            toast({ title: "Error", description: "Failed to load features", variant: "destructive" })
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     const handlePermissionChange = (featureId: string, field: keyof Permission, value: boolean) => {
         setPermissions(prev => {

@@ -43,11 +43,7 @@ export default function ScheduleInterviewPage() {
         interviewerId: ''
     })
 
-    useEffect(() => {
-        if (appId) fetchApplication()
-    }, [appId])
-
-    const fetchApplication = async () => {
+    async function fetchApplication() {
         try {
             const res = await api.get(`/ats/applications/detail/${appId}`)
             setApplication(res.data)
@@ -61,6 +57,12 @@ export default function ScheduleInterviewPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        if (appId) fetchApplication()
+    }, [appId])
+
 
     const handleSubmit = async () => {
         if (!formData.date || !formData.time || !formData.roundName) {

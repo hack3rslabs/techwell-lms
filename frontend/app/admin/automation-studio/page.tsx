@@ -15,11 +15,7 @@ export default function AutomationStudio() {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-  useEffect(() => {
-    fetchData();
-  }, [activeTab]);
-
-  const fetchData = async () => {
+  async function fetchData() {
     setIsLoading(true);
     try {
       if (activeTab === 'workflows') {
@@ -38,7 +34,13 @@ export default function AutomationStudio() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
+
+
+  useEffect(() => {
+    fetchData();
+  }, [activeTab]);
+;
 
   const createWorkflow = async () => {
     try {

@@ -38,11 +38,7 @@ export default function SettingsPage() {
         primaryColor: '#2563eb'
     })
 
-    React.useEffect(() => {
-        fetchProfile()
-    }, [])
-
-    const fetchProfile = async () => {
+    async function fetchProfile() {
         try {
             const [userRes, settingsRes] = await Promise.all([
                 api.get('/users/me'),
@@ -65,6 +61,12 @@ export default function SettingsPage() {
             setIsLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchProfile()
+    }, [])
+
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]

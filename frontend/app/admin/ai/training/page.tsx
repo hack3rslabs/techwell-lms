@@ -68,11 +68,7 @@ export default function AIQATrainingPage() {
         'Security'
     ]
 
-    useEffect(() => {
-        fetchItems()
-    }, [])
-
-    const fetchItems = async () => {
+    async function fetchItems() {
         try {
             const res = await api.get('/knowledge-base')
             setItems(res.data.entries || [])
@@ -93,6 +89,12 @@ export default function AIQATrainingPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchItems()
+    }, [])
+
 
     const handleGenerateAnswers = async () => {
         if (!newQuestion.trim()) {

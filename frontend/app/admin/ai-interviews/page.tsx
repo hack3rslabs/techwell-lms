@@ -28,11 +28,7 @@ export default function AIInterviewsPage() {
 
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        loadSettings()
-    }, [])
-
-    const loadSettings = async () => {
+    async function loadSettings() {
         try {
             setIsLoading(true)
             const { aiSettingsApi } = await import('@/lib/api') // Dynamic import to avoid circular dep if any
@@ -44,6 +40,12 @@ export default function AIInterviewsPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        loadSettings()
+    }, [])
+
 
     const handleSave = async () => {
         try {

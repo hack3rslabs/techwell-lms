@@ -84,7 +84,7 @@ export default function EventsPage() {
         fetchEvents()
     }, [fetchEvents])
 
-    const handleRegisterClick = (event: any) => {
+    function handleRegisterClick(event: any) {
         setSelectedEvent(event)
         setIsSuccess(false)
         setCustomFormData({}) // Reset custom form state

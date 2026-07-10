@@ -1,12 +1,12 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { authenticate } = require('../middleware/auth');
+const { authenticate, checkPermission } = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET /api/crm/tasks
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
   try {
     const { assignedToId } = req.query;
     let where = {};
@@ -29,7 +29,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // POST /api/crm/tasks
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, checkPermission('CENTRAL_CRM', 'write'), async (req, res) => {
   try {
     const { leadId, customerId, title, description, dueDate, assignedToId } = req.body;
     const task = await prisma.followUpTask.create({

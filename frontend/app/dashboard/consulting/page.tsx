@@ -12,11 +12,7 @@ export default function ClientConsultingDashboard() {
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    useEffect(() => {
-        fetchProjects();
-    }, []);
-
-    const fetchProjects = async () => {
+    async function fetchProjects() {
         try {
             const res = await axios.get(`${API_URL}/consulting-projects`, { withCredentials: true });
             if (res.data.success) {
@@ -32,7 +28,13 @@ export default function ClientConsultingDashboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+;
 
     if (loading) {
         return <div className="p-12 text-center text-muted-foreground animate-pulse">Loading your engagements...</div>;

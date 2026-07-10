@@ -14,11 +14,7 @@ export default function EmployerCandidateAIHistoryPage({ params }: { params: { i
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    useEffect(() => {
-        fetchInterviews();
-    }, [params.id]);
-
-    const fetchInterviews = async () => {
+    async function fetchInterviews() {
         try {
             const res = await api.get(`/interviews/employer/candidate/${params.id}`);
             setInterviews(res.data.interviews || []);
@@ -28,7 +24,13 @@ export default function EmployerCandidateAIHistoryPage({ params }: { params: { i
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchInterviews();
+    }, [params.id]);
+;
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-12 max-w-5xl mx-auto mt-6">

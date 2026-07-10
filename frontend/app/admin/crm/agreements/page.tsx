@@ -17,11 +17,7 @@ export default function AgreementsDashboard() {
     const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        fetchAgreements()
-    }, [])
-
-    const fetchAgreements = async () => {
+    async function fetchAgreements() {
         try {
             setLoading(true)
             const res = await axios.get('/api/crm/agreements')
@@ -33,6 +29,12 @@ export default function AgreementsDashboard() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchAgreements()
+    }, [])
+
 
     const filteredAgreements = agreements.filter(a => 
         a.title?.toLowerCase().includes(search.toLowerCase()) || 

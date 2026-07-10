@@ -39,8 +39,10 @@ export default function TemplateBuilder({
     const [orientation, setOrientation] = useState(initialData?.orientation || 'HORIZONTAL');
     const [purpose, setPurpose] = useState(initialData?.purpose || 'COURSE_COMPLETION');
     const [designUrl, setDesignUrl] = useState(initialData?.designUrl || '');
-    const [borderColor, setBorderColor] = useState(initialData?.layout && !Array.isArray(JSON.parse(initialData.layout)) ? JSON.parse(initialData.layout).borderColor : '#cfb53b');
+    // Default to a professional slate/blue color instead of gold/yellow
+    const [borderColor, setBorderColor] = useState(initialData?.layout && !Array.isArray(JSON.parse(initialData.layout)) ? JSON.parse(initialData.layout).borderColor : '#0f172a');
     const [borderWidth, setBorderWidth] = useState(initialData?.layout && !Array.isArray(JSON.parse(initialData.layout)) ? JSON.parse(initialData.layout).borderWidth : 0);
+    const [isDefault, setIsDefault] = useState(initialData?.isDefault || false);
     
     const parseInitialElements = () => {
         if (!initialData?.layout) return DEFAULT_ELEMENTS;
@@ -125,7 +127,7 @@ export default function TemplateBuilder({
                 designUrl,
                 previewUrl: designUrl,
                 layout: JSON.stringify({ elements, borderColor, borderWidth }),
-                isDefault: false
+                isDefault: isDefault
             };
 
             if (initialData?.id) {
@@ -182,6 +184,18 @@ export default function TemplateBuilder({
                             </SelectContent>
                         </Select>
                     </div>
+                    <div className="space-y-2 flex flex-col justify-end">
+                        <div className="flex items-center space-x-2 pt-4">
+                            <input 
+                                type="checkbox" 
+                                id="isDefault" 
+                                checked={isDefault} 
+                                onChange={e => setIsDefault(e.target.checked)} 
+                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <Label htmlFor="isDefault" className="cursor-pointer">Set as default template for this category</Label>
+                        </div>
+                    </div>
                     <div className="space-y-2">
                         <Label>Upload Empty Certificate Design / Background (JPEG/PNG)</Label>
                         <div className="flex items-center space-x-4">
@@ -216,7 +230,7 @@ export default function TemplateBuilder({
                                     aspectRatio: orientation === 'HORIZONTAL' ? '1.414 / 1' : '1 / 1.414',
                                     backgroundColor: '#ffffff',
                                     backgroundImage: `url(${designUrl})`,
-                                    backgroundSize: '100% 100%',
+                                    backgroundSize: 'contain', // Changed from 100% 100% to prevent stretching
                                     backgroundPosition: 'center',
                                     backgroundRepeat: 'no-repeat',
                                     border: `${borderWidth}px solid ${borderColor}`

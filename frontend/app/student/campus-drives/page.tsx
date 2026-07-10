@@ -9,11 +9,7 @@ export default function StudentCampusDrives() {
     const [drives, setDrives] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchDrives();
-    }, []);
-
-    const fetchDrives = async () => {
+    async function fetchDrives() {
         try {
             // For now, we fetch all drives. In a real app, backend would filter by student's institute or public drives.
             const res = await fetch('/api/campus-drives', {
@@ -26,7 +22,13 @@ export default function StudentCampusDrives() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchDrives();
+    }, []);
+;
 
     const handleApply = async (driveId: string) => {
         if (!confirm('Are you sure you want to apply for this campus drive?')) return;

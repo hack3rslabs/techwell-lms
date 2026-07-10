@@ -32,6 +32,7 @@ const PHASE_LABELS = {
 
 function ElapsedTimer({ startedAt }: { startedAt: string | null }) {
     const [seconds, setSeconds] = useState(0);
+
     useEffect(() => {
         const base = startedAt ? Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000) : 0;
         setSeconds(base);
@@ -68,8 +69,8 @@ export default function ActiveInterviewPage({ params }: { params: { id: string }
     const [isAiSpeaking, setIsAiSpeaking] = useState(false);
 
     // AI Intelligence Timers
-    const [lastSpeechTime, setLastSpeechTime] = useState(Date.now());
-    const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+    const [lastSpeechTime, setLastSpeechTime] = useState(() => Date.now());
+    const [questionStartTime, setQuestionStartTime] = useState(() => Date.now());
     const [inactivityWarning, setInactivityWarning] = useState(false);
 
     const avatar = AVATAR_CONFIG[currentQuestion?.avatarId as keyof typeof AVATAR_CONFIG] || AVATAR_CONFIG["tech-lead"];
@@ -140,35 +141,7 @@ export default function ActiveInterviewPage({ params }: { params: { id: string }
     useEffect(() => {
         initInterview();
     }, [params.id]);
-
-    const initInterview = async () => {
-        try {
-            setLoadingNext(true);
-            await api.patch(`/interviews/${params.id}/start`);
-            const [intRes, qRes] = await Promise.all([
-                api.get(`/interviews/${params.id}`),
-                api.post(`/interviews/${params.id}/next-question`)
-            ]);
-            setInterviewData(intRes.data.interview);
-            // Calculate max from duration
-            const dur = intRes.data.interview?.duration || duration;
-            const max = dur <= 15 ? 5 : dur <= 30 ? 10 : dur <= 45 ? 15 : 20;
-            setMaxQuestions(max);
-            setQuestionNumber(1);
-            if (qRes.data.completed) { setIsComplete(true); }
-            else {
-                setCurrentQuestion(qRes.data.question);
-                setQuestionStartTime(Date.now());
-                setInactivityWarning(false);
-                autoSpeak(qRes.data.question?.question);
-            }
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to start interview");
-        } finally {
-            setLoadingNext(false);
-        }
-    };
+;
 
     const autoSpeak = (text: string) => {
         if (!text || !('speechSynthesis' in window)) return;
@@ -196,8 +169,37 @@ export default function ActiveInterviewPage({ params }: { params: { id: string }
             window.speechSynthesis.speak(speech);
         }
     };
+;
 
-    const handleSaveResponse = async () => {
+    const loadNextQuestion = async () => {
+        try {
+            setLoadingNext(true);
+            setUserAnswer('');
+            setResults([]);
+
+            const qRes = await api.post(`/interviews/${params.id}/next-question`);
+
+            if (qRes.data.completed) {
+                window.speechSynthesis.cancel();
+                setIsComplete(true);
+            } else {
+                setCurrentQuestion(qRes.data.question);
+                setQuestionNumber(n => n + 1);
+                setQuestionStartTime(Date.now());
+                setInactivityWarning(false);
+                // Auto-read the new question after a brief delay
+                setTimeout(() => autoSpeak(qRes.data.question?.question), 800);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to load next question.");
+        } finally {
+            setLoadingNext(false);
+        }
+    };
+;
+
+    async function handleSaveResponse() {
         if (!userAnswer || userAnswer.trim().length < 10) {
             toast.error("Please provide a more detailed answer before submitting.");
             return;
@@ -244,36 +246,9 @@ export default function ActiveInterviewPage({ params }: { params: { id: string }
         } finally {
             setSubmitting(false);
         }
-    };
+    }
 
-    const loadNextQuestion = async () => {
-        try {
-            setLoadingNext(true);
-            setUserAnswer('');
-            setResults([]);
-
-            const qRes = await api.post(`/interviews/${params.id}/next-question`);
-
-            if (qRes.data.completed) {
-                window.speechSynthesis.cancel();
-                setIsComplete(true);
-            } else {
-                setCurrentQuestion(qRes.data.question);
-                setQuestionNumber(n => n + 1);
-                setQuestionStartTime(Date.now());
-                setInactivityWarning(false);
-                // Auto-read the new question after a brief delay
-                setTimeout(() => autoSpeak(qRes.data.question?.question), 800);
-            }
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to load next question.");
-        } finally {
-            setLoadingNext(false);
-        }
-    };
-
-    const handleSkip = async () => {
+    async function handleSkip() {
         if (submitting || loadingNext) return;
         toast.info("Question skipped.");
         setAnsweredQuestions(prev => [...prev, {
@@ -291,7 +266,40 @@ export default function ActiveInterviewPage({ params }: { params: { id: string }
             });
         } catch {}
         await loadNextQuestion();
-    };
+    }
+
+    async function initInterview() {
+        try {
+            setLoadingNext(true);
+            await api.patch(`/interviews/${params.id}/start`);
+            const [intRes, qRes] = await Promise.all([
+                api.get(`/interviews/${params.id}`),
+                api.post(`/interviews/${params.id}/next-question`)
+            ]);
+            setInterviewData(intRes.data.interview);
+            // Calculate max from duration
+            const dur = intRes.data.interview?.duration || duration;
+            const max = dur <= 15 ? 5 : dur <= 30 ? 10 : dur <= 45 ? 15 : 20;
+            setMaxQuestions(max);
+            setQuestionNumber(1);
+            if (qRes.data.completed) { setIsComplete(true); }
+            else {
+                setCurrentQuestion(qRes.data.question);
+                setQuestionStartTime(Date.now());
+                setInactivityWarning(false);
+                autoSpeak(qRes.data.question?.question);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to start interview");
+        } finally {
+            setLoadingNext(false);
+        }
+    }
+
+
+
+
 
     // ─── Complete Screen ────────────────────────────────────────────────────
     if (isComplete) {

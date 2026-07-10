@@ -96,12 +96,16 @@ export default function ConsultancyInvitations() {
     const [searchTerm, setSearchTerm] = useState("")
     const [showDropdown, setShowDropdown] = useState(false)
 
-    useEffect(() => {
-        fetchInvitations()
-        fetchStudents()
-    }, [])
+    async function fetchInvitations() {
+        try {
+            const res = await consultancyApi.getInvitations()
+            setInvitations(res.data.invitations)
+        } catch (error) {
+            console.error("Failed to fetch invitations", error)
+        }
+    }
 
-    const fetchStudents = async () => {
+    async function fetchStudents() {
         try {
             const res = await studentsApi.getAll()
             setStudents(res.data.students || [])
@@ -110,14 +114,14 @@ export default function ConsultancyInvitations() {
         }
     }
 
-    const fetchInvitations = async () => {
-        try {
-            const res = await consultancyApi.getInvitations()
-            setInvitations(res.data.invitations)
-        } catch (error) {
-            console.error("Failed to fetch invitations", error)
-        }
-    }
+
+
+    useEffect(() => {
+        fetchInvitations()
+        fetchStudents()
+    }, [])
+
+
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault()

@@ -70,11 +70,7 @@ export default function PreInterviewPage({ params }: { params: { id: string } })
   const [selectedPanel, setSelectedPanel] = useState(INTERVIEW_PANELS[0]);
   const [selectedDuration, setSelectedDuration] = useState(DURATIONS[1]);
 
-  useEffect(() => {
-    fetchInterviewDetails();
-  }, [params.id]);
-
-  const fetchInterviewDetails = async () => {
+  async function fetchInterviewDetails() {
     try {
       const res = await api.get(`/interviews/${params.id}`);
       setInterviewData(res.data.interview);
@@ -83,7 +79,13 @@ export default function PreInterviewPage({ params }: { params: { id: string } })
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+
+  useEffect(() => {
+    fetchInterviewDetails();
+  }, [params.id]);
+;
 
   const handleStartInterview = async () => {
     setStarting(true);
