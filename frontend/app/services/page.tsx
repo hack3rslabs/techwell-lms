@@ -75,6 +75,31 @@ const STATIC_SERVICES = [
     }
 ]
 
+import type { Metadata } from 'next'
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techwell.co.in"
+
+export const metadata: Metadata = {
+  title: "IT Solutions & Cyber Security Services | Techwell",
+  description: "Enterprise IT solutions, Custom Software Development, Cyber Security audits, and AI Automation services for scaling businesses.",
+  keywords: ["IT Solutions", "Cyber Security", "Software Development", "IT Infrastructure", "Managed IT AMC"],
+  alternates: {
+    canonical: `${BASE_URL}/services`,
+  }
+}
+
+const servicesJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Enterprise IT & Cyber Security Solutions",
+  provider: {
+    "@type": "Organization",
+    name: "Techwell"
+  },
+  description: "Comprehensive IT Infrastructure, Custom Software Development, Cyber Security, and Digital Marketing Services.",
+  areaServed: "Global"
+}
+
 export default function ServicesPage() {
     const getIcon = (category: string) => {
         switch (category) {
@@ -96,6 +121,11 @@ export default function ServicesPage() {
     }
 
     return (
+        <>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesJsonLd) }}
+        />
         <div className="min-h-screen bg-slate-50/50 dark:bg-zinc-950 py-12 px-4 md:px-8">
             <div className="max-w-6xl mx-auto space-y-12">
                 {/* Header banner */}
@@ -187,5 +217,6 @@ export default function ServicesPage() {
                 </div>
             </div>
         </div>
+        </>
     )
 }

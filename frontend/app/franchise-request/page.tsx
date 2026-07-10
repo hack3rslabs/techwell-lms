@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import type { Metadata } from 'next';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,6 +9,26 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'react-hot-toast';
+import { Badge } from '@/components/ui/badge';
+import { Building2, TrendingUp, Handshake, CheckCircle2 } from 'lucide-react';
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techwell.co.in"
+
+export const metadata: Metadata = {
+  title: "IT Training & Consulting Franchise Opportunities | Techwell",
+  description: "Partner with Techwell and start your own highly profitable IT Training, Placement, and Consulting franchise. Proven business model and curriculum.",
+  keywords: ["IT Training Franchise", "Education Franchise", "Business Consulting Franchise", "Profitable Franchise", "Techwell Partner"],
+  alternates: {
+    canonical: `${BASE_URL}/franchise-request`,
+  }
+}
+
+const franchiseJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Techwell Franchise Opportunities",
+  description: "Start your own highly profitable IT Training and Consulting franchise with Techwell."
+}
 
 export default function FranchiseRequest() {
     const router = useRouter();
@@ -56,14 +77,63 @@ export default function FranchiseRequest() {
     }
 
     return (
-        <div className="container mx-auto py-12 px-4 max-w-3xl">
-            <Card>
-                <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-bold">Become a Techwell Franchise</CardTitle>
-                    <CardDescription className="text-md mt-2">
-                        Partner with an industry leader in IT Training and Placement. Fill out the form below to start your journey.
-                    </CardDescription>
-                </CardHeader>
+        <>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(franchiseJsonLd) }}
+        />
+        <div className="bg-slate-50 dark:bg-[#030712] min-h-screen pb-24">
+            
+            {/* HERO SECTION */}
+            <div className="bg-slate-900 text-white py-20 px-4 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay"></div>
+                <div className="max-w-5xl mx-auto relative z-10 text-center space-y-6">
+                    <Badge className="bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border-none px-4 py-2 uppercase tracking-widest font-bold">
+                        Partner Network
+                    </Badge>
+                    <h1 className="text-4xl md:text-6xl font-black">
+                        Start Your Own <span className="text-orange-500">Techwell Franchise</span>
+                    </h1>
+                    <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto">
+                        Join India's fastest-growing ecosystem for IT Training, Placement Assistance, and Business Consulting. High ROI, zero curriculum headaches.
+                    </p>
+                </div>
+            </div>
+
+            {/* BENEFITS SECTION */}
+            <div className="max-w-5xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-500/20 text-orange-600 mx-auto rounded-full flex items-center justify-center mb-4">
+                        <TrendingUp className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">High Profit Margins</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Multiple revenue streams via courses, corporate training, and consulting.</p>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 text-blue-600 mx-auto rounded-full flex items-center justify-center mb-4">
+                        <CheckCircle2 className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">Turnkey Curriculum</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Access to constantly updated, industry-curated syllabus and placement LMS.</p>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                    <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 mx-auto rounded-full flex items-center justify-center mb-4">
+                        <Handshake className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">Centralized Placements</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Your students get access to our 500+ MNC hiring partner network.</p>
+                </div>
+            </div>
+
+            {/* FORM SECTION */}
+            <div className="container mx-auto px-4 max-w-3xl">
+                <Card className="border-slate-200 dark:border-slate-800 shadow-xl">
+                    <CardHeader className="text-center bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 rounded-t-xl">
+                        <CardTitle className="text-2xl font-bold">Apply for Partnership</CardTitle>
+                        <CardDescription className="text-md mt-2">
+                            Fill out the form below and our franchise director will contact you within 24 hours.
+                        </CardDescription>
+                    </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -171,5 +241,7 @@ export default function FranchiseRequest() {
                 </CardContent>
             </Card>
         </div>
+    </div>
+    </>
     );
 }
