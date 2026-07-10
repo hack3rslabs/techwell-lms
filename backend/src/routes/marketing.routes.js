@@ -12,7 +12,7 @@ router.post('/landing-pages/views/:slug', marketingController.incrementPageViews
 
 // Protect all marketing admin routes
 router.use(protect);
-router.use(authorize('SUPERADMIN', 'ADMIN', 'MANAGER'));
+router.use(authorize('SUPER_ADMIN', 'ADMIN', 'MANAGER'));
 
 // Landing Pages
 router.get('/landing-pages', marketingController.getLandingPages);

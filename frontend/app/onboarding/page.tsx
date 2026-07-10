@@ -60,7 +60,7 @@ export default function OnboardingPage() {
         const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean)
 
         try {
-            await api.post('/api/candidates/onboard', {
+            await api.post('/candidates/onboard', {
                 interestType,
                 experienceLevel: interestType === 'INTERNSHIP' ? 'FRESHER' : experienceLevel,
                 state: candidateState,

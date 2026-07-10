@@ -61,7 +61,26 @@ const nextConfig: NextConfig = {
         hostname: "express.adobe.com",
         pathname: "**",
       },
+      {
+        protocol: "https",
+        hostname: "backend.techwell.co.in",
+        pathname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "backend.techwell.co.in",
+        pathname: "**",
+      }
     ],
+  },
+  async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiUrl}/:path*`,
+      },
+    ];
   },
 };
 

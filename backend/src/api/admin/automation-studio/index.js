@@ -30,10 +30,10 @@ router.post('/workflows', async (req, res) => {
       },
       create: {
         name, description, triggerType, triggerData,
-        nodes: { create: nodes },
-        edges: { create: edges }
+        AiWorkflowNode: { create: nodes },
+        AiWorkflowEdge: { create: edges }
       },
-      include: { nodes: true, edges: true }
+      include: { AiWorkflowNode: true, AiWorkflowEdge: true }
     });
 
     res.json({ success: true, data: workflow });
@@ -48,8 +48,8 @@ router.get('/workflows', async (req, res) => {
   try {
     const workflows = await prisma.aiWorkflow.findMany({
       include: {
-        nodes: true,
-        edges: true
+        AiWorkflowNode: true,
+        AiWorkflowEdge: true
       }
     });
     res.json({ success: true, data: workflows });

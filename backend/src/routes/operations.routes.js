@@ -15,8 +15,7 @@ router.get('/kanban', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'MANAGER')
         // 1. Fetch Leads (New & Interested)
         const leads = await prisma.lead.findMany({
             where: { 
-                status: { in: ['NEW', 'CONTACTED', 'INTERESTED', 'QUALIFIED'] },
-                userId: null // Not converted yet
+                status: { in: ['NEW', 'CONTACTED', 'INTERESTED', 'QUALIFIED'] }
             },
             select: {
                 id: true,

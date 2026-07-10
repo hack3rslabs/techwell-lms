@@ -142,7 +142,7 @@ exports.getFranchiseStats = async (req, res, next) => {
             const suspended = await prisma.franchise.count({ where: { status: 'SUSPENDED' } });
             const revenue = await prisma.franchiseRevenue.aggregate({
                 where: { status: 'SETTLED' },
-                _sum: { techwellShare: true, totalAmount: true }
+                _sum: { techwellShare: true, amount: true }
             });
 
             return res.status(200).json({ 
@@ -152,7 +152,7 @@ exports.getFranchiseStats = async (req, res, next) => {
                     active, 
                     pending, 
                     suspended,
-                    totalRevenue: revenue._sum.totalAmount || 0,
+                    totalRevenue: revenue._sum.amount || 0,
                     techwellRevenue: revenue._sum.techwellShare || 0,
                     upcomingRenewal: 0 // Placeholder until expiration logic is built
                 } 
