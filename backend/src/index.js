@@ -44,10 +44,19 @@ app.use('/uploads', express.static(uploadsPath, {
 
 app.use(cors({
     origin: function (origin, callback) {
-        const allowedOrigins = ['http://localhost:3000', 'http://192.168.29.183:3000', process.env.FRONTEND_URL];
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) return callback(new Error('CORS policy error'), false);
-        return callback(null, true);
+        
+        const allowedOrigins = ['http://localhost:3000', 'http://192.168.29.183:3000'];
+        if (process.env.FRONTEND_URL) {
+            allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
+        }
+
+        if (origin.endsWith('techwell.co.in') || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        
+        console.warn('CORS Blocked Origin:', origin);
+        return callback(new Error('CORS policy error'), false);
     },
     credentials: true
 }));
