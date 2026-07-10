@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { FileText, Plus, Trash2, Download, Search } from 'lucide-react';
-import axios from 'axios';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { FileText, Plus, Trash2, Download, Search, Filter } from 'lucide-react';
+import api from '@/lib/api';
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 
@@ -18,6 +20,7 @@ export default function DocumentsPage() {
     const [documents, setDocuments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('ALL');
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
     const { toast } = useToast();
@@ -25,10 +28,12 @@ export default function DocumentsPage() {
     const [uploadData, setUploadData] = useState<{
         name: string;
         description: string;
+        category: string;
         file: File | null;
     }>({
         name: '',
         description: '',
+        category: 'GENERAL',
         file: null
     });
 
@@ -39,7 +44,7 @@ export default function DocumentsPage() {
     const fetchDocuments = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`${API_URL}/documents`, { withCredentials: true });
+            const res = await api.get(`/documents`);
             setDocuments(res.data);
         } catch (error: any) {
             console.error("Failed to fetch documents", error);
@@ -71,15 +76,15 @@ export default function DocumentsPage() {
         formData.append('file', uploadData.file);
         if (uploadData.name) formData.append('name', uploadData.name);
         if (uploadData.description) formData.append('description', uploadData.description);
+        formData.append('category', uploadData.category);
 
         try {
-            await axios.post(`${API_URL}/documents`, formData, { 
-                withCredentials: true,
+            await api.post(`/documents`, formData, { 
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             toast({ title: "Success", description: "Document uploaded successfully." });
             setIsUploadModalOpen(false);
-            setUploadData({ name: '', description: '', file: null });
+            setUploadData({ name: '', description: '', category: 'GENERAL', file: null });
             fetchDocuments();
         } catch (error: any) {
             toast({
@@ -96,7 +101,7 @@ export default function DocumentsPage() {
         if (!confirm("Are you sure you want to delete this document?")) return;
         
         try {
-            await axios.delete(`${API_URL}/documents/${id}`, { withCredentials: true });
+            await api.delete(`/documents/${id}`);
             toast({ title: "Success", description: "Document deleted successfully." });
             fetchDocuments();
         } catch (error: any) {
@@ -112,10 +117,12 @@ export default function DocumentsPage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    const filteredDocs = documents.filter((doc: any) => 
-        doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        (doc.description && doc.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    const filteredDocs = documents.filter((doc: any) => {
+        const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              (doc.description && doc.description.toLowerCase().includes(searchQuery.toLowerCase()));
+        const matchesCategory = categoryFilter === 'ALL' || doc.category === categoryFilter;
+        return matchesSearch && matchesCategory;
+    });
 
     return (
         <div className="p-6 space-y-6 animate-in fade-in zoom-in duration-500 max-w-7xl mx-auto">
@@ -139,6 +146,21 @@ export default function DocumentsPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="w-[140px] bg-white dark:bg-slate-900">
+                            <div className="flex items-center gap-2">
+                                <Filter className="h-4 w-4" />
+                                <span>{categoryFilter === 'ALL' ? 'All Types' : categoryFilter}</span>
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ALL">All Types</SelectItem>
+                            <SelectItem value="SOPs">SOPs</SelectItem>
+                            <SelectItem value="Filings">Filings</SelectItem>
+                            <SelectItem value="Agreements">Agreements</SelectItem>
+                            <SelectItem value="GENERAL">General</SelectItem>
+                        </SelectContent>
+                    </Select>
                     <Button onClick={() => setIsUploadModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200">
                         <Plus className="mr-2 h-4 w-4" /> Upload Document
                     </Button>
@@ -171,7 +193,12 @@ export default function DocumentsPage() {
                                             <FileText className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-base line-clamp-1" title={doc.name}>{doc.name}</CardTitle>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <CardTitle className="text-base line-clamp-1" title={doc.name}>{doc.name}</CardTitle>
+                                                {doc.category && doc.category !== 'GENERAL' && (
+                                                    <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-medium">{doc.category}</Badge>
+                                                )}
+                                            </div>
                                             <CardDescription className="text-xs mt-0.5">
                                                 {formatBytes(doc.fileSize)} • {format(new Date(doc.createdAt), 'MMM dd, yyyy')}
                                             </CardDescription>
@@ -226,6 +253,20 @@ export default function DocumentsPage() {
                                 value={uploadData.name}
                                 onChange={(e) => setUploadData({...uploadData, name: e.target.value})}
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="category">Category *</Label>
+                            <Select value={uploadData.category} onValueChange={(val) => setUploadData({...uploadData, category: val})}>
+                                <SelectTrigger id="category">
+                                    <SelectValue placeholder="Select Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="SOPs">SOPs</SelectItem>
+                                    <SelectItem value="Filings">Filings</SelectItem>
+                                    <SelectItem value="Agreements">Agreements</SelectItem>
+                                    <SelectItem value="GENERAL">General</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="description">Description (Optional)</Label>

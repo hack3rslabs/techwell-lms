@@ -100,6 +100,9 @@ model User {
   consultingResources         ConsultingResource[]
   consultingProjects          ConsultingProject[]
   BlogReaction                BlogReaction[]
+  franchiseId                 String?
+  franchise                   Franchise?                @relation(fields: [franchiseId], references: [id])
+  approvedFranchises          Franchise[]               @relation("FranchiseApprover")
 }
 
 model SystemRole {
@@ -238,6 +241,8 @@ model Course {
   courseCategory       CourseCategory?     @relation(fields: [categoryId], references: [id])
   Coupon               Coupon?             @relation(fields: [couponId], references: [id])
   institute            Institute?          @relation(fields: [instituteId], references: [id])
+  franchiseId          String?
+  franchise            Franchise?          @relation(fields: [franchiseId], references: [id])
   instructor           User                @relation(fields: [instructorId], references: [id])
   enrollments          Enrollment[]
   enrollmentRequests   EnrollmentRequest[]
@@ -592,15 +597,18 @@ model Payment {
   orderId   String   @unique
   paymentId String?  @unique
   signature String?
-  amount    Float
-  currency  String   @default("INR")
-  status    String   @default("PENDING")
-  userId    String
-  courseId  String
+  amount        Float
+  currency      String   @default("INR")
+  status        String   @default("PENDING")
+  paymentMethod String   @default("ONLINE") // ONLINE, CASH_FRANCHISE
+  userId        String
+  courseId      String
+  franchiseId   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  course        Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user          User       @relation(fields: [userId], references: [id])
+  franchise     Franchise? @relation(fields: [franchiseId], references: [id])
 }
 
 model ForumCategory {
@@ -713,11 +721,17 @@ model Certificate {
   uniqueId         String               @unique
   userId           String?
   regId            String?
-  courseId         String
-  enrollmentId     String
+  courseId         String?              // Made optional for Webinars/Events
+  enrollmentId     String?              // Made optional for Webinars/Events
+  referenceId      String?              // Links to Webinar, Workshop, Event
+  referenceType    String?              // "COURSE", "WEBINAR", "WORKSHOP", "EVENT"
   studentName      String
-  courseName       String
+  courseName       String               // Can double as Event/Webinar Name
   courseCategory   String?
+  trainingHours    Int?                 // New Enterprise Field
+  skillsEarned     Json?                // New Enterprise Field
+  learningOutcomes Json?                // New Enterprise Field
+  credentialHash   String?              // Secure SHA-256 Hash
   issueDate        DateTime             @default(now())
   expiryDate       DateTime?
   templateId       String?
@@ -734,32 +748,40 @@ model Certificate {
   instituteId      String               @default("default")
   qrCodeUrl        String?
   blockchainTxId   String?
+  purpose          String               @default("COURSE_COMPLETION")
   grade            String?
   score            Float?
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   endDate          DateTime?
   startDate        DateTime?
-  course           Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  franchiseId      String?
+  franchise        Franchise?           @relation(fields: [franchiseId], references: [id])
+  course           Course?              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   template         CertificateTemplate? @relation(fields: [templateId], references: [id])
   user             User?                @relation("CertificateUser", fields: [userId], references: [id], onDelete: SetNull)
   approvedBy       User?                @relation("CertificateApprover", fields: [approvedById], references: [id])
 }
 
 model CertificateTemplate {
-  id           String        @id @default(cuid())
-  name         String
-  description  String?
-  designUrl    String
-  previewUrl   String?
-  isDefault    Boolean       @default(false)
-  isActive     Boolean       @default(true)
-  layout       Json?
-  canvasData   Json?
-  instituteId  String        @default("default")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  certificates Certificate[]
+  id             String        @id @default(cuid())
+  name           String
+  description    String?
+  designUrl      String
+  previewUrl     String?
+  isDefault      Boolean       @default(false)
+  isActive       Boolean       @default(true)
+  layout         Json?
+  canvasData     Json?
+  versionHistory Json?         // New Enterprise Field: Tracks previous layouts
+  instituteId    String        @default("default")
+  purpose        String        @default("COURSE_COMPLETION")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  certificates   Certificate[]
+  franchiseId    String?
+  franchise      Franchise?    @relation(fields: [franchiseId], references: [id])
+  orientation    String        @default("HORIZONTAL")
 }
 
 model CertificateSettings {
@@ -884,6 +906,7 @@ model Lead {
   lifecycleStage    LeadLifecycleStage @default(NEW)
   placementStatus   String?
   resumeBuilt       Boolean            @default(false)
+  eventId           String?
   revenueGenerated  Float              @default(0)
   whatsappOptIn     Boolean            @default(true)
   atsScore          Float              @default(0)
@@ -912,6 +935,8 @@ model Lead {
   customFields      Json?
   assignedToId      String?
   assignee          User?              @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  franchiseId       String?
+  franchise         Franchise?         @relation(fields: [franchiseId], references: [id])
   followUpTasks     FollowUpTask[]
   communicationLogs CommunicationLog[]
   reminders         FollowUpReminder[]
@@ -1115,11 +1140,13 @@ model Event {
   status           String   @default("Upcoming")
   seatsTotal       Int      @default(100)
   seatsBooked      Int      @default(0)
-  iconName         String?
-  customFormFields Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  imageUrl         String?
+  iconName              String?
+  customFormFields      Json?
+  generateCertificate   Boolean  @default(false)
+  certificateTemplateId String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  imageUrl              String?
 }
 
 model PaymentConfig {
@@ -2147,6 +2174,10 @@ enum Role {
   CONTENT_WRITER
   SEO_EXECUTIVE
   REVIEWER
+  FRANCHISE_ADMIN
+  FRANCHISE_STAFF
+  FRANCHISE_TRAINER
+  FRANCHISE_COUNSELLOR
 }
 
 enum Plan {
@@ -2484,6 +2515,7 @@ enum InstituteType {
   UNIVERSITY
   TRAINING_INSTITUTE
   SKILL_CENTER
+  FRANCHISE
 }
 
 enum CampusDriveStatus {
@@ -2871,6 +2903,7 @@ model AdminDocument {
   description String?
   filePath    String
   fileSize    Int      @default(0)
+  category    String   @default("GENERAL")
   uploadedBy  String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -2955,4 +2988,162 @@ model ConsultingResource {
 
   project ConsultingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User              @relation(fields: [userId], references: [id])
+}
+
+// -----------------------------------------------------------------------------
+// FRANCHISE MANAGEMENT MODELS
+// -----------------------------------------------------------------------------
+
+model Franchise {
+  id                   String                  @id @default(cuid())
+  name                 String
+  franchiseType        String                  @default("INDIVIDUAL") // INDIVIDUAL, COMPANY
+  contactPerson        String
+  email                String                  @unique
+  phone                String
+  address              String?
+  state                String?
+  district             String?
+  city                 String?
+  pincode              String?
+  exclusiveTerritory   Boolean                 @default(false)
+  geoLocation          String?
+  googleMapsUrl        String?
+  googleBusinessUrl    String?
+  website              String?
+  socialMedia          Json?
+  logoUrl              String?
+  branchCode           String?                 @unique
+  businessHours        Json?
+  gallery              String[]                @default([])
+  status               String                  @default("PENDING") // PENDING, ACTIVE, SUSPENDED, EXPIRED
+  adminRemarks         String?
+  approvedById         String?
+  royaltyPercentage    Float                   @default(30.0) // 30% goes to Techwell
+  commissionPercentage Float                   @default(0.0)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  users                User[]
+  courses              Course[]
+  certificates         Certificate[]
+  leads                Lead[]
+  verifications        FranchiseVerification[]
+  subscriptions        FranchiseSubscription[]
+  revenues             FranchiseRevenue[]
+  agreements           FranchiseAgreement[]
+  payments             Payment[]
+  ledgers              FranchiseLedger[]
+  resources            FranchiseResource[]
+  certificateTemplates CertificateTemplate[]
+
+  approvedBy           User?                   @relation("FranchiseApprover", fields: [approvedById], references: [id])
+}
+
+model FranchiseVerification {
+  id                   String      @id @default(cuid())
+  franchiseId          String      @unique
+  panNumber            String?
+  panUrl               String?
+  gstNumber            String?
+  gstUrl               String?
+  msmeNumber           String?
+  msmeUrl              String?
+  firmRegistrationUrl  String?
+  tradeLicenseUrl      String?
+  aadhaarNumber        String?
+  aadhaarUrl           String?
+  addressProofUrl      String?
+  bankDetails          Json?
+  cancelledChequeUrl   String?
+  digitalSignatureUrl  String?
+  otherDocuments       Json?
+  status               String      @default("PENDING") // PENDING, APPROVED, REJECTED
+  remarks              String?
+  verifiedAt           DateTime?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+}
+
+model FranchiseSubscription {
+  id                   String      @id @default(cuid())
+  franchiseId          String
+  planName             String
+  registrationFee      Float       @default(0)
+  franchiseFee         Float       @default(0)
+  renewalFee           Float       @default(0)
+  securityDeposit      Float       @default(0)
+  totalAmount          Float       @default(0)
+  status               String      @default("PENDING") // PENDING, PAID, CANCELLED, EXPIRED
+  paymentId            String?
+  startDate            DateTime?
+  endDate              DateTime?
+  renewalReminderSent  Boolean     @default(false)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+}
+
+model FranchiseRevenue {
+  id                   String      @id @default(cuid())
+  franchiseId          String
+  transactionType      String      // STUDENT_FEE, ROYALTY, COMMISSION
+  amount               Float       @default(0)
+  franchiseShare       Float       @default(0)
+  techwellShare        Float       @default(0)
+  status               String      @default("PENDING") // PENDING, SETTLED
+  studentId            String?
+  enrollmentId         String?
+  settlementDate       DateTime?
+  referenceId          String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+}
+
+model FranchiseAgreement {
+  id                   String      @id @default(cuid())
+  franchiseId          String
+  version              String      @default("1.0")
+  content              String      @db.Text
+  digitalSignatureUrl  String?
+  termsAccepted        Boolean     @default(false)
+  acceptedAt           DateTime?
+  ipAddress            String?
+  status               String      @default("ACTIVE") // ACTIVE, EXPIRED, RENEWED
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+}
+
+model FranchiseLedger {
+  id                   String      @id @default(cuid())
+  franchiseId          String
+  transactionType      String      // CREDIT (Techwell owes Franchise), DEBIT (Franchise owes Techwell), SETTLEMENT (Payment made)
+  amount               Float
+  balanceAfter         Float
+  description          String?
+  referenceId          String?     // e.g., Enrollment ID or Payment ID
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+}
+
+model FranchiseResource {
+  id                   String      @id @default(cuid())
+  franchiseId          String?     // If null, it's global for all franchises
+  title                String
+  description          String?
+  fileUrl              String
+  resourceType         String      // BROCHURE, BANNER, SYLLABUS, VIDEO
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  franchise            Franchise?  @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
 }

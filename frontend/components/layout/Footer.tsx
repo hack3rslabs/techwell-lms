@@ -24,9 +24,11 @@ const companyLinks = [
     { label: "Events & Webinars", href: "/events" },
     { label: "Services", href: "/services" },
     { label: "Products", href: "/products" },
+    { label: "Our Partners", href: "/our-partners" },
     { label: "Partner Colleges", href: "/colleges" },
     { label: "Client Stories", href: "/clients" },
     { label: "Blog", href: "/blog" },
+    { label: "Become a Franchise", href: "/franchise-request" },
 ]
 
 const policyLinks = [

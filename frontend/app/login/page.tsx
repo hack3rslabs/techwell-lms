@@ -36,6 +36,8 @@ export default function LoginPage() {
                 router.push('/dashboard')
             } else if (user.role === 'EMPLOYER') {
                 router.push('/employer/dashboard')
+            } else if (user.role === 'FRANCHISE_ADMIN') {
+                router.push('/franchise-admin')
             } else {
                 // SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, INSTITUTE_ADMIN, etc.
                 router.push('/admin')

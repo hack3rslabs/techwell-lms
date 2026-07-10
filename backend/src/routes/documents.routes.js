@@ -64,13 +64,14 @@ router.post('/', authenticate, checkPermission('ADMIN'), upload.single('file'), 
             return res.status(400).json({ error: 'PDF file is required' });
         }
 
-        const { name, description } = req.body;
+        const { name, description, category } = req.body;
         const filePath = `/uploads/admin-documents/${req.file.filename}`;
 
         const document = await prisma.adminDocument.create({
             data: {
                 name: name || req.file.originalname,
                 description: description || null,
+                category: category || 'GENERAL',
                 filePath,
                 fileSize: req.file.size,
                 uploadedBy: req.user.id

@@ -98,6 +98,7 @@ app.use('/api/upload', require('./routes/upload.routes'));
 app.use('/api/search', require('./routes/search.routes'));
 app.use('/api/avatars', require('./routes/avatar.routes'));
 app.use('/api/knowledge-base', require('./routes/knowledge-base.routes'));
+app.use('/api/partners', require('./routes/partner.routes'));
 app.use('/api/certificates', require('./routes/certificate.routes'));
 app.use('/api/portfolio', require('./routes/portfolio.routes'));
 app.use('/api/ai', require('./routes/ai.routes'));
@@ -149,6 +150,7 @@ app.use('/api/admin/marketing', require('./routes/marketing.routes'));
 app.use('/api/promotions', require('./routes/promotions.routes'));
 app.use('/api/admin/newsletters', require('./routes/newsletter.routes'));
 app.use('/api/admin/automation-studio', require('./api/admin/automation-studio/index'));
+app.use('/api/franchise', require('./routes/franchise.routes'));
 app.use('/api/twilio', twilioRouter);
 
 // Health check

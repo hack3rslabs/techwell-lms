@@ -27,7 +27,7 @@ router.get('/', async (req, res, next) => {
  */
 router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        const { title, description, imageUrl, type, date, time, location, status, seatsTotal, iconName, customFormFields } = req.body;
+        const { title, description, imageUrl, type, date, time, location, status, seatsTotal, iconName, customFormFields, generateCertificate, certificateTemplateId } = req.body;
 
         const event = await prisma.event.create({
             data: {
@@ -41,7 +41,9 @@ router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) 
                 status,
                 seatsTotal: parseInt(seatsTotal, 10),
                 iconName,
-                customFormFields: customFormFields ? (typeof customFormFields === 'string' ? JSON.parse(customFormFields) : customFormFields) : []
+                customFormFields: customFormFields ? (typeof customFormFields === 'string' ? JSON.parse(customFormFields) : customFormFields) : [],
+                generateCertificate: generateCertificate || false,
+                certificateTemplateId: certificateTemplateId || null
             }
         });
 
@@ -59,7 +61,7 @@ router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) 
 router.put('/:id', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { title, description, imageUrl, type, date, time, location, status, seatsTotal, iconName, customFormFields } = req.body;
+        const { title, description, imageUrl, type, date, time, location, status, seatsTotal, iconName, customFormFields, generateCertificate, certificateTemplateId } = req.body;
 
         const event = await prisma.event.update({
             where: { id },
@@ -74,7 +76,9 @@ router.put('/:id', authenticate, checkPermission('LEADS'), async (req, res, next
                 status,
                 seatsTotal: seatsTotal ? parseInt(seatsTotal, 10) : undefined,
                 iconName,
-                customFormFields: customFormFields ? (typeof customFormFields === 'string' ? JSON.parse(customFormFields) : customFormFields) : undefined
+                customFormFields: customFormFields ? (typeof customFormFields === 'string' ? JSON.parse(customFormFields) : customFormFields) : undefined,
+                generateCertificate: generateCertificate !== undefined ? generateCertificate : undefined,
+                certificateTemplateId: certificateTemplateId !== undefined ? certificateTemplateId : undefined
             }
         });
 
@@ -96,6 +100,98 @@ router.delete('/:id', authenticate, checkPermission('LEADS'), async (req, res, n
             where: { id }
         });
         res.json({ message: 'Event deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/events/:id/generate-certificates
+ * @desc    Generate certificates for event attendees
+ * @access  Private/Admin
+ */
+router.post('/:id/generate-certificates', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const event = await prisma.event.findUnique({
+            where: { id }
+        });
+
+        if (!event) return res.status(404).json({ error: 'Event not found' });
+        if (!event.generateCertificate) return res.status(400).json({ error: 'Certificate generation not enabled for this event' });
+        if (!event.certificateTemplateId) return res.status(400).json({ error: 'No certificate template selected for this event' });
+
+        const leads = await prisma.lead.findMany({
+            where: { eventId: id }
+        });
+
+        if (!leads.length) return res.status(400).json({ error: 'No attendees found for this event' });
+
+        const template = await prisma.certificateTemplate.findUnique({
+            where: { id: event.certificateTemplateId }
+        });
+
+        if (!template) return res.status(404).json({ error: 'Certificate template not found' });
+
+        const crypto = require('crypto');
+        const generateCertificateId = async () => {
+            const prefix = 'EVT';
+            const randomBytes = crypto.randomBytes(3).toString('hex').toUpperCase();
+            return `${prefix}-${randomBytes}`;
+        };
+
+        const certificates = [];
+        let skipped = 0;
+
+        for (const lead of leads) {
+            // Check if certificate already generated for this lead
+            const existing = await prisma.certificate.findFirst({
+                where: { 
+                    referenceId: event.id,
+                    regId: lead.phone || lead.email 
+                }
+            });
+
+            if (existing) {
+                skipped++;
+                continue;
+            }
+
+            const uniqueId = await generateCertificateId();
+            
+            // Create a secure hash
+            const hashPayload = `${uniqueId}:${lead.name}:${event.title}:${new Date().toISOString()}`;
+            const credentialHash = crypto.createHash('sha256').update(hashPayload).digest('hex');
+
+            const cert = await prisma.certificate.create({
+                data: {
+                    uniqueId,
+                    userId: null,
+                    regId: lead.phone || lead.email || uniqueId,
+                    referenceId: event.id,
+                    referenceType: event.type === 'webinar' ? 'WEBINAR' : 'EVENT',
+                    studentName: lead.name,
+                    courseName: event.title,
+                    courseCategory: event.type,
+                    purpose: template.purpose || 'EVENT_PARTICIPATION',
+                    templateId: template.id,
+                    issueDate: new Date(),
+                    verificationUrl: `/verify/${uniqueId}`, // Updated verification URL
+                    credentialHash,
+                    status: 'ISSUED',
+                    isValid: true,
+                    instituteId: 'default'
+                }
+            });
+
+            certificates.push(cert);
+        }
+
+        res.json({
+            message: `Generated ${certificates.length} certificates. Skipped ${skipped} already existing.`,
+            generated: certificates.length,
+            skipped
+        });
     } catch (error) {
         next(error);
     }

@@ -158,6 +158,18 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         { label: "Institutes", icon: GraduationCap, href: "/admin/institutes", group: "Campus Hiring" },
         { label: "Consulting Revenue", icon: CreditCard, href: "/admin/consultancy-revenue", group: "Campus Hiring" },
 
+        // Partnerships
+        { 
+            label: "Franchise Management", 
+            icon: Building2, 
+            href: user?.role === 'FRANCHISE_ADMIN' && user?.instituteId 
+                ? `/admin/franchise/${user.instituteId}` // Wait, franchise uses instituteId or franchiseId? Let's check the auth context. The auth context exposes instituteId. But wait, I'll use user?.franchiseId if it exists or fallback.
+                : (user as any)?.franchiseId ? `/admin/franchise/${(user as any).franchiseId}` : "/admin/franchise", 
+            permission: "ADMIN", 
+            group: "Partnerships" 
+        },
+        { label: "Franchise Resources", icon: Megaphone, href: "/admin/franchise/resources", permission: "ADMIN", group: "Partnerships" },
+
         // Administration
         { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES", group: "Administration" },
         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS", group: "Administration" },

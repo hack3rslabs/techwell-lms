@@ -11,12 +11,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { Plus, Trash2, ArrowRight, ArrowLeft, CheckCircle2, Briefcase, Users, FileText, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function ConsultingFormModal({ isOpen, onClose, project, onSave }) {
+export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [clients, setClients] = useState([]);
-    const [staff, setStaff] = useState([]);
-    const [agreements, setAgreements] = useState([]);
+    const [clients, setClients] = useState<any[]>([]);
+    const [staff, setStaff] = useState<any[]>([]);
+    const [agreements, setAgreements] = useState<any[]>([]);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -34,7 +34,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }) {
         notes: ''
     });
 
-    const [contacts, setContacts] = useState([]);
+    const [contacts, setContacts] = useState<any[]>([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -95,7 +95,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }) {
         }
     };
 
-    const handleChange = (e) => {
+    const handleChange = (e: any) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
@@ -104,13 +104,13 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }) {
         setContacts([...contacts, { name: '', email: '', phone: '' }]);
     };
 
-    const updateContact = (index, field, value) => {
+    const updateContact = (index: number, field: string, value: any) => {
         const newContacts = [...contacts];
         newContacts[index][field] = value;
         setContacts(newContacts);
     };
 
-    const removeContact = (index) => {
+    const removeContact = (index: number) => {
         const newContacts = [...contacts];
         newContacts.splice(index, 1);
         setContacts(newContacts);
@@ -126,7 +126,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }) {
     const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         setLoading(true);
 

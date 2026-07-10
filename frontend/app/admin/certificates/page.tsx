@@ -76,6 +76,7 @@ interface CertificateTemplate {
     isDefault: boolean
     isActive: boolean
     canvasData?: any
+    purpose?: string
 }
 
 interface CertificateSettings {
@@ -125,6 +126,7 @@ export default function CertificatesPage() {
     const [batchStudents, setBatchStudents] = useState<any[]>([])
     const [selectedBatchStudents, setSelectedBatchStudents] = useState<string[]>([])
     const [isGeneratingBatch, setIsGeneratingBatch] = useState(false)
+    const [issueDate, setIssueDate] = useState<string>('')
     
     const [batchesList, setBatchesList] = useState<any[]>([])
 
@@ -230,7 +232,8 @@ export default function CertificatesPage() {
                 courseId: selectedBatchCourse || undefined,
                 batchId: selectedBatchId || undefined,
                 studentIds: selectedBatchStudents,
-                templateId: selectedTemplateId || undefined
+                templateId: selectedTemplateId || undefined,
+                issueDate: issueDate || undefined
             }
             const res = await certificateApi.generateBulk(data)
             if (res.data) {
@@ -319,15 +322,15 @@ export default function CertificatesPage() {
                     
                     if (el.type === 'qr' || el.type === 'barcode') {
                         return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); font-family: ${el.fontFamily}; font-size: ${el.fontSize}px; color: ${el.color};">
-                                <div style="border: 2px solid #000; padding: 10px; text-align: center; font-size: 12px; background: white;">
-                                    ||| || ||| |<br/>
+                                <div style="text-align: center; font-size: 10px;">
+                                    <div style="font-size: 24px; letter-spacing: 2px;">||| || ||| |</div>
                                     ${cert.uniqueId}
                                 </div>
                             </div>`;
                     }
                     if (el.type === 'image' || text === '{{LOGO}}') {
-                        return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); background-color: white; padding: 10px; border-radius: 8px;">
-                            <img src="${window.location.origin}/logo-dark.png" alt="Logo" style="height: 50px; object-fit: contain;" />
+                        return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%);">
+                            <img src="${window.location.origin}/logo-dark.png" alt="Logo" style="height: 40px; object-fit: contain;" />
                         </div>`;
                     }
                     
@@ -372,28 +375,237 @@ export default function CertificatesPage() {
         }
 
         if (!certContent) {
-            // Fallback
+            // Premium Corporate Fallback Template
             certContent = `
                 <!DOCTYPE html>
                 <html>
-                <head><title>Certificate - ${cert.uniqueId}</title></head>
-                <body style="font-family: Georgia, serif; text-align: center; padding: 60px; border: 3px double #1a365d;">
-                    <h1 style="color: #1a365d; font-size: 36px;">Certificate of Completion</h1>
-                    <p style="font-size: 18px; margin: 40px 0;">This is to certify that</p>
-                    <h2 style="color: #2d3748; font-size: 32px; margin: 20px 0;">${cert.studentName}</h2>
-                    <p style="font-size: 18px; margin: 40px 0;">has successfully completed</p>
-                    <h3 style="color: #4a5568; font-size: 24px;">${cert.courseName}</h3>
-                    ${cert.grade ? `<p style="margin-top: 30px;">Grade: <strong>${cert.grade}</strong></p>` : ''}
-                    <p style="margin-top: 50px;">Date: ${new Date(cert.issueDate).toLocaleDateString()}</p>
-                    <p style="font-size: 12px; color: #718096; margin-top: 20px;">Certificate ID: ${cert.uniqueId}</p>
-                    ${cert.signatoryName ? `
-                        <div style="margin-top: 60px;">
-                            <p style="border-top: 1px solid #000; display: inline-block; padding-top: 10px;">
-                                ${cert.signatoryName}<br/>
-                                <small>${cert.signatoryTitle || ''}</small>
-                            </p>
+                <head>
+                    <title>Certificate - ${cert.uniqueId}</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+                        @page { size: landscape; margin: 0; }
+                        body { 
+                            margin: 0; padding: 0; 
+                            width: 1122px; height: 793px; /* A4 Landscape */
+                            display: flex; align-items: center; justify-content: center; 
+                            background: #f9f9f9; 
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        .cert-container { 
+                            position: relative; 
+                            width: 1040px; 
+                            height: 710px; 
+                            background: #ffffff;
+                            box-sizing: border-box;
+                            border: 2px solid #cfb53b;
+                            padding: 15px;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                        }
+                        .cert-inner {
+                            position: relative;
+                            width: 100%;
+                            height: 100%;
+                            border: 8px solid #0f172a;
+                            box-sizing: border-box;
+                            padding: 40px;
+                            background: url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M0 0l50 50L100 0v100H0z" fill="%23f8fafc" fill-opacity="0.5"/></svg>');
+                            overflow: hidden;
+                        }
+                        .corner-tl, .corner-tr, .corner-bl, .corner-br {
+                            position: absolute; width: 60px; height: 60px;
+                            border: 4px solid #cfb53b;
+                        }
+                        .corner-tl { top: 20px; left: 20px; border-bottom: 0; border-right: 0; }
+                        .corner-tr { top: 20px; right: 20px; border-bottom: 0; border-left: 0; }
+                        .corner-bl { bottom: 20px; left: 20px; border-top: 0; border-right: 0; }
+                        .corner-br { bottom: 20px; right: 20px; border-top: 0; border-left: 0; }
+                        
+                        .header { text-align: center; margin-bottom: 25px; }
+                        .logo { height: 70px; margin-bottom: 10px; }
+                        .title { 
+                            font-family: 'Cinzel', serif; 
+                            color: #cfb53b; 
+                            font-size: 48px; 
+                            letter-spacing: 6px; 
+                            margin: 0;
+                            text-transform: uppercase;
+                        }
+                        .subtitle { 
+                            font-family: 'Montserrat', sans-serif; 
+                            font-size: 14px; 
+                            letter-spacing: 10px; 
+                            color: #64748b; 
+                            text-transform: uppercase;
+                            margin-top: 5px;
+                        }
+                        
+                        .content { text-align: center; margin-top: 40px; }
+                        .presented-to { 
+                            font-family: 'Montserrat', sans-serif; 
+                            font-size: 16px; 
+                            color: #475569; 
+                            text-transform: uppercase;
+                            letter-spacing: 2px;
+                        }
+                        .student-name { 
+                            font-family: 'Playfair Display', serif; 
+                            font-size: 56px; 
+                            color: #0f172a; 
+                            margin: 20px 0;
+                            font-style: italic;
+                        }
+                        .divider {
+                            width: 60%;
+                            height: 2px;
+                            background: linear-gradient(90deg, transparent, #cfb53b, transparent);
+                            margin: 0 auto 30px auto;
+                        }
+                        .description { 
+                            font-family: 'Montserrat', sans-serif; 
+                            font-size: 16px; 
+                            color: #475569;
+                            line-height: 1.6;
+                            max-width: 800px;
+                            margin: 0 auto;
+                        }
+                        .course-name { 
+                            font-family: 'Cinzel', serif; 
+                            font-size: 28px; 
+                            color: #0f172a; 
+                            margin: 20px 0;
+                            font-weight: 700;
+                        }
+
+                        .footer { 
+                            position: absolute; 
+                            bottom: 60px; 
+                            left: 80px; 
+                            right: 80px; 
+                            display: flex; 
+                            justify-content: space-between; 
+                            align-items: flex-end;
+                        }
+                        .signature-block, .date-block { 
+                            text-align: center; 
+                            width: 250px; 
+                        }
+                        .signature-line { 
+                            border-bottom: 2px solid #0f172a; 
+                            margin-bottom: 10px;
+                            height: 40px;
+                        }
+                        .sign-text { 
+                            font-family: 'Montserrat', sans-serif; 
+                            font-size: 14px; 
+                            color: #0f172a; 
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                        }
+                        .sign-title {
+                            font-family: 'Montserrat', sans-serif; 
+                            font-size: 12px; 
+                            color: #64748b; 
+                        }
+                        
+                        .badge {
+                            position: absolute;
+                            bottom: 35px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 100px;
+                            height: 100px;
+                            background: linear-gradient(135deg, #1D4ED8, #4f46e5);
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border: 3px solid #ffffff;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                        }
+                        .badge-inner {
+                            width: 86px;
+                            height: 86px;
+                            border-radius: 50%;
+                            border: 2px dashed #ffffff;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                            color: #ffffff;
+                            font-family: 'Cinzel', serif;
+                        }
+                        .badge-text { font-size: 9px; font-weight: bold; letter-spacing: 1px; }
+                        .badge-year { font-size: 14px; margin-top: 2px; }
+
+                        .meta-info {
+                            position: absolute;
+                            bottom: 20px;
+                            left: 0;
+                            right: 0;
+                            text-align: center;
+                            font-family: 'Montserrat', sans-serif;
+                            font-size: 10px;
+                            color: #94a3b8;
+                            letter-spacing: 1px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="cert-container">
+                        <div class="cert-inner">
+                            <div class="corner-tl"></div>
+                            <div class="corner-tr"></div>
+                            <div class="corner-bl"></div>
+                            <div class="corner-br"></div>
+                            
+                            <div class="header">
+                                <!-- Logo Placement -->
+                                <img src="${window.location.origin}/logo-dark.png" alt="Techwell Logo" class="logo" style="height: 60px; margin-bottom: 20px;" onerror="this.style.display='none'" />
+                                <h1 class="title">Certificate</h1>
+                                <div class="subtitle">Of Achievement</div>
+                            </div>
+                            
+                            <div class="content">
+                                <div class="presented-to">This is proudly presented to</div>
+                                <h2 class="student-name">${cert.studentName}</h2>
+                                <div class="divider"></div>
+                                <div class="description">For successfully completing the comprehensive training program and demonstrating outstanding proficiency in</div>
+                                <h3 class="course-name">${cert.courseName}</h3>
+                                ${cert.grade ? `<div class="description" style="margin-top: 10px;">Achieved with Grade: <strong style="color:#0f172a;">${cert.grade}</strong></div>` : ''}
+                            </div>
+                            
+                            <div class="badge">
+                                <div class="badge-inner">
+                                    <div class="badge-text">OFFICIAL</div>
+                                    <div class="badge-text">CERTIFIED</div>
+                                    <div class="badge-year">${new Date(cert.issueDate).getFullYear()}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="footer">
+                                <div class="date-block">
+                                    <div class="signature-line" style="display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; font-family:'Montserrat'; font-size:16px;">
+                                        ${new Date(cert.issueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </div>
+                                    <div class="sign-text">Date of Issue</div>
+                                </div>
+                                <div class="signature-block">
+                                    <div class="signature-line">
+                                        <!-- Signature Image Could Go Here -->
+                                    </div>
+                                    <div class="sign-text">${cert.signatoryName || 'Authorized Signatory'}</div>
+                                    <div class="sign-title">${cert.signatoryTitle || 'Academic Director'}</div>
+                                </div>
+                            </div>
+
+                            <div class="meta-info">
+                                VERIFICATION ID: ${cert.uniqueId} | VERIFY AT: ${window.location.origin}/certificate/${cert.uniqueId}
+                            </div>
                         </div>
-                    ` : ''}
+                    </div>
                 </body>
                 </html>
             `;
@@ -737,11 +949,21 @@ export default function CertificatesPage() {
                                         value={selectedTemplateId}
                                         onChange={(e) => setSelectedTemplateId(e.target.value)}
                                     >
-                                        <option value="">-- Use Default Template --</option>
+                                        <option value="">-- Premium Corporate Template (Default) --</option>
                                         {templates.map(t => (
                                             <option key={t.id} value={t.id}>{t.name}</option>
                                         ))}
                                     </select>
+                                </div>
+
+                                <div className="space-y-2 mt-4">
+                                    <Label>Issue Date (Optional)</Label>
+                                    <Input 
+                                        type="date"
+                                        value={issueDate}
+                                        onChange={(e) => setIssueDate(e.target.value)}
+                                    />
+                                    <p className="text-xs text-muted-foreground">Leave blank to use today's date. Select a date to backdate the certificate.</p>
                                 </div>
 
                                 {(selectedBatchCourse || selectedBatchId) && (
@@ -859,61 +1081,86 @@ export default function CertificatesPage() {
                             </DialogContent>
                         </Dialog>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {templates.map(template => (
-                            <Card key={template.id} className={template.isDefault ? 'border-primary' : ''}>
-                                <CardHeader className="pb-2">
-                                    <div className="flex justify-between items-start">
-                                        <CardTitle className="text-base">{template.name}</CardTitle>
-                                        {template.isDefault && (
-                                            <span className="text-xs bg-primary text-white px-2 py-1 rounded">Default</span>
-                                        )}
-                                    </div>
-                                    {template.description && (
-                                        <CardDescription>{template.description}</CardDescription>
-                                    )}
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="aspect-[4/3] bg-muted rounded-lg flex items-center justify-center mb-4">
-                                        {(() => {
-                                            const src = template.previewUrl || template.designUrl;
-                                            if (src && (src.startsWith('http') || src.startsWith('/'))) {
-                                                return (
-                                                    <Image
-                                                        src={src}
-                                                        alt={template.name}
-                                                        width={200}
-                                                        height={150}
-                                                        className="max-h-full object-contain"
-                                                    />
-                                                )
-                                            }
-                                            return (
-                                                <div className="flex flex-col items-center text-muted-foreground">
-                                                    <FileImage className="h-12 w-12 mb-2 opacity-50" />
-                                                    <span className="text-xs">{src ? `Design: ${src}` : 'No Preview'}</span>
+                    <div className="space-y-8 mt-6">
+                        {Object.entries(
+                            templates.reduce((acc, template) => {
+                                const category = template.purpose || 'Uncategorized';
+                                if (!acc[category]) acc[category] = [];
+                                acc[category].push(template);
+                                return acc;
+                            }, {} as Record<string, CertificateTemplate[]>)
+                        ).map(([category, catsTemplates]) => (
+                            <div key={category} className="mb-10">
+                                <h3 className="text-xl font-bold text-slate-800 mb-4 border-b pb-2">{category}</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {catsTemplates.map(template => (
+                                        <Card key={template.id} className={template.isDefault ? 'border-primary ring-2 ring-primary/20' : ''}>
+                                            <CardHeader className="pb-2">
+                                                <div className="flex justify-between items-start">
+                                                    <CardTitle className="text-base">{template.name}</CardTitle>
+                                                    {template.isDefault && (
+                                                        <span className="text-xs bg-primary text-white px-2 py-1 rounded shadow-sm">Default</span>
+                                                    )}
                                                 </div>
-                                            )
-                                        })()}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {!template.isDefault && (
-                                            <Button variant="outline" size="sm" className="flex-1" onClick={() => handleSetDefaultTemplate(template.id)}>
-                                                Set Default
-                                            </Button>
-                                        )}
-                                        <Button variant="ghost" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
-                                            <Trash2 className="h-4 w-4 text-red-500" />
-                                        </Button>
-                                    </div>
-                                    <div className="mt-2">
-                                        <Button variant="outline" size="sm" className="w-full" onClick={() => window.location.href = `/admin/certificates/designer/${template.id}`}>
-                                            Edit Design (Drag & Drop)
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                                {template.description && (
+                                                    <CardDescription className="line-clamp-2">{template.description}</CardDescription>
+                                                )}
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="aspect-[4/3] bg-slate-50 border rounded-lg flex items-center justify-center mb-4 overflow-hidden relative group">
+                                                    {(() => {
+                                                        const src = template.previewUrl || template.designUrl;
+                                                        if (src && (src.startsWith('http') || src.startsWith('/'))) {
+                                                            return (
+                                                                <Image
+                                                                    src={src}
+                                                                    alt={template.name}
+                                                                    layout="fill"
+                                                                    objectFit="cover"
+                                                                />
+                                                            )
+                                                        }
+                                                        return (
+                                                            <div className="flex flex-col items-center text-muted-foreground p-4 text-center">
+                                                                <FileImage className="h-12 w-12 mb-2 opacity-30" />
+                                                                <span className="text-xs font-medium text-slate-400">Design Studio Template</span>
+                                                            </div>
+                                                        )
+                                                    })()}
+                                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <Button 
+                                                            variant="secondary" 
+                                                            size="sm"
+                                                            onClick={() => window.open(`/admin/certificates/designer/${template.id}`, '_blank')}
+                                                        >
+                                                            Open Studio
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        className="flex-1"
+                                                        onClick={() => window.open(`/admin/certificates/designer/${template.id}`, '_blank')}
+                                                    >
+                                                        <Settings className="w-4 h-4 mr-2" />
+                                                        Design Studio
+                                                    </Button>
+                                                    {!template.isDefault && (
+                                                        <Button variant="secondary" size="sm" onClick={() => handleSetDefaultTemplate(template.id)}>
+                                                            Make Default
+                                                        </Button>
+                                                    )}
+                                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
+                                                        <Trash2 className="w-4 h-4 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
                         ))}
                         {templates.length === 0 && (
                             <div className="col-span-full text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">

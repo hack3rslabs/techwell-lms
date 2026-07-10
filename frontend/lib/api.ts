@@ -10,6 +10,13 @@ const api = axios.create({
     withCredentials: true,
 });
 
+export const publicApi = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    }
+});
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
     (config) => {
@@ -284,6 +291,9 @@ export const certificateApi = {
     updateTemplate: (id: string, data: { name?: string; description?: string; designUrl?: string; previewUrl?: string; isDefault?: boolean; isActive?: boolean }) =>
         api.put(`/certificates/admin/templates/${id}`, data),
     deleteTemplate: (id: string) => api.delete(`/certificates/admin/templates/${id}`),
+    uploadTemplateImage: (data: FormData) => api.post('/certificates/templates/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
 };
 
 // AI Settings API
@@ -487,6 +497,7 @@ export const couponApi = {
 };
 
 export default api;
+export { api };
 
 
 // Batches API

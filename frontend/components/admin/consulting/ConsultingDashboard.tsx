@@ -19,17 +19,17 @@ const KANBAN_COLUMNS = [
     { id: 'DELIVERY', title: 'Delivery' }
 ];
 
-export default function ConsultingDashboard({ type: initialType = 'ALL' }) {
-    const [projects, setProjects] = useState([]);
+export default function ConsultingDashboard({ type: initialType = 'ALL' }: { type?: string }) {
+    const [projects, setProjects] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterType, setFilterType] = useState(initialType);
     const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'list'
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingProject, setEditingProject] = useState(null);
+    const [editingProject, setEditingProject] = useState<any>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [assigneeFilter, setAssigneeFilter] = useState('ALL');
     const [typeFilter, setTypeFilter] = useState('ALL');
-    const [staff, setStaff] = useState([]);
+    const [staff, setStaff] = useState<any[]>([]);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -48,7 +48,7 @@ export default function ConsultingDashboard({ type: initialType = 'ALL' }) {
         }
     };
 
-    const handleDelete = async (e, id) => {
+    const handleDelete = async (e: any, id: string) => {
         e.stopPropagation();
         if (!confirm("Are you sure you want to delete this project?")) return;
         try {
@@ -120,7 +120,7 @@ export default function ConsultingDashboard({ type: initialType = 'ALL' }) {
         setIsFormOpen(true);
     };
 
-    const openEditForm = (project) => {
+    const openEditForm = (project: any) => {
         setEditingProject(project);
         setIsFormOpen(true);
     };

@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function ClientConsultingDashboard() {
-    const [projects, setProjects] = useState([]);
+    const [projects, setProjects] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
@@ -124,7 +124,7 @@ export default function ClientConsultingDashboard() {
                                         <FileText className="h-3 w-3" /> Recent Milestones
                                     </h4>
                                     <div className="space-y-3">
-                                        {project.milestones.slice(0, 3).map(m => (
+                                        {project.milestones.slice(0, 3).map((m: any) => (
                                             <div key={m.id} className="flex justify-between items-center text-sm bg-slate-50 dark:bg-slate-800/50 p-2 rounded">
                                                 <span className="font-medium">{m.title}</span>
                                                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${

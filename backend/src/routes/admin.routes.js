@@ -30,7 +30,9 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             revenueData,
             activeTasksCount,
             activeTicketsCount,
-            activeProjectsCount
+            activeProjectsCount,
+            franchisesCount,
+            certificatesCount
         ] = await Promise.all([
             // Only count users if permitted, else 0
             rules.manageUsers ? prisma.user.count({
@@ -64,7 +66,9 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             }),
             prisma.consultingProject.count({
                 where: req.user.role === 'SUPER_ADMIN' ? { status: { not: 'COMPLETED' } } : { assigneeId: req.user.id, status: { not: 'COMPLETED' } }
-            })
+            }),
+            prisma.franchise.count(),
+            prisma.certificate.count()
         ]);
 
         // Get recent enrollments for chart/list
@@ -88,6 +92,8 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             activeTasks: activeTasksCount,
             activeTickets: activeTicketsCount,
             activeProjects: activeProjectsCount,
+            franchises: franchisesCount,
+            certificates: certificatesCount,
             recentActivity: recentEnrollments
         });
     } catch (error) {

@@ -22,6 +22,7 @@ interface User {
     hasUnlimitedInterviews?: boolean;
     twoFactorEnabled?: boolean;
     instituteId?: string;
+    franchiseId?: string;
 }
 
 interface AuthContextType {

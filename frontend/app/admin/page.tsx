@@ -260,6 +260,29 @@ export default function AdminDashboard() {
                             </CardContent>
                         </Card>
 
+                        {/* New Franchises Stat */}
+                        <Card
+                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                            onClick={() => router.push('/admin/franchise')}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-yellow-500/10 to-amber-500/10 blur-2xl group-hover:bg-yellow-500/20 transition-all duration-500" />
+                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
+                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+                                    Total Franchises
+                                </CardTitle>
+                                <div className="h-10 w-10 rounded-2xl bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-200/50 dark:border-yellow-800/50 flex items-center justify-center text-yellow-600 dark:text-yellow-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                    <Building2 className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent className="relative z-10 mt-2">
+                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{(stats as any).franchises || 0}</div>
+                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                                    <span>Active Partners</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+
                         <Card
                             className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
                             onClick={() => router.push('/admin/courses')}
@@ -278,6 +301,29 @@ export default function AdminDashboard() {
                                 <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.enrollments}</div>
                                 <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                                     <span>{stats.courses} active courses</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* New Certificates Stat */}
+                        <Card
+                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                            onClick={() => router.push('/admin/certificates')}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-sky-500/10 to-blue-500/10 blur-2xl group-hover:bg-sky-500/20 transition-all duration-500" />
+                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
+                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+                                    Certificates Issued
+                                </CardTitle>
+                                <div className="h-10 w-10 rounded-2xl bg-sky-100 dark:bg-sky-900/30 border border-sky-200/50 dark:border-sky-800/50 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                    <GraduationCap className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent className="relative z-10 mt-2">
+                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{(stats as any).certificates || 0}</div>
+                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                                    <span>Total verified</span>
                                 </div>
                             </CardContent>
                         </Card>

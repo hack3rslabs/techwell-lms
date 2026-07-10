@@ -49,6 +49,8 @@ router.get('/', authenticate, async (req, res, next) => {
                 return res.json([]);
             }
             where.id = { in: enrolledBatchIds };
+        } else if (req.user.role === 'FRANCHISE_ADMIN') {
+            where.course = { franchiseId: req.user.franchiseId };
         }
 
         const batches = await prisma.batch.findMany({
