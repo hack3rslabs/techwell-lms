@@ -158,12 +158,22 @@ router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) =
     try {
         const { page = 1, limit = 20, role, search } = req.query;
         const where = {};
+        
+        // Scope to franchise if FRANCHISE_ADMIN
+        if (req.user.role === 'FRANCHISE_ADMIN') {
+            where.franchiseId = req.user.franchiseId;
+            // Franchise Admins shouldn't see Super Admins or other Franchise Admins generally, just their students and staff
+            where.role = { in: ['STUDENT', 'STAFF', 'INSTRUCTOR'] };
+        }
         if (role) {
             if (role.includes(',')) {
                 where.role = { in: role.split(',') };
             } else {
                 where.role = role;
             }
+        } else if (req.user.role === 'FRANCHISE_ADMIN') {
+             // Keep the restricted roles if no specific role is requested
+             where.role = { in: ['STUDENT', 'STAFF', 'INSTRUCTOR'] };
         }
         if (search) {
             where.OR = [
@@ -394,9 +404,9 @@ router.get('/fix-live-permissions', async (req, res) => {
  */
 router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
-        // Strictly protect user creation: Only SUPER_ADMIN and ADMIN are authorized
-        if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Access Denied: Only Admins and Super Admins are authorized to directly create users.' });
+        // Strictly protect user creation: Only SUPER_ADMIN, ADMIN, and FRANCHISE_ADMIN are authorized
+        if (!['SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'].includes(req.user.role)) {
+            return res.status(403).json({ error: 'Access Denied: Only Admins and Franchise Admins are authorized to directly create users.' });
         }
 
         const validatedData = createUserSchema.parse(req.body);
@@ -442,6 +452,13 @@ router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) 
                 enumRole = nameMap[systemRole.name];
             }
         }
+        
+        // Franchise Admins can ONLY create STUDENT or STAFF roles
+        if (req.user.role === 'FRANCHISE_ADMIN') {
+            if (!['STUDENT', 'STAFF'].includes(enumRole)) {
+                return res.status(403).json({ error: 'Franchise Admins can only create Students and Staff.' });
+            }
+        }
 
         const user = await prisma.user.create({
             data: {
@@ -452,7 +469,8 @@ router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) 
                 role: enumRole,
                 systemRoleId: systemRoleId,
                 emailVerified: true,
-                isActive: true
+                isActive: true,
+                franchiseId: req.user.role === 'FRANCHISE_ADMIN' ? req.user.franchiseId : null
             },
             select: {
                 id: true,

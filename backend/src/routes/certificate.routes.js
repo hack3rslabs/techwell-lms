@@ -1,9 +1,39 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+
+// Configure storage for certificate templates
+const templateStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = 'uploads/templates';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'template-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const uploadTemplate = multer({
+    storage: templateStorage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /jpeg|jpg|png|webp/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        if (mimetype && extname) return cb(null, true);
+        cb(new Error('Only images (JPEG, PNG, WEBP) are allowed!'));
+    }
+});
 
 /**
  * Generate unique certificate ID based on settings
@@ -37,6 +67,33 @@ async function generateCertificateId() {
 }
 
 /**
+ * @route   GET /api/certificates/analytics
+ * @desc    Get certificate issuance analytics
+ * @access  Private/Admin
+ */
+router.get('/analytics', authenticate, checkPermission('CERTIFICATE_READ'), async (req, res, next) => {
+    try {
+        const totalCertificates = await prisma.certificate.count();
+        const activeCertificates = await prisma.certificate.count({ where: { status: 'ISSUED', isValid: true } });
+        const revokedCertificates = await prisma.certificate.count({ where: { status: 'REVOKED' } });
+        
+        const byType = await prisma.certificate.groupBy({
+            by: ['referenceType'],
+            _count: { _all: true }
+        });
+
+        res.json({
+            total: totalCertificates,
+            active: activeCertificates,
+            revoked: revokedCertificates,
+            byType: byType.map(b => ({ type: b.referenceType || 'COURSE', count: b._count._all }))
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   GET /api/certificates
  * @desc    Get all certificates (Admin) or user's certificates
  * @access  Private
@@ -47,7 +104,7 @@ router.get('/', authenticate, async (req, res, next) => {
         const { status, courseId, search } = req.query;
 
         const where = {};
-        if (!isAdmin) {
+        if (!isAdmin && req.user.role !== 'FRANCHISE_ADMIN') {
             where.userId = req.user.id;
             where.status = 'ISSUED'; // Students only see issued certs
         } else {
@@ -58,6 +115,10 @@ router.get('/', authenticate, async (req, res, next) => {
                     { studentName: { contains: search, mode: 'insensitive' } },
                     { uniqueId: { contains: search, mode: 'insensitive' } }
                 ];
+            }
+            if (req.user.role === 'FRANCHISE_ADMIN') {
+                // Assuming students linked to franchise have franchiseId set, or checking by institute
+                where.user = { franchiseId: req.user.franchiseId };
             }
         }
 
@@ -104,7 +165,13 @@ router.get('/verify/:uniqueId', async (req, res, next) => {
                 isValid: true,
                 signatoryName: true,
                 signatoryTitle: true,
-                status: true
+                status: true,
+                franchise: {
+                    select: {
+                        name: true,
+                        logoUrl: true
+                    }
+                }
             }
         });
 
@@ -141,7 +208,8 @@ router.get('/:id', authenticate, async (req, res, next) => {
             where: { id: req.params.id },
             include: {
                 template: true,
-                user: { select: { name: true, email: true } }
+                user: { select: { name: true, email: true } },
+                franchise: { select: { name: true, logoUrl: true } }
             }
         });
 
@@ -168,7 +236,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
  */
 router.post('/generate', authenticate, async (req, res, next) => {
     try {
-        const { userId, courseId, enrollmentId, grade, score } = req.body;
+        const { userId, courseId, enrollmentId, grade, score, issueDate, purpose, templateId } = req.body;
 
         // Get user and course info
         const [user, course, settings] = await Promise.all([
@@ -209,9 +277,15 @@ router.post('/generate', authenticate, async (req, res, next) => {
         }
 
         // Get default template
-        const defaultTemplate = await prisma.certificateTemplate.findFirst({
-            where: { isDefault: true, isActive: true }
-        });
+        let templateToUse = templateId 
+            ? await prisma.certificateTemplate.findUnique({ where: { id: templateId } })
+            : await prisma.certificateTemplate.findFirst({
+                where: { 
+                    isDefault: true, 
+                    isActive: true, 
+                    purpose: purpose || 'COURSE_COMPLETION' 
+                }
+            });
 
         // Generate unique ID
         const uniqueId = await generateCertificateId();
@@ -238,14 +312,17 @@ router.post('/generate', authenticate, async (req, res, next) => {
                 courseCategory: course.category,
                 grade,
                 score,
-                templateId: defaultTemplate?.id,
+                purpose: purpose || templateToUse?.purpose || 'COURSE_COMPLETION',
+                templateId: templateToUse?.id,
                 signatureUrl: settings?.defaultSignatureUrl,
                 signatoryName: settings?.defaultSignatoryName || 'Director',
                 signatoryTitle: settings?.defaultSignatoryTitle || 'Academic Director',
+                issueDate: issueDate ? new Date(issueDate) : new Date(),
                 expiryDate,
                 verificationUrl: `/certificate/${uniqueId}`, // Updated to new public URL pattern
                 status,
-                isValid: true
+                isValid: true,
+                franchiseId: user.franchiseId || null
             }
         });
 
@@ -265,7 +342,7 @@ router.post('/generate', authenticate, async (req, res, next) => {
  */
 router.post('/generate-bulk', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
     try {
-        const { courseId, batchId, userIds, studentIds, grade, templateId } = req.body;
+        const { courseId, batchId, userIds, studentIds, grade, templateId, purpose } = req.body;
         
         const finalUserIds = userIds || studentIds;
         let finalCourseId = courseId;
@@ -332,7 +409,8 @@ router.post('/generate-bulk', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), a
                     templateId: templateId || undefined,
                     signatoryName: settings.defaultSignatoryName || 'Admin',
                     status: 'ISSUED',
-                    isValid: true
+                    isValid: true,
+                    franchiseId: user.franchiseId || null
                 }
             });
             results.push({ userId, status: 'success', certificateId: certificate.uniqueId });
@@ -394,7 +472,7 @@ router.put('/:id/status', authenticate, checkPermission('CERTIFICATES'), async (
  */
 router.post('/bulk-generate', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
-        const { courseId, userIds, templateId } = req.body;
+        const { courseId, userIds, templateId, issueDate } = req.body;
 
         const course = await prisma.course.findUnique({ where: { id: courseId } });
         const settings = await prisma.certificateSettings.findFirst({ where: { instituteId: 'default' } });
@@ -443,12 +521,15 @@ router.post('/bulk-generate', authenticate, checkPermission('CERTIFICATES'), asy
                         courseName: course.title,
                         courseCategory: course.category,
                         templateId: templateId || undefined,
+                        purpose: purpose || 'COURSE_COMPLETION',
                         signatureUrl: settings?.defaultSignatureUrl,
                         signatoryName: settings?.defaultSignatoryName || 'Director',
                         signatoryTitle: settings?.defaultSignatoryTitle || 'Academic Director',
+                        issueDate: issueDate ? new Date(issueDate) : new Date(),
                         verificationUrl: `/certificate/${uniqueId}`,
                         status,
-                        isValid: true
+                        isValid: true,
+                        franchiseId: user.franchiseId || null
                     }
                 });
                 
@@ -623,13 +704,36 @@ router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), asy
 // ============= TEMPLATE ENDPOINTS =============
 
 /**
+ * @route   POST /api/certificates/templates/upload
+ * @desc    Upload a certificate template image
+ * @access  Private (Admin & Franchise Admin)
+ */
+router.post('/templates/upload', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), uploadTemplate.single('templateImage'), async (req, res, next) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No image file uploaded' });
+        const designUrl = `/uploads/templates/${req.file.filename}`;
+        res.json({ message: 'Template image uploaded', designUrl });
+    } catch (error) {
+        if (req.file) {
+            const safePath = path.resolve('uploads/templates', path.basename(req.file.path));
+            fs.unlinkSync(safePath);
+        }
+        next(error);
+    }
+});
+
+/**
  * @route   GET /api/certificates/admin/templates
  * @desc    Get all certificate templates
  * @access  Private/Admin
  */
-router.get('/admin/templates', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
+router.get('/admin/templates', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), async (req, res, next) => {
     try {
+        const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
+        const where = isAdmin ? {} : { franchiseId: req.user.franchiseId };
+
         const templates = await prisma.certificateTemplate.findMany({
+            where,
             orderBy: { createdAt: 'desc' }
         });
 
@@ -642,16 +746,17 @@ router.get('/admin/templates', authenticate, checkPermission('CERTIFICATES'), as
 /**
  * @route   POST /api/certificates/admin/templates
  * @desc    Create a new certificate template
- * @access  Private/Admin
+ * @access  Private/Admin & Franchise Admin
  */
-router.post('/admin/templates', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
+router.post('/admin/templates', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), async (req, res, next) => {
     try {
-        const { name, description, designUrl, previewUrl, layout, canvasData, isDefault } = req.body;
+        const { name, description, designUrl, previewUrl, layout, canvasData, isDefault, orientation, purpose } = req.body;
+        const franchiseId = req.user.role === 'FRANCHISE_ADMIN' ? req.user.franchiseId : null;
 
         // If setting as default, unset other defaults
         if (isDefault) {
             await prisma.certificateTemplate.updateMany({
-                where: { isDefault: true },
+                where: { isDefault: true, franchiseId },
                 data: { isDefault: false }
             });
         }
@@ -664,7 +769,10 @@ router.post('/admin/templates', authenticate, checkPermission('CERTIFICATES'), a
                 previewUrl,
                 layout,
                 canvasData,
-                isDefault: isDefault || false
+                isDefault: isDefault || false,
+                orientation: orientation || 'HORIZONTAL',
+                purpose: purpose || 'COURSE_COMPLETION',
+                franchiseId
             }
         });
 
@@ -677,23 +785,32 @@ router.post('/admin/templates', authenticate, checkPermission('CERTIFICATES'), a
 /**
  * @route   PUT /api/certificates/admin/templates/:id
  * @desc    Update a certificate template
- * @access  Private/Admin
+ * @access  Private/Admin & Franchise Admin
  */
-router.put('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
+router.put('/admin/templates/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), async (req, res, next) => {
     try {
-        const { name, description, designUrl, previewUrl, layout, canvasData, isDefault, isActive } = req.body;
+        const { name, description, designUrl, previewUrl, layout, canvasData, isDefault, isActive, orientation, purpose } = req.body;
+        
+        const templateExists = await prisma.certificateTemplate.findUnique({ where: { id: req.params.id } });
+        if (!templateExists) return res.status(404).json({ error: 'Template not found' });
+        
+        if (req.user.role === 'FRANCHISE_ADMIN' && templateExists.franchiseId !== req.user.franchiseId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const franchiseId = templateExists.franchiseId;
 
         // If setting as default, unset other defaults
         if (isDefault) {
             await prisma.certificateTemplate.updateMany({
-                where: { isDefault: true, id: { not: req.params.id } },
+                where: { isDefault: true, id: { not: req.params.id }, franchiseId },
                 data: { isDefault: false }
             });
         }
 
         const template = await prisma.certificateTemplate.update({
             where: { id: req.params.id },
-            data: { name, description, designUrl, previewUrl, layout, canvasData, isDefault, isActive }
+            data: { name, description, designUrl, previewUrl, layout, canvasData, isDefault, isActive, orientation, purpose: purpose || undefined }
         });
 
         res.json({ message: 'Template updated', template });
@@ -705,10 +822,17 @@ router.put('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES')
 /**
  * @route   DELETE /api/certificates/admin/templates/:id
  * @desc    Delete a certificate template
- * @access  Private/Admin
+ * @access  Private/Admin & Franchise Admin
  */
-router.delete('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
+router.delete('/admin/templates/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), async (req, res, next) => {
     try {
+        const templateExists = await prisma.certificateTemplate.findUnique({ where: { id: req.params.id } });
+        if (!templateExists) return res.status(404).json({ error: 'Template not found' });
+        
+        if (req.user.role === 'FRANCHISE_ADMIN' && templateExists.franchiseId !== req.user.franchiseId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
         await prisma.certificateTemplate.delete({
             where: { id: req.params.id }
         });

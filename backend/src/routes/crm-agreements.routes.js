@@ -226,15 +226,19 @@ router.get('/public/:id', async (req, res) => {
 // 9. Public: Sign Agreement
 router.post('/public/:id/sign', async (req, res) => {
     try {
-        const { signature } = req.body; // base64 image
+        const { signature, photo } = req.body; // base64 images
         if (!signature) return res.status(400).json({ error: "Signature is required" });
+        if (!photo) return res.status(400).json({ error: "Identity photo is required" });
 
         const updated = await prisma.clientAgreement.update({
             where: { id: req.params.id },
             data: {
                 status: 'SIGNED',
                 clientSignature: signature,
-                signedAt: new Date()
+                clientSignedAt: new Date(),
+                clientPhotoUrl: photo,
+                clientPhotoAt: new Date(),
+                clientIp: req.headers['x-forwarded-for'] || req.socket.remoteAddress
             }
         });
 

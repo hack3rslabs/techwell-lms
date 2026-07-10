@@ -156,7 +156,7 @@ router.post('/train/url', async (req, res) => {
     res.json({ success: true, message: `Successfully indexed ${savedChunks} chunks from ${title}` });
 
   } catch (error) {
-    console.error(`[Knowledge API] Training failed for ${url}:`, error.message);
+    console.error('[Knowledge API] Training failed for URL:', url ? url.replace(/[\r\n]/g, '') : 'unknown', ':', error.message);
     if (url) {
       await prisma.aiKnowledgeDocument.updateMany({
         where: { url },

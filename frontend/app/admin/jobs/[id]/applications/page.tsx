@@ -145,6 +145,7 @@ export default function JobApplicationsPage() {
                                 <TableHead className="font-black text-[11px] uppercase tracking-widest text-slate-500 py-6">Candidate</TableHead>
                                 <TableHead className="font-black text-[11px] uppercase tracking-widest text-slate-500">Contact</TableHead>
                                 <TableHead className="font-black text-[11px] uppercase tracking-widest text-slate-500">Source</TableHead>
+                                <TableHead className="font-black text-[11px] uppercase tracking-widest text-slate-500">AI Score</TableHead>
                                 <TableHead className="font-black text-[11px] uppercase tracking-widest text-slate-500">Applied On</TableHead>
                                 <TableHead className="font-black text-[11px] uppercase tracking-widest text-slate-500">Status</TableHead>
                                 <TableHead className="text-right font-black text-[11px] uppercase tracking-widest text-slate-500 pr-8">Actions</TableHead>
@@ -194,6 +195,16 @@ export default function JobApplicationsPage() {
                                             <Badge className={app.source === 'INTERNAL' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}>
                                                 {app.source}
                                             </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {(app as any).applicant?.aiScore ? (
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-emerald-600">AI: {(app as any).applicant.aiScore}/100</span>
+                                                    <span className="text-[10px] text-muted-foreground">STAR: {(app as any).applicant.starScore}/100</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">-</span>
+                                            )}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2 text-xs font-medium text-slate-500">

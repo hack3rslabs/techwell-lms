@@ -45,7 +45,8 @@ const initialLeadForm = {
     qualification: '',
     dob: '',
     notes: '',
-    assignedTo: ''
+    assignedTo: '',
+    franchiseId: ''
 }
 
 export default function LeadsPage() {
@@ -67,9 +68,11 @@ export default function LeadsPage() {
         aiSummary?: string
         aiNextBestAction?: string
         aiPriority?: string
+        franchiseId?: string
     }
     const [leads, setLeads] = React.useState<Lead[]>([])
     const [staffUsers, setStaffUsers] = React.useState<{id: string, name: string}[]>([])
+    const [franchises, setFranchises] = React.useState<{id: string, name: string}[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [searchQuery, setSearchQuery] = React.useState('')
     const [selectedLeads, setSelectedLeads] = React.useState<string[]>([])
@@ -84,7 +87,8 @@ export default function LeadsPage() {
         pinCode: '',
         dob: '',
         name: '',
-        phone: ''
+        phone: '',
+        franchiseId: 'ALL'
     })
 
     // History Modal State
@@ -134,6 +138,7 @@ export default function LeadsPage() {
             if (filters.pinCode) params.append('pinCode', filters.pinCode)
             if (filters.name) params.append('name', filters.name)
             if (filters.phone) params.append('phone', filters.phone)
+            if (filters.franchiseId !== 'ALL') params.append('franchiseId', filters.franchiseId)
 
             const res = await api.get(`/leads?${params.toString()}`)
             setLeads(res.data || [])
@@ -151,16 +156,20 @@ export default function LeadsPage() {
     }, [fetchLeads])
     
     React.useEffect(() => {
-        const fetchStaff = async () => {
+        const fetchStaffAndFranchises = async () => {
             try {
-                const res = await api.get('/users?role=STAFF,ADMIN,SUPER_ADMIN')
-                setStaffUsers(res.data.users || res.data || [])
+                const [resStaff, resFranchises] = await Promise.all([
+                    api.get('/users?role=STAFF,ADMIN,SUPER_ADMIN'),
+                    api.get('/franchise')
+                ]);
+                setStaffUsers(resStaff.data.users || resStaff.data || []);
+                setFranchises(resFranchises.data.data || []);
             } catch (e) {
-                console.error('Failed to fetch staff', e)
+                console.error('Failed to fetch staff or franchises', e);
             }
-        }
-        fetchStaff()
-    }, [])
+        };
+        fetchStaffAndFranchises();
+    }, []);
 
     React.useEffect(() => {
         const markLeadsAsSeen = async () => {
@@ -215,7 +224,8 @@ export default function LeadsPage() {
             qualification: lead.qualification || '',
             dob: lead.dob ? format(new Date(lead.dob), 'yyyy-MM-dd') : '',
             notes: lead.notes || '',
-            assignedTo: lead.assignedTo || ''
+            assignedTo: lead.assignedTo || '',
+            franchiseId: lead.franchiseId || ''
         })
         setIsAddOpen(true)
     }
@@ -516,6 +526,18 @@ export default function LeadsPage() {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
+                                    <label className="text-sm font-medium">Assigned Franchise</label>
+                                    <Select value={newLead.franchiseId || 'UNASSIGNED'} onValueChange={v => setNewLead({ ...newLead, franchiseId: v === 'UNASSIGNED' ? '' : v })}>
+                                        <SelectTrigger><SelectValue placeholder="Select Franchise" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="UNASSIGNED">Unassigned</SelectItem>
+                                            {franchises.map(franchise => (
+                                                <SelectItem key={franchise.id} value={franchise.id}>{franchise.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
                                     <label className="text-sm font-medium">College/University</label>
                                     <Input value={newLead.college} onChange={e => setNewLead({ ...newLead, college: e.target.value })} placeholder="XYZ University" />
                                 </div>
@@ -625,6 +647,16 @@ export default function LeadsPage() {
                                     <SelectItem value="Fresher">Fresher</SelectItem>
                                     <SelectItem value="1-3 Years">1-3 Years</SelectItem>
                                     <SelectItem value="3+ Years">3+ Years</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select value={filters.franchiseId} onValueChange={v => setFilters({...filters, franchiseId: v})}>
+                                <SelectTrigger><SelectValue placeholder="Franchise" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Franchises</SelectItem>
+                                    <SelectItem value="UNASSIGNED">Unassigned</SelectItem>
+                                    {franchises.map(franchise => (
+                                        <SelectItem key={franchise.id} value={franchise.id}>{franchise.name}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>

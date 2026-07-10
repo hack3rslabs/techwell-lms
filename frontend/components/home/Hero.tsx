@@ -8,10 +8,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import api from "@/lib/api"
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0)
     const [isVideoOpen, setIsVideoOpen] = useState(false)
+    const [dynamicSlides, setDynamicSlides] = useState<any[]>([])
 
     const slides = [
         {
@@ -38,11 +40,33 @@ export function Hero() {
     ]
 
     useEffect(() => {
+        // Fetch dynamic banners from admin
+        api.post('/promotions/deliver', { zones: ['HOME_HERO'] })
+            .then(res => {
+                if (res.data?.data?.HOME_HERO?.length > 0) {
+                    const mapped = res.data.data.HOME_HERO.map((promo: any, idx: number) => ({
+                        id: promo.id,
+                        title: promo.title,
+                        subtitle: promo.subtitle || promo.description,
+                        image: promo.imageUrl || slides[idx % slides.length].image,
+                        color: slides[idx % slides.length].color, // Use default gradient for now or parse color
+                        ctaText: promo.ctaText || "Learn More",
+                        redirectUrl: promo.redirectUrl
+                    }))
+                    setDynamicSlides(mapped)
+                }
+            })
+            .catch(err => console.error("Failed to load banners:", err))
+    }, [])
+
+    const activeSlides = dynamicSlides.length > 0 ? dynamicSlides : slides;
+
+    useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % slides.length)
+            setCurrentSlide((prev) => (prev + 1) % activeSlides.length)
         }, 5000)
         return () => clearInterval(timer)
-    }, [slides.length])
+    }, [activeSlides.length])
 
     interface HeroBox {
         title: string
@@ -138,7 +162,7 @@ export function Hero() {
 
                                  <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6 leading-tight lg:leading-[1.1]">
                                      Powering Your <br />
-                                     <span className={`text-transparent bg-clip-text bg-gradient-to-r ${slides[currentSlide].color} animate-gradient`}>
+                                     <span className={`text-transparent bg-clip-text bg-gradient-to-r ${activeSlides[currentSlide].color} animate-gradient`}>
                                          {currentSlide === 0 && "IT Skills & Training"}
                                          {currentSlide === 1 && "Career Placement"}
                                          {currentSlide === 2 && "Software Solutions"}
@@ -153,9 +177,9 @@ export function Hero() {
                                  </p>
 
                                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-5 mb-14">
-                                    <Link href="/register" passHref>
+                                    <Link href={activeSlides[currentSlide].redirectUrl || "/register"} passHref>
                                         <Button size="lg" className="w-full sm:w-auto h-16 px-10 text-lg rounded-full shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-105 transition-all bg-gradient-to-r from-primary to-purple-600 border-none">
-                                            Start Free Trial
+                                            {activeSlides[currentSlide].ctaText || "Start Free Trial"}
                                             <ArrowRight className="ml-2 w-5 h-5" />
                                         </Button>
                                     </Link>
@@ -187,7 +211,7 @@ export function Hero() {
                     </div>
 
                     {/* Right Column: Dynamic Hero Carousel */}
-                    <div className="hidden lg:flex flex-1 justify-center relative w-full max-w-[750px]">
+                    <div className="flex flex-1 justify-center relative w-full max-w-[750px] mt-8 lg:mt-0">
                         <div className="relative w-full aspect-[4/3]">
                             {/* Abstract Decorative Elements behind carousel */}
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/30 rounded-full blur-[40px] animate-pulse" />
@@ -204,8 +228,8 @@ export function Hero() {
                                         className="absolute inset-0"
                                     >
                                         <Image
-                                            src={slides[currentSlide].image}
-                                            alt={slides[currentSlide].title}
+                                            src={activeSlides[currentSlide].image}
+                                            alt={activeSlides[currentSlide].title}
                                             fill
                                             className="object-cover"
                                             priority
@@ -218,11 +242,11 @@ export function Hero() {
                                                 animate={{ y: 0, opacity: 1 }}
                                                 transition={{ delay: 0.3 }}
                                             >
-                                                <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 bg-gradient-to-r ${slides[currentSlide].color}`}>
+                                                <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 bg-gradient-to-r ${activeSlides[currentSlide].color}`}>
                                                     FEATURED
                                                 </div>
-                                                <h3 className="text-3xl font-bold mb-2">{slides[currentSlide].title}</h3>
-                                                <p className="text-white/80 text-lg">{slides[currentSlide].subtitle}</p>
+                                                <h3 className="text-2xl sm:text-3xl font-bold mb-2">{activeSlides[currentSlide].title}</h3>
+                                                <p className="text-white/80 text-sm sm:text-lg">{activeSlides[currentSlide].subtitle}</p>
                                             </motion.div>
                                         </div>
                                     </motion.div>
@@ -230,7 +254,7 @@ export function Hero() {
 
                                 {/* Carousel Indicators */}
                                 <div className="absolute bottom-4 right-6 flex gap-2 z-10">
-                                    {slides.map((_, idx) => (
+                                    {activeSlides.map((_, idx) => (
                                         <button
                                             key={idx}
                                             onClick={() => setCurrentSlide(idx)}

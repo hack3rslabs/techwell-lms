@@ -61,8 +61,10 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
+const xss = require('xss-clean');
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(xss());
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -72,6 +74,7 @@ app.use('/api/events', require('./routes/events.routes'));
 app.use('/api/staff', require('./routes/staff.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/consultancy', require('./routes/consultancy.routes'));
+app.use('/api/consulting-projects', require('./routes/consultingProjects.routes'));
 app.use('/api/gdpr', require('./routes/gdpr.routes'));
 app.use('/api/referrals', require('./routes/referrals.routes'));
 app.use('/api/rbac', require('./routes/rbac.routes'));
@@ -83,6 +86,7 @@ app.use('/api/crm/customers', require('./routes/crm-customers.routes'));
 app.use('/api/crm/agreements', require('./routes/crm-agreements.routes'));
 app.use('/api/messaging', require('./routes/messaging.routes'));
 app.use('/api/analytics', require('./routes/analytics.routes'));
+app.use('/api/analytics/studio', require('./routes/analytics-studio.routes'));
 app.use('/api/ads', require('./routes/ads.routes'));
 app.use('/api/employers', require('./routes/employer.routes'));
 app.use('/api/interviews', interviewRoutes);
@@ -94,6 +98,7 @@ app.use('/api/upload', require('./routes/upload.routes'));
 app.use('/api/search', require('./routes/search.routes'));
 app.use('/api/avatars', require('./routes/avatar.routes'));
 app.use('/api/knowledge-base', require('./routes/knowledge-base.routes'));
+app.use('/api/partners', require('./routes/partner.routes'));
 app.use('/api/certificates', require('./routes/certificate.routes'));
 app.use('/api/portfolio', require('./routes/portfolio.routes'));
 app.use('/api/ai', require('./routes/ai.routes'));
@@ -111,6 +116,7 @@ app.use('/api/bulk-upload', require('./routes/bulkUpload.routes'));
 app.use('/api/consultancy-analytics', require('./routes/consultancyAnalytics.routes'));
 app.use('/api/live-classes', require('./routes/live-classes.routes'));
 app.use('/api/blogs', require('./routes/blog.routes'));
+app.use('/api/ai/blog', require('./routes/ai-blog.routes'));
 app.use('/api/ats', require('./routes/ats.routes'));
 app.use('/api/ai-settings', require('./routes/ai-settings.routes'));
 app.use('/api/trainer', require('./routes/trainer.routes'));
@@ -127,6 +133,8 @@ app.use('/api/assessments', require('./routes/assessment.routes'));
 app.use('/api/quizzes', require('./routes/quiz.routes'));
 app.use('/api/operations', require('./routes/operations.routes'));
 app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
+app.use('/api/success-stories', require('./routes/success-stories.routes'));
+app.use('/api/documents', require('./routes/documents.routes'));
 app.use('/api/services', require('./routes/service.routes'));
 app.use('/api/products', require('./routes/product.routes'));
 app.use('/api/clients', require('./routes/client.routes'));
@@ -140,7 +148,9 @@ app.use('/api/linkedin', require('./routes/linkedin.routes'));
 app.use('/api/payroll', require('./routes/payroll.routes'));
 app.use('/api/admin/marketing', require('./routes/marketing.routes'));
 app.use('/api/promotions', require('./routes/promotions.routes'));
+app.use('/api/admin/newsletters', require('./routes/newsletter.routes'));
 app.use('/api/admin/automation-studio', require('./api/admin/automation-studio/index'));
+app.use('/api/franchise', require('./routes/franchise.routes'));
 app.use('/api/twilio', twilioRouter);
 
 // Health check
@@ -157,7 +167,7 @@ app.use((req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
     console.error('API Error:', err);
-    
+
     // Handle Zod validation errors
     if (err.name === 'ZodError') {
         return res.status(400).json({
@@ -207,6 +217,53 @@ process.on('unhandledRejection', (err) => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
+
+    // Auto-seed Super Admin
+    async function seedSuperAdmin() {
+        try {
+            const bcrypt = require('bcryptjs');
+            const { PrismaClient } = require('@prisma/client');
+            const prisma = new PrismaClient();
+            const email = 'admin@techwell.co.in';
+            const rawPassword = process.env.ADMIN_PASSWORD;
+            if (!rawPassword) {
+                console.error('[SEED] ADMIN_PASSWORD environment variable is missing.');
+                return;
+            }
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(rawPassword, salt);
+
+            let admin = await prisma.user.findUnique({ where: { email } });
+            if (!admin) {
+                await prisma.user.create({
+                    data: {
+                        email,
+                        password: hashedPassword,
+                        firstName: 'Uttam',
+                        lastName: 'Admin',
+                        name: 'Uttam Admin',
+                        role: 'SUPER_ADMIN',
+                        emailVerified: true
+                    }
+                });
+                console.log(`[SEED] Created super admin: ${email}`);
+            } else {
+                // Ensure they have SUPER_ADMIN role and reset password if needed
+                await prisma.user.update({
+                    where: { email },
+                    data: {
+                        role: 'SUPER_ADMIN',
+                        password: hashedPassword
+                    }
+                });
+                console.log(`[SEED] Verified super admin: ${email}`);
+            }
+        } catch (err) {
+            console.error('[SEED] Error seeding super admin:', err);
+        }
+    }
+    seedSuperAdmin();
+
     server.listen(PORT, () => {
         console.log(`🚀 Techwell API running on http://localhost:${PORT}`);
         require('./ai-core/scheduler/followUpCron')();

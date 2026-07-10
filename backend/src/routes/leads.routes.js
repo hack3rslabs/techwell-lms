@@ -20,7 +20,7 @@ const upload = multer({ dest: 'uploads/temp/' });
  */
 router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        const { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName, dob } = req.query;
+        const { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName, dob, franchiseId } = req.query;
 
         const where = {};
         if (status && status !== 'ALL') where.status = status;
@@ -49,14 +49,23 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
         }
         
         // RBAC filtering
-        const canViewAll = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('VIEW_ALL_LEADS') || req.user.permissions.includes('ALL');
-        if (!canViewAll) {
-            where.assignedTo = req.user.email || req.user.name;
-        } else if (assignedTo && assignedTo !== 'ALL') {
-            where.assignedTo = assignedTo;
+        if (req.user.role === 'FRANCHISE_ADMIN') {
+            where.franchiseId = req.user.franchiseId;
+            // Franchise Admins only see leads assigned to them or unassigned leads in their franchise
+            if (assignedTo && assignedTo !== 'ALL') {
+                where.assignedTo = assignedTo;
+            }
+        } else {
+            const canViewAll = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('VIEW_ALL_LEADS') || req.user.permissions.includes('ALL');
+            if (!canViewAll) {
+                where.assignedTo = req.user.email || req.user.name;
+            } else if (assignedTo && assignedTo !== 'ALL') {
+                where.assignedTo = assignedTo;
+            }
+            if (franchiseId && franchiseId !== 'ALL') {
+                where.franchiseId = franchiseId === 'UNASSIGNED' ? null : franchiseId;
+            }
         }
-        if (college) where.college = { contains: college, mode: 'insensitive' };
-        if (location) where.location = { contains: location, mode: 'insensitive' };
 
         if (startDate && endDate) {
             where.createdAt = {
@@ -162,7 +171,7 @@ router.post('/capture', async (req, res, next) => {
             source: inputSource, leadType: inputLeadType, location,
             experienceLevel, currentCTC, expectedCTC, noticePeriod,
             interestedRole, companyName, resumeUrl, skills, notes: inputNotes,
-            district, pinCode, referralName, campaignId
+            district, pinCode, referralName, campaignId, eventId
         } = req.body;
         console.log('[Shared Interest→Leads] Received request:', req.body);
 
@@ -226,6 +235,26 @@ router.post('/capture', async (req, res, next) => {
 
         // Always create a new lead for every interest/enrollment as requested
         console.log('[Shared Interest→Leads] Creating new lead...');
+
+        // GEO-FENCED LEAD ROUTING LOGIC
+        let assignedFranchiseId = null;
+        if (location || district || pinCode) {
+            const matchedFranchise = await prisma.franchise.findFirst({
+                where: {
+                    status: 'ACTIVE',
+                    OR: [
+                        { pincode: pinCode || 'NONE_EXISTS_PIN' },
+                        { city: { equals: location || 'NONE_EXISTS_LOC', mode: 'insensitive' } },
+                        { district: { equals: district || 'NONE_EXISTS_DIST', mode: 'insensitive' } }
+                    ]
+                }
+            });
+            if (matchedFranchise) {
+                assignedFranchiseId = matchedFranchise.id;
+                notes = `${notes}\n\n[Auto-Routed to Franchise: ${matchedFranchise.name}]`;
+            }
+        }
+
         const lead = await prisma.lead.create({
             data: {
                 name,
@@ -249,9 +278,13 @@ router.post('/capture', async (req, res, next) => {
                 district: district || null,
                 pinCode: pinCode || null,
                 referralName: referralName || null,
-                campaignId: campaignId || null
+                campaignId: campaignId || null,
+                franchiseId: assignedFranchiseId,
+                eventId: eventId || null
             }
         });
+        notifyNewLead(lead);
+        notifyNewLead(lead);
         console.log('[Shared Interest→Leads] Lead created successfully:', { id: lead.id, email: lead.email, source });
  
         // Trigger AI Workflow Background Task
@@ -353,6 +386,7 @@ router.post('/demo', async (req, res, next) => {
                     notes
                 }
             });
+        notifyNewLead(lead);
         }
 
         // Try to create a DemoSchedule. Find a super admin to assign.
@@ -491,7 +525,7 @@ router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) 
         const { 
             name, email, phone, source, leadType, college, qualification, location, dob, notes,
             experienceLevel, currentCTC, expectedCTC, noticePeriod, interestedRole, companyName, skills, resumeUrl, courseName,
-            district, pinCode, referralName
+            district, pinCode, referralName, assignedTo, eventId
         } = req.body;
 
         // Check for deduplication
@@ -564,9 +598,14 @@ router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) 
                 courseName,
                 district,
                 pinCode,
-                referralName
+                referralName,
+                assignedTo,
+                franchiseId: req.user?.role === 'FRANCHISE_ADMIN' ? req.user.franchiseId : null,
+                eventId: eventId || null
             }
         });
+        notifyNewLead(lead);
+        notifyNewLead(lead);
 
         // Trigger AI Workflow Background Task
         AICore.trackEvent('lead.created', 'CRM', { leadId: lead.id, ...lead })
@@ -625,6 +664,16 @@ router.put('/:id', authenticate, checkPermission('LEADS'), async (req, res, next
 
         if (!existingLead) {
             return res.status(404).json({ error: 'Lead not found' });
+        }
+
+        // Prevent Franchise Admin from transferring leads to other franchises or taking unassigned leads
+        if (req.user.role === 'FRANCHISE_ADMIN') {
+            if (existingLead.franchiseId !== req.user.franchiseId) {
+                return res.status(403).json({ error: 'Not authorized to update this lead' });
+            }
+            if (updateData.franchiseId) {
+                delete updateData.franchiseId;
+            }
         }
 
         const lead = await prisma.lead.update({
@@ -973,6 +1022,8 @@ router.post('/webhook/generic', async (req, res) => {
                 notes: `Interest: ${category || 'General'}. JSON: ${JSON.stringify(req.body)}`
             }
         });
+        notifyNewLead(lead);
+        notifyNewLead(lead);
 
         res.status(201).json({ success: true, leadId: lead.id });
     } catch (error) {

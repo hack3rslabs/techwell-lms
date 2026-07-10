@@ -573,7 +573,7 @@ router.post('/', authenticate, async (req, res, next) => {
  */
 router.put('/:id', authenticate, async (req, res, next) => {
     try {
-        console.log(`[DEBUG] PUT /api/courses/${req.params.id} - Body received:`, JSON.stringify(req.body, null, 2));
+        console.log('[DEBUG] PUT /api/courses/ update for ID:', req.params.id.replace(/[\r\n]/g, ''), '- Body received:', JSON.stringify(req.body, null, 2));
 
         const course = await prisma.course.findUnique({ where: { id: req.params.id } });
         if (!course) return res.status(404).json({ error: 'Course not found' });

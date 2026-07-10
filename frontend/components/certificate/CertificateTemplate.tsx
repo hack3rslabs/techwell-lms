@@ -13,6 +13,7 @@ interface CertificateData {
     signatoryTitle: string;
     verificationUrl: string;
     template?: { designUrl: string; name?: string };
+    franchise?: { name: string; logoUrl?: string | null };
 }
 
 interface CertificateTemplateProps {
@@ -82,9 +83,10 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
 
             <div className="z-20 w-full px-28 py-16 flex flex-col items-center text-center h-full">
                 
-                {/* Header Logo */}
-                <div className="flex flex-col items-center mb-10 w-full">
-                    <div className="flex items-center gap-4 mb-2">
+                {/* Header Logo(s) - Co-Branded if Franchise exists */}
+                <div className="flex flex-row justify-between items-start mb-10 w-full px-8">
+                    {/* Techwell Logo (Left) */}
+                    <div className="flex items-center gap-4">
                         <div className="w-14 h-14 bg-primary text-primary-foreground rounded-lg flex items-center justify-center font-bold text-2xl shadow-md">
                             TW
                         </div>
@@ -93,6 +95,19 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
                             <p className="text-[10px] font-semibold tracking-[0.3em] text-primary uppercase">Institute of Technology</p>
                         </div>
                     </div>
+                    
+                    {/* Franchise Logo (Right) */}
+                    {data.franchise && (
+                        <div className="flex items-center gap-4">
+                            <div className="text-right">
+                                <p className="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">Authorized Partner</p>
+                                <h2 className="text-xl font-bold text-slate-800 tracking-wide uppercase">{data.franchise.name}</h2>
+                            </div>
+                            {data.franchise.logoUrl && (
+                                <img src={data.franchise.logoUrl} alt={data.franchise.name} className="h-14 w-14 object-contain" />
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex-1 flex flex-col justify-center items-center w-full">
