@@ -59,14 +59,7 @@ export default function AgreementBuilder() {
 <p>...</p>`
     })
 
-    useEffect(() => {
-        fetchCustomers()
-        if (agreementId) {
-            fetchAgreement(agreementId)
-        }
-    }, [agreementId])
-
-    const fetchCustomers = async () => {
+    async function fetchCustomers() {
         try {
             const res = await api.get('/crm/customers')
             setCustomers(res.data)
@@ -74,6 +67,33 @@ export default function AgreementBuilder() {
             console.error("Failed to fetch customers")
         }
     }
+
+    async function fetchAgreement(id: string) {
+        try {
+            const res = await api.get(`/crm/agreements/${id}`)
+            const agr = res.data
+            setFormData({
+                customerId: agr.customerId,
+                title: agr.title || '',
+                vertical: agr.vertical || 'SOFTWARE_DEVELOPMENT',
+                totalValue: agr.totalValue || 0,
+                taxPercentage: agr.taxPercentage || 18,
+                content: agr.content || ''
+            })
+        } catch (error) {
+            toast.error("Failed to load agreement")
+        }
+    }
+
+
+
+    useEffect(() => {
+        fetchCustomers()
+        if (agreementId) {
+            fetchAgreement(agreementId)
+        }
+    }, [agreementId])
+
 
     const handleCreateClient = async () => {
         if (!newClient.name || !newClient.email) {
@@ -92,22 +112,6 @@ export default function AgreementBuilder() {
         }
     }
 
-    const fetchAgreement = async (id: string) => {
-        try {
-            const res = await api.get(`/crm/agreements/${id}`)
-            const agr = res.data
-            setFormData({
-                customerId: agr.customerId,
-                title: agr.title || '',
-                vertical: agr.vertical || 'SOFTWARE_DEVELOPMENT',
-                totalValue: agr.totalValue || 0,
-                taxPercentage: agr.taxPercentage || 18,
-                content: agr.content || ''
-            })
-        } catch (error) {
-            toast.error("Failed to load agreement")
-        }
-    }
 
     const handleSave = async (status: string) => {
         if (!formData.customerId || !formData.title) {

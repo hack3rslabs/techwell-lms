@@ -138,11 +138,7 @@ export default function EnterpriseDesignStudio() {
     const [alignmentGuides, setAlignmentGuides] = useState<{x: number | null, y: number | null}>({x: null, y: null});
     const canvasRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        fetchTemplate();
-    }, [templateId]);
-
-    const fetchTemplate = async () => {
+    async function fetchTemplate() {
         try {
             const res = await certificateApi.getTemplates();
             const found = res.data.templates.find((t: any) => t.id === templateId);
@@ -166,7 +162,13 @@ export default function EnterpriseDesignStudio() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchTemplate();
+    }, [templateId]);
+;
 
     const handleSave = async (isDuplicate = false) => {
         setIsSaving(true);
@@ -226,7 +228,7 @@ export default function EnterpriseDesignStudio() {
 
     const addElement = (field: any) => {
         const newEl: CanvasElement = {
-            id: Date.now().toString(),
+            id: new Date().getTime().toString(),
             type: field.type || 'text',
             value: field.value,
             x: 50,

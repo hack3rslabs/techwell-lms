@@ -31,13 +31,7 @@ export default function MockInterviewDashboard() {
         interviewMode: 'FULL'
     })
 
-    useEffect(() => {
-        fetchInterviews()
-        fetchStats()
-        fetchTrendData()
-    }, [])
-
-    const fetchInterviews = async () => {
+    async function fetchInterviews() {
         try {
             const res = await api.get('/interviews')
             setInterviews(res.data.interviews || [])
@@ -48,7 +42,8 @@ export default function MockInterviewDashboard() {
         }
     }
 
-    const fetchStats = async () => {
+
+    async function fetchStats() {
         try {
             const res = await api.get('/interviews/stats/summary')
             setStats(res.data.stats || { total: 0, completed: 0, averageScore: 0 })
@@ -57,7 +52,8 @@ export default function MockInterviewDashboard() {
         }
     }
 
-    const fetchTrendData = async () => {
+
+    async function fetchTrendData() {
         try {
             const res = await api.get('/interviews/stats/trend')
             setTrendData(res.data.trend || [])
@@ -65,6 +61,16 @@ export default function MockInterviewDashboard() {
             console.error(error)
         }
     }
+
+
+
+
+    useEffect(() => {
+        fetchInterviews()
+        fetchStats()
+        fetchTrendData()
+    }, [])
+
 
     const handleCreate = async (e: any) => {
         e.preventDefault()

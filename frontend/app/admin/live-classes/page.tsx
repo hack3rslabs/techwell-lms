@@ -41,11 +41,7 @@ export default function LiveClassesAdminPage() {
         duration: 60
     })
 
-    useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const [classesRes, coursesRes] = await Promise.all([
                 api.get('/live-classes'),
@@ -60,6 +56,12 @@ export default function LiveClassesAdminPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

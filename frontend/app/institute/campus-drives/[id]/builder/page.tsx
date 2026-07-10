@@ -37,13 +37,7 @@ export default function JobMelaBuilder() {
         hostLogo: ''
     });
 
-    useEffect(() => {
-        if (driveId) {
-            fetchDriveConfig();
-        }
-    }, [driveId]);
-
-    const fetchDriveConfig = async () => {
+    async function fetchDriveConfig() {
         try {
             const res = await fetch(`/api/campus-drives/${driveId}`);
             const data = await res.json();
@@ -65,7 +59,15 @@ export default function JobMelaBuilder() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        if (driveId) {
+            fetchDriveConfig();
+        }
+    }, [driveId]);
+;
 
     const handleSaveConfig = async () => {
         setSaving(true);

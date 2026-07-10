@@ -33,11 +33,7 @@ export default function ReviewsPage() {
     const [blogs, setBlogs] = useState<ReviewBlog[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         setIsLoading(true)
         try {
             // We need to fetch ALL mostly, or specific endpoints for pending
@@ -60,6 +56,12 @@ export default function ReviewsPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const handleApproveCourse = async (id: string) => {
         try {

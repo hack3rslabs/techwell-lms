@@ -75,11 +75,7 @@ export default function TaskManagerPage() {
 
     const [currentMonth, setCurrentMonth] = React.useState(new Date())
 
-    React.useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         setIsLoading(true)
         try {
             const [tasksRes, usersRes] = await Promise.all([
@@ -94,6 +90,12 @@ export default function TaskManagerPage() {
             setIsLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const handleAddTask = async () => {
         try {
@@ -190,7 +192,7 @@ export default function TaskManagerPage() {
         setDetailOpen(true)
     }
 
-    const KanbanColumn = ({ status, title, icon: Icon }: { status: string, title: string, icon: React.ElementType }) => {
+    const renderKanbanColumn = (status: string, title: string, Icon: React.ElementType) => {
         const columnTasks = tasks.filter(t => t.status === status && !t.goalType)
 
         return (
@@ -496,9 +498,9 @@ export default function TaskManagerPage() {
 
                 <TabsContent value="board" className="flex-1 mt-6 m-0 h-full">
                     <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <KanbanColumn status="PENDING" title="To Do" icon={AlertCircle} />
-                        <KanbanColumn status="IN_PROGRESS" title="In Progress" icon={Clock} />
-                        <KanbanColumn status="COMPLETED" title="Completed" icon={CheckCircle2} />
+                        {renderKanbanColumn("PENDING", "To Do", AlertCircle)}
+                        {renderKanbanColumn("IN_PROGRESS", "In Progress", Clock)}
+                        {renderKanbanColumn("COMPLETED", "Completed", CheckCircle2)}
                     </div>
                 </TabsContent>
                 

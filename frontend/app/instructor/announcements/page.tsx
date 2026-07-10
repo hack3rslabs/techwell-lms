@@ -76,11 +76,7 @@ export default function AnnouncementsPage() {
         batchId: ''
     })
 
-    React.useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const [announcementsRes, coursesRes, batchesRes] = await Promise.all([
                 api.get('/trainer/announcements'),
@@ -96,6 +92,12 @@ export default function AnnouncementsPage() {
             setLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const handleCreate = async () => {
         if (!formData.title || !formData.content) return

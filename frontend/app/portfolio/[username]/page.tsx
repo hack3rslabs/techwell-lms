@@ -64,11 +64,7 @@ export default function PublicPortfolioPage() {
     const [_error, setError] = React.useState<string | null>(null)
     const [copiedLink, setCopiedLink] = React.useState(false)
 
-    React.useEffect(() => {
-        fetchPortfolio()
-    }, [username])
-
-    const fetchPortfolio = async () => {
+    async function fetchPortfolio() {
         try {
             const res = await api.get(`/portfolio/${username}`)
             setPortfolio(res.data)
@@ -97,6 +93,12 @@ export default function PublicPortfolioPage() {
             setIsLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchPortfolio()
+    }, [username])
+
 
     const getPortfolioUrl = () => {
         if (typeof window !== 'undefined') {

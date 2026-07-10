@@ -56,6 +56,12 @@ export default function ConsultancyInvitePage() {
 
     const webcamRef = useRef<Webcam>(null)
     const sigCanvas = useRef<any>(null)
+    const [hasSignature, setHasSignature] = useState(false)
+
+    function generateCaptcha() {
+        setCaptcha({ a: Math.floor(Math.random() * 20) + 1, b: Math.floor(Math.random() * 20) + 1 })
+        setCaptchaAnswer("")
+    }
 
     useEffect(() => {
         const verifyToken = async () => {
@@ -80,11 +86,7 @@ export default function ConsultancyInvitePage() {
         }
         if (token) verifyToken()
     }, [token])
-
-    const generateCaptcha = () => {
-        setCaptcha({ a: Math.floor(Math.random() * 20) + 1, b: Math.floor(Math.random() * 20) + 1 })
-        setCaptchaAnswer("")
-    }
+    
 
     const capturePhoto = React.useCallback((e: React.MouseEvent) => {
         e.preventDefault()
@@ -123,7 +125,7 @@ export default function ConsultancyInvitePage() {
         if (!resumeUploaded) missing.push("Resume Upload")
         if (!govIdUploaded) missing.push("Gov ID Upload")
         if (!livePhotoUrl) missing.push("Live Photo")
-        if (sigCanvas.current?.isEmpty()) missing.push("Signature")
+        if (!hasSignature) missing.push("Signature")
 
         if (!hasScrolled) missing.push("Scroll to end of Terms")
         if (!Object.values(consents).every(v => v)) missing.push("All Consent Checkboxes")
@@ -349,8 +351,8 @@ export default function ConsultancyInvitePage() {
                                 <div className="p-4 border rounded-lg bg-slate-50 flex flex-col items-center">
                                     <label className="text-sm font-semibold mb-2">Digital Signature</label>
                                     <div className="bg-white border rounded-lg overflow-hidden w-full max-w-[250px] relative">
-                                        <SignatureCanvas ref={sigCanvas} canvasProps={{className: 'w-full h-32'}} />
-                                        <Button type="button" variant="ghost" size="sm" className="absolute top-1 right-1 text-xs h-6 px-2" onClick={() => sigCanvas.current.clear()}>Clear</Button>
+                                        <SignatureCanvas ref={sigCanvas} canvasProps={{className: 'w-full h-32'}} onEnd={() => setHasSignature(true)} />
+                                        <Button type="button" variant="ghost" size="sm" className="absolute top-1 right-1 text-xs h-6 px-2" onClick={() => { sigCanvas.current.clear(); setHasSignature(false); }}>Clear</Button>
                                     </div>
                                 </div>
                             </div>

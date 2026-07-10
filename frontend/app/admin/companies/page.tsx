@@ -21,13 +21,7 @@ export default function AdminCompanies() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('ALL');
 
-    useEffect(() => {
-        if (user && user.role === 'SUPER_ADMIN') {
-            fetchEmployers();
-        }
-    }, [user, filter]);
-
-    const fetchEmployers = async () => {
+    async function fetchEmployers() {
         setLoading(true);
         try {
             // In a real scenario, you'd fetch ALL or PENDING based on the filter.
@@ -48,7 +42,15 @@ export default function AdminCompanies() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        if (user && user.role === 'SUPER_ADMIN') {
+            fetchEmployers();
+        }
+    }, [user, filter]);
+;
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         if (!confirm(`Are you sure you want to mark this company as ${newStatus}?`)) return;

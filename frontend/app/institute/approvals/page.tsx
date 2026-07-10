@@ -14,13 +14,7 @@ export default function InstituteApprovals() {
     const [drives, setDrives] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        if (user && user.role === 'INSTITUTE_ADMIN') {
-            fetchDrives()
-        }
-    }, [user])
-
-    const fetchDrives = async () => {
+    async function fetchDrives() {
         try {
             const res = await fetch('/api/campus-drives/institute', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -32,6 +26,14 @@ export default function InstituteApprovals() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        if (user && user.role === 'INSTITUTE_ADMIN') {
+            fetchDrives()
+        }
+    }, [user])
+
 
     const updateDriveStatus = async (driveId: string, status: string) => {
         try {

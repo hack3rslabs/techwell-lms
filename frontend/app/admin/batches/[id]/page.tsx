@@ -59,6 +59,61 @@ export default function BatchDetailsPage() {
     const [addingStudents, setAddingStudents] = useState(false)
     const [studentSearch, setStudentSearch] = useState("")
 
+    async function fetchBatchDetails() {
+        try {
+            const res = await api.get(`/batches/${params.id}`)
+            setBatch(res.data)
+        } catch (error) {
+            console.error("Failed to fetch batch details", error)
+        }
+    }
+
+
+    async function fetchStudents() {
+        try {
+            const res = await api.get(`/batches/${params.id}/students`)
+            setStudents(res.data)
+        } catch (error) {
+            console.error("Failed to fetch students", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function fetchNotes() {
+        try {
+            const res = await api.get(`/batches/${params.id}/notes`)
+            setNotes(res.data)
+        } catch (error) {
+            console.error("Failed to fetch notes", error)
+        }
+    }
+
+    async function fetchAttendance() {
+        try {
+            const res = await api.get(`/batches/${params.id}/attendance?date=${attendanceDate}`)
+            const existingRecords = res.data
+            
+            // Map existing records or default to PRESENT
+            const newRecords = students.map(enrollment => {
+                const existing = existingRecords.find((r: any) => r.userId === enrollment.user.id)
+                return {
+                    userId: enrollment.user.id,
+                    name: enrollment.user.name,
+                    status: existing ? existing.status : 'PRESENT',
+                    notes: existing ? existing.notes : ''
+                }
+            })
+            setAttendanceRecords(newRecords)
+        } catch (error) {
+            console.error("Failed to fetch attendance", error)
+        }
+    }
+
+
+
+
+
     useEffect(() => {
         fetchBatchDetails()
         fetchStudents()
@@ -69,25 +124,6 @@ export default function BatchDetailsPage() {
         if (attendanceDate) fetchAttendance()
     }, [attendanceDate, students.length]) // re-fetch if students change so we can map them
 
-    const fetchBatchDetails = async () => {
-        try {
-            const res = await api.get(`/batches/${params.id}`)
-            setBatch(res.data)
-        } catch (error) {
-            console.error("Failed to fetch batch details", error)
-        }
-    }
-
-    const fetchStudents = async () => {
-        try {
-            const res = await api.get(`/batches/${params.id}/students`)
-            setStudents(res.data)
-        } catch (error) {
-            console.error("Failed to fetch students", error)
-        } finally {
-            setLoading(false)
-        }
-    }
 
     const fetchAllUsersForEnrollment = async () => {
         try {
@@ -100,14 +136,6 @@ export default function BatchDetailsPage() {
         }
     }
 
-    const fetchNotes = async () => {
-        try {
-            const res = await api.get(`/batches/${params.id}/notes`)
-            setNotes(res.data)
-        } catch (error) {
-            console.error("Failed to fetch notes", error)
-        }
-    }
 
     const handleAddNote = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -216,26 +244,6 @@ export default function BatchDetailsPage() {
         }
     }
 
-    const fetchAttendance = async () => {
-        try {
-            const res = await api.get(`/batches/${params.id}/attendance?date=${attendanceDate}`)
-            const existingRecords = res.data
-            
-            // Map existing records or default to PRESENT
-            const newRecords = students.map(enrollment => {
-                const existing = existingRecords.find((r: any) => r.userId === enrollment.user.id)
-                return {
-                    userId: enrollment.user.id,
-                    name: enrollment.user.name,
-                    status: existing ? existing.status : 'PRESENT',
-                    notes: existing ? existing.notes : ''
-                }
-            })
-            setAttendanceRecords(newRecords)
-        } catch (error) {
-            console.error("Failed to fetch attendance", error)
-        }
-    }
 
     const handleSaveAttendance = async () => {
         try {

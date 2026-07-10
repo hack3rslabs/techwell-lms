@@ -25,6 +25,23 @@ export function StaffCheckInBanner() {
     const SHIFT_HOURS = 9
     const TARGET_SECONDS = SHIFT_HOURS * 3600
 
+    async function fetchTodayAttendance() {
+        try {
+            const res = await api.get('/staff/attendance/today')
+            setAttendance(res.data)
+            if (res.data && !res.data.checkOutTime) {
+                setElapsedSeconds(differenceInSeconds(new Date(), new Date(res.data.checkInTime)))
+            } else if (res.data && res.data.totalHours) {
+                setElapsedSeconds(Math.floor(res.data.totalHours * 3600))
+            }
+        } catch (error) {
+            console.error('Failed to fetch attendance:', error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+
     useEffect(() => {
         if (user && ['STAFF', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
             fetchTodayAttendance()
@@ -42,21 +59,6 @@ export function StaffCheckInBanner() {
         return () => clearInterval(interval)
     }, [attendance])
 
-    const fetchTodayAttendance = async () => {
-        try {
-            const res = await api.get('/staff/attendance/today')
-            setAttendance(res.data)
-            if (res.data && !res.data.checkOutTime) {
-                setElapsedSeconds(differenceInSeconds(new Date(), new Date(res.data.checkInTime)))
-            } else if (res.data && res.data.totalHours) {
-                setElapsedSeconds(Math.floor(res.data.totalHours * 3600))
-            }
-        } catch (error) {
-            console.error('Failed to fetch attendance:', error)
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     const handleCheckIn = async () => {
         if (!navigator.geolocation) {

@@ -63,11 +63,7 @@ export default function AvatarsPage() {
         provider: 'ELEVEN_LABS'
     })
 
-    useEffect(() => {
-        fetchAvatars()
-    }, [])
-
-    const fetchAvatars = async () => {
+    async function fetchAvatars() {
         try {
             const res = await api.get('/avatars')
             setAvatars(res.data.avatars || [])
@@ -77,6 +73,12 @@ export default function AvatarsPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchAvatars()
+    }, [])
+
 
     const handleSubmit = async () => {
         try {

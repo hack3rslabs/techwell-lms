@@ -37,11 +37,7 @@ export default function DocumentsPage() {
         file: null
     });
 
-    useEffect(() => {
-        fetchDocuments();
-    }, []);
-
-    const fetchDocuments = async () => {
+    async function fetchDocuments() {
         try {
             setLoading(true);
             const res = await api.get(`/documents`);
@@ -56,7 +52,13 @@ export default function DocumentsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchDocuments();
+    }, []);
+;
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {

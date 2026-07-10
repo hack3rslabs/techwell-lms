@@ -89,11 +89,7 @@ export default function LibraryManagementPage() {
 
     const { toast } = useToast();
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const [cats, doms, res] = await Promise.all([
                 api.get('/library/categories').then(r => r.data),
@@ -113,7 +109,13 @@ export default function LibraryManagementPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+;
 
     const handleCreateCategory = async () => {
         if (!categoryForm.name) return;

@@ -49,11 +49,7 @@ export default function BehaviorAnalyticsPage() {
     const [timeData, setTimeData] = useState<TimeOnPage[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchAnalytics();
-    }, []);
-
-    const fetchAnalytics = async () => {
+    async function fetchAnalytics() {
         try {
             const [intents, pages, ctas, popup, time] = await Promise.all([
                 fetch(`${PROPER_API_URL}/api/behavior/analytics/intent-distribution`).then(r => r.json()),
@@ -73,7 +69,13 @@ export default function BehaviorAnalyticsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchAnalytics();
+    }, []);
+;
 
     const getIntentLabel = (intent: string) => {
         const labels: Record<string, string> = {

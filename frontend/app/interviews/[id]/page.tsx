@@ -98,6 +98,7 @@ const AVATARS: Record<string, AvatarConfig> = {
 
 // Success Overlay Component
 function SuccessOverlay({ onRedirect, onDashboard }: { onRedirect: () => void, onDashboard: () => void }) {
+
     React.useEffect(() => {
         // Reduced auto-redirect time to let user choose
         const timer = setTimeout(onRedirect, 10000);
@@ -174,6 +175,9 @@ export default function InterviewRoomPage() {
     const [isTabActive, setIsTabActive] = React.useState(true)
     const [isStarted, setIsStarted] = React.useState(false)
     const [isFullscreen, setIsFullscreen] = React.useState(false)
+
+
+
 
     // Fullscreen Toggle
     const toggleFullscreen = React.useCallback(() => {
@@ -380,9 +384,42 @@ export default function InterviewRoomPage() {
         // Removed currentQuestion and isAIProcessing from dependencies to prevent infinite loops on failure
     }, [isStarted, isCompleted])
 
-    const handleEndInterview = async () => {
+
+    // Timer
+    React.useEffect(() => {
+        if (!isCompleted && timeLeft > 0) {
+            const timer = setInterval(() => {
+                setTimeLeft(prev => {
+                    if (prev <= 1) {
+                        clearInterval(timer)
+                        handleEndInterview() // Auto-end
+                        return 0
+                    }
+                    return prev - 1
+                })
+            }, 1000)
+            return () => clearInterval(timer)
+        }
+    }, [isCompleted, timeLeft])
+
+    const [fetchRetryCount, setFetchRetryCount] = React.useState(0);
+
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    }
+
+    const [isWaitingNext, setIsWaitingNext] = React.useState(false)
+    const [nextQuestionTimer, setNextQuestionTimer] = React.useState(10)
+    const [isRecording, setIsRecording] = React.useState(false)
+    const recognitionRef = React.useRef<ISpeechRecognition | null>(null)
+    const speechTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+    async function handleEndInterview() {
         try {
-            await interviewApi.complete(params.id as string, { score: Math.floor(Math.random() * 20) + 80 })
+            await interviewApi.complete(params.id as string, { score: (new Date().getTime() % 20) + 80 })
         } catch (error) {
             console.error('Failed to complete interview:', error)
         }
@@ -408,26 +445,7 @@ export default function InterviewRoomPage() {
         setShowSuccess(true)
     }
 
-    // Timer
-    React.useEffect(() => {
-        if (!isCompleted && timeLeft > 0) {
-            const timer = setInterval(() => {
-                setTimeLeft(prev => {
-                    if (prev <= 1) {
-                        clearInterval(timer)
-                        handleEndInterview() // Auto-end
-                        return 0
-                    }
-                    return prev - 1
-                })
-            }, 1000)
-            return () => clearInterval(timer)
-        }
-    }, [isCompleted, timeLeft])
-
-    const [fetchRetryCount, setFetchRetryCount] = React.useState(0);
-
-    const fetchNextQuestion = async () => {
+    async function fetchNextQuestion() {
         try {
             setIsAIProcessing(true);
             console.log(`[InterviewRoom] Fetching next question (Attempt ${fetchRetryCount + 1})...`);
@@ -501,23 +519,12 @@ export default function InterviewRoomPage() {
         }
     }
 
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    }
-
-    const [isWaitingNext, setIsWaitingNext] = React.useState(false)
-    const [nextQuestionTimer, setNextQuestionTimer] = React.useState(10)
-    const [isRecording, setIsRecording] = React.useState(false)
-    const recognitionRef = React.useRef<ISpeechRecognition | null>(null)
-    const speechTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
-
     // Handle Speech Recognition
     React.useEffect(() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
         if (SpeechRecognition) {
-            recognitionRef.current = new SpeechRecognition()
+            const recognition = new SpeechRecognition()
+            recognitionRef.current = recognition
             if (recognitionRef.current) {
                 recognitionRef.current.continuous = true
                 recognitionRef.current.interimResults = true

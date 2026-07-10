@@ -12,11 +12,7 @@ export default function EmployerPipeline() {
     const [applications, setApplications] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchApplications();
-    }, [params.id]);
-
-    const fetchApplications = async () => {
+    async function fetchApplications() {
         try {
             const res = await fetch(`/api/campus-applications/drive/${params.id}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -28,7 +24,13 @@ export default function EmployerPipeline() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchApplications();
+    }, [params.id]);
+;
 
     const updateStatus = async (appId: string, newStatus: string) => {
         try {

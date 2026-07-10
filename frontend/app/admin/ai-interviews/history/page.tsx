@@ -13,11 +13,7 @@ export default function AdminInterviewHistoryPage() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
 
-    useEffect(() => {
-        fetchInterviews();
-    }, []);
-
-    const fetchInterviews = async () => {
+    async function fetchInterviews() {
         try {
             const res = await api.get('/interviews/admin/all');
             setInterviews(res.data.interviews || []);
@@ -26,7 +22,13 @@ export default function AdminInterviewHistoryPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchInterviews();
+    }, []);
+;
 
     const filtered = interviews.filter(i => 
         i.user?.name?.toLowerCase().includes(search.toLowerCase()) || 
