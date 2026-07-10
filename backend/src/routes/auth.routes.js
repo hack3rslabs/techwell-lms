@@ -1,5 +1,16 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const { execSync } = require('child_process');
+
+// TEMPORARY DEBUG ROUTE
+router.get('/debug-db', (req, res) => {
+    try {
+        const output = execSync('npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss', { encoding: 'utf-8' });
+        res.send(`<pre>SUCCESS:\n${output}</pre>`);
+    } catch (error) {
+        res.send(`<pre>ERROR:\n${error.message}\n\nSTDOUT:\n${error.stdout}\n\nSTDERR:\n${error.stderr}</pre>`);
+    }
+});
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
