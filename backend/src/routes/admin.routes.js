@@ -65,7 +65,7 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
                 where: req.user.role === 'SUPER_ADMIN' ? { status: { in: ['OPEN', 'IN_PROGRESS'] } } : { assignedTo: req.user.id, status: { in: ['OPEN', 'IN_PROGRESS'] } }
             }),
             prisma.consultingProject.count({
-                where: req.user.role === 'SUPER_ADMIN' ? { status: { not: 'COMPLETED' } } : { assigneeId: req.user.id, status: { not: 'COMPLETED' } }
+                where: req.user.role === 'SUPER_ADMIN' ? { status: { notIn: ['DELIVERY', 'CANCELLED'] } } : { assigneeId: req.user.id, status: { notIn: ['DELIVERY', 'CANCELLED'] } }
             }),
             prisma.franchise.count(),
             prisma.certificate.count()
