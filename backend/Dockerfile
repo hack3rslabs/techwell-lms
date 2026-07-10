@@ -12,6 +12,7 @@ RUN npm install
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
 RUN npx prisma generate
+COPY start.js ./
 
 # Copy source code
 COPY src ./src/
