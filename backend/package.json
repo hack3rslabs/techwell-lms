@@ -4,7 +4,7 @@
     "description": "Techwell Platform Backend API",
     "main": "src/index.js",
     "scripts": {
-        "start": "npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss && node src/index.js",
+        "start": "node start.js",
         "dev": "nodemon src/index.js",
         "db:deploy": "prisma migrate deploy",
         "db:generate": "prisma generate",
