@@ -15,6 +15,13 @@ router.get('/stats', authorize('SUPER_ADMIN', 'FRANCHISE_ADMIN'), franchiseContr
 
 // CRUD
 router.get('/', authorize('SUPER_ADMIN'), franchiseController.getAllFranchises);
+// Marketing Resources (Must be before /:id)
+router.get('/resources', authorize('SUPER_ADMIN', 'FRANCHISE_ADMIN'), franchiseController.getResources);
+router.post('/resources', authorize('SUPER_ADMIN'), franchiseController.addResource);
+
+// Offline Payment & Ledger (Must be before /:id)
+router.post('/offline-payment', authorize('FRANCHISE_ADMIN'), franchiseController.recordOfflinePayment);
+
 router.get('/:id', authorize('SUPER_ADMIN', 'FRANCHISE_ADMIN'), franchiseController.getFranchiseById);
 router.put('/:id', authorize('SUPER_ADMIN', 'FRANCHISE_ADMIN'), franchiseController.updateFranchise);
 router.delete('/:id', authorize('SUPER_ADMIN'), franchiseController.deleteFranchise);
@@ -34,11 +41,6 @@ router.post('/:id/subscription', authorize('SUPER_ADMIN'), franchiseController.a
 // Revenue
 router.get('/:id/revenue', authorize('SUPER_ADMIN', 'FRANCHISE_ADMIN'), franchiseController.getRevenueDetails);
 
-// Offline Payment & Ledger
-router.post('/offline-payment', authorize('FRANCHISE_ADMIN'), franchiseController.recordOfflinePayment);
 
-// Marketing Resources
-router.get('/resources', authorize('SUPER_ADMIN', 'FRANCHISE_ADMIN'), franchiseController.getResources);
-router.post('/resources', authorize('SUPER_ADMIN'), franchiseController.addResource);
 
 module.exports = router;
