@@ -1234,13 +1234,13 @@ model EmployerProfile {
 
 model EmployerRequest {
   id              String   @id @default(cuid())
-  employerName    String
-  companyName     String
+  employerName    String   @default("")
+  companyName     String   @default("")
   email           String
   phone           String
   website         String?
-  address         String
-  passwordHash    String
+  address         String   @default("")
+  passwordHash    String   @default("")
   status          String   @default("PENDING")
   adminNotes      String?
   rejectionReason String?
