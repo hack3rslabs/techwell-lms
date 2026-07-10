@@ -70,10 +70,8 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
-const xss = require('xss-clean');
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
-app.use(xss());
 
 // API Routes
 app.use('/api/auth', authRoutes);
