@@ -205,10 +205,10 @@ app.use((err, req, res, next) => {
         } else if (err.code === 'P2025') {
             errorMsg = 'Requested record was not found.';
         }
-
+        console.error('PRISMA ERROR:', err);
         return res.status(400).json({
             error: errorMsg,
-            details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+            details: err.message, // Temporarily expose for debugging
             code: err.code
         });
     }
