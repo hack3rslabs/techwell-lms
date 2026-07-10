@@ -28,7 +28,14 @@ app.use((req, res, next) => {
     }
     
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-trust-token');
+    
+    const reqHeaders = req.headers['access-control-request-headers'];
+    if (reqHeaders) {
+        res.setHeader('Access-Control-Allow-Headers', reqHeaders);
+    } else {
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-trust-token');
+    }
+    
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     // Explicitly handle preflight
