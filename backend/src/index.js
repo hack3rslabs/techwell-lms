@@ -214,7 +214,7 @@ app.use((err, req, res, next) => {
 
 const http = require('http');
 const server = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+const PORT = 5000; // Hardcoded to match Dockerfile EXPOSE
 
 // Permanent solution to prevent server from crashing due to unhandled errors
 process.on('uncaughtException', (err) => {
@@ -276,8 +276,8 @@ if (process.env.NODE_ENV !== 'test') {
     }
     seedSuperAdmin();
 
-    server.listen(PORT, () => {
-        console.log(`🚀 Techwell API running on http://localhost:${PORT}`);
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Techwell API running on http://0.0.0.0:${PORT}`);
         require('./ai-core/scheduler/followUpCron')();
         require('./cron/messageCron')();
     });
