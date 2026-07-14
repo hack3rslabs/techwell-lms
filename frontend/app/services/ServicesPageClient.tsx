@@ -13,11 +13,11 @@ const STATIC_SERVICES = [
     name: 'IT Solutions',
     slug: 'it-infrastructure',
     category: 'IT_INFRASTRUCTURE',
-    description: 'Comprehensive IT Solutions. We provide IT Support, remote support, IT Asset management, Asset Audit, AMC, and Infra installation. We have extensive experience in this field providing reliable solutions.',
+    description: 'Comprehensive IT Solutions. We provide IT Support, remote support, IT Asset management, Asset Audit, Maintenance Support, and Infra installation. We have extensive experience in this field providing reliable solutions.',
     features: [
       'IT Support & Remote Support',
       'IT Asset Management & Audit',
-      'AMC (Annual Maintenance Contract)',
+      'Maintenance & Infra Support',
       'Infra Installation'
     ]
   },

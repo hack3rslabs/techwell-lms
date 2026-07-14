@@ -426,8 +426,8 @@ export default function CertificatesPage() {
                         .corner-bl { bottom: 20px; left: 20px; border-top: 0; border-right: 0; }
                         .corner-br { bottom: 20px; right: 20px; border-top: 0; border-left: 0; }
                         
-                        .header { text-align: center; margin-bottom: 25px; }
-                        .logo { height: 70px; margin-bottom: 10px; }
+                        .header { text-align: center; margin-bottom: 10px; }
+                        .logo { height: 70px; margin-bottom: 5px; }
                         .title { 
                             font-family: 'Cinzel', serif; 
                             color: #cfb53b; 
@@ -445,7 +445,7 @@ export default function CertificatesPage() {
                             margin-top: 5px;
                         }
                         
-                        .content { text-align: center; margin-top: 40px; }
+                        .content { text-align: center; margin-top: 15px; }
                         .presented-to { 
                             font-family: 'Montserrat', sans-serif; 
                             font-size: 16px; 
@@ -457,18 +457,19 @@ export default function CertificatesPage() {
                             font-family: 'Playfair Display', serif; 
                             font-size: 56px; 
                             color: #0f172a; 
-                            margin: 20px 0;
+                            margin: 10px 0;
+                            line-height: 1.1;
                             font-style: italic;
                         }
                         .divider {
                             width: 60%;
                             height: 2px;
                             background: linear-gradient(90deg, transparent, #cfb53b, transparent);
-                            margin: 0 auto 30px auto;
+                            margin: 0 auto 15px auto;
                         }
                         .description { 
                             font-family: 'Montserrat', sans-serif; 
-                            font-size: 16px; 
+                            font-size: 14px; 
                             color: #475569;
                             line-height: 1.6;
                             max-width: 800px;
@@ -478,7 +479,8 @@ export default function CertificatesPage() {
                             font-family: 'Cinzel', serif; 
                             font-size: 28px; 
                             color: #0f172a; 
-                            margin: 20px 0;
+                            margin: 10px 0;
+                            line-height: 1.2;
                             font-weight: 700;
                         }
 
@@ -516,9 +518,8 @@ export default function CertificatesPage() {
                         
                         .badge {
                             position: absolute;
-                            bottom: 35px;
-                            left: 50%;
-                            transform: translateX(-50%);
+                            top: 40px;
+                            right: 40px;
                             width: 100px;
                             height: 100px;
                             background: linear-gradient(135deg, #1D4ED8, #4f46e5);
@@ -582,13 +583,7 @@ export default function CertificatesPage() {
                                 ${cert.grade ? `<div class="description" style="margin-top: 10px;">Achieved with Grade: <strong style="color:#0f172a;">${cert.grade}</strong></div>` : ''}
                             </div>
                             
-                            <div class="badge">
-                                <div class="badge-inner">
-                                    <div class="badge-text">OFFICIAL</div>
-                                    <div class="badge-text">CERTIFIED</div>
-                                    <div class="badge-year">${new Date(cert.issueDate).getFullYear()}</div>
-                                </div>
-                            </div>
+
                             
                             <div class="footer">
                                 <div class="date-block">
@@ -608,6 +603,14 @@ export default function CertificatesPage() {
 
                             <div class="meta-info">
                                 VERIFICATION ID: ${cert.uniqueId} | VERIFY AT: ${window.location.origin}/certificate/${cert.uniqueId}
+                            </div>
+                            
+                            <div class="badge" style="z-index: 20;">
+                                <div class="badge-inner">
+                                    <div class="badge-text">OFFICIAL</div>
+                                    <div class="badge-text">CERTIFIED</div>
+                                    <div class="badge-year">${new Date(cert.issueDate).getFullYear()}</div>
+                                </div>
                             </div>
                         </div>
                     </div>

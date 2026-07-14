@@ -8,13 +8,12 @@ export default function ConsultancyAgreementPage() {
     return (
         <div className="min-h-screen py-20">
             <div className="container max-w-4xl">
-                <div className="flex items-center gap-4 mb-12">
-                    <div className="h-14 w-14 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                        <FileSignature className="h-7 w-7 text-cyan-500" />
-                    </div>
-                    <div>
+                <div className="flex flex-col items-center text-center gap-4 mb-12">
+                    <img src="/logo-dark.png" alt="Techwell Logo" className="h-16 object-contain dark:hidden" />
+                    <img src="/logo-light.png" alt="Techwell Logo" className="h-16 object-contain hidden dark:block" />
+                    <div className="mt-4">
                         <h1 className="text-4xl font-bold">Recruitment Consultancy Agreement</h1>
-                        <p className="text-muted-foreground">Effective Date: [Current Date]</p>
+                        <p className="text-muted-foreground mt-2">Effective Date: [Current Date]</p>
                     </div>
                 </div>
 

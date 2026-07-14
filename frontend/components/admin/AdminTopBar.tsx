@@ -9,6 +9,8 @@ import {
     LogOut,
     Settings,
     User,
+    Home,
+    ArrowLeft
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -57,9 +59,22 @@ export function AdminTopBar({ isSidebarCollapsed }: AdminTopBarProps) {
                 "sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-4 md:px-6"
             )}
         >
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">Admin</span>
+            <div className="flex items-center gap-4">
+                {/* Back and Home Actions */}
+                <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => router.push('/')} title="Go to Website Home">
+                        <Home className="h-4 w-4" />
+                    </Button>
+                    {segments.length > 0 && (
+                        <Button variant="ghost" size="icon" onClick={() => router.back()} title="Go Back">
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
+
+                {/* Breadcrumb */}
+                <nav className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">Admin</span>
                 {breadcrumbs.map((crumb, idx) => (
                     <span key={idx} className="flex items-center gap-1">
                         <ChevronRight className="h-3.5 w-3.5" />
@@ -75,6 +90,7 @@ export function AdminTopBar({ isSidebarCollapsed }: AdminTopBarProps) {
                     </span>
                 ))}
             </nav>
+            </div>
 
             {/* Right side actions */}
             <div className="flex items-center gap-2">

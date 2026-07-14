@@ -68,11 +68,6 @@ export default function StudentJobsPage() {
     const [coverLetter, setCoverLetter] = useState('');
     const [resumeUrl, setResumeUrl] = useState('');
 
-    useEffect(() => {
-        fetchJobs();
-        fetchMyApplications();
-    }, []);
-
     async function fetchJobs() {
         try {
             setLoading(true);
@@ -94,6 +89,11 @@ export default function StudentJobsPage() {
             // Silently ignore — user may not be logged in
         }
     }
+
+    useEffect(() => {
+        fetchJobs();
+        fetchMyApplications();
+    }, []);
 
     const handleApply = async () => {
         if (!applyingJob) return;

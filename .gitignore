@@ -52,3 +52,7 @@ replace_emails.js
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Snyk scan results (may contain secrets)
+snyk-code-results.json
+**/snyk-code-results.json

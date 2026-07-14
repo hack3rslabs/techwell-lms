@@ -7,9 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Eye, EyeOff, Loader2, AlertTriangle, X } from 'lucide-react'
-import { LoginCharacter } from '@/components/auth/LoginCharacter'
+import { Eye, EyeOff, Loader2, AlertTriangle, X, ArrowRight, ShieldCheck, Zap, Briefcase } from 'lucide-react'
 
 export default function LoginPage() {
     const router = useRouter()
@@ -21,7 +19,6 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = React.useState(false)
     const [isLoading, setIsLoading] = React.useState(false)
     const [error, setError] = React.useState('')
-    const [charState, setCharState] = React.useState<"normal" | "shy" | "peeking">("normal")
     const [showIdleBanner, setShowIdleBanner] = React.useState(false)
     
     // 2FA state
@@ -39,7 +36,6 @@ export default function LoginPage() {
             } else if (user.role === 'FRANCHISE_ADMIN') {
                 router.push('/franchise-admin')
             } else {
-                // SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, INSTITUTE_ADMIN, etc.
                 router.push('/admin')
             }
         }
@@ -58,14 +54,12 @@ export default function LoginPage() {
 
         try {
             const res = await login(email, password)
-            if (res && res.require2FA) {
+            if (res?.require2FA) {
                 setTempToken(res.tempToken || '')
                 setShow2FA(true)
             }
-            // Otherwise, useEffect handles redirection
-        } catch (err: unknown) {
-            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Login failed. Please try again.'
-            setError(errorMessage)
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.message || 'An error occurred during login')
         } finally {
             setIsLoading(false)
         }
@@ -73,237 +67,225 @@ export default function LoginPage() {
 
     const handle2FASubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (twoFactorCode.length !== 6) return
+        
         setError('')
         setIsLoading(true)
+
         try {
-            await verify2FA(twoFactorCode, tempToken, trustDevice)
-            // Relies on useEffect to handle role-based redirection
-        } catch (err: unknown) {
-            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Invalid 2FA code.'
-            setError(errorMessage)
+            await verify2FA(tempToken, twoFactorCode, trustDevice)
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.message || 'Verification failed')
         } finally {
             setIsLoading(false)
         }
     }
 
-    // Character animation logic
-    const handlePasswordFocus = () => {
-        if (showPassword) setCharState("peeking")
-        else setCharState("shy")
-    }
-
-    const handlePasswordBlur = () => {
-        setCharState("normal")
-    }
-
-    React.useEffect(() => {
-        if (charState === "shy" && showPassword) {
-            setCharState("peeking")
-        } else if (charState === "peeking" && !showPassword) {
-            setCharState("shy")
-        }
-    }, [showPassword, charState])
-
     return (
-        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5">
-            <div className="w-full max-w-5xl space-y-6">
-                <div className="flex flex-col items-center mb-8">
+        <div className="min-h-screen w-full flex bg-background">
+            {/* Left Side: Branding & Value Proposition (Hidden on Mobile) */}
+            <div className="hidden lg:flex flex-col justify-between w-[45%] bg-slate-900 p-12 text-white relative overflow-hidden" style={{ backgroundImage: "url('/images/login-bg.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
+                {/* Overlay to ensure text readability */}
+                <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+                
+                {/* Abstract Background Accents */}
+                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl opacity-50 mix-blend-overlay pointer-events-none" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-black/10 rounded-full blur-3xl opacity-50 mix-blend-overlay pointer-events-none" />
+                
+                <div className="relative z-10 flex items-center gap-3">
+                    <Link href="/">
+                        <div className="p-2">
+                            <Image src="/logo-dark.png" alt="Techwell" width={140} height={40} priority className="object-contain" />
+                        </div>
+                    </Link>
+                </div>
+
+                <div className="relative z-10 space-y-10 max-w-lg mt-20">
+                    <h1 className="text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+                        Empowering Your Digital Transformation
+                    </h1>
+                    <p className="text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
+                        Access intelligent tools, powerful analytics, and seamless integrations in one unified enterprise workspace.
+                    </p>
+
+                    <div className="space-y-6 pt-8">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-primary-foreground/10 p-3 rounded-lg backdrop-blur-sm">
+                                <Zap className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">Lightning Fast</h3>
+                                <p className="text-primary-foreground/70 text-sm">Optimized operations and workflows</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-primary-foreground/10 p-3 rounded-lg backdrop-blur-sm">
+                                <ShieldCheck className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">Enterprise Security</h3>
+                                <p className="text-primary-foreground/70 text-sm">Bank-grade encryption and access controls</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-primary-foreground/10 p-3 rounded-lg backdrop-blur-sm">
+                                <Briefcase className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">Career Architecture</h3>
+                                <p className="text-primary-foreground/70 text-sm">AI-driven hiring and skill building</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="relative z-10 text-sm text-primary-foreground/60 mt-20">
+                    &copy; {new Date().getFullYear()} Techwell Inc. All rights reserved.
+                </div>
+            </div>
+
+            {/* Right Side: Login Form */}
+            <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-24 bg-background">
+                
+                {/* Mobile Logo (Visible only on small screens) */}
+                <div className="lg:hidden mb-12">
                     <Link href="/">
                         <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
                         <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    {/* Left Side: Animated Character & Brand Message */}
-                    <div className="hidden lg:flex flex-col items-center justify-center p-12 bg-primary/5 rounded-[3rem] border border-primary/10 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/20 transition-colors" />
-                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 rounded-full -ml-16 -mb-16 blur-3xl group-hover:bg-primary/20 transition-colors" />
-
-                        <LoginCharacter state={charState} />
-
-                        <div className="text-center mt-12 space-y-4 relative z-10">
-                            <h2 className="text-3xl font-extrabold text-primary tracking-tight">Secure Your Future</h2>
-                            <p className="text-muted-foreground text-lg max-w-[320px] leading-relaxed">
-                                Join the ecosystem of innovation and professional growth with Techwell.
-                            </p>
-                            <div className="pt-4 flex justify-center gap-2">
-                                <div className="h-1.5 w-8 rounded-full bg-primary/40" />
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary/20" />
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary/20" />
-                            </div>
-                        </div>
+                <div className="w-full max-w-md space-y-8">
+                    <div className="space-y-2 text-center lg:text-left">
+                        <h2 className="text-3xl font-bold tracking-tight">
+                            {show2FA ? 'Two-Factor Authentication' : 'Sign In'}
+                        </h2>
+                        <p className="text-muted-foreground text-sm lg:text-base">
+                            {show2FA ? 'Enter the 6-digit code from your authenticator app.' : 'Enter your credentials to access your workspace.'}
+                        </p>
                     </div>
 
-                    {/* Right Side: Login Form */}
-                    <div className="flex flex-col space-y-8">
-                        {/* Mobile Character View */}
-                        <div className="lg:hidden scale-75 transform -mb-8">
-                            <LoginCharacter state={charState} />
+                    {showIdleBanner && (
+                        <div className="flex items-start gap-3 p-4 text-sm font-medium text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/40">
+                            <AlertTriangle className="h-4 w-4 flex-shrink-0 text-amber-500 mt-0.5" />
+                            <span className="flex-1">Your session expired due to inactivity. Please sign in again.</span>
+                            <button onClick={() => setShowIdleBanner(false)} className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300">
+                                <X className="h-4 w-4" />
+                            </button>
                         </div>
+                    )}
 
-                        <Card className="border-muted shadow-2xl backdrop-blur-sm bg-background/90 rounded-2xl">
-                            <CardHeader className="text-center pt-10 pb-6">
-                                <CardTitle className="text-3xl font-bold tracking-tight">
-                                    {show2FA ? 'Two-Factor Verification' : 'Welcome Back'}
-                                </CardTitle>
-                                <CardDescription className="text-base">
-                                    {show2FA ? 'Enter the 6-digit code from your authenticator app' : 'Sign in to your Techwell account'}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="px-8 pb-10">
-                                    {/* Idle session expired banner */}
-                                {showIdleBanner && (
-                                    <div
-                                        role="alert"
-                                        className="flex items-start gap-3 p-4 text-sm font-medium text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/40 animate-in fade-in slide-in-from-top-2 duration-300"
+                    {error && (
+                        <div className="p-4 text-sm font-medium text-destructive bg-destructive/10 rounded-xl border border-destructive/20">
+                            {error}
+                        </div>
+                    )}
+
+                    {show2FA ? (
+                        <form onSubmit={handle2FASubmit} className="space-y-6">
+                            <div className="space-y-2">
+                                <label htmlFor="twoFactorCode" className="text-sm font-medium">Authenticator Code</label>
+                                <Input
+                                    id="twoFactorCode"
+                                    type="text"
+                                    placeholder="000000"
+                                    maxLength={6}
+                                    value={twoFactorCode}
+                                    onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    required
+                                    disabled={isLoading}
+                                    className="h-12 rounded-xl text-center text-xl tracking-[0.5em] font-mono focus-visible:ring-primary/30"
+                                />
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <input 
+                                    type="checkbox" 
+                                    id="trustDevice" 
+                                    checked={trustDevice}
+                                    onChange={(e) => setTrustDevice(e.target.checked)}
+                                    className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                                />
+                                <label htmlFor="trustDevice" className="text-sm font-medium text-muted-foreground">
+                                    Trust this device for 30 days
+                                </label>
+                            </div>
+                            <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl" disabled={isLoading || twoFactorCode.length !== 6}>
+                                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Verify & Continue'}
+                            </Button>
+                            <div className="text-center">
+                                <button type="button" onClick={() => setShow2FA(false)} className="text-sm text-primary hover:underline font-medium">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="space-y-2">
+                                <label htmlFor="email" className="text-sm font-medium">Work Email</label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="name@company.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                    className="h-12 rounded-xl focus-visible:ring-primary/30"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <label htmlFor="password" className="text-sm font-medium">Password</label>
+                                    <Link 
+                                        href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`} 
+                                        className="text-sm text-primary hover:underline font-medium"
                                     >
-                                        <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
-                                        <span className="flex-1">
-                                            You were automatically logged out due to inactivity.
-                                            Please sign in again to continue.
-                                        </span>
-                                        <button
-                                            aria-label="Dismiss"
-                                            onClick={() => setShowIdleBanner(false)}
-                                            className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 transition-colors flex-shrink-0"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                )}
-
-                                    {error && (
-                                        <div className="p-4 text-sm font-medium text-red-500 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/30 animate-in fade-in zoom-in duration-300">
-                                            {error}
-                                        </div>
-                                    )}
-
-                                {show2FA ? (
-                                    <form onSubmit={handle2FASubmit} className="space-y-5">
-                                        <div className="space-y-2.5">
-                                            <label htmlFor="twoFactorCode" className="text-sm font-semibold ml-1">
-                                                Authenticator Code
-                                            </label>
-                                            <Input
-                                                id="twoFactorCode"
-                                                type="text"
-                                                placeholder="000000"
-                                                maxLength={6}
-                                                value={twoFactorCode}
-                                                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                                required
-                                                disabled={isLoading}
-                                                className="h-12 rounded-xl focus:ring-primary/20 text-center tracking-widest text-lg font-bold"
-                                            />
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <input 
-                                                type="checkbox" 
-                                                id="trustDevice" 
-                                                checked={trustDevice}
-                                                onChange={(e) => setTrustDevice(e.target.checked)}
-                                                className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
-                                            />
-                                            <label htmlFor="trustDevice" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                                Trust this device for 30 days
-                                            </label>
-                                        </div>
-                                        <Button type="submit" className="w-full h-14 text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/25 rounded-xl transition-all active:scale-[0.98]" disabled={isLoading || twoFactorCode.length !== 6}>
-                                            {isLoading ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                                    Verifying...
-                                                </>
-                                            ) : (
-                                                'Verify Code'
-                                            )}
-                                        </Button>
-                                        <div className="mt-4 text-center">
-                                            <button type="button" onClick={() => setShow2FA(false)} className="text-sm text-primary hover:underline font-medium">
-                                                Back to Login
-                                            </button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    <form onSubmit={handleSubmit} className="space-y-5">
-                                        <div className="space-y-2.5">
-                                            <label htmlFor="email" className="text-sm font-semibold ml-1">
-                                                Email Address
-                                            </label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="name@company.com"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
-                                            disabled={isLoading}
-                                            onFocus={() => setCharState("normal")}
-                                            className="h-12 rounded-xl focus:ring-primary/20"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2.5">
-                                        <div className="flex justify-between items-center ml-1">
-                                            <label htmlFor="password" className="text-sm font-semibold">
-                                                Password
-                                            </label>
-                                            <Link 
-                                                href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`} 
-                                                className="text-xs text-primary hover:underline font-medium"
-                                            >
-                                                Forgot password?
-                                            </Link>
-                                        </div>
-                                        <div className="relative">
-                                            <Input
-                                                id="password"
-                                                type={showPassword ? 'text' : 'password'}
-                                                placeholder="••••••••"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                required
-                                                disabled={isLoading}
-                                                className="h-12 rounded-xl pr-12 focus:ring-primary/20"
-                                                onFocus={handlePasswordFocus}
-                                                onBlur={handlePasswordBlur}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors p-1"
-                                            >
-                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <Button type="submit" className="w-full h-14 text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/25 rounded-xl transition-all active:scale-[0.98]" disabled={isLoading}>
-                                        {isLoading ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                                Verifying Identity...
-                                            </>
-                                        ) : (
-                                            'Sign In'
-                                        )}
-                                    </Button>
-                                    </form>
-                                )}
-
-                                <div className="mt-8 pt-6 border-t border-muted/60 text-center text-sm">
-                                    <span className="text-muted-foreground">New to Techwell? </span>
-                                    <Link href="/register" className="text-primary hover:underline font-bold">
-                                        Create a free account
+                                        Forgot password?
                                     </Link>
                                 </div>
-                            </CardContent>
-                        </Card>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        disabled={isLoading}
+                                        className="h-12 rounded-xl pr-12 focus-visible:ring-primary/30"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl mt-6 group" disabled={isLoading}>
+                                {isLoading ? (
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                ) : (
+                                    <>
+                                        Sign In
+                                        <ArrowRight className="ml-2 w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    )}
+
+                    <div className="pt-8 text-center lg:text-left text-sm text-muted-foreground">
+                        Don't have an account yet?{' '}
+                        <Link href="/register" className="text-primary font-semibold hover:underline">
+                            Request access
+                        </Link>
                     </div>
                 </div>
             </div>
         </div>
     )
 }
-

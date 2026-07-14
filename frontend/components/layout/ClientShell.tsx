@@ -11,6 +11,11 @@ const DASHBOARD_PREFIXES = [
     '/admin',
     '/dashboard',
     '/franchise-admin',
+    '/student',
+    '/employer',
+    '/institute',
+    '/login',
+    '/register',
 ]
 
 export function ClientShell({ children }: { children: React.ReactNode }) {

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Cyber Security",
     "Software Development",
     "IT Infrastructure",
-    "Managed IT AMC",
+    "Maintenance Support",
   ],
   alternates: {
     canonical: `${BASE_URL}/services`,

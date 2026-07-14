@@ -102,7 +102,7 @@ export default function Home() {
       bgColor: "bg-amber-500/10",
       borderColor: "border-amber-500/20",
       glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)]",
-      bullets: ["Cloud Migration", "Managed IT AMC", "Network Architecture", "Disaster Recovery"]
+      bullets: ["Cloud Migration", "Maintenance Support", "Network Architecture", "Disaster Recovery"]
     },
     {
       title: "IT & Business Consulting",

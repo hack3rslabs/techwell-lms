@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import Webcam from "react-webcam"
 import SignatureCanvas from "react-signature-canvas"
-import { Loader2, Camera, CheckCircle, UploadCloud, ArrowRight, ArrowLeft, ShieldCheck, FileText, User, FileSignature } from "lucide-react"
+import { Loader2, Camera, CheckCircle, UploadCloud, ArrowRight, ArrowLeft, ShieldCheck, ShieldAlert, FileText, User, FileSignature } from "lucide-react"
 
 export default function ConsultancyInvitePage() {
     const params = useParams()
@@ -56,6 +56,7 @@ export default function ConsultancyInvitePage() {
     const [captcha, setCaptcha] = useState({ a: 0, b: 0 })
     const [captchaAnswer, setCaptchaAnswer] = useState("")
 
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
     const webcamRef = useRef<Webcam>(null)
     const sigCanvas = useRef<any>(null)
     const [hasSignature, setHasSignature] = useState(false)
@@ -80,7 +81,9 @@ export default function ConsultancyInvitePage() {
                 }))
                 generateCaptcha()
             } catch (error: any) {
-                toast.error(error.response?.data?.message || "Invalid invitation")
+                const msg = error.response?.data?.message || "Invalid invitation link."
+                setErrorMsg(msg)
+                toast.error(msg)
                 setInvitation(null)
             } finally {
                 setLoading(false)
@@ -222,6 +225,16 @@ export default function ConsultancyInvitePage() {
     }
 
     if (loading) return <div className="flex justify-center items-center h-screen bg-slate-50"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+    if (errorMsg) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-slate-50 p-4 text-center">
+                <ShieldAlert className="w-16 h-16 text-rose-500 mb-4" />
+                <h1 className="text-3xl font-bold text-slate-800 mb-2">Access Denied</h1>
+                <p className="text-lg text-slate-600 max-w-md">{errorMsg}</p>
+                <div className="mt-8 text-sm text-slate-400">&copy; 2015 to {new Date().getFullYear()} Techwell. All rights reserved.</div>
+            </div>
+        )
+    }
     if (!invitation) return <div className="flex flex-col items-center justify-center h-screen bg-slate-50"><h1 className="text-3xl font-bold text-slate-800">Invalid or Expired Link</h1></div>
 
     if (isSubmitted) {

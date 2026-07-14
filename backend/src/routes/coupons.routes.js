@@ -24,12 +24,10 @@ const serializeCoupon = (coupon) => ({
     ...coupon,
 
     courseIds:
-        coupon.courses?.map((item) => item.courseId) || [],
+        coupon.courses?.map((item) => item.id) || [],
 
     courses:
-        coupon.courses
-            ?.map((item) => item.course)
-            .filter(Boolean) || []
+        coupon.courses || []
 });
 
 const findActiveCouponForCourse = async (couponName, courseId) => {
@@ -54,20 +52,16 @@ const findActiveCouponForCourse = async (couponName, courseId) => {
 
             courses: {
                 some: {
-                    courseId
+                    id: courseId
                 }
             }
         },
 
         include: {
             courses: {
-                include: {
-                    course: {
-                        select: {
-                            id: true,
-                            title: true
-                        }
-                    }
+                select: {
+                    id: true,
+                    title: true
                 }
             }
         }
@@ -88,11 +82,7 @@ router.get(
                 },
 
                 include: {
-                    courses: {
-                        include: {
-                            course: true
-                        }
-                    }
+                    courses: true
                 }
             });
 
@@ -212,24 +202,16 @@ router.post(
                     isActive: true,
 
                     courses: {
-                        create: selectedCourseIds.map(
+                        connect: selectedCourseIds.map(
                             (courseId) => ({
-                                course: {
-                                    connect: {
-                                        id: courseId
-                                    }
-                                }
+                                id: courseId
                             })
                         )
                     }
                 },
 
                 include: {
-                    courses: {
-                        include: {
-                            course: true
-                        }
-                    }
+                    courses: true
                 }
             });
 
@@ -261,13 +243,9 @@ router.patch(
 
                 include: {
                     courses: {
-                        include: {
-                            course: {
-                                select: {
-                                    id: true,
-                                    title: true
-                                }
-                            }
+                        select: {
+                            id: true,
+                            title: true
                         }
                     }
                 }

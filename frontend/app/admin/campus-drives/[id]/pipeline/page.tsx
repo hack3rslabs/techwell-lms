@@ -8,7 +8,9 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, User, FileText, CheckCircle2, IndianRupee } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Loader2, User, FileText, CheckCircle2, IndianRupee, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 // Define Pipeline Stages
 const PIPELINE_STAGES = [
@@ -99,9 +101,16 @@ export default function PipelineKanbanPage() {
 
     return (
         <div className="space-y-6 h-full flex flex-col p-4">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Recruitment Pipeline</h1>
-                <p className="text-muted-foreground">Drag and drop candidates across hiring stages.</p>
+            <div className="flex items-center gap-4">
+                <Link href={`/admin/campus-drives/${params.id}`}>
+                    <Button variant="outline" size="icon">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Recruitment Pipeline</h1>
+                    <p className="text-muted-foreground">Drag and drop candidates across hiring stages.</p>
+                </div>
             </div>
 
             <DragDropContext onDragEnd={onDragEnd}>

@@ -256,7 +256,7 @@ export default function AgreementBuilder() {
                                         <SelectItem value="AI_SOLUTIONS">AI Solutions</SelectItem>
                                         <SelectItem value="IT_CONSULTING">IT Consulting</SelectItem>
                                         <SelectItem value="CYBER_SECURITY">Cyber Security</SelectItem>
-                                        <SelectItem value="AMC_SUPPORT">AMC & IT Support</SelectItem>
+                                        <SelectItem value="AMC_SUPPORT">Maintenance & IT Support</SelectItem>
                                         <SelectItem value="OTHER">Other Custom Service</SelectItem>
                                     </SelectContent>
                                 </Select>

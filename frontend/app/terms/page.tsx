@@ -15,7 +15,6 @@ export default function TermsAndConditionsPage() {
     { id: "campus", label: "Campus Drives", icon: Building },
     { id: "career", label: "Career Hub & Mentorship", icon: GraduationCap },
     { id: "ai", label: "AI & Data Privacy", icon: Zap },
-    { id: "api", label: "API & Enterprise", icon: Server },
   ];
 
   return (
@@ -234,28 +233,7 @@ export default function TermsAndConditionsPage() {
                 </div>
               )}
 
-              {activeTab === "api" && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-                  <div>
-                    <h2 className="text-3xl border-b pb-4 mb-6">8. API Usage & Enterprise Limits</h2>
-                    <p>
-                      For B2B partners accessing Techwell's backend via API tokens.
-                    </p>
-                  </div>
-                  <div>
-                    <h3>8.1 Rate Limiting</h3>
-                    <p>
-                      All API access is strictly rate-limited. Abuse of the API, unauthorized load testing, or attempts to circumvent rate limits will result in an immediate IP ban and termination of the API key without warning.
-                    </p>
-                  </div>
-                  <div>
-                    <h3>8.2 SLA (Service Level Agreement)</h3>
-                    <p>
-                      While we strive for 99.9% uptime, API services are provided "as available." Techwell shall not be held liable for any revenue loss, data delay, or business interruption caused by planned maintenance or unforeseen outages.
-                    </p>
-                  </div>
-                </div>
-              )}
+
 
             </div>
           </Card>

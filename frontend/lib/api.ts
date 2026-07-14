@@ -40,8 +40,10 @@ api.interceptors.response.use(
                 }
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                // Optionally redirect to login
-                window.location.href = '/login';
+                // Optionally redirect to login if not already on auth pages
+                if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+                    window.location.href = '/login';
+                }
             }
         }
         return Promise.reject(error);

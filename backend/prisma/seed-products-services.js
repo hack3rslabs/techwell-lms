@@ -102,11 +102,11 @@ async function main() {
         {
             name: 'IT Infrastructure Services',
             slug: 'it-infrastructure-services',
-            description: 'Comprehensive IT support, managed systems hosting, Annual Maintenance Contracts (AMC), secure endpoint client settings, and centralized IT hardware management.',
+            description: 'Comprehensive IT support, managed systems hosting, Maintenance Support Contracts, secure endpoint client settings, and centralized IT hardware management.',
             category: 'IT_INFRASTRUCTURE',
             features: [
                 '24/7 Managed IT Support Helpdesk.',
-                'Annual Maintenance Contracts (AMC) for corporate hardware.',
+                'Maintenance Support Contracts for corporate hardware.',
                 'Endpoint Client configuration, antivirus enforcement & patching.',
                 'Enterprise Asset Auditing & Network Optimization.'
             ],

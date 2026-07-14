@@ -27,7 +27,7 @@ const campusDriveSchema = z.object({
 router.get('/', authenticate, async (req, res) => {
     try {
         let drives = [];
-        if (req.user.role === 'SUPER_ADMIN') {
+        if (['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
             drives = await prisma.campusDrive.findMany({
                 include: { employer: true, institutes: true, students: true },
                 orderBy: { createdAt: 'desc' }
@@ -38,7 +38,7 @@ router.get('/', authenticate, async (req, res) => {
                 include: { institutes: true, students: true },
                 orderBy: { createdAt: 'desc' }
             });
-        } else if (req.user.role === 'INSTITUTE_ADMIN') {
+        } else if (['INSTITUTE_OWNER', 'INSTITUTE_ADMIN', 'COLLEGE_ADMIN'].includes(req.user.role)) {
             const instituteUser = await prisma.user.findUnique({ where: { id: req.user.id } });
             if (instituteUser?.instituteId) {
                 const driveInstitutes = await prisma.campusDriveInstitute.findMany({
@@ -56,12 +56,12 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // Create a new Campus Drive (Employer or Admin)
-router.post('/', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN']), async (req, res) => {
+router.post('/', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), async (req, res) => {
     try {
         const validatedData = campusDriveSchema.parse(req.body);
         
         let employerId = req.user.id;
-        if (req.user.role === 'SUPER_ADMIN' && validatedData.employerId) {
+        if (['SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN'].includes(req.user.role) && validatedData.employerId) {
             employerId = validatedData.employerId; // Admin can create on behalf of employer
         }
 
@@ -174,7 +174,7 @@ router.post('/:id/mela-register', async (req, res) => {
 });
 
 // Update Campus Drive (For Builder config)
-router.put('/:id', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'INSTITUTE_ADMIN']), async (req, res) => {
+router.put('/:id', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), async (req, res) => {
     try {
         const driveId = req.params.id;
         
@@ -210,7 +210,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // GET Students for Pipeline
-router.get('/:id/students', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'INSTITUTE_ADMIN']), async (req, res) => {
+router.get('/:id/students', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), async (req, res) => {
     try {
         const driveId = req.params.id;
         const students = await prisma.campusDriveStudent.findMany({
@@ -229,7 +229,7 @@ router.get('/:id/students', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 
 });
 
 // PATCH Pipeline Status
-router.patch('/:id/pipeline/:userId', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'INSTITUTE_ADMIN']), async (req, res) => {
+router.patch('/:id/pipeline/:userId', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), async (req, res) => {
     try {
         const { id, userId } = req.params;
         const { status } = req.body;

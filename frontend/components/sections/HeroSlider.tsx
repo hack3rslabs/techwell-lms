@@ -87,7 +87,7 @@ const SLIDES = [
     abstractTopRightIcon: <ShieldCheck className="w-5 h-5 text-red-400" />,
     abstractTopRightText: "Cybersecurity",
     abstractBottomLeftIcon: <Cpu className="w-5 h-5 text-indigo-400" />,
-    abstractBottomLeftText: "Cloud AMC",
+    abstractBottomLeftText: "Cloud Infra",
     abstractBgGlow1: "bg-amber-600/20",
     abstractBgGlow2: "bg-blue-500/10",
     image: "/images/hero/ai_software_hologram.png",

@@ -52,14 +52,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     React.useEffect(() => {
         const loadUser = async () => {
             try {
-                const token = localStorage.getItem('token');
-                if (token) {
-                    const response = await userApi.getMe();
-                    setUser(response.data.user);
-                }
+                const response = await userApi.getMe();
+                setUser(response.data.user);
             } catch {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+                setUser(null);
             } finally {
                 setIsLoading(false);
             }
@@ -76,10 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 tempToken: response.data.tempToken
             };
         }
-        const { token, user } = response.data;
-
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
     };
 
@@ -91,8 +83,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             document.cookie = `trustToken=${trustToken}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
         }
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
     };
 
@@ -115,10 +105,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const verifyOtp = async (email: string, otp: string) => {
         const response = await authApi.verifyOtp({ email, otp });
-        const { token, user } = response.data;
-
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
     };
 
@@ -129,9 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
 
-    const logout = React.useCallback(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    const logout = React.useCallback(async () => {
+        try {
+            await authApi.logout();
+        } catch (e) {}
         setUser(null);
     }, []);
 

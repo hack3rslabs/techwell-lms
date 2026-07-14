@@ -150,17 +150,7 @@ export function FranchiseSidebar({ className, isCollapsed = false, onToggleColla
                     </nav>
                 </div>
 
-                <div className="p-4 border-t bg-muted/20">
-                    <Button
-                        variant="ghost"
-                        className={cn("w-full text-red-600 hover:text-red-700 hover:bg-red-50", isCollapsed ? "px-0 justify-center" : "justify-start")}
-                        onClick={logout}
-                        title={isCollapsed ? "Sign Out" : undefined}
-                    >
-                        <LogOut className="h-4 w-4" />
-                        {!isCollapsed && <span className="ml-2 text-sm">Sign Out</span>}
-                    </Button>
-                </div>
+
             </div>
 
             {isMobileOpen && (

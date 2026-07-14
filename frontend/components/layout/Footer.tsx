@@ -173,7 +173,7 @@ export function Footer() {
                 </div>
 
                 <div className="mt-10 flex flex-col gap-3 border-t border-border/60 pt-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-                    <p>© {new Date().getFullYear()} Techwell. All rights reserved.</p>
+                    <p>© 2015 to {new Date().getFullYear()} Techwell. All rights reserved.</p>
                     <a href="https://elearnstack.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground transition-colors">
                         <span>Explore Elearnstack</span>
                         <ExternalLink className="h-3.5 w-3.5" />

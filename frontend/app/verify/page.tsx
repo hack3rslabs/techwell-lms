@@ -145,7 +145,7 @@ export default function VerificationPortal() {
             </Card>
 
             <p className="text-center text-sm text-slate-400 mt-12">
-                &copy; {new Date().getFullYear()} Techwell Consulting. All rights reserved.
+                &copy; 2015 to {new Date().getFullYear()} Techwell Consulting. All rights reserved.
             </p>
         </div>
     )

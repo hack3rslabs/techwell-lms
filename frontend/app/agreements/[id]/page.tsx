@@ -167,7 +167,8 @@ export default function ClientAgreementView() {
                     <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#78C1B5] m-2"></div>
                     <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#78C1B5] m-2"></div>
 
-                    <CardHeader className="bg-white border-b border-gray-100 pb-4 pt-10">
+                    <CardHeader className="bg-white border-b border-gray-100 pb-4 pt-10 flex flex-col items-center">
+                        <img src="/logo-dark.png" alt="Techwell Logo" className="h-16 mb-4 object-contain" />
                         <CardTitle className="text-2xl text-center text-[#1469E2] uppercase tracking-widest font-serif">
                             Official Agreement
                         </CardTitle>

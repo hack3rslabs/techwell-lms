@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { Eye, EyeOff, Loader2, Check, X, Mail } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Check, X, Mail, ArrowRight, ShieldCheck, Zap, Briefcase } from 'lucide-react'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 
 export default function RegisterPage() {
@@ -72,9 +71,8 @@ export default function RegisterPage() {
             await register(email, password, name, dob, qualification, college, referredByCode)
             setStep('otp')
             setTimeLeft(60) // 60 seconds before resend is allowed
-        } catch (err: unknown) {
-            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Registration failed. Please try again.'
-            setError(errorMessage)
+        } catch (err: any) {
+            setError(err.message || 'Registration failed. Please try again.')
         } finally {
             setIsLoading(false)
         }
@@ -93,9 +91,8 @@ export default function RegisterPage() {
         try {
             await verifyOtp(email, otpValue)
             router.push('/dashboard')
-        } catch (err: unknown) {
-            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Custom invalid OTP.'
-            setError(errorMessage)
+        } catch (err: any) {
+            setError(err.message || 'Invalid OTP.')
         } finally {
             setIsLoading(false)
         }
@@ -107,329 +104,329 @@ export default function RegisterPage() {
             await resendOtp(email)
             setTimeLeft(60)
             setOtpValue('')
-        } catch (err: unknown) {
-            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to resend OTP.'
-            setError(errorMessage)
+        } catch (err: any) {
+            setError(err.message || 'Failed to resend OTP.')
         }
     }
 
-    if (step === 'otp') {
-        return (
-            <div className="min-h-screen flex">
-                {/* Left side - Branding */}
-                <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center bg-black">
-                    <img
-                        src="/images/student_signup_bg.png"
-                        alt="Students learning"
-                        className="absolute inset-0 w-full h-full object-cover opacity-50"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-                    <div className="relative z-10 p-12 max-w-xl text-center">
-                        <h1 className="text-4xl font-bold text-white mb-6">Verify Your Email</h1>
-                        <p className="text-lg text-white/90">You're one step away from joining thousands of students building their tech careers.</p>
+    return (
+        <div className="min-h-screen w-full flex bg-background">
+            {/* Left Side: Branding & Value Proposition (Hidden on Mobile) */}
+            <div className="hidden lg:flex flex-col justify-between w-[45%] bg-primary p-12 text-primary-foreground relative overflow-hidden">
+                {/* Abstract Background Accents */}
+                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl opacity-50 mix-blend-overlay" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-black/10 rounded-full blur-3xl opacity-50 mix-blend-overlay" />
+                
+                <div className="relative z-10 flex items-center gap-3">
+                    <Link href="/">
+                        <div className="bg-white p-2 rounded-xl">
+                            <Image src="/logo-dark.png" alt="Techwell" width={140} height={40} priority />
+                        </div>
+                    </Link>
+                </div>
+
+                <div className="relative z-10 space-y-10 max-w-lg mt-20">
+                    <h1 className="text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+                        {step === 'otp' ? 'Secure Your Identity' : 'Accelerate Your Career Today'}
+                    </h1>
+                    <p className="text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
+                        {step === 'otp' 
+                            ? 'Enterprise-grade security ensuring your data remains protected.' 
+                            : 'Join 10,000+ students and professionals in the most advanced tech ecosystem.'}
+                    </p>
+
+                    <div className="space-y-6 pt-8">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-primary-foreground/10 p-3 rounded-lg backdrop-blur-sm">
+                                <Zap className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">Adaptive Learning</h3>
+                                <p className="text-primary-foreground/70 text-sm">Personalized paths for rapid growth</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-primary-foreground/10 p-3 rounded-lg backdrop-blur-sm">
+                                <ShieldCheck className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">Enterprise Security</h3>
+                                <p className="text-primary-foreground/70 text-sm">Bank-grade encryption and access controls</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-primary-foreground/10 p-3 rounded-lg backdrop-blur-sm">
+                                <Briefcase className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">Direct Placements</h3>
+                                <p className="text-primary-foreground/70 text-sm">Exclusive hiring partners & mock interviews</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Right side - Form */}
-                <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-12 bg-background">
-                    <div className="w-full max-w-md space-y-6">
-                        <div className="flex justify-center mb-8">
-                            <Link href="/">
-                                <Image src="/images/favicon/Logo light.svg" alt="Techwell" width={200} height={60} className="dark:hidden" priority />
-                                <Image src="/images/favicon/Logo dark.svg" alt="Techwell" width={200} height={60} className="hidden dark:block" priority />
-                            </Link>
-                        </div>
-                        <Card className="border-muted shadow-2xl backdrop-blur-sm bg-background/95">
-                            <CardHeader className="text-center pt-8">
-                                <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <div className="relative z-10 text-sm text-primary-foreground/60 mt-20">
+                    &copy; {new Date().getFullYear()} Techwell Inc. All rights reserved.
+                </div>
+            </div>
+
+            {/* Right Side: Registration / OTP Form */}
+            <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-24 bg-background overflow-y-auto">
+                
+                {/* Mobile Logo (Visible only on small screens) */}
+                <div className="lg:hidden mb-12">
+                    <Link href="/">
+                        <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
+                        <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
+                    </Link>
+                </div>
+
+                <div className="w-full max-w-md space-y-8">
+                    {step === 'otp' ? (
+                        <>
+                            <div className="space-y-2 text-center lg:text-left">
+                                <div className="mx-auto lg:mx-0 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
                                     <Mail className="w-8 h-8 text-primary" />
                                 </div>
-                                <CardTitle className="text-2xl font-bold">Verify your email</CardTitle>
-                                <CardDescription className="text-base mt-2">
-                                    We&apos;ve sent a 6-digit code to <br />
-                                    <span className="font-semibold text-foreground">{email}</span>
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="px-8 pb-8">
-                                <form onSubmit={handleVerifyOtp} className="space-y-6">
-                                    {error && (
-                                        <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg animate-in fade-in zoom-in duration-300">
-                                            {error}
-                                        </div>
-                                    )}
-                                    
-                                    <div className="flex justify-center flex-col items-center gap-4">
-                                        <InputOTP maxLength={6} value={otpValue} onChange={setOtpValue} disabled={isLoading}>
-                                            <InputOTPGroup className="gap-2">
-                                                <InputOTPSlot index={0} className="w-12 h-14 text-lg border-2 border-primary/20" />
-                                                <InputOTPSlot index={1} className="w-12 h-14 text-lg border-2 border-primary/20" />
-                                                <InputOTPSlot index={2} className="w-12 h-14 text-lg border-2 border-primary/20" />
-                                                <InputOTPSlot index={3} className="w-12 h-14 text-lg border-2 border-primary/20" />
-                                                <InputOTPSlot index={4} className="w-12 h-14 text-lg border-2 border-primary/20" />
-                                                <InputOTPSlot index={5} className="w-12 h-14 text-lg border-2 border-primary/20" />
-                                            </InputOTPGroup>
-                                        </InputOTP>
-                                    </div>
+                                <h2 className="text-3xl font-bold tracking-tight">Verify Email</h2>
+                                <p className="text-muted-foreground text-sm lg:text-base">
+                                    We've sent a 6-digit code to <span className="font-semibold text-foreground">{email}</span>
+                                </p>
+                            </div>
 
-                                    <Button type="submit" className="w-full h-12 text-base font-semibold shadow-lg transition-all" disabled={isLoading || otpValue.length !== 6}>
-                                        {isLoading ? (
-                                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...</>
-                                        ) : 'Verify Code'}
-                                    </Button>
-                                </form>
-                            </CardContent>
-                            <CardFooter className="flex flex-col border-t border-border px-8 py-6 bg-muted/10">
-                                <div className="text-sm text-muted-foreground mb-4">
-                                    Didn&apos;t receive the code?
-                                </div>
-                                {timeLeft > 0 ? (
-                                    <div className="text-sm font-medium text-foreground">
-                                        Resend code in <span className="text-primary">{timeLeft}s</span>
-                                    </div>
-                                ) : (
-                                    <Button variant="outline" className="w-full border-primary/20 hover:bg-primary/5" onClick={handleResendOtp} disabled={isLoading}>
-                                        Resend Code
-                                    </Button>
-                                )}
-                                <div className="mt-6 text-sm">
-                                    <button type="button" onClick={() => setStep('form')} className="text-primary hover:underline font-medium flex items-center gap-1">
-                                        &larr; Back to registration
-                                    </button>
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    return (
-        <div className="min-h-screen flex">
-            {/* Left side - Branding & Image */}
-            <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center bg-black">
-                <img
-                    src="/images/student_signup_bg.png"
-                    alt="Students learning"
-                    className="absolute inset-0 w-full h-full object-cover opacity-60"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                <div className="absolute inset-0 bg-primary/10 mix-blend-overlay" />
-                
-                <div className="relative z-10 p-12 max-w-xl">
-                    <h1 className="text-5xl font-extrabold text-white mb-6 leading-tight">Master Tech Skills <br/><span className="text-primary/90">With AI.</span></h1>
-                    <p className="text-xl text-white/90 mb-8">Join 10,000+ students accelerating their careers through personalized mock interviews, adaptive coding courses, and expert mentorship.</p>
-                    <div className="flex gap-4">
-                        <div className="bg-background/20 backdrop-blur-md rounded-xl p-4 border border-white/10">
-                            <h3 className="text-white font-bold text-2xl">95%</h3>
-                            <p className="text-white/80 text-sm">Placement Rate</p>
-                        </div>
-                        <div className="bg-background/20 backdrop-blur-md rounded-xl p-4 border border-white/10">
-                            <h3 className="text-white font-bold text-2xl">50+</h3>
-                            <p className="text-white/80 text-sm">Hiring Partners</p>
-                        </div>
-                        <div className="bg-background/20 backdrop-blur-md rounded-xl p-4 border border-white/10">
-                            <h3 className="text-white font-bold text-2xl">24/7</h3>
-                            <p className="text-white/80 text-sm">AI Mentor Access</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right side - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-12 bg-background overflow-y-auto">
-                <div className="w-full max-w-xl space-y-6">
-                    <div className="flex justify-center mb-6">
-                        <Link href="/">
-                            <Image src="/images/favicon/Logo light.svg" alt="Techwell" width={220} height={60} className="dark:hidden" priority />
-                            <Image src="/images/favicon/Logo dark.svg" alt="Techwell" width={220} height={60} className="hidden dark:block" priority />
-                        </Link>
-                    </div>
-                    <Card className="border-0 shadow-none bg-transparent">
-                        <CardHeader className="text-center pt-0 pb-8">
-                            <CardTitle className="text-3xl font-bold">Create Account</CardTitle>
-                            <CardDescription className="text-base mt-2">Join Techwell and start your journey</CardDescription>
-                        </CardHeader>
-                        <CardContent className="px-2 sm:px-6">
-                        <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
-                                <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg animate-in fade-in zoom-in duration-300">
+                                <div className="p-4 text-sm font-medium text-destructive bg-destructive/10 rounded-xl border border-destructive/20">
                                     {error}
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label htmlFor="name" className="text-sm font-medium">
-                                        Full Name
-                                    </label>
-                                    <Input
-                                        id="name"
-                                        type="text"
-                                        placeholder="John Doe"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                    />
+                            <form onSubmit={handleVerifyOtp} className="space-y-6">
+                                <div className="flex justify-center lg:justify-start">
+                                    <InputOTP maxLength={6} value={otpValue} onChange={setOtpValue} disabled={isLoading}>
+                                        <InputOTPGroup className="gap-2">
+                                            <InputOTPSlot index={0} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={1} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={2} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={3} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={4} className="w-12 h-14 text-lg border-2" />
+                                            <InputOTPSlot index={5} className="w-12 h-14 text-lg border-2" />
+                                        </InputOTPGroup>
+                                    </InputOTP>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label htmlFor="email" className="text-sm font-medium">
-                                        Email
-                                    </label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="you@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                    />
+                                <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl mt-6 group" disabled={isLoading || otpValue.length !== 6}>
+                                    {isLoading ? (
+                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            Verify Code
+                                            <ArrowRight className="ml-2 w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
+                                </Button>
+                            </form>
+
+                            <div className="pt-6 border-t border-muted/60 text-center text-sm">
+                                <div className="text-muted-foreground mb-4">Didn't receive the code?</div>
+                                {timeLeft > 0 ? (
+                                    <div className="font-medium text-foreground">
+                                        Resend code in <span className="text-primary">{timeLeft}s</span>
+                                    </div>
+                                ) : (
+                                    <Button variant="outline" className="w-full rounded-xl" onClick={handleResendOtp} disabled={isLoading}>
+                                        Resend Code
+                                    </Button>
+                                )}
+                                <div className="mt-6 text-sm">
+                                    <button type="button" onClick={() => setStep('form')} className="text-primary hover:underline font-medium">
+                                        &larr; Back to registration
+                                    </button>
                                 </div>
                             </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="space-y-2 text-center lg:text-left">
+                                <h2 className="text-3xl font-bold tracking-tight">Create Account</h2>
+                                <p className="text-muted-foreground text-sm lg:text-base">
+                                    Start your journey with Techwell today.
+                                </p>
+                            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label htmlFor="dob" className="text-sm font-medium">
-                                        Date of Birth
-                                    </label>
-                                    <Input
-                                        id="dob"
-                                        type="date"
-                                        value={dob}
-                                        onChange={(e) => setDob(e.target.value)}
-                                        disabled={isLoading}
-                                    />
+                            {error && (
+                                <div className="p-4 text-sm font-medium text-destructive bg-destructive/10 rounded-xl border border-destructive/20">
+                                    {error}
                                 </div>
+                            )}
 
-                                <div className="space-y-2">
-                                    <label htmlFor="qualification" className="text-sm font-medium">
-                                        Highest Qualification
-                                    </label>
-                                    <Input
-                                        id="qualification"
-                                        type="text"
-                                        placeholder="e.g. B.Tech, MCA"
-                                        value={qualification}
-                                        onChange={(e) => setQualification(e.target.value)}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label htmlFor="college" className="text-sm font-medium">
-                                    College / University Name
-                                </label>
-                                <Input
-                                    id="college"
-                                    type="text"
-                                    placeholder="Enter your college name"
-                                    value={college}
-                                    onChange={(e) => setCollege(e.target.value)}
-                                    disabled={isLoading}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label htmlFor="referredByCode" className="text-sm font-medium">
-                                    Referral Code <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
-                                </label>
-                                <Input
-                                    id="referredByCode"
-                                    type="text"
-                                    placeholder="Enter referral code if you have one"
-                                    value={referredByCode}
-                                    onChange={(e) => setReferredByCode(e.target.value)}
-                                    disabled={isLoading}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-3">
-                                    <label htmlFor="password" className="text-sm font-medium">
-                                        Password
-                                    </label>
-                                    <div className="relative">
+                            <form onSubmit={handleSubmit} className="space-y-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label htmlFor="name" className="text-sm font-medium">Full Name</label>
                                         <Input
-                                            id="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            placeholder="••••••••"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
+                                            id="name"
+                                            type="text"
+                                            placeholder="John Doe"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
                                             required
                                             disabled={isLoading}
-                                            className="pr-10"
+                                            className="h-12 rounded-xl focus-visible:ring-primary/30"
                                         />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                        >
-                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </button>
                                     </div>
 
-                                    {/* Password Suggestions/Requirements Grid */}
-                                    <div className="grid grid-cols-2 gap-2 mt-2">
-                                        <Requirement check={passwordChecks.length} text="8+ Characters" />
-                                        <Requirement check={passwordChecks.uppercase} text="Uppercase" />
-                                        <Requirement check={passwordChecks.number} text="Number" />
-                                        <Requirement check={passwordChecks.special} text="Special Char" />
+                                    <div className="space-y-2">
+                                        <label htmlFor="email" className="text-sm font-medium">Email Address</label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            placeholder="you@example.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                            className="h-12 rounded-xl focus-visible:ring-primary/30"
+                                        />
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label htmlFor="confirmPassword" className="text-sm font-medium">
-                                        Confirm Password
-                                    </label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label htmlFor="dob" className="text-sm font-medium">Date of Birth</label>
+                                        <Input
+                                            id="dob"
+                                            type="date"
+                                            value={dob}
+                                            onChange={(e) => setDob(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                            className="h-12 rounded-xl focus-visible:ring-primary/30"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label htmlFor="qualification" className="text-sm font-medium">Qualification</label>
+                                        <Input
+                                            id="qualification"
+                                            type="text"
+                                            placeholder="e.g. B.Tech"
+                                            value={qualification}
+                                            onChange={(e) => setQualification(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                            className="h-12 rounded-xl focus-visible:ring-primary/30"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="college" className="text-sm font-medium">College / University</label>
                                     <Input
-                                        id="confirmPassword"
-                                        type={showPassword ? 'text' : 'password'}
-                                        placeholder="••••••••"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        id="college"
+                                        type="text"
+                                        placeholder="Enter your college name"
+                                        value={college}
+                                        onChange={(e) => setCollege(e.target.value)}
                                         required
                                         disabled={isLoading}
+                                        className="h-12 rounded-xl focus-visible:ring-primary/30"
                                     />
-                                    {confirmPassword && (
-                                        <div className="flex items-center gap-2 text-[10px] mt-1">
-                                            {passwordChecks.match ? (
-                                                <Check className="h-3 w-3 text-green-500" />
-                                            ) : (
-                                                <X className="h-3 w-3 text-red-500" />
-                                            )}
-                                            <span className={passwordChecks.match ? 'text-green-500' : 'text-red-500 font-medium'}>
-                                                {passwordChecks.match ? 'Passwords match' : 'Passwords do not match'}
-                                            </span>
-                                        </div>
-                                    )}
                                 </div>
-                            </div>
 
-                            <Button type="submit" className="w-full py-6 text-lg font-semibold shadow-lg hover:shadow-primary/20 transition-all active:scale-[0.98]" disabled={isLoading}>
-                                {isLoading ? (
-                                    <>
+                                <div className="space-y-2">
+                                    <label htmlFor="referredByCode" className="text-sm font-medium">
+                                        Referral Code <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+                                    </label>
+                                    <Input
+                                        id="referredByCode"
+                                        type="text"
+                                        placeholder="Enter code if you have one"
+                                        value={referredByCode}
+                                        onChange={(e) => setReferredByCode(e.target.value)}
+                                        disabled={isLoading}
+                                        className="h-12 rounded-xl focus-visible:ring-primary/30"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label htmlFor="password" className="text-sm font-medium">Password</label>
+                                        <div className="relative">
+                                            <Input
+                                                id="password"
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="••••••••"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                                disabled={isLoading}
+                                                className="h-12 rounded-xl pr-10 focus-visible:ring-primary/30"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            >
+                                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-1.5 mt-2">
+                                            <Requirement check={passwordChecks.length} text="8+ Chars" />
+                                            <Requirement check={passwordChecks.uppercase} text="Uppercase" />
+                                            <Requirement check={passwordChecks.number} text="Number" />
+                                            <Requirement check={passwordChecks.special} text="Special" />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</label>
+                                        <Input
+                                            id="confirmPassword"
+                                            type={showPassword ? 'text' : 'password'}
+                                            placeholder="••••••••"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                            className="h-12 rounded-xl focus-visible:ring-primary/30"
+                                        />
+                                        {confirmPassword && (
+                                            <div className="flex items-center gap-1.5 text-xs mt-2">
+                                                {passwordChecks.match ? (
+                                                    <Check className="h-3.5 w-3.5 text-green-500" />
+                                                ) : (
+                                                    <X className="h-3.5 w-3.5 text-red-500" />
+                                                )}
+                                                <span className={passwordChecks.match ? 'text-green-500 font-medium' : 'text-red-500 font-medium'}>
+                                                    {passwordChecks.match ? 'Passwords match' : 'Passwords do not match'}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl mt-6 group" disabled={isLoading}>
+                                    {isLoading ? (
                                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        Creating Account...
-                                    </>
-                                ) : (
-                                    'Create Account'
-                                )}
-                            </Button>
-                        </form>
+                                    ) : (
+                                        <>
+                                            Create Account
+                                            <ArrowRight className="ml-2 w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
+                                </Button>
+                            </form>
 
-                        <div className="mt-8 pt-6 border-t border-muted/60 text-center text-sm">
-                            <span className="text-muted-foreground">Already have an account? </span>
-                            <Link href="/login" className="text-primary hover:underline font-bold">
-                                Sign in instead
-                            </Link>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                            <div className="pt-8 text-center lg:text-left text-sm text-muted-foreground">
+                                Already have an account?{' '}
+                                <Link href="/login" className="text-primary font-semibold hover:underline">
+                                    Sign in instead
+                                </Link>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     )
@@ -437,16 +434,15 @@ export default function RegisterPage() {
 
 function Requirement({ check, text }: { check: boolean; text: string }) {
     return (
-        <div className="flex items-center gap-1.5 py-1 px-2 rounded-md bg-muted/30 border border-muted/50 transition-colors">
+        <div className="flex items-center gap-1.5 py-1 px-2 rounded-lg bg-muted/30 border border-muted/50 transition-colors">
             {check ? (
-                <Check className="h-3 w-3 text-green-500" />
+                <Check className="h-3.5 w-3.5 text-green-500" />
             ) : (
-                <div className="h-1 w-1 rounded-full bg-muted-foreground/40 ml-1 mr-1" />
+                <div className="h-1 w-1 rounded-full bg-muted-foreground/40 ml-1.5 mr-1" />
             )}
-            <span className={`text-[10px] font-medium leading-none ${check ? 'text-green-600' : 'text-muted-foreground'}`}>
+            <span className={`text-[10px] sm:text-xs font-medium leading-none ${check ? 'text-green-600' : 'text-muted-foreground'}`}>
                 {text}
             </span>
         </div>
     )
 }
-
