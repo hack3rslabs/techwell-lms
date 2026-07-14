@@ -9,13 +9,16 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  */
 const authenticate = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'No token provided' });
+        let token;
+        if (req.cookies && req.cookies.token) {
+            token = req.cookies.token;
+        } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
         }
 
-        const token = authHeader.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'No token provided' });
+        }
         const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
         const user = await prisma.user.findUnique({
@@ -68,7 +71,9 @@ const authenticate = async (req, res, next) => {
             user.systemRole.rolePermissions.forEach(rp => {
                 rolePermissions[rp.feature.code] = {
                     canRead: rp.canRead,
-                    canWrite: rp.canWrite,
+                    canCreate: rp.canCreate,
+                    canUpdate: rp.canUpdate,
+                    canDelete: rp.canDelete,
                     isDisabled: rp.isDisabled
                 };
             });
@@ -131,27 +136,24 @@ const checkPermission = (featureCode, accessType = null) => {
             });
         }
 
-        // 2. Determine if we are checking for Read or Write
+        // 2. Determine if we are checking for Read, Create, Update, or Delete
         // If accessType is not provided, we infer it from the HTTP method
-        const requiredAccess = accessType || (req.method === 'GET' ? 'read' : 'write');
+        const methodMap = {
+            'GET': 'read',
+            'POST': 'create',
+            'PUT': 'update',
+            'PATCH': 'update',
+            'DELETE': 'delete'
+        };
+        const requiredAccess = accessType || methodMap[req.method] || 'read';
 
-        if (requiredAccess === 'write') {
-            if (permissions.canWrite) {
-                return next();
-            }
-            return res.status(403).json({
-                error: `Permission Denied: You do not have Write access to the ${featureCode} module.`,
-                code: 'FORBIDDEN'
-            });
-        }
-
-        // Default to Read check
-        if (permissions.canRead || permissions.canWrite) {
-            return next();
-        }
+        if (requiredAccess === 'create' && permissions.canCreate) return next();
+        if (requiredAccess === 'update' && permissions.canUpdate) return next();
+        if (requiredAccess === 'delete' && permissions.canDelete) return next();
+        if (requiredAccess === 'read' && permissions.canRead) return next();
 
         return res.status(403).json({
-            error: `Permission Denied: You do not have Read access to the ${featureCode} module.`,
+            error: `Permission Denied: You do not have ${requiredAccess} access to the ${featureCode} module.`,
             code: 'FORBIDDEN'
         });
     };
@@ -178,14 +180,40 @@ const optionalAuth = async (req, res, next) => {
                 email: true,
                 name: true,
                 role: true,
-                permissions: true
+                permissions: true,
+                systemRole: {
+                    select: {
+                        name: true,
+                        rolePermissions: {
+                            include: {
+                                feature: {
+                                    select: { code: true }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         });
 
         if (user) {
+            const rolePermissions = {};
+            if (user.systemRole && user.systemRole.rolePermissions) {
+                user.systemRole.rolePermissions.forEach(rp => {
+                    rolePermissions[rp.feature.code] = {
+                        canRead: rp.canRead,
+                        canCreate: rp.canCreate,
+                        canUpdate: rp.canUpdate,
+                        canDelete: rp.canDelete,
+                        isDisabled: rp.isDisabled
+                    };
+                });
+            }
+
             req.user = {
                 ...user,
-                permissions: Array.isArray(user.permissions) ? user.permissions : []
+                permissions: Array.isArray(user.permissions) ? user.permissions : [],
+                rolePermissions
             };
         }
 

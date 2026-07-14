@@ -90,12 +90,8 @@ router.get('/customers/:id/360-view', authenticate, checkPermission('CENTRAL_CRM
 router.post('/customers/merge', authenticate, checkPermission('CENTRAL_CRM', 'write'), async (req, res) => {
   try {
     const { primaryId, secondaryIds } = req.body;
-    // Logic to merge secondary customers into primary customer
-    // This involves updating all related records to point to primaryId
-    // and then deleting the secondaryIds.
-    
-    // Placeholder for actual merge logic which would be extensive
-    res.json({ success: true, message: 'Customers merged successfully (placeholder)' });
+    // Feature flag: Customer merging is temporarily disabled until data retention policies are finalized.
+    res.status(501).json({ success: false, message: 'Customer merge functionality is not implemented yet.' });
   } catch (error) {
     console.error('Error merging customers:', error);
     res.status(500).json({ success: false, message: 'Server error' });

@@ -13,48 +13,9 @@ import {
     MessageCircle
 } from "lucide-react"
 
-// Mock Data for Forum
-const categories = [
-    { id: '1', name: 'General Discussion', count: 120, description: 'Talk about anything related to tech.' },
-    { id: '2', name: 'Course Help', count: 85, description: 'Get help with course material.' },
-    { id: '3', name: 'Career Advice', count: 56, description: 'Resume reviews and interview tips.' },
-    { id: '4', name: 'Showcase', count: 32, description: 'Show off your projects.' },
-]
-
-const discussions = [
-    {
-        id: '1',
-        title: 'How to handle state in Next.js 14?',
-        category: 'Course Help',
-        author: 'Sarah Smith',
-        replies: 12,
-        likes: 45,
-        time: '2 hours ago',
-        isSolved: true,
-    },
-    {
-        id: '2',
-        title: 'Best resources for System Design?',
-        category: 'Career Advice',
-        author: 'Mike Johnson',
-        replies: 8,
-        likes: 23,
-        time: '5 hours ago',
-        isSolved: false,
-    },
-    {
-        id: '3',
-        title: 'My portoflio built with the new curriculum',
-        category: 'Showcase',
-        author: 'Emily Chen',
-        replies: 24,
-        likes: 89,
-        time: '1 day ago',
-        isSolved: false,
-    }
-]
-
 export default function ForumPage() {
+    const [categories, setCategories] = React.useState<any[]>([])
+    const [discussions, setDiscussions] = React.useState<any[]>([])
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -93,6 +54,7 @@ export default function ForumPage() {
 
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Recent Discussions</h3>
+                {discussions.length === 0 && <p className="text-muted-foreground">No discussions found.</p>}
                 {discussions.map((item) => (
                     <Card key={item.id} className="hover:border-primary/50 transition-colors cursor-pointer">
                         <CardContent className="p-4 flex items-start gap-4">

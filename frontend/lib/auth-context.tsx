@@ -12,7 +12,7 @@ interface User {
     name: string;
     role: string;
     regId?: string;
-    rolePermissions?: Record<string, { canRead: boolean; canWrite: boolean; isDisabled: boolean }>;
+    rolePermissions?: Record<string, { canRead: boolean; canCreate: boolean; canUpdate: boolean; canDelete: boolean; isDisabled: boolean }>;
     systemRole?: { name: string };
     avatar?: string;
     dob?: string;
@@ -35,7 +35,7 @@ interface AuthContextType {
     resendOtp: (email: string) => Promise<{success: boolean, devOtp?: string}>;
     logout: () => void;
     refreshUser: () => Promise<void>;
-    hasPermission: (permission: string) => boolean;
+    hasPermission: (permission: string, action?: 'create' | 'read' | 'update' | 'delete') => boolean;
     canWrite: (permission: string) => boolean;
     verify2FA: (code: string, tempToken: string, trustDevice?: boolean) => Promise<void>;
 }
@@ -156,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const hasPermission = (featureCode: string) => {
+    const hasPermission = (featureCode: string, action: 'create' | 'read' | 'update' | 'delete' = 'read') => {
         if (!user) return false;
         
         // Only Super Admins have all permissions
@@ -165,7 +165,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const perms = user.rolePermissions?.[featureCode];
         if (!perms || perms.isDisabled) return false;
         
-        return perms.canRead || perms.canWrite;
+        if (action === 'create') return !!perms.canCreate;
+        if (action === 'update') return !!perms.canUpdate;
+        if (action === 'delete') return !!perms.canDelete;
+        
+        // action === 'read'
+        return perms.canRead || perms.canCreate || perms.canUpdate || perms.canDelete;
     };
 
     const canWrite = (featureCode: string) => {
@@ -175,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (user.role === 'SUPER_ADMIN') return true;
         
         const perms = user.rolePermissions?.[featureCode];
-        return !!(perms?.canWrite && !perms.isDisabled);
+        return !!(!perms?.isDisabled && (perms?.canCreate || perms?.canUpdate || perms?.canDelete));
     };
 
     return (

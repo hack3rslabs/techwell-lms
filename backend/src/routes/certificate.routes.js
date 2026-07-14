@@ -71,7 +71,7 @@ async function generateCertificateId() {
  * @desc    Get certificate issuance analytics
  * @access  Private/Admin
  */
-router.get('/analytics', authenticate, checkPermission('CERTIFICATE_READ'), async (req, res, next) => {
+router.get('/analytics', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const totalCertificates = await prisma.certificate.count();
         const activeCertificates = await prisma.certificate.count({ where: { status: 'ISSUED', isValid: true } });
@@ -105,6 +105,12 @@ router.get('/', authenticate, async (req, res, next) => {
 
         const where = {};
         if (!isAdmin && req.user.role !== 'FRANCHISE_ADMIN') {
+            if (req.user.role !== 'STUDENT') {
+                const certPerm = req.user.rolePermissions?.['CERTIFICATES'];
+                if (!certPerm || certPerm.isDisabled || !certPerm.canRead) {
+                    return res.status(403).json({ error: 'Access Denied: You do not have read permission for CERTIFICATES.' });
+                }
+            }
             where.userId = req.user.id;
             where.status = 'ISSUED'; // Students only see issued certs
         } else {
@@ -340,7 +346,7 @@ router.post('/generate', authenticate, async (req, res, next) => {
  * @desc    Generate certificates for multiple users
  * @access  Private/Admin
  */
-router.post('/generate-bulk', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/generate-bulk', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const { courseId, batchId, userIds, studentIds, grade, templateId, purpose } = req.body;
         
@@ -708,7 +714,7 @@ router.put('/admin/settings', authenticate, checkPermission('CERTIFICATES'), asy
  * @desc    Upload a certificate template image
  * @access  Private (Admin & Franchise Admin)
  */
-router.post('/templates/upload', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), uploadTemplate.single('templateImage'), async (req, res, next) => {
+router.post('/templates/upload', authenticate, checkPermission('CERTIFICATES', 'create'), uploadTemplate.single('templateImage'), async (req, res, next) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No image file uploaded' });
         const designUrl = `/uploads/templates/${req.file.filename}`;
@@ -727,7 +733,7 @@ router.post('/templates/upload', authenticate, authorize('SUPER_ADMIN', 'ADMIN',
  * @desc    Get all certificate templates
  * @access  Private/Admin
  */
-router.get('/admin/templates', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), async (req, res, next) => {
+router.get('/admin/templates', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
         const where = isAdmin ? {} : { franchiseId: req.user.franchiseId };
@@ -748,7 +754,7 @@ router.get('/admin/templates', authenticate, authorize('SUPER_ADMIN', 'ADMIN', '
  * @desc    Create a new certificate template
  * @access  Private/Admin & Franchise Admin
  */
-router.post('/admin/templates', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), async (req, res, next) => {
+router.post('/admin/templates', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const { name, description, designUrl, previewUrl, layout, canvasData, isDefault, orientation, purpose } = req.body;
         const franchiseId = req.user.role === 'FRANCHISE_ADMIN' ? req.user.franchiseId : null;
@@ -787,7 +793,7 @@ router.post('/admin/templates', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 
  * @desc    Update a certificate template
  * @access  Private/Admin & Franchise Admin
  */
-router.put('/admin/templates/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), async (req, res, next) => {
+router.put('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const { name, description, designUrl, previewUrl, layout, canvasData, isDefault, isActive, orientation, purpose } = req.body;
         
@@ -824,7 +830,7 @@ router.put('/admin/templates/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN
  * @desc    Delete a certificate template
  * @access  Private/Admin & Franchise Admin
  */
-router.delete('/admin/templates/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'), async (req, res, next) => {
+router.delete('/admin/templates/:id', authenticate, checkPermission('CERTIFICATES'), async (req, res, next) => {
     try {
         const templateExists = await prisma.certificateTemplate.findUnique({ where: { id: req.params.id } });
         if (!templateExists) return res.status(404).json({ error: 'Template not found' });

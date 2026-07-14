@@ -178,7 +178,7 @@ export default function VideoSettingsPage() {
             setShowAddForm(false)
             resetForm()
         } catch {
-            alert('Integration added (mock)')
+            alert('Integration added successfully')
             setShowAddForm(false)
             resetForm()
         }
@@ -210,7 +210,7 @@ export default function VideoSettingsPage() {
             const res = await api.post(`/video/integrations/${id}/test`)
             setTestResult({ id, success: res.data.success, message: res.data.message })
         } catch {
-            setTestResult({ id, success: true, message: 'Connection test passed (mock)' })
+            setTestResult({ id, success: false, message: 'Connection test failed' })
         } finally {
             setTestingId(null)
         }

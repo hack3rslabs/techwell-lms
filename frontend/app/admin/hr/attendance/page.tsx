@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, Users, MapPin, Clock } from "lucide-react"
+import api from '@/lib/api'
 
 export default function AttendanceDashboard() {
     const [roster, setRoster] = useState<any[]>([])
@@ -13,15 +14,11 @@ export default function AttendanceDashboard() {
     const fetchAttendance = async () => {
         setLoading(true)
         try {
-            // Re-using the roster logic but filtered by date via the API we can add later, 
-            // for MVP we can use the same getStaffRoster and filter client side
+            // Re-using the roster logic but filtered by date
             const [year, month] = date.split('-')
-            const res = await fetch(`/api/payroll/roster?month=${month}&year=${year}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            })
-            const data = await res.json()
-            if (data.success) {
-                setRoster(data.data)
+            const res = await api.get(`/payroll/roster?month=${month}&year=${year}`)
+            if (res.data?.success) {
+                setRoster(res.data.data)
             }
         } catch (error) {
             console.error(error)

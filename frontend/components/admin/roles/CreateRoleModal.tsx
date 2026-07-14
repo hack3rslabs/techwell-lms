@@ -27,7 +27,9 @@ interface Feature {
 interface Permission {
     featureId: string
     canRead: boolean
-    canWrite: boolean
+    canCreate: boolean
+    canUpdate: boolean
+    canDelete: boolean
     isDisabled: boolean
 }
 
@@ -56,7 +58,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
             if (!roleToEdit) {
                 const initialPerms: Record<string, Permission> = {}
                 res.data.forEach((f: Feature) => {
-                    initialPerms[f.id] = { featureId: f.id, canRead: false, canWrite: false, isDisabled: false }
+                    initialPerms[f.id] = { featureId: f.id, canRead: false, canCreate: false, canUpdate: false, canDelete: false, isDisabled: false }
                 })
                 setPermissions(initialPerms)
             }
@@ -78,7 +80,9 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                     initialPerms[rp.featureId] = {
                         featureId: rp.featureId,
                         canRead: rp.canRead,
-                        canWrite: rp.canWrite,
+                        canCreate: rp.canCreate,
+                        canUpdate: rp.canUpdate,
+                        canDelete: rp.canDelete,
                         isDisabled: rp.isDisabled
                     }
                 })
@@ -93,23 +97,23 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
 
     const handlePermissionChange = (featureId: string, field: keyof Permission, value: boolean) => {
         setPermissions(prev => {
-            const current = prev[featureId] || { featureId, canRead: false, canWrite: false, isDisabled: false }
-            const updated = { ...current, [field]: value }
-            if (field === 'isDisabled' && value === true) { updated.canRead = false; updated.canWrite = false }
-            if (field === 'canWrite' && value === true) { updated.canRead = true; updated.isDisabled = false }
-            if ((field === 'canRead' || field === 'canWrite') && value === true) updated.isDisabled = false
+            const current = prev[featureId] || { featureId, canRead: false, canCreate: false, canUpdate: false, canDelete: false, isDisabled: false }
+            const updated = { ...current, [field]: value } as Permission
+            if (field === 'isDisabled' && value === true) { updated.canRead = false; updated.canCreate = false; updated.canUpdate = false; updated.canDelete = false }
+            if (['canCreate', 'canUpdate', 'canDelete'].includes(field as string) && value === true) { updated.canRead = true; updated.isDisabled = false }
+            if (field === 'canRead' && value === true) updated.isDisabled = false
             return { ...prev, [featureId]: updated }
         })
     }
 
-    const handleModuleToggleAll = (moduleFeatures: Feature[], field: 'canRead' | 'canWrite') => {
+    const handleModuleToggleAll = (moduleFeatures: Feature[], field: keyof Permission) => {
         const allChecked = moduleFeatures.every(f => permissions[f.id]?.[field])
         setPermissions(prev => {
             const next = { ...prev }
             moduleFeatures.forEach(f => {
-                const current = next[f.id] || { featureId: f.id, canRead: false, canWrite: false, isDisabled: false }
-                const updated = { ...current, [field]: !allChecked }
-                if (!allChecked && field === 'canWrite') { updated.canRead = true; updated.isDisabled = false }
+                const current = next[f.id] || { featureId: f.id, canRead: false, canCreate: false, canUpdate: false, canDelete: false, isDisabled: false }
+                const updated = { ...current, [field]: !allChecked } as Permission
+                if (!allChecked && ['canCreate', 'canUpdate', 'canDelete'].includes(field as string)) { updated.canRead = true; updated.isDisabled = false }
                 next[f.id] = updated
             })
             return next
@@ -141,7 +145,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
 
     const getPermissionSummary = () => {
         const total = features.length
-        const enabled = Object.values(permissions).filter(p => p.canRead || p.canWrite).length
+        const enabled = Object.values(permissions).filter(p => p.canRead || p.canCreate || p.canUpdate || p.canDelete).length
         return { total, enabled }
     }
 
@@ -235,7 +239,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                                 {modules.map(moduleName => {
                                     const moduleFeatures = features.filter(f => (f.module || 'General') === moduleName)
                                     const isCollapsed = collapsedModules[moduleName]
-                                    const enabledInModule = moduleFeatures.filter(f => permissions[f.id]?.canRead || permissions[f.id]?.canWrite).length
+                                    const enabledInModule = moduleFeatures.filter(f => permissions[f.id]?.canRead || permissions[f.id]?.canCreate || permissions[f.id]?.canUpdate || permissions[f.id]?.canDelete).length
 
                                     return (
                                         <div key={moduleName} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
@@ -256,13 +260,25 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                                                         onClick={() => handleModuleToggleAll(moduleFeatures, 'canRead')}
                                                         className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-semibold"
                                                     >
-                                                        Toggle Read All
+                                                        All Read
                                                     </button>
                                                     <button
-                                                        onClick={() => handleModuleToggleAll(moduleFeatures, 'canWrite')}
+                                                        onClick={() => handleModuleToggleAll(moduleFeatures, 'canCreate')}
                                                         className="text-[10px] text-green-600 dark:text-green-400 hover:underline font-semibold"
                                                     >
-                                                        Toggle Write All
+                                                        All Create
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleModuleToggleAll(moduleFeatures, 'canUpdate')}
+                                                        className="text-[10px] text-green-600 dark:text-green-400 hover:underline font-semibold"
+                                                    >
+                                                        All Update
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleModuleToggleAll(moduleFeatures, 'canDelete')}
+                                                        className="text-[10px] text-green-600 dark:text-green-400 hover:underline font-semibold"
+                                                    >
+                                                        All Delete
                                                     </button>
                                                 </div>
                                             </div>
@@ -273,13 +289,19 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                                                     <thead className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
                                                         <tr>
                                                             <th className="text-left px-4 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Feature</th>
-                                                            <th className="text-center px-4 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 w-20">
+                                                            <th className="text-center px-4 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 w-16">
                                                                 <span className="flex items-center justify-center gap-1"><Eye className="h-3 w-3" />Read</span>
                                                             </th>
-                                                            <th className="text-center px-4 py-2 text-xs font-semibold text-green-600 dark:text-green-400 w-20">
-                                                                <span className="flex items-center justify-center gap-1"><Edit3 className="h-3 w-3" />Write</span>
+                                                            <th className="text-center px-4 py-2 text-xs font-semibold text-green-600 dark:text-green-400 w-16">
+                                                                <span className="flex items-center justify-center gap-1"><Edit3 className="h-3 w-3" />Create</span>
                                                             </th>
-                                                            <th className="text-center px-4 py-2 text-xs font-semibold text-red-500 w-20">
+                                                            <th className="text-center px-4 py-2 text-xs font-semibold text-green-600 dark:text-green-400 w-16">
+                                                                <span className="flex items-center justify-center gap-1"><Edit3 className="h-3 w-3" />Update</span>
+                                                            </th>
+                                                            <th className="text-center px-4 py-2 text-xs font-semibold text-green-600 dark:text-green-400 w-16">
+                                                                <span className="flex items-center justify-center gap-1"><Edit3 className="h-3 w-3" />Delete</span>
+                                                            </th>
+                                                            <th className="text-center px-4 py-2 text-xs font-semibold text-red-500 w-16">
                                                                 <span className="flex items-center justify-center gap-1"><Ban className="h-3 w-3" />Disable</span>
                                                             </th>
                                                         </tr>
@@ -287,7 +309,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                                                     <tbody>
                                                         {moduleFeatures.map((feature, idx) => {
                                                             const perm = permissions[feature.id]
-                                                            const isEnabled = perm?.canRead || perm?.canWrite
+                                                            const isEnabled = perm?.canRead || perm?.canCreate || perm?.canUpdate || perm?.canDelete
                                                             return (
                                                                 <tr
                                                                     key={feature.id}
@@ -315,8 +337,22 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                                                                     </td>
                                                                     <td className="px-4 py-2.5 text-center">
                                                                         <Checkbox
-                                                                            checked={perm?.canWrite || false}
-                                                                            onCheckedChange={(checked) => handlePermissionChange(feature.id, 'canWrite', !!checked)}
+                                                                            checked={perm?.canCreate || false}
+                                                                            onCheckedChange={(checked) => handlePermissionChange(feature.id, 'canCreate', !!checked)}
+                                                                            className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                                                        />
+                                                                    </td>
+                                                                    <td className="px-4 py-2.5 text-center">
+                                                                        <Checkbox
+                                                                            checked={perm?.canUpdate || false}
+                                                                            onCheckedChange={(checked) => handlePermissionChange(feature.id, 'canUpdate', !!checked)}
+                                                                            className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                                                        />
+                                                                    </td>
+                                                                    <td className="px-4 py-2.5 text-center">
+                                                                        <Checkbox
+                                                                            checked={perm?.canDelete || false}
+                                                                            onCheckedChange={(checked) => handlePermissionChange(feature.id, 'canDelete', !!checked)}
                                                                             className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                                                                         />
                                                                     </td>

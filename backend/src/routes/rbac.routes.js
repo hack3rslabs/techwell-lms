@@ -89,7 +89,9 @@ router.put('/roles/:id', authenticate, checkPermission('SETTINGS'), async (req, 
                         roleId: id,
                         featureId: p.featureId,
                         canRead: p.canRead || false,
-                        canWrite: p.canWrite || false,
+                        canCreate: p.canCreate || false,
+                        canUpdate: p.canUpdate || false,
+                        canDelete: p.canDelete || false,
                         isDisabled: p.isDisabled || false
                     }))
                 });
@@ -136,7 +138,9 @@ router.post('/roles', authenticate, checkPermission('USERS_ROLES'), async (req, 
                         roleId: newRole.id,
                         featureId: p.featureId,
                         canRead: p.canRead || false,
-                        canWrite: p.canWrite || false,
+                        canCreate: p.canCreate || false,
+                        canUpdate: p.canUpdate || false,
+                        canDelete: p.canDelete || false,
                         isDisabled: p.isDisabled || false
                     }))
                 });

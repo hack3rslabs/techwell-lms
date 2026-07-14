@@ -3,15 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Brain, TrendingUp, MousePointer, Clock, BarChart3 } from 'lucide-react';
-
-// Fix: Ensure we don't have double /api
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-const _API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
-// Note: The fetches below use /api prefix, so we need to be careful. 
-// Actually, looking at the fetches: `${API_URL}/api/behavior...`
-// If API_URL already has /api, we get /api/api/behavior.
-// So we should STRIP /api from the base if we are going to append /api manually.
-const PROPER_API_URL = BASE_URL.replace(/\/api$/, '');
+import api from '@/lib/api';
 
 interface IntentDistribution {
     intent: string;
@@ -51,13 +43,19 @@ export default function BehaviorAnalyticsPage() {
 
     async function fetchAnalytics() {
         try {
-            const [intents, pages, ctas, popup, time] = await Promise.all([
-                fetch(`${PROPER_API_URL}/api/behavior/analytics/intent-distribution`).then(r => r.json()),
-                fetch(`${PROPER_API_URL}/api/behavior/analytics/top-pages?limit=10`).then(r => r.json()),
-                fetch(`${PROPER_API_URL}/api/behavior/analytics/cta-performance`).then(r => r.json()),
-                fetch(`${PROPER_API_URL}/api/behavior/analytics/popup-stats`).then(r => r.json()),
-                fetch(`${PROPER_API_URL}/api/behavior/analytics/time-on-page`).then(r => r.json())
+            const [intentsRes, pagesRes, ctasRes, popupRes, timeRes] = await Promise.all([
+                api.get('/behavior/analytics/intent-distribution'),
+                api.get('/behavior/analytics/top-pages?limit=10'),
+                api.get('/behavior/analytics/cta-performance'),
+                api.get('/behavior/analytics/popup-stats'),
+                api.get('/behavior/analytics/time-on-page')
             ]);
+
+            const intents = intentsRes.data;
+            const pages = pagesRes.data;
+            const ctas = ctasRes.data;
+            const popup = popupRes.data;
+            const time = timeRes.data;
 
             setIntentData(intents);
             setTopPages(pages);

@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { DATABASE_HELP, getDatabaseHealth, isDatabaseOfflineError } = require('./utils/database');
+const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
@@ -19,13 +20,12 @@ const app = express();
 // Bulletproof Manual CORS Middleware
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin && (origin.endsWith('techwell.co.in') || origin.includes('localhost') || origin.includes('192.168.'))) {
+    if (origin && (origin.endsWith('techwell.co.in') || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('192.168.'))) {
         res.setHeader('Access-Control-Allow-Origin', origin);
     } else if (process.env.FRONTEND_URL) {
         res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL.replace(/\/$/, ''));
-    } else {
-        res.setHeader('Access-Control-Allow-Origin', '*');
     }
+    // Removed the wildcard '*' fallback to prevent A05 Security Misconfiguration when credentials are true
     
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     
@@ -82,8 +82,21 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
+// Stricter Rate Limiter for Authentication & AI endpoints
+const strictLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // Limit each IP to 20 requests per windowMs
+    message: { error: 'Too many requests, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api/auth/login', strictLimiter);
+app.use('/api/ai', strictLimiter);
+app.use('/api/ai-blog', strictLimiter);
+
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(cookieParser());
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -138,6 +151,7 @@ app.use('/api/blogs', require('./routes/blog.routes'));
 app.use('/api/ai/blog', require('./routes/ai-blog.routes'));
 app.use('/api/ats', require('./routes/ats.routes'));
 app.use('/api/ai-settings', require('./routes/ai-settings.routes'));
+app.use('/api/admin/ai-management', require('./routes/ai-management.routes'));
 app.use('/api/trainer', require('./routes/trainer.routes'));
 app.use('/api/behavior', require('./routes/behavior.routes'));
 app.use('/api/library', require('./routes/library.routes'));

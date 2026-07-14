@@ -239,20 +239,7 @@ router.post('/enhance', authenticate, async (req, res, next) => {
             return res.status(400).json({ error: "resumeData is required" });
         }
 
-        const { OpenAI } = require('openai');
-        
-        // Fetch OpenAI configuration from DB
-        const aiConfig = await prisma.aiIntegration.findUnique({ where: { provider: 'OPENAI' } });
-        
-        if (!aiConfig || !aiConfig.isActive || !aiConfig.config || !aiConfig.config.apiKey) {
-            return res.status(503).json({ 
-                error: "AI Services Unavailable", 
-                message: "OpenAI is not configured in the Integrations Manager. Please contact your admin." 
-            });
-        }
-        
-        const openai = new OpenAI({ apiKey: aiConfig.config.apiKey });
-        const selectedModel = aiConfig.config.model || "gpt-4o-mini";
+        const aiService = require('../services/ai.service');
 
         let personaPrompt = "";
         
@@ -331,14 +318,7 @@ Original Resume Data (JSON):
 ${JSON.stringify(resumeData, null, 2)}
 `;
 
-        const response = await openai.chat.completions.create({
-            model: selectedModel,
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7
-        });
-        
-        const responseText = response.choices[0].message.content;
-        
+        const responseText = await aiService.generate(prompt);
         let cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
         const enhancedData = JSON.parse(cleanJson);
 

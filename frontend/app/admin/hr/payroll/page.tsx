@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, DollarSign, Download, CheckCircle, Calculator } from "lucide-react"
-
+import { toast } from "@/components/ui/use-toast"
+import api from "@/lib/api"
 export default function PayrollDashboard() {
     const [roster, setRoster] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -26,12 +27,9 @@ export default function PayrollDashboard() {
     const fetchRoster = async () => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/payroll/roster?month=${month}&year=${year}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            })
-            const data = await res.json()
-            if (data.success) {
-                setRoster(data.data)
+            const res = await api.get(`/payroll/roster?month=${month}&year=${year}`)
+            if (res.data?.success) {
+                setRoster(res.data.data)
             }
         } catch (error) {
             console.error(error)
@@ -48,32 +46,25 @@ export default function PayrollDashboard() {
         if (!selectedStaff) return
         setIsProcessing(true)
         try {
-            const res = await fetch(`/api/payroll/process`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` 
-                },
-                body: JSON.stringify({
-                    userId: selectedStaff.id,
-                    month,
-                    year,
-                    baseSalary,
-                    bonus,
-                    deductions,
-                    notes: `Payroll for ${month}/${year}`
-                })
+            const res = await api.post(`/payroll/process`, {
+                userId: selectedStaff.id,
+                month,
+                year,
+                baseSalary,
+                bonus,
+                deductions,
+                notes: `Payroll for ${month}/${year}`
             })
-            const data = await res.json()
-            if (data.success) {
+            if (res.data?.success) {
+                toast({ title: "Payroll Processed", description: "Successfully generated slip." })
                 setIsDialogOpen(false)
                 fetchRoster() // Refresh
             } else {
-                alert(data.error)
+                toast({ title: "Error", description: res.data.error, variant: "destructive" })
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error)
-            alert("Failed to process payroll")
+            toast({ title: "Failed to process payroll", description: error.response?.data?.error || "Unknown error", variant: "destructive" })
         } finally {
             setIsProcessing(false)
         }

@@ -37,7 +37,6 @@ export default function WorkflowBuilderPage() {
 
   useEffect(() => {
     // In a real scenario, fetch specific workflow by ID.
-    // For this prototype, we'll fetch all and find it, or just use a mock if new.
     fetchWorkflow();
   }, [params.id]);
 ;

@@ -17,15 +17,10 @@ export const publicApi = axios.create({
     }
 });
 
-// Request interceptor to add auth token
+// Request interceptor (Token is now handled automatically via HttpOnly cookies)
 api.interceptors.request.use(
     (config) => {
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-        }
+        // withCredentials handles the HttpOnly cookie automatically
         return config;
     },
     (error) => {
@@ -72,6 +67,7 @@ export const authApi = {
     login: (data: { email: string; password: string }) =>
         api.post('/auth/login', data),
     refresh: () => api.post('/auth/refresh'),
+    logout: () => api.post('/auth/logout'),
     setup2FA: () => api.post('/auth/2fa/setup'),
     enable2FA: (data: { code: string }) => api.post('/auth/2fa/enable', data),
     disable2FA: () => api.post('/auth/2fa/disable'),
@@ -82,6 +78,10 @@ export const consultancyApi = {
     // Public Endpoints
     verifyInvitation: (token: string) => api.get(`/consultancy/public/invite/${token}`),
     submitAgreement: (token: string, data: any) => api.post(`/consultancy/public/invite/${token}/submit`, data),
+    updateStatus: (token: string, status: string) => api.post(`/consultancy/public/invite/${token}/status`, { status }),
+    uploadDocument: (token: string, data: FormData) => api.post<{ url: string }>(`/consultancy/public/invite/${token}/upload`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
     
     // Admin Endpoints
     getDashboardStats: () => api.get('/consultancy/dashboard'),
@@ -456,12 +456,12 @@ export const rbacApi = {
     createRole: (data: { 
         name: string; 
         description?: string; 
-        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }> 
+        permissions: Array<{ featureId: string; canRead: boolean; canCreate: boolean; canUpdate: boolean; canDelete: boolean; isDisabled: boolean }> 
     }) => api.post('/rbac/roles', data),
     updateRole: (id: string, data: { 
         name?: string; 
         description?: string; 
-        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }> 
+        permissions: Array<{ featureId: string; canRead: boolean; canCreate: boolean; canUpdate: boolean; canDelete: boolean; isDisabled: boolean }> 
     }) => api.put(`/rbac/roles/${id}`, data),
     deleteRole: (id: string) => api.delete(`/rbac/roles/${id}`),
 };
@@ -519,6 +519,7 @@ export const batchesApi = {
     scheduleInterviews: (id: string, data: any) => api.post(`/batches/${id}/ai-interviews`, data),
 };
 
+
 // Jobs API
 export const jobsApi = {
     getAll: (params?: any) => api.get('/jobs', { params }),
@@ -526,10 +527,26 @@ export const jobsApi = {
     create: (data: any) => api.post('/jobs', data),
     update: (id: string, data: any) => api.put(`/jobs/${id}`, data),
     delete: (id: string) => api.delete(`/jobs/${id}`),
-    getApplications: (id: string) => api.get(`/jobs/${id}/applications`),
-    updateApplicationStatus: (jobId: string, appId: string, status: string) => api.patch(`/jobs/${jobId}/applications/${appId}/status`, { status }),
-    getAdminListings: (params?: any) => api.get('/jobs/admin/listings', { params })
+    // Applications
+    getApplications: (jobId: string) => api.get(`/jobs/${jobId}/applications`),
+    updateApplicationStatus: (_jobId: string, appId: string, status: string, note?: string) =>
+        api.patch(`/jobs/applications/${appId}/status`, { status, note }),
+    getMyApplications: () => api.get('/jobs/applications/me'),
+    getApplicationTimeline: (appId: string) => api.get(`/jobs/applications/${appId}/timeline`),
+    applyToJob: (jobId: string, data: { resumeUrl?: string; coverLetter?: string }) =>
+        api.post(`/jobs/${jobId}/apply`, data),
+    // Admin listing
+    getAdminListings: (params?: any) => api.get('/jobs/admin/listings', { params }),
+    // Interviews
+    scheduleInterview: (appId: string, data: any) => api.post(`/jobs/applications/${appId}/interviews`, data),
+    updateInterview: (interviewId: string, data: any) => api.put(`/jobs/interviews/${interviewId}`, data),
+    // Offers
+    releaseOffer: (appId: string, data: any) => api.post(`/jobs/applications/${appId}/offers`, data),
+    updateOfferStatus: (offerId: string, status: string) => api.patch(`/jobs/offers/${offerId}/status`, { status }),
+    // Placement Feedback
+    submitFeedback: (appId: string, data: any) => api.post(`/jobs/applications/${appId}/feedback`, data),
 };
+
 
 // Messages API
 export const messagesApi = {

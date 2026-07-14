@@ -209,4 +209,43 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// GET Students for Pipeline
+router.get('/:id/students', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'INSTITUTE_ADMIN']), async (req, res) => {
+    try {
+        const driveId = req.params.id;
+        const students = await prisma.campusDriveStudent.findMany({
+            where: { driveId },
+            include: {
+                user: {
+                    select: { name: true, email: true, phone: true, college: true }
+                }
+            }
+        });
+        res.json(students);
+    } catch (error) {
+        console.error('Error fetching campus drive students:', error);
+        res.status(500).json({ error: 'Failed to fetch students' });
+    }
+});
+
+// PATCH Pipeline Status
+router.patch('/:id/pipeline/:userId', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'INSTITUTE_ADMIN']), async (req, res) => {
+    try {
+        const { id, userId } = req.params;
+        const { status } = req.body;
+        
+        if (!status) return res.status(400).json({ error: 'Status is required' });
+
+        const updated = await prisma.campusDriveStudent.update({
+            where: { driveId_userId: { driveId: id, userId } },
+            data: { status }
+        });
+        
+        res.json(updated);
+    } catch (error) {
+        console.error('Error updating campus drive student status:', error);
+        res.status(500).json({ error: 'Failed to update status' });
+    }
+});
+
 module.exports = router;

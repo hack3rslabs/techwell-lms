@@ -139,6 +139,7 @@ const sendPasswordResetOtpEmail = async (email, otp) => {
 };
 
 module.exports = {
+    sendEmail,
     sendWelcomeEmail,
     sendCertificateEmail,
     sendInterviewScheduledEmail,

@@ -24,23 +24,31 @@ export default function EmployerReportsPage() {
     const [reportPeriod, setReportPeriod] = useState("this_month")
     const _router = useRouter()
 
-    // Mock data for UI
-    const stats = {
-        totalJobs: 12,
-        activeJobs: 5,
-        totalApplicants: 148,
-        hired: 8,
-        rejected: 45,
-        avgTime: 18,
-        interviewRate: 35,
-        offerRate: 12
-    }
+    const [stats, setStats] = useState({
+        totalJobs: 0,
+        activeJobs: 0,
+        totalApplicants: 0,
+        hired: 0,
+        rejected: 0,
+        avgTime: 0,
+        interviewRate: 0,
+        offerRate: 0
+    })
 
-    const recentReports = [
-        { id: '1', title: 'Monthly Hiring Summary - Jan 2026', type: 'PDF', generatedAt: '2026-02-01', size: '1.2 MB' },
-        { id: '2', title: 'Q4 2025 Performance Report', type: 'PDF', generatedAt: '2026-01-15', size: '2.4 MB' },
-        { id: '3', title: 'Candidate Pipeline Export', type: 'CSV', generatedAt: '2026-02-08', size: '450 KB' },
-    ]
+    const [recentReports, setRecentReports] = useState<any[]>([])
+
+    useEffect(() => {
+        const fetchReports = async () => {
+            try {
+                const res = await _api.get('/employer/analytics')
+                if (res.data.stats) setStats(res.data.stats)
+                if (res.data.recentReports) setRecentReports(res.data.recentReports)
+            } catch (error) {
+                console.error("Failed to fetch reports", error)
+            }
+        }
+        fetchReports()
+    }, [reportPeriod])
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-12">
@@ -162,9 +170,9 @@ export default function EmployerReportsPage() {
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm font-medium text-gray-700">
                                 <span>Hired ({stats.hired})</span>
-                                <span>5.4%</span>
+                                <span>{stats.totalApplicants > 0 ? ((stats.hired / stats.totalApplicants) * 100).toFixed(1) : 0}%</span>
                             </div>
-                            <Progress value={5.4} className="h-3 bg-green-100" indicatorClassName="bg-green-600" />
+                            <Progress value={stats.totalApplicants > 0 ? ((stats.hired / stats.totalApplicants) * 100) : 0} className="h-3 bg-green-100" indicatorClassName="bg-green-600" />
                         </div>
                     </CardContent>
                 </Card>
@@ -177,6 +185,7 @@ export default function EmployerReportsPage() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y divide-gray-100">
+                            {recentReports.length === 0 && <div className="p-4 text-center text-sm text-gray-500">No reports generated yet.</div>}
                             {recentReports.map((report) => (
                                 <div key={report.id} className="p-4 hover:bg-gray-50/50 transition-colors flex items-center justify-between group cursor-pointer">
                                     <div className="flex items-center gap-3">

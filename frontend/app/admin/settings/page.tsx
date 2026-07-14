@@ -11,7 +11,7 @@ import api from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 
 export default function SettingsPage() {
-    const { hasPermission, canWrite } = useAuth()
+    const { hasPermission } = useAuth()
     interface UserProfile {
         name: string
         email: string
@@ -204,7 +204,7 @@ export default function SettingsPage() {
                                 <Input
                                     value={systemSettings.platformName}
                                     onChange={e => setSystemSettings({ ...systemSettings, platformName: e.target.value })}
-                                    disabled={!canWrite('SETTINGS')}
+                                    disabled={!hasPermission('SETTINGS', 'update')}
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -212,10 +212,10 @@ export default function SettingsPage() {
                                 <Input
                                     value={systemSettings.supportEmail}
                                     onChange={e => setSystemSettings({ ...systemSettings, supportEmail: e.target.value })}
-                                    disabled={!canWrite('SETTINGS')}
+                                    disabled={!hasPermission('SETTINGS', 'update')}
                                 />
                             </div>
-                            {canWrite('SETTINGS') && (
+                            {hasPermission('SETTINGS', 'update') && (
                                 <Button variant="outline" onClick={async () => {
                                     try {
                                         await api.put('/settings', systemSettings)

@@ -39,20 +39,20 @@ export default function CollegeReadinessPage() {
             // Map users to college stats schema
             const mapped: CollegeStudent[] = users.map((u: any, idx: number) => {
                 const totalProgress = u.lessonProgress?.length || 0;
-                // Generate realistic mock indicators based on database values or mock fallback
-                const progressPct = totalProgress > 0 ? Math.min(100, Math.round((totalProgress / 5) * 100)) : (40 + (idx * 7) % 60);
+                // Calculate progress and score
+                const progressPct = totalProgress > 0 ? Math.min(100, Math.round((totalProgress / 5) * 100)) : 0;
                 const avgScore = u.interviews?.length > 0 
                     ? Math.round(u.interviews.reduce((acc: number, item: any) => acc + (item.evaluation?.overallScore || 0), 0) / u.interviews.length)
-                    : (55 + (idx * 5) % 40);
+                    : 0;
 
                 return {
                     id: u.id,
                     name: u.name,
                     email: u.email,
-                    qualification: u.qualification || 'B.Tech CSE',
-                    college: u.college || 'Vellore Institute of Technology',
+                    qualification: u.qualification || 'Not Specified',
+                    college: u.college || 'Not Specified',
                     courseProgress: progressPct,
-                    interviewCount: u.interviews?.length || (idx % 3),
+                    interviewCount: u.interviews?.length || 0,
                     averageScore: avgScore,
                     status: avgScore >= 75 ? 'PLACEMENT_READY' : progressPct > 70 ? 'TRAINING_IN_PROGRESS' : 'SCREENING'
                 }

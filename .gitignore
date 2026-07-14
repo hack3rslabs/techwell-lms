@@ -45,3 +45,10 @@ backend/uploads/temp/*
 # Recovery/debug files
 .lost_found_blobs/
 replace_emails.js
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

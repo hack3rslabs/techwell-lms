@@ -156,7 +156,7 @@ router.put('/me', authenticate, async (req, res, next) => {
  */
 router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, role, search } = req.query;
+        const { page = 1, limit = 20, role, excludeRole, search } = req.query;
         const where = {};
         
         // Scope to franchise if FRANCHISE_ADMIN
@@ -175,6 +175,15 @@ router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) =
              // Keep the restricted roles if no specific role is requested
              where.role = { in: ['STUDENT', 'STAFF', 'INSTRUCTOR'] };
         }
+        
+        if (excludeRole) {
+            if (excludeRole.includes(',')) {
+                where.role = { notIn: excludeRole.split(',') };
+            } else {
+                where.role = { not: excludeRole };
+            }
+        }
+        
         if (search) {
             where.OR = [
                 { name: { contains: search, mode: 'insensitive' } },

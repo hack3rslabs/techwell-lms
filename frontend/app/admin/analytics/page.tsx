@@ -52,37 +52,14 @@ export default function AnalyticsPage() {
         } catch (error) {
             console.error(error)
 
-            // fallback mock data
+            // Remove mock data and show empty state on failure
             setData({
-                summary: { totalLeads: 1250, totalRevenue: 450000 },
+                summary: { totalLeads: 0, totalRevenue: 0 },
                 charts: {
-                    status: [
-                        { status: 'NEW', _count: 450 },
-                        { status: 'CONTACTED', _count: 300 },
-                        { status: 'INTERESTED', _count: 200 },
-                        { status: 'CONVERTED', _count: 150 },
-                        { status: 'LOST', _count: 150 }
-                    ],
-                    source: [
-                        { source: 'Website', _count: 600 },
-                        { source: 'Google Ads', _count: 300 },
-                        { source: 'Referral', _count: 200 },
-                        { source: 'LinkedIn', _count: 150 }
-                    ],
-                    college: [
-                        { college: 'IIT Delhi', _count: 45 },
-                        { college: 'BITS Pilani', _count: 38 },
-                        { college: 'Delhi University', _count: 120 },
-                        { college: 'Amity University', _count: 85 },
-                        { college: 'Thapar University', _count: 60 }
-                    ],
-                    location: [
-                        { location: 'Delhi', _count: 400 },
-                        { location: 'Mumbai', _count: 350 },
-                        { location: 'Bangalore', _count: 300 },
-                        { location: 'Pune', _count: 150 },
-                        { location: 'Hyderabad', _count: 50 }
-                    ]
+                    status: [],
+                    source: [],
+                    college: [],
+                    location: []
                 }
             })
         } finally {

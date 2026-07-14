@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, Building2 } from "lucide-react"
+import { Check, ChevronsUpDown, Building2, Globe } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -18,22 +18,47 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
+import api from "@/lib/api"
+import { useEffect, useState } from "react"
+import { useAuth } from "@/lib/auth-context"
 
-// Mock Institutes for now (Real connection would be via API)
-const institutes = [
-    {
-        value: "global",
-        label: "Global View (All Data)",
-    },
-    {
-        value: "inst_tw_logic",
-        label: "Techwell Logic Institute",
-    },
-]
+type Institute = {
+    id: string;
+    name: string;
+}
 
 export function InstituteSwitcher() {
-    const [open, setOpen] = React.useState(false)
-    const [value, setValue] = React.useState("global")
+    const [open, setOpen] = useState(false)
+    const [value, setValue] = useState("global")
+    const [institutes, setInstitutes] = useState<Institute[]>([])
+    const { user } = useAuth()
+
+    useEffect(() => {
+        if (user && user.role === 'SUPER_ADMIN') {
+            const fetchInstitutes = async () => {
+                try {
+                    const res = await api.get('/institutes?status=APPROVED')
+                    setInstitutes(res.data)
+                } catch (error) {
+                    console.error("Failed to fetch institutes for switcher:", error)
+                }
+            }
+            fetchInstitutes()
+            
+            const savedInstituteId = localStorage.getItem('activeInstituteId')
+            if (savedInstituteId) {
+                setValue(savedInstituteId)
+            }
+        }
+    }, [user])
+
+    if (!user || user.role !== 'SUPER_ADMIN') {
+        return null;
+    }
+
+    const currentLabel = value === "global" 
+        ? "Global View (All Data)" 
+        : institutes.find((i) => i.id === value)?.name || "Select Institute..."
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -42,41 +67,56 @@ export function InstituteSwitcher() {
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-[250px] justify-between"
+                    className="w-full justify-between bg-white/5 border-white/10 hover:bg-white/10 hover:text-white"
                 >
-                    <div className="flex items-center">
-                        <Building2 className="mr-2 h-4 w-4 opacity-50" />
-                        {value
-                            ? institutes.find((framework) => framework.value === value)?.label
-                            : "Select Institute..."}
+                    <div className="flex items-center truncate">
+                        {value === "global" ? <Globe className="mr-2 h-4 w-4 shrink-0 text-primary" /> : <Building2 className="mr-2 h-4 w-4 shrink-0 text-primary" />}
+                        <span className="truncate text-xs">{currentLabel}</span>
                     </div>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[250px] p-0">
-                <Command>
+            <PopoverContent className="w-[250px] p-0 border-white/10 bg-[#0a0a0b]">
+                <Command className="bg-transparent">
                     <CommandInput placeholder="Search institute..." />
                     <CommandList>
                         <CommandEmpty>No institute found.</CommandEmpty>
                         <CommandGroup>
-                            {institutes.map((framework) => (
+                            <CommandItem
+                                value="global"
+                                onSelect={() => {
+                                    setValue("global")
+                                    setOpen(false)
+                                    localStorage.removeItem('activeInstituteId')
+                                    window.dispatchEvent(new Event('instituteChanged'))
+                                }}
+                            >
+                                <Check
+                                    className={cn(
+                                        "mr-2 h-4 w-4",
+                                        value === "global" ? "opacity-100 text-primary" : "opacity-0"
+                                    )}
+                                />
+                                Global View (All Data)
+                            </CommandItem>
+                            {institutes.map((inst) => (
                                 <CommandItem
-                                    key={framework.value}
-                                    value={framework.value}
+                                    key={inst.id}
+                                    value={inst.id}
                                     onSelect={(currentValue: string) => {
-                                        setValue(currentValue === value ? "" : currentValue)
+                                        setValue(currentValue)
                                         setOpen(false)
-                                        // TODO: Trigger Context Update or URL param change
-                                        console.log("Switched to:", currentValue)
+                                        localStorage.setItem('activeInstituteId', currentValue)
+                                        window.dispatchEvent(new Event('instituteChanged'))
                                     }}
                                 >
                                     <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            value === framework.value ? "opacity-100" : "opacity-0"
+                                            value === inst.id ? "opacity-100 text-primary" : "opacity-0"
                                         )}
                                     />
-                                    {framework.label}
+                                    {inst.name}
                                 </CommandItem>
                             ))}
                         </CommandGroup>

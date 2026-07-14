@@ -126,3 +126,61 @@ exports.updateMyInstitute = async (req, res) => {
         res.status(500).json({ error: 'Failed to update institute details' });
     }
 };
+
+// Institute Admin: Dashboard Stats
+exports.getInstituteDashboard = async (req, res) => {
+    try {
+        const instituteId = req.params.id || req.user.instituteId;
+        
+        if (req.user.role !== 'SUPER_ADMIN' && req.user.instituteId !== instituteId) {
+            return res.status(403).json({ error: 'Not authorized' });
+        }
+
+        const stats = await prisma.$transaction([
+            prisma.user.count({ where: { instituteId, role: 'STUDENT' } }),
+            prisma.campusDriveInstitute.count({ where: { instituteId, status: 'ACCEPTED' } }),
+            prisma.candidateProfile.count({ 
+                where: { 
+                    user: { instituteId },
+                    placementStatus: 'PLACED'
+                } 
+            }),
+            prisma.course.count({ where: { institutes: { some: { id: instituteId } } } })
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                totalStudents: stats[0],
+                totalCampusDrives: stats[1],
+                totalPlaced: stats[2],
+                totalCourses: stats[3]
+            }
+        });
+    } catch (error) {
+        console.error('Institute Dashboard Error:', error);
+        res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    }
+};
+
+// Institute Admin: Get Students
+exports.getInstituteStudents = async (req, res) => {
+    try {
+        const instituteId = req.params.id || req.user.instituteId;
+        
+        if (req.user.role !== 'SUPER_ADMIN' && req.user.instituteId !== instituteId) {
+            return res.status(403).json({ error: 'Not authorized' });
+        }
+
+        const students = await prisma.user.findMany({
+            where: { instituteId, role: 'STUDENT' },
+            include: { candidateProfile: true },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json({ success: true, data: students });
+    } catch (error) {
+        console.error('Institute Students Error:', error);
+        res.status(500).json({ error: 'Failed to fetch students' });
+    }
+};

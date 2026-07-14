@@ -292,7 +292,7 @@ router.post('/staff', authenticate, checkPermission('SYSTEM_LOGS'), async (req, 
  * @desc    Get all Employers for the Employer CRM
  * @access  Private/Admin
  */
-router.get('/employers', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/employers', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const employers = await prisma.user.findMany({
             where: { role: 'EMPLOYER' },
@@ -313,7 +313,7 @@ router.get('/employers', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async 
  * @desc    Get all active enrollments
  * @access  Private/Admin
  */
-router.get('/enrollments', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res, next) => {
+router.get('/enrollments', authenticate, checkPermission('STUDENTS'), async (req, res, next) => {
     try {
         const enrollments = await prisma.enrollment.findMany({
             include: {
@@ -332,7 +332,7 @@ router.get('/enrollments', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAF
  * @route   PATCH /api/admin/enrollments/:id/status
  * @desc    Update enrollment status
  */
-router.patch('/enrollments/:id/status', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res, next) => {
+router.patch('/enrollments/:id/status', authenticate, checkPermission('STUDENTS'), async (req, res, next) => {
     try {
         const { status } = req.body;
         const enrollment = await prisma.enrollment.update({
@@ -350,7 +350,7 @@ router.patch('/enrollments/:id/status', authenticate, authorize('SUPER_ADMIN', '
  * @desc    Get all students enrolled in a course who are not assigned to a batch
  * @access  Private/Admin
  */
-router.get('/students/available-for-batch', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res, next) => {
+router.get('/students/available-for-batch', authenticate, checkPermission('STUDENTS'), async (req, res, next) => {
     try {
         const { courseId } = req.query;
         if (!courseId) {
@@ -397,79 +397,71 @@ router.get('/students/available-for-batch', authenticate, authorize('SUPER_ADMIN
  *          along with their enrollment and progress details
  * @access  Private/Admin
  */
-router.get('/students', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res, next) => {
+router.get('/students', authenticate, checkPermission('STUDENTS'), async (req, res, next) => {
     try {
         const { search, course, status, page = 1, limit = 50 } = req.query;
         const skip = (Number(page) - 1) * Number(limit);
 
-        // Build filter for enrollments
-        const where = {};
+        // Build filter for users
+        const where = { role: 'STUDENT' };
 
         if (status) {
-            where.status = status;
+            where.isActive = status === 'ACTIVE';
         }
 
         if (search) {
-            where.user = {
-                OR: [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { email: { contains: search, mode: 'insensitive' } },
-                    { phone: { contains: search, mode: 'insensitive' } },
-                ]
-            };
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { phone: { contains: search, mode: 'insensitive' } },
+            ];
         }
 
         if (course) {
-            where.courseId = course;
+            where.enrollments = {
+                some: { courseId: course }
+            };
         }
 
-        const [enrollmentRecords, total] = await Promise.all([
-            prisma.enrollment.findMany({
+        const [usersRaw, total] = await Promise.all([
+            prisma.user.findMany({
                 where,
                 include: {
-                    course: {
-                        select: { id: true, title: true, category: true, price: true, thumbnail: true }
-                    },
-                    user: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                            phone: true,
-                            avatar: true,
-                            qualification: true,
-                            college: true,
-                            plan: true,
-                            createdAt: true,
+                    enrollments: {
+                        include: {
+                            course: { select: { id: true, title: true, category: true, price: true, thumbnail: true } }
                         }
                     }
                 },
-                orderBy: { enrolledAt: 'desc' },
+                orderBy: { createdAt: 'desc' },
                 skip,
                 take: Number(limit),
             }),
-            prisma.enrollment.count({ where })
+            prisma.user.count({ where })
         ]);
 
-        // Map the Enrollment data to the structure the frontend expects 
-        // (Frontend expects top level name, email, phone etc if it came from request, but mainly user object)
-        const students = enrollmentRecords.map(e => ({
-            id: e.id,
-            userId: e.userId,
-            courseId: e.courseId,
-            name: e.user.name,
-            email: e.user.email,
-            phone: e.user.phone,
-            qualification: e.user.qualification,
-            status: e.status,
-            createdAt: e.enrolledAt,
-            updatedAt: e.enrolledAt,
-            course: e.course,
-            user: {
-                ...e.user,
-                enrollments: [e] // Pass the current enrollment in the array so frontend progress works
-            }
-        }));
+        // Map the User data to the structure the frontend expects 
+        const students = usersRaw.map(u => {
+            const primaryEnrollment = u.enrollments[0];
+            return {
+                id: primaryEnrollment?.id || u.id,
+                userId: u.id,
+                courseId: primaryEnrollment?.courseId || null,
+                name: u.name,
+                email: u.email,
+                phone: u.phone,
+                qualification: u.qualification,
+                status: u.isActive ? 'ACTIVE' : 'INACTIVE',
+                createdAt: u.createdAt,
+                updatedAt: u.createdAt,
+                course: primaryEnrollment?.course || null,
+                paymentDone: u.enrollments.length > 0,
+                user: {
+                    ...u,
+                    enrollments: u.enrollments 
+                }
+            };
+        });
 
         // Get distinct courses for the filter dropdown
         const courses = await prisma.course.findMany({
@@ -609,7 +601,7 @@ router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (r
 });
 
 // GET /api/admin/transactions
-router.get('/transactions', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res) => {
+router.get('/transactions', authenticate, checkPermission('TRANSACTIONS'), async (req, res) => {
     try {
         const payments = await prisma.payment.findMany({
             orderBy: { createdAt: 'desc' },
@@ -640,7 +632,7 @@ router.get('/transactions', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
  * @desc    Dynamic BI Report Generator
  * @access  Private/Admin
  */
-router.post('/reports/generate', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/reports/generate', authenticate, checkPermission('REPORTS'), async (req, res, next) => {
     try {
         const { dataset, dimension, metric, startDate, endDate } = req.body;
 
@@ -817,7 +809,7 @@ router.post('/reports/generate', authenticate, authorize('SUPER_ADMIN', 'ADMIN')
  * @desc    Get all users who requested data deletion
  * @access  Private/Admin
  */
-router.get('/gdpr/requests', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/gdpr/requests', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const users = await prisma.user.findMany({
             where: { deleteRequested: true },
@@ -841,7 +833,7 @@ router.get('/gdpr/requests', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), as
  * @desc    Get all users who have unsubscribed from the newsletter
  * @access  Private/Admin
  */
-router.get('/gdpr/unsubscribed', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/gdpr/unsubscribed', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const users = await prisma.user.findMany({
             where: { subscribedToNewsletter: false },
@@ -865,7 +857,7 @@ router.get('/gdpr/unsubscribed', authenticate, authorize('SUPER_ADMIN', 'ADMIN')
  * @desc    Process a deletion request (mark inactive or delete)
  * @access  Private/Admin
  */
-router.patch('/gdpr/requests/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.patch('/gdpr/requests/:id', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
         const { action } = req.body; // 'PROCESS' or 'CANCEL'
 

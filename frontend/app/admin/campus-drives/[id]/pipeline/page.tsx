@@ -52,19 +52,9 @@ export default function PipelineKanbanPage() {
             // We'd hit GET /campus-drives/:id/students 
             const res = await api.get(`/campus-drives/${params.id}/students`)
             setCandidates(res.data)
-        } catch {
-            // Error handling
-            // Temporary mock data if API fails to load
-            setCandidates([
-                {
-                    id: '1', userId: 'u1', status: 'APPLIED', atsScore: 85, resumeUrl: '#', offerLetterUrl: null, ctc: null,
-                    user: { name: 'John Doe', email: 'john@example.com', phone: '1234567890', college: 'Tech Institute' }
-                },
-                {
-                    id: '2', userId: 'u2', status: 'SHORTLISTED', atsScore: 92, resumeUrl: '#', offerLetterUrl: null, ctc: null,
-                    user: { name: 'Jane Smith', email: 'jane@example.com', phone: '0987654321', college: 'Engineering College' }
-                }
-            ])
+        } catch (error) {
+            console.error('Failed to fetch campus drive pipeline:', error)
+            setCandidates([])
         } finally {
             setIsLoading(false)
         }

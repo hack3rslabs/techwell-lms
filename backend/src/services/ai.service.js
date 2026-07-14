@@ -5,13 +5,11 @@ const pdf = require('pdf-parse');
 const fs = require('fs');
 const path = require('path');
 
-// Initialize Gemini
+// Fallback Gemini Initialization (kept for fallback)
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 if (!GEMINI_KEY) {
     console.error('CRITICAL ERROR: GEMINI_API_KEY is not defined in the environment variables!');
 }
-const genAI = new GoogleGenerativeAI(GEMINI_KEY || 'MISSING_KEY');
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 // Mock Question Bank (Fallback if AI generation fails)
 const QUESTION_BANK = {
@@ -48,6 +46,56 @@ class AIService {
             'SYSTEM_DESIGN': ['scalability', 'load balancer', 'caching', 'database', 'microservices', 'latency', 'throughput'],
             'BEHAVIORAL': ['situation', 'task', 'action', 'result', 'communication', 'team', 'conflict', 'learned']
         };
+    }
+
+    async getAIProvider() {
+        try {
+            const provider = await prisma.aIProvider.findFirst({
+                where: { isDefault: true, isActive: true }
+            });
+
+            if (provider?.provider === 'OPENAI') {
+                const { OpenAI } = require('openai');
+                const client = new OpenAI({ apiKey: provider.apiKey });
+                return { provider: 'OPENAI', client, model: provider.model };
+            }
+
+            if (provider?.provider === 'GEMINI') {
+                const genAI = new GoogleGenerativeAI(provider.apiKey);
+                const model = genAI.getGenerativeModel({ model: provider.model });
+                return { provider: 'GEMINI', client: genAI, model };
+            }
+        } catch (error) {
+            console.error('[AI] DB Provider failed, falling back to ENV', error);
+        }
+
+        // Fallback to Env Gemini
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY');
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        return { provider: 'GEMINI', client: genAI, model };
+    }
+
+    /**
+     * Unified generation method for AI prompts
+     */
+    async generate(prompt) {
+        try {
+            const ai = await this.getAIProvider();
+            if (ai.provider === 'OPENAI') {
+                const response = await ai.client.chat.completions.create({
+                    model: ai.model,
+                    messages: [{ role: "user", content: prompt }],
+                    response_format: { type: "json_object" }
+                });
+                return response.choices[0].message.content;
+            } else {
+                const result = await ai.model.generateContent(prompt);
+                return result.response.text();
+            }
+        } catch (error) {
+            console.error('[AI] Generation failed', error);
+            throw error;
+        }
     }
 
     /**
@@ -171,74 +219,7 @@ class AIService {
      * based on user plan and available environment keys.
      */
     async generateWithAIProvider(prompt, interview = null, isEval = false) {
-        const plan = interview?.user?.plan || 'FREE';
-        
-        // Fetch OpenAI configuration from DB
-        const aiConfig = await prisma.aiIntegration.findUnique({ where: { provider: 'OPENAI' } });
-        const openAiKey = (aiConfig && aiConfig.isActive && aiConfig.config) ? aiConfig.config.apiKey : null;
-        const defaultModel = (aiConfig && aiConfig.isActive && aiConfig.config && aiConfig.config.model) ? aiConfig.config.model : 'gpt-4o-mini';
-
-        const useOpenAI = openAiKey && (plan === 'PRO' || plan === 'ENTERPRISE' || isEval);
-        const useOllama = process.env.OLLAMA_URL && plan === 'FREE';
-
-        // 1. OpenAI for Premium Users or Evaluation
-        if (useOpenAI) {
-            console.log(`[AI Provider Factory] Routing to OpenAI (${defaultModel})`);
-            try {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${openAiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: defaultModel,
-                        messages: [{ role: 'system', content: prompt }],
-                        response_format: { type: "json_object" },
-                        temperature: 0.7
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.choices[0].message.content;
-                } else {
-                    console.error("[AI Provider] OpenAI API Error:", await response.text());
-                }
-            } catch (err) {
-                console.error("[AI Provider] OpenAI Fetch Error:", err);
-            }
-        }
-
-        // 2. Ollama (Local) for Free Users if configured
-        if (useOllama) {
-            console.log("[AI Provider Factory] Routing to local Ollama");
-            try {
-                const response = await fetch(`${process.env.OLLAMA_URL}/api/generate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: process.env.OLLAMA_MODEL || 'llama3',
-                        prompt: prompt,
-                        stream: false,
-                        format: 'json'
-                    })
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.response;
-                }
-            } catch (err) {
-                console.error("[AI Provider] Ollama Fetch Error:", err);
-            }
-        }
-
-        // 3. Fallback to Gemini (Flash for Basic, Pro for Premium)
-        const geminiModel = (plan === 'PRO' || plan === 'ENTERPRISE') ? "gemini-1.5-pro" : "gemini-1.5-flash";
-        console.log(`[AI Provider Factory] Routing to Gemini (${geminiModel})`);
-        const generativeModel = genAI.getGenerativeModel({ model: geminiModel });
-        const result = await generativeModel.generateContent(prompt);
-        return (await result.response).text();
+        return await this.generate(prompt);
     }
 
     /**
@@ -566,11 +547,8 @@ Return ONLY a JSON array with:
 }
         ]`;
 
-
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text().trim().replace(/```json|```/gi, '');
-            const parsed = JSON.parse(text);
+            const text = await this.generate(prompt);
+            const parsed = JSON.parse(text.trim().replace(/```json|```/gi, ''));
             return Array.isArray(parsed) ? parsed : (parsed.questions || []);
         } catch (error) {
             console.error("Gemini Context Generation Error:", error);
@@ -584,11 +562,8 @@ Return ONLY a JSON array with:
     async generateInterviewQuestions({ domain, role, company, difficulty, count = 5 }) {
         try {
             const prompt = `You are an expert ${role} interviewer. Generate exactly ${count} professional interview questions for a ${difficulty} level candidate in the ${domain} domain${company ? ` specifically for a position at ${company}` : ''}.\n\nInstructions:\n1. Focus on actual industry-standard technical concepts.\n2. Provide a detailed "ideal answer".\n3. Format strictly as a JSON array of objects with keys: "topic", "content", "answer".\n4. Return ONLY the JSON (no markdown).`;
-
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text().trim().replace(/```json|```/gi, '');
-            const parsed = JSON.parse(text);
+            const text = await this.generate(prompt);
+            const parsed = JSON.parse(text.trim().replace(/```json|```/gi, ''));
             const questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
 
             return questions.map(q => ({

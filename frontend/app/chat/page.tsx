@@ -81,23 +81,9 @@ export default function TechwellGPTPage() {
             if (!response.ok) {
                 // Handle Quota Exceeded (429) specially with a fallback mock response
                 if (response.status === 429 || data.error?.includes('quota')) {
-                    console.warn("OpenAI Quota Exceeded - Using Mock Fallback");
-
-                    // Simple mock response logic since AI is down
-                    let mockReply = "I'm currently operating in offline mode due to high traffic. ";
-                    const lastUserMsg = userMessage.content.toLowerCase();
-
-                    if (lastUserMsg.includes('sql') && lastUserMsg.includes('nosql')) {
-                        mockReply += "SQL databases are relational, table-based (like MySQL), while NoSQL databases are non-relational, document or key-value based (like MongoDB). SQL is better for complex queries and transactions, while NoSQL scales better for large, unstructured data.";
-                    } else if (lastUserMsg.includes('react') && lastUserMsg.includes('hook')) {
-                        mockReply += "React Hooks allow function components to have state and lifecycle features. Common examples are useState (for state) and useEffect (for side effects).";
-                    } else {
-                        mockReply += "I can't access my full brain right now, but feel free to ask basic questions!";
-                    }
-
                     setMessages([...newMessages, {
                         role: 'assistant',
-                        content: mockReply
+                        content: "I'm currently experiencing high traffic and cannot process your request. Please try again later."
                     }]);
                     return;
                 }

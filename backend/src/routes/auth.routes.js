@@ -257,6 +257,13 @@ router.post('/verify-otp', authLimiter, async (req, res, next) => {
         const { sendWelcomeEmail } = require('../services/email.service');
         sendWelcomeEmail(user).catch(err => console.error('Email error:', err));
 
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.status(201).json({
             message: 'Account created successfully',
             user: userWithAccess,
@@ -381,7 +388,9 @@ router.post('/login', authLimiter, async (req, res, next) => {
             user.systemRole.rolePermissions.forEach(rp => {
                 rolePermissions[rp.feature.code] = {
                     canRead: rp.canRead,
-                    canWrite: rp.canWrite,
+                    canCreate: rp.canCreate,
+                    canUpdate: rp.canUpdate,
+                    canDelete: rp.canDelete,
                     isDisabled: rp.isDisabled
                 };
             });
@@ -433,6 +442,13 @@ router.post('/login', authLimiter, async (req, res, next) => {
             process.env.JWT_SECRET,
             { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
         );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
         res.json({
             message: 'Login successful',
@@ -489,6 +505,13 @@ router.post('/refresh', async (req, res, next) => {
                 { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
             );
 
+            res.cookie('token', newToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
+
             res.json({ token: newToken });
         } catch (error) {
             return res.status(401).json({ error: 'Invalid token' });
@@ -496,6 +519,20 @@ router.post('/refresh', async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+});
+
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout user by clearing HttpOnly cookie
+ * @access  Public
+ */
+router.post('/logout', (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
+    res.json({ message: 'Logout successful' });
 });
 
 /**
@@ -829,7 +866,9 @@ router.post('/2fa/verify', async (req, res, next) => {
             user.systemRole.rolePermissions.forEach(rp => {
                 rolePermissions[rp.feature.code] = {
                     canRead: rp.canRead,
-                    canWrite: rp.canWrite,
+                    canCreate: rp.canCreate,
+                    canUpdate: rp.canUpdate,
+                    canDelete: rp.canDelete,
                     isDisabled: rp.isDisabled
                 };
             });

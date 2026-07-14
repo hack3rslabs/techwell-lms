@@ -3,13 +3,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { 
     Loader2, ArrowLeft, Save, Undo, Redo, Download, 
     Copy, Trash2, AlignLeft, AlignCenter, AlignRight,
     BringToFront, SendToBack, Grid3X3, Eye, EyeOff
 } from 'lucide-react';
-import { certificateApi } from '@/lib/api';
+import api, { certificateApi } from '@/lib/api';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -59,6 +58,8 @@ const AVAILABLE_FIELDS = [
     { label: 'Authorized Signatory', value: '{{SIGNATURE_1}}', type: 'image' },
     { label: 'Trainer Signature', value: '{{SIGNATURE_2}}', type: 'image' },
     { label: 'Director Signature', value: '{{SIGNATURE_3}}', type: 'image' },
+    { label: 'Signatory Name', value: '{{SIGNATORY_NAME}}' },
+    { label: 'Signatory Title', value: '{{SIGNATORY_TITLE}}' },
     { label: 'Custom Text', value: 'Double click to edit', type: 'text' },
 ];
 
@@ -86,7 +87,9 @@ const PREVIEW_DATA: Record<string, string> = {
     '{{SKILLS}}': 'React, Next.js, Node, Architecture, AWS',
     '{{INSTITUTE_NAME}}': 'Techwell Academy',
     '{{ORG_NAME}}': 'Techwell Corporation',
-    '{{TRAINER_NAME}}': 'Dr. Sarah Johnson'
+    '{{TRAINER_NAME}}': 'Dr. Sarah Johnson',
+    '{{SIGNATORY_NAME}}': 'U Purushottama Rao',
+    '{{SIGNATORY_TITLE}}': 'Managing Director'
 };
 
 const COLOR_PALETTES = [
@@ -180,19 +183,11 @@ export default function EnterpriseDesignStudio() {
             };
             
             if (isDuplicate) {
-                await fetch(`/api/certificates/admin/templates`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                    body: JSON.stringify(payload)
-                });
+                await api.post(`/certificates/admin/templates`, payload);
                 alert('Template duplicated successfully!');
                 router.push('/admin/certificates');
             } else {
-                await fetch(`/api/certificates/admin/templates/${templateId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                    body: JSON.stringify(payload)
-                });
+                await api.put(`/certificates/admin/templates/${templateId}`, payload);
                 alert('Design saved successfully!');
             }
         } catch (error) {

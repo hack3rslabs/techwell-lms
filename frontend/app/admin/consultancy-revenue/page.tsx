@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import api from '@/lib/api';
 
 export default function ConsultancyRevenueDashboard() {
     const { user } = useAuth();
@@ -11,15 +12,13 @@ export default function ConsultancyRevenueDashboard() {
 
     async function fetchData() {
         try {
-            const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
-            
             const [analyticsRes, recordsRes] = await Promise.all([
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultancy-analytics/analytics`, { headers }),
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultancy-analytics/coordination`, { headers })
+                api.get('/consultancy-analytics/analytics'),
+                api.get('/consultancy-analytics/coordination')
             ]);
 
-            if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
-            if (recordsRes.ok) setRecords(await recordsRes.json());
+            if (analyticsRes.status === 200 || analyticsRes.data) setAnalytics(analyticsRes.data);
+            if (recordsRes.status === 200 || recordsRes.data) setRecords(recordsRes.data);
         } catch (error) {
             console.error('Error fetching consultancy data:', error);
         } finally {

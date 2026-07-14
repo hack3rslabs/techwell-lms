@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Plus, Edit2, Trash2, Loader2, ArrowUpRight } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import api from '@/lib/api'
 
 export default function Campaigns() {
     const [campaigns, setCampaigns] = React.useState<any[]>([])
@@ -26,10 +27,8 @@ export default function Campaigns() {
     const [endDate, setEndDate] = React.useState('')
 
     const fetchCampaigns = () => {
-        fetch('/api/admin/marketing/campaigns', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }).then(res => res.json()).then(data => {
-            if (data.success) setCampaigns(data.campaigns || [])
+        api.get('/admin/marketing/campaigns').then(res => {
+            if (res.data?.success) setCampaigns(res.data.campaigns || [])
         }).catch(console.error)
     }
 
@@ -41,23 +40,15 @@ export default function Campaigns() {
         e.preventDefault()
         setIsLoading(true)
         try {
-            const res = await fetch('/api/admin/marketing/campaigns', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('token')}` 
-                },
-                body: JSON.stringify({ 
-                    name, 
-                    type, 
-                    status, 
-                    budget: budget ? parseFloat(budget) : null, 
-                    startDate: startDate ? new Date(startDate).toISOString() : null,
-                    endDate: endDate ? new Date(endDate).toISOString() : null
-                })
+            const res = await api.post('/admin/marketing/campaigns', { 
+                name, 
+                type, 
+                status, 
+                budget: budget ? parseFloat(budget) : null, 
+                startDate: startDate ? new Date(startDate).toISOString() : null,
+                endDate: endDate ? new Date(endDate).toISOString() : null
             })
-            const data = await res.json()
-            if (data.success) {
+            if (res.data?.success) {
                 toast({ title: 'Success', description: 'Campaign created successfully' })
                 setIsOpen(false)
                 fetchCampaigns()
@@ -66,10 +57,10 @@ export default function Campaigns() {
                 setStartDate('')
                 setEndDate('')
             } else {
-                toast({ title: 'Error', description: data.error || data.message, variant: 'destructive' })
+                toast({ title: 'Error', description: res.data?.error || res.data?.message, variant: 'destructive' })
             }
         } catch (error: any) {
-            toast({ title: 'Error', description: error.message, variant: 'destructive' })
+            toast({ title: 'Error', description: error.response?.data?.error || error.message, variant: 'destructive' })
         } finally {
             setIsLoading(false)
         }
@@ -78,11 +69,8 @@ export default function Campaigns() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this campaign?')) return
         try {
-            const res = await fetch(`/api/admin/marketing/campaigns/${id}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            })
-            if (res.ok) fetchCampaigns()
+            const res = await api.delete(`/admin/marketing/campaigns/${id}`)
+            if (res.status === 200 || res.data?.success) fetchCampaigns()
         } catch (error) {
             console.error(error)
         }

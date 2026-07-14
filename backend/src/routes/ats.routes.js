@@ -923,4 +923,65 @@ router.get('/job-stats/:jobId', authenticate, authorize('EMPLOYER'), async (req,
     }
 });
 
+// ============= OFFER MANAGEMENT =============
+
+/**
+ * @route   POST /api/ats/offers/:applicationId
+ * @desc    Generate and release a Job Offer
+ * @access  Private (Employer)
+ */
+router.post('/offers/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+    try {
+        const { applicationId } = req.params;
+        const { ctc, salaryBreakup, location, reportingManager, reportingAddress, designation, department, doj } = req.body;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
+
+        const application = await prisma.jobApplication.findUnique({
+            where: { id: applicationId },
+            include: { job: true }
+        });
+
+        if (!application || (!isAdmin && application.job.employerId !== req.user.id)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const offer = await prisma.jobOffer.create({
+            data: {
+                applicationId,
+                ctc,
+                salaryBreakup,
+                location,
+                reportingManager,
+                reportingAddress,
+                designation,
+                department,
+                doj: new Date(doj),
+                status: 'RELEASED'
+            }
+        });
+
+        // Update application status
+        await prisma.jobApplication.update({
+            where: { id: applicationId },
+            data: { status: 'OFFER_RELEASED' }
+        });
+
+        // Create Audit Log
+        await prisma.auditLog.create({
+            data: {
+                entityType: 'OFFER',
+                entityId: offer.id,
+                action: 'OFFER_RELEASED',
+                performedBy: req.user.id,
+                details: { ctc, designation, location },
+                applicationId
+            }
+        });
+
+        res.status(201).json(offer);
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

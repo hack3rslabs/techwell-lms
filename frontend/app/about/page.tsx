@@ -1,10 +1,22 @@
-"use client"
+
 
 import Link from 'next/link'
 import { GraduationCap, Users, Award, Target, ArrowRight, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { WhyTrust } from '@/components/home/WhyTrust'
 import { CredentialsSection } from '@/components/home/CredentialsSection'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: 'About Techwell | Transforming Tech Education',
+    description: 'Techwell is on a mission to make world-class tech education accessible to everyone. Discover our story, values, and how we empower careers with AI.',
+    keywords: ['About Techwell', 'Techwell Story', 'Tech Education', 'AI Learning Platform'],
+    openGraph: {
+        title: 'About Techwell | Transforming Tech Education',
+        description: 'Discover how Techwell is bridging the gap between campus and corporate with AI-driven learning and placement assistance.',
+        type: 'website'
+    }
+}
 
 const stats = [
     { value: '10,000+', label: 'Students Trained' },
@@ -24,7 +36,7 @@ const values = [
 
 export default function AboutPage() {
     return (
-        <div className="min-h-screen">
+        <div>
             {/* Hero */}
             <section className="bg-gradient-to-br from-primary/10 via-background to-purple-500/10 py-20">
                 <div className="container text-center">

@@ -92,12 +92,12 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             ]
         },
         { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Tracking" },
-        { label: "Customer 360", icon: Users, href: "/admin/crm/customers", permission: "CENTRAL_CRM", group: "Tracking" },
+
         { label: "Sales Pipelines", icon: Briefcase, href: "/admin/crm/pipelines", permission: "CENTRAL_CRM", group: "Tracking" },
         { label: "Client Agreements", icon: FileText, href: "/admin/crm/agreements", permission: "CENTRAL_CRM", group: "Tracking" },
         { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Tracking" },
         { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Tracking" },
-        { label: "BI Studio", icon: BarChart3, href: "/admin/analytics/studio", permission: "REPORTS", group: "Tracking" },
+
         { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Tracking" },
 
         // Approve
@@ -181,6 +181,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Administration" },
         { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY", group: "Administration" },
         { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Administration" },
+        { label: "AI & Smart Management", icon: Settings, href: "/admin/settings/ai", permission: "SETTINGS", group: "Administration" },
         { label: "Documents", icon: FileText, href: "/admin/documents", permission: "ADMIN", group: "Administration" },
 
         // Deployments

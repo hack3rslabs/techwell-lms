@@ -73,36 +73,7 @@ export default function CourseReviewPage() {
             setCourses(res.data.courses || [])
         } catch (error) {
             console.error('Failed to fetch pending courses:', error)
-
-            // Mock data fallback
-            setCourses([
-                {
-                    id: '1',
-                    title: 'Advanced React Patterns',
-                    description: 'Learn advanced React patterns including compound components...',
-                    category: 'Development',
-                    courseType: 'RECORDED',
-                    difficulty: 'ADVANCED',
-                    publishStatus: 'IN_REVIEW',
-                    submittedForReviewAt: new Date().toISOString(),
-                    instructorId: 'inst1',
-                    price: 2999,
-                    _count: { modules: 8, enrollments: 0 }
-                },
-                {
-                    id: '2',
-                    title: 'Live Python Bootcamp',
-                    description: 'Comprehensive Python course with live sessions...',
-                    category: 'Development',
-                    courseType: 'LIVE',
-                    difficulty: 'BEGINNER',
-                    publishStatus: 'IN_REVIEW',
-                    submittedForReviewAt: new Date().toISOString(),
-                    instructorId: 'inst2',
-                    price: 4999,
-                    _count: { modules: 12, enrollments: 0 }
-                }
-            ])
+            setCourses([])
         } finally {
             setIsLoading(false)
         }
