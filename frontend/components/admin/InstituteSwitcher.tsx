@@ -29,7 +29,7 @@ type Institute = {
 
 export function InstituteSwitcher() {
     const [open, setOpen] = useState(false)
-    const [value, setValue] = useState("global")
+    const [value, setValue] = useState("")
     const [institutes, setInstitutes] = useState<Institute[]>([])
     const { user } = useAuth()
 
@@ -39,16 +39,21 @@ export function InstituteSwitcher() {
                 try {
                     const res = await api.get('/institutes?status=APPROVED')
                     setInstitutes(res.data)
+                    
+                    const savedInstituteId = localStorage.getItem('activeInstituteId')
+                    if (savedInstituteId && res.data.some((i: any) => i.id === savedInstituteId)) {
+                        setValue(savedInstituteId)
+                    } else if (res.data.length > 0) {
+                        setValue(res.data[0].id)
+                        localStorage.setItem('activeInstituteId', res.data[0].id)
+                        // Trigger event to reload data for this institute
+                        setTimeout(() => window.dispatchEvent(new Event('instituteChanged')), 100)
+                    }
                 } catch (error) {
                     console.error("Failed to fetch institutes for switcher:", error)
                 }
             }
             fetchInstitutes()
-            
-            const savedInstituteId = localStorage.getItem('activeInstituteId')
-            if (savedInstituteId) {
-                setValue(savedInstituteId)
-            }
         }
     }, [user])
 
@@ -82,23 +87,7 @@ export function InstituteSwitcher() {
                     <CommandList>
                         <CommandEmpty>No institute found.</CommandEmpty>
                         <CommandGroup>
-                            <CommandItem
-                                value="global"
-                                onSelect={() => {
-                                    setValue("global")
-                                    setOpen(false)
-                                    localStorage.removeItem('activeInstituteId')
-                                    window.dispatchEvent(new Event('instituteChanged'))
-                                }}
-                            >
-                                <Check
-                                    className={cn(
-                                        "mr-2 h-4 w-4",
-                                        value === "global" ? "opacity-100 text-primary" : "opacity-0"
-                                    )}
-                                />
-                                Global View (All Data)
-                            </CommandItem>
+                            
                             {institutes.map((inst) => (
                                 <CommandItem
                                     key={inst.id}

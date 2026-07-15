@@ -46,7 +46,8 @@ const registerSchema = z.object({
 
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
-    password: z.string().min(1, 'Password is required')
+    password: z.string().min(1, 'Password is required'),
+    trustDevice: z.boolean().optional()
 });
 
 // In-memory store for pending registrations (OTP verification)
@@ -437,17 +438,20 @@ router.post('/login', authLimiter, async (req, res, next) => {
         });
 
         // Generate token
+        const expiresIn = validatedData.trustDevice ? '30d' : (process.env.JWT_EXPIRES_IN || '7d');
+        const cookieMaxAge = validatedData.trustDevice ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+
         const token = jwt.sign(
             { userId: user.id, sessionToken },
             process.env.JWT_SECRET,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            { algorithm: 'HS256', expiresIn }
         );
 
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            maxAge: cookieMaxAge
         });
 
         res.json({
@@ -854,10 +858,13 @@ router.post('/2fa/verify', async (req, res, next) => {
         });
 
         // Generate final access token
+        const expiresIn = trustDevice ? '30d' : (process.env.JWT_EXPIRES_IN || '7d');
+        const cookieMaxAge = trustDevice ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+
         const token = jwt.sign(
             { userId: user.id, sessionToken },
             process.env.JWT_SECRET,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            { algorithm: 'HS256', expiresIn }
         );
 
         // Format role permissions

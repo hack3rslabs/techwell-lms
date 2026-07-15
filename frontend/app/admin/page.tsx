@@ -1,10 +1,21 @@
 "use client"
 
 import * as React from 'react'
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
+import { WidgetRenderer, DEFAULT_LAYOUT, WidgetId } from '@/components/admin/widgets/WidgetRegistry'
+
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import api, { interviewApi, userApi } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Search, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     Users,
@@ -77,6 +88,56 @@ export default function AdminDashboard() {
     })
 
     const [isLoading, setIsLoading] = React.useState(true)
+
+
+    const [isMounted, setIsMounted] = React.useState(false)
+    const [layout, setLayout] = React.useState<WidgetId[]>(DEFAULT_LAYOUT)
+    const [visibleWidgets, setVisibleWidgets] = React.useState<Record<WidgetId, boolean>>({
+        revenue: true,
+        upcomingFees: true,
+        users: true,
+        franchises: true,
+        enrollments: true,
+        certificates: true,
+        leads: true,
+        campusDrives: true,
+        activeTasks: true,
+        consulting: true,
+        supportTickets: true,
+        cmdb: true
+    })
+
+    React.useEffect(() => {
+        setIsMounted(true)
+        const savedLayout = localStorage.getItem('adminDashboardLayout')
+        const savedVisibility = localStorage.getItem('adminDashboardVisibility')
+        
+        if (savedLayout) {
+            try { setLayout(JSON.parse(savedLayout)) } catch(e) {}
+        }
+        if (savedVisibility) {
+            try { setVisibleWidgets(JSON.parse(savedVisibility)) } catch(e) {}
+        }
+    }, [])
+
+    const handleDragEnd = (result: DropResult) => {
+        if (!result.destination) return
+        
+        const newLayout = Array.from(layout)
+        const [reorderedItem] = newLayout.splice(result.source.index, 1)
+        newLayout.splice(result.destination.index, 0, reorderedItem)
+        
+        setLayout(newLayout)
+        localStorage.setItem('adminDashboardLayout', JSON.stringify(newLayout))
+    }
+
+    const toggleWidget = (key: WidgetId) => {
+        const newVisibility = { ...visibleWidgets, [key]: !visibleWidgets[key] }
+        setVisibleWidgets(newVisibility)
+        localStorage.setItem('adminDashboardVisibility', JSON.stringify(newVisibility))
+    }
+
+
     const [searchQuery, _setSearchQuery] = React.useState('')
     // const [activeTab, setActiveTab] = React.useState<'overview' | 'users' | 'courses' | 'ai-training'>('overview')
 
@@ -135,7 +196,7 @@ export default function AdminDashboard() {
     // ... existing imports
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 overflow-x-hidden w-full max-w-full">
             {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -146,17 +207,45 @@ export default function AdminDashboard() {
                         Welcome back, {user?.name}. Here&apos;s your platform at a glance.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    {/* Institute Switcher for Super Admin */}
-                    {user?.role === 'SUPER_ADMIN' && <InstituteSwitcher />}
+                <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                    <div className="relative w-full md:w-64">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="Search CMDB..."
+                            className="pl-8 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                        />
+                    </div>
+                    
+                    <div className="flex items-center gap-2 w-full md:w-auto justify-between">
+                        {user?.role === 'SUPER_ADMIN' && <InstituteSwitcher />}
+                        
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <Settings className="mr-2 h-4 w-4" /> Widgets
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                {Object.keys(visibleWidgets).map((key) => (
+                                    <DropdownMenuItem
+                                        key={key}
+                                        onClick={() => toggleWidget(key as WidgetId)}
+                                        className="capitalize flex items-center justify-between cursor-pointer"
+                                    >
+                                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                                        {visibleWidgets[key as keyof typeof visibleWidgets] && <CheckSquare className="h-4 w-4 text-primary" />}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
-                    {/* Placeholder for DateRangePicker */}
-                    <Button variant="outline">Last 30 Days</Button>
-                    <AdminReportModal>
-                        <Button>
-                            <BarChart3 className="mr-2 h-4 w-4" /> Generate Report
-                        </Button>
-                    </AdminReportModal>
+                        <AdminReportModal>
+                            <Button size="sm">
+                                <BarChart3 className="mr-2 h-4 w-4" /> Report
+                            </Button>
+                        </AdminReportModal>
+                    </div>
                 </div>
             </div>
 
@@ -170,232 +259,50 @@ export default function AdminDashboard() {
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     {/* Advanced Stats Grid */}
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                        {hasPermission('FINANCE') && (
-                            <Card
-                                className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 col-span-1 xl:col-span-2"
-                                onClick={() => router.push('/admin/finance')}
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-emerald-500/10 to-teal-500/10 blur-2xl group-hover:bg-emerald-500/20 transition-all duration-500" />
-                                <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                    <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                        Total Revenue
-                                    </CardTitle>
-                                    <div className="h-10 w-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200/50 dark:border-emerald-800/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">₹</div>
-                                </CardHeader>
-                                <CardContent className="relative z-10 mt-2">
-                                    <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">₹{stats.revenue.toLocaleString()}</div>
-                                    <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 w-fit px-2 py-1 rounded-full border border-emerald-100 dark:border-emerald-800">
-                                        <TrendingUp className="h-3 w-3" />
-                                        <span>+20.1% from last month</span>
+                    {isMounted && (
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId="dashboard-widgets" direction="horizontal">
+                                {(provided) => (
+                                    <div 
+                                        className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+                                        {...provided.droppableProps}
+                                        ref={provided.innerRef}
+                                    >
+                                        {layout.map((widgetId, index) => {
+                                            if (!visibleWidgets[widgetId]) return null
+                                            
+                                            // Handle permissions for specific widgets
+                                            if (widgetId === 'revenue' && !hasPermission('FINANCE')) return null
+                                            if (widgetId === 'upcomingFees' && !hasPermission('FINANCE')) return null
+                                            
+                                            // Determine column span for specific widgets (like revenue taking 2 cols)
+                                            const colSpanClass = widgetId === 'revenue' ? 'col-span-1 xl:col-span-2' : 'col-span-1'
+                                            
+                                            return (
+                                                <Draggable key={widgetId} draggableId={widgetId} index={index}>
+                                                    {(provided, snapshot) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
+                                                            className={`${colSpanClass} ${snapshot.isDragging ? 'z-50 ring-2 ring-primary ring-offset-2 rounded-xl scale-[1.02] opacity-90' : ''}`}
+                                                            style={{
+                                                                ...provided.draggableProps.style,
+                                                                transition: snapshot.isDragging ? 'none' : provided.draggableProps.style?.transition
+                                                            }}
+                                                        >
+                                                            <WidgetRenderer id={widgetId} stats={stats} />
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            )
+                                        })}
+                                        {provided.placeholder}
                                     </div>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/roles')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-blue-500/10 to-indigo-500/10 blur-2xl group-hover:bg-blue-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    Total Users
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-blue-100 dark:bg-blue-900/30 border border-blue-200/50 dark:border-blue-800/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <Users className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.users}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <Zap className="h-3 w-3 text-amber-500" />
-                                    <span>+180 new</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* New Franchises Stat */}
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/franchise')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-yellow-500/10 to-amber-500/10 blur-2xl group-hover:bg-yellow-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    Total Franchises
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-200/50 dark:border-yellow-800/50 flex items-center justify-center text-yellow-600 dark:text-yellow-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <Building2 className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{(stats as any).franchises || 0}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <span>Active Partners</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/courses')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-orange-500/10 to-amber-500/10 blur-2xl group-hover:bg-orange-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    Enrollments
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-orange-100 dark:bg-orange-900/30 border border-orange-200/50 dark:border-orange-800/50 flex items-center justify-center text-orange-600 dark:text-orange-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <GraduationCap className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.enrollments}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <span>{stats.courses} active courses</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* New Certificates Stat */}
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/certificates')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-sky-500/10 to-blue-500/10 blur-2xl group-hover:bg-sky-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    Certificates Issued
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-sky-100 dark:bg-sky-900/30 border border-sky-200/50 dark:border-sky-800/50 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <GraduationCap className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{(stats as any).certificates || 0}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <span>Total verified</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/leads')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 blur-2xl group-hover:bg-purple-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    CRM Leads
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-purple-100 dark:bg-purple-900/30 border border-purple-200/50 dark:border-purple-800/50 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <Magnet className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.leads || 0}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <span>Active prospects</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/campus-drives')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 blur-2xl group-hover:bg-indigo-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    Campus Drives
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200/50 dark:border-indigo-800/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <Building2 className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.campusDrives || 0}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <span>Ongoing hiring</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/tasks')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-rose-500/10 to-red-500/10 blur-2xl group-hover:bg-rose-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    Active Tasks
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-rose-100 dark:bg-rose-900/30 border border-rose-200/50 dark:border-rose-800/50 flex items-center justify-center text-rose-600 dark:text-rose-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <CheckSquare className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.activeTasks || 0}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <span>Pending action</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/consulting')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-green-500/10 to-emerald-500/10 blur-2xl group-hover:bg-green-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    Consulting Projects
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-green-100 dark:bg-green-900/30 border border-green-200/50 dark:border-green-800/50 flex items-center justify-center text-green-600 dark:text-green-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <BrainCircuit className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.activeProjects || 0}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <span>Active consulting</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card
-                            className="cursor-pointer group relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
-                            onClick={() => router.push('/admin/support')}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-cyan-500/10 to-teal-500/10 blur-2xl group-hover:bg-cyan-500/20 transition-all duration-500" />
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-                                <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
-                                    Open Support Tickets
-                                </CardTitle>
-                                <div className="h-10 w-10 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 border border-cyan-200/50 dark:border-cyan-800/50 flex items-center justify-center text-cyan-600 dark:text-cyan-400 font-bold shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                    <LifeBuoy className="h-4 w-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="relative z-10 mt-2">
-                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats.activeTickets || 0}</div>
-                                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                                    <span>Requires attention</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+                    )}
 
                     {/* Charts & Quick Actions Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -407,12 +314,12 @@ export default function AdminDashboard() {
                         {/* Right Sidebar Area: Activity & Actions */}
                         <div className="space-y-6">
                             {/* Quick Actions */}
-                            <Card className="rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden relative">
+                            <Card className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden relative">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-lg font-bold">Quick Actions</CardTitle>
                                 </CardHeader>
-                                <CardContent className="grid grid-cols-2 gap-3">
+                                <CardContent className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                                     <Button variant="outline" className="h-24 flex-col gap-3 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 shadow-sm transition-all group" onClick={() => router.push('/admin/blogs/editor')}>
                                         <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"><Plus className="h-4 w-4" /></div>
                                         <span className="text-[11px] font-bold uppercase tracking-wider">Create Blog</span>
@@ -429,11 +336,15 @@ export default function AdminDashboard() {
                                         <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform"><Calendar className="h-4 w-4" /></div>
                                         <span className="text-[11px] font-bold uppercase tracking-wider">New Event</span>
                                     </Button>
+                                    <Button variant="outline" className="h-24 flex-col gap-3 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-cyan-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 shadow-sm transition-all group lg:col-span-2" onClick={() => router.push('/admin/support')}>
+                                        <div className="p-2 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform"><LifeBuoy className="h-4 w-4" /></div>
+                                        <span className="text-[11px] font-bold uppercase tracking-wider">Manage Tickets</span>
+                                    </Button>
                                 </CardContent>
                             </Card>
 
                             {/* Recent Activity */}
-                            <Card className="h-[420px] flex flex-col rounded-3xl border border-slate-200/60 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+                            <Card className="h-[420px] flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
                                 <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
                                     <CardTitle className="text-lg font-bold flex items-center gap-2">
                                         <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">

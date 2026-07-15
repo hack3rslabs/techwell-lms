@@ -29,7 +29,7 @@ interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (email: string, password: string) => Promise<{ require2FA?: boolean; tempToken?: string } | void>;
+    login: (email: string, password: string, trustDevice?: boolean) => Promise<{ require2FA?: boolean; tempToken?: string } | void>;
     register: (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string) => Promise<{ user: User, devOtp?: string }>;
     verifyOtp: (email: string, otp: string) => Promise<void>;
     resendOtp: (email: string) => Promise<{success: boolean, devOtp?: string}>;
@@ -64,8 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loadUser();
     }, []);
 
-    const login = async (email: string, password: string): Promise<{ require2FA?: boolean; tempToken?: string } | void> => {
-        const response = await authApi.login({ email, password });
+    const login = async (email: string, password: string, trustDevice?: boolean): Promise<{ require2FA?: boolean; tempToken?: string } | void> => {
+        const response = await authApi.login({ email, password, trustDevice });
         if (response.data.require2FA) {
             return {
                 require2FA: true,

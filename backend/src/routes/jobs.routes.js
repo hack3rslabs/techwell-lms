@@ -241,6 +241,64 @@ router.get('/:id', async (req, res, next) => {
 });
 
 /**
+ * @route   GET /api/jobs/:id/match
+ * @desc    Get AI-driven ATS match score for the current student
+ */
+router.get('/:id/match', authenticate, async (req, res, next) => {
+    try {
+        const job = await prisma.job.findUnique({ where: { id: req.params.id } });
+        if (!job) return res.status(404).json({ error: 'Job not found' });
+
+        const profile = await prisma.candidateProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+
+        if (!profile || !profile.resumeUrl) {
+            return res.json({ matchScore: null, message: 'Please upload a resume in your profile to see ATS Match Score.' });
+        }
+
+        const AIService = require('../services/ai.service');
+        const aiService = new AIService();
+
+        const resumeText = await aiService.extractTextFromPDF(profile.resumeUrl);
+        if (!resumeText) {
+             return res.json({ matchScore: null, message: 'Could not extract text from your resume.' });
+        }
+
+        const prompt = `Act as an ATS (Applicant Tracking System). Compare this Candidate Resume to the Job Description and return a JSON evaluation.
+        
+        Job Title: ${job.title}
+        Job Description: ${job.description}
+        Job Skills: ${job.skills || 'Not specified'}
+
+        Candidate Resume:
+        ${resumeText}
+
+        Return ONLY a JSON object:
+        {
+            "matchScore": 75,
+            "matchedKeywords": ["string"],
+            "missingKeywords": ["string"],
+            "briefFeedback": "string"
+        }`;
+
+        const responseText = await aiService.generateWithAIProvider(prompt);
+        let jsonStr = responseText.trim();
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) jsonStr = jsonMatch[0];
+        
+        try {
+            const result = JSON.parse(jsonStr.replace(/```json|```/gi, '').trim());
+            res.json(result);
+        } catch(e) {
+            res.json({ matchScore: 50, message: 'Error parsing AI response', matchedKeywords: [], missingKeywords: [] });
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   POST /api/jobs
  * @desc    Post a new job
  */

@@ -106,3 +106,38 @@ router.delete('/expenses/:id', authenticate, authorize(['SUPER_ADMIN', 'ADMIN'])
 });
 
 module.exports = router;
+
+
+/**
+ * @route   GET /api/finance/upcoming-fees
+ * @desc    Get upcoming installments / EMIs
+ * @access  Private (Admin/Finance)
+ */
+router.get('/upcoming-fees', authenticate, checkPermission('FINANCE'), async (req, res, next) => {
+    try {
+        const upcoming = await prisma.installment.findMany({
+            where: {
+                status: 'PENDING'
+            },
+            include: {
+                enrollment: {
+                    include: {
+                        user: { select: { name: true, email: true, phone: true } },
+                        course: { select: { title: true } }
+                    }
+                }
+            },
+            orderBy: {
+                dueDate: 'asc'
+            },
+            take: 20
+        });
+
+        res.json({
+            success: true,
+            data: upcoming
+        });
+    } catch (error) {
+        next(error);
+    }
+});

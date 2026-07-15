@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, Camera, Upload, User } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { Loader2, Camera, Upload, User, QrCode, Shield } from 'lucide-react'
 import api from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 
@@ -32,10 +33,18 @@ export default function SettingsPage() {
     const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null)
 
     // System Settings State
+    
+    // 2FA State
+    const [qrCodeUrl, setQrCodeUrl] = React.useState<string | null>(null)
+    const [twoFaCode, setTwoFaCode] = React.useState('')
+    const [is2FaEnabled, setIs2FaEnabled] = React.useState(false)
+
     const [systemSettings, setSystemSettings] = React.useState({
         platformName: '',
         supportEmail: '',
-        primaryColor: '#2563eb'
+        primaryColor: '#2563eb',
+        isMaintenanceMode: false,
+        isTestMode: false
     })
 
     async function fetchProfile() {
@@ -50,6 +59,7 @@ export default function SettingsPage() {
                 name: userRes.data.name || '',
                 phone: userRes.data.phone || ''
             })
+            setIs2FaEnabled(userRes.data.twoFactorEnabled || false)
             setAvatarPreview(userRes.data.avatar ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${userRes.data.avatar}` : null)
 
             if (settingsRes.data) {
@@ -77,6 +87,30 @@ export default function SettingsPage() {
                 setAvatarPreview(reader.result as string)
             }
             reader.readAsDataURL(file)
+        }
+    }
+
+    
+    const handleSetup2FA = async () => {
+        try {
+            const res = await api.post('/auth/2fa/setup')
+            setQrCodeUrl(res.data.data.qrCodeUrl)
+        } catch (error) {
+            console.error(error)
+            alert('Failed to setup 2FA')
+        }
+    }
+
+    const handleEnable2FA = async () => {
+        try {
+            await api.post('/auth/2fa/enable', { token: twoFaCode })
+            setIs2FaEnabled(true)
+            setQrCodeUrl(null)
+            setTwoFaCode('')
+            alert('2FA enabled successfully!')
+        } catch (error) {
+            console.error(error)
+            alert('Invalid 2FA code')
         }
     }
 
@@ -191,6 +225,58 @@ export default function SettingsPage() {
                     </CardContent>
                 </Card>
 
+                
+                {/* Security Settings */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Shield className="h-5 w-5 text-indigo-500" />
+                            Security Settings
+                        </CardTitle>
+                        <CardDescription>Secure your account with Two-Factor Authentication.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between border p-4 rounded-lg">
+                            <div className="space-y-0.5">
+                                <Label className="text-base font-semibold">Two-Factor Authentication (2FA)</Label>
+                                <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {is2FaEnabled ? (
+                                    <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">Enabled</span>
+                                ) : (
+                                    <Button onClick={handleSetup2FA} variant="outline" size="sm">Setup 2FA</Button>
+                                )}
+                            </div>
+                        </div>
+
+                        {qrCodeUrl && !is2FaEnabled && (
+                            <div className="mt-4 p-4 border rounded-lg bg-slate-50 dark:bg-slate-900 flex flex-col items-center gap-4 animate-in fade-in slide-in-from-top-2">
+                                <div className="text-center">
+                                    <h4 className="font-semibold text-sm">Scan QR Code</h4>
+                                    <p className="text-xs text-muted-foreground">Use Google Authenticator or Authy to scan this code.</p>
+                                </div>
+                                <div className="bg-white p-2 rounded-xl shadow-sm border">
+                                    <img src={qrCodeUrl} alt="2FA QR Code" className="w-48 h-48" />
+                                </div>
+                                <div className="w-full max-w-xs space-y-2">
+                                    <Label className="text-xs">Enter 6-digit code</Label>
+                                    <div className="flex gap-2">
+                                        <Input 
+                                            value={twoFaCode}
+                                            onChange={(e) => setTwoFaCode(e.target.value)}
+                                            placeholder="000000"
+                                            maxLength={6}
+                                            className="text-center tracking-widest font-mono font-bold"
+                                        />
+                                        <Button onClick={handleEnable2FA} disabled={twoFaCode.length !== 6}>Verify</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
                 {/* Platform Settings */}
                 {hasPermission('SETTINGS') ? (
                     <Card>
@@ -215,6 +301,31 @@ export default function SettingsPage() {
                                     disabled={!hasPermission('SETTINGS', 'update')}
                                 />
                             </div>
+                            
+                            <div className="flex items-center justify-between border p-4 rounded-lg mt-4">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Maintenance Mode</Label>
+                                    <p className="text-sm text-muted-foreground">Put the system in maintenance mode. Only admins will be able to access.</p>
+                                </div>
+                                <Switch
+                                    checked={systemSettings.isMaintenanceMode}
+                                    onCheckedChange={(checked) => setSystemSettings({ ...systemSettings, isMaintenanceMode: checked })}
+                                    disabled={!hasPermission('SETTINGS', 'update')}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between border p-4 rounded-lg mb-4">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Test Mode</Label>
+                                    <p className="text-sm text-muted-foreground">Enable test mode for safe development and mock payments.</p>
+                                </div>
+                                <Switch
+                                    checked={systemSettings.isTestMode}
+                                    onCheckedChange={(checked) => setSystemSettings({ ...systemSettings, isTestMode: checked })}
+                                    disabled={!hasPermission('SETTINGS', 'update')}
+                                />
+                            </div>
+
                             {hasPermission('SETTINGS', 'update') && (
                                 <Button variant="outline" onClick={async () => {
                                     try {

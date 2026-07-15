@@ -110,6 +110,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         { label: "Tasks", icon: ListTodo, href: "/admin/tasks", permission: "TASKS", group: "Operations" },
         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Operations" },
         { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS", group: "Operations" },
+        { label: "Support Tickets", icon: Inbox, href: "/admin/support", permission: "TICKETS", group: "Operations" },
         {
             label: "Automation Studio", icon: Bot, href: "/admin/automation-studio", group: "Operations", customContent: (
                 <div className="space-y-1 mt-2">
@@ -161,7 +162,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         // 8. Reporting & Analytics
         { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Reporting & Analytics" },
         { label: "Consulting Revenue", icon: CreditCard, href: "/admin/consultancy-revenue", group: "Reporting & Analytics" },
-        { label: "Global Data", icon: Database, href: "/admin/global-data", permission: "GLOBAL_DATA", group: "Reporting & Analytics" },
+        // { label: "Global Data", icon: Database, href: "/admin/global-data", permission: "GLOBAL_DATA", group: "Reporting & Analytics" },
 
         // 9. Deployments & Marketing
         { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Deployments & Marketing" },
@@ -303,7 +304,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                 )}
 
                 {/* Scrollable Menu ✅ */}
-                <div className="p-3 flex-1 overflow-y-auto no-scrollbar">
+                <div className="p-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                     <nav className="space-y-1 pb-6">
                         {Object.entries(
                             availableRoutes.reduce((acc, route) => {

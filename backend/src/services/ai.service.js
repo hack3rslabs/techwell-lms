@@ -346,9 +346,10 @@ INTERVIEW CONTEXT:
 - Current Difficulty: ${difficulty}
 - Interview Phase: TECHNICAL (Question ${technicalQuestionIndex} of the technical round)
 - Question Type Needed: ${questionType}
+- Job Description: ${interview.jobDescription || "Not provided — generate questions based on the stated role and technologies."}
 
 CANDIDATE RESUME CONTEXT:
-${resumeText || "No resume uploaded — generate questions based on the stated role and technologies."}
+${resumeText || "No resume uploaded — rely on the Job Description or Role."}
 
 PREVIOUS QUESTION ASKED: "${previousResponse?.question?.question || 'None'}"
 CANDIDATE'S EXACT ANSWER TO PREVIOUS QUESTION: "${previousResponse?.answer || 'None'}"

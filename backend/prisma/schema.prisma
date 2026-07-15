@@ -103,6 +103,7 @@ model User {
   franchiseId                 String?
   franchise                   Franchise?                @relation(fields: [franchiseId], references: [id])
   approvedFranchises          Franchise[]               @relation("FranchiseApprover")
+  department                  String?
 }
 
 model SystemRole {
@@ -440,6 +441,7 @@ model Enrollment {
   batch              Batch?           @relation(fields: [batchId], references: [id])
   course             Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  installments       Installment[]
 
   @@unique([userId, courseId])
 }
@@ -616,6 +618,20 @@ model Payment {
   course        Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user          User       @relation(fields: [userId], references: [id])
   franchise     Franchise? @relation(fields: [franchiseId], references: [id])
+}
+
+model Installment {
+  id           String      @id @default(cuid())
+  enrollmentId String
+  amount       Float
+  dueDate      DateTime
+  status       String      @default("PENDING") // PENDING, PAID, OVERDUE
+  paidDate     DateTime?
+  paymentId    String?     @unique
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  enrollment   Enrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 }
 
 model ForumCategory {
@@ -1154,6 +1170,8 @@ model Event {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   imageUrl              String?
+  isApproved            Boolean  @default(false)
+  approvedById          String?
 }
 
 model PaymentConfig {
@@ -1188,6 +1206,7 @@ model SystemSettings {
   faviconUrl            String?
   primaryColor          String   @default("#2563eb")
   isMaintenanceMode     Boolean  @default(false)
+  isTestMode            Boolean  @default(false)
   address               String?
   phone                 String?
   updatedAt             DateTime @updatedAt
@@ -1254,6 +1273,8 @@ model EmployerRequest {
   approvedUserId  String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  activationCode  String?
+  emailVerified   Boolean  @default(false)
 
   @@index([email])
   @@index([status])
@@ -2310,6 +2331,7 @@ enum LeadStatus {
   INTERESTED
   QUALIFIED
   CONVERTED
+  FOLLOW_UP
   LOST
 }
 

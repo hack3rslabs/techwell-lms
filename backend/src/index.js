@@ -99,6 +99,9 @@ app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(cookieParser());
 
 // API Routes
+const { maintenanceMiddleware } = require('./middleware/maintenanceMiddleware');
+app.use('/api', maintenanceMiddleware);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/courses', courseRoutes);
@@ -144,7 +147,6 @@ app.use('/api/email-settings', require('./routes/email-settings.routes'));
 app.use('/api/reports', require('./routes/reports.routes'));
 app.use('/api/tickets', require('./routes/tickets.routes'));
 app.use('/api/institutes', require('./routes/institute.routes'));
-
 app.use('/api/bulk-upload', require('./routes/bulkUpload.routes'));
 app.use('/api/consultancy-analytics', require('./routes/consultancyAnalytics.routes'));
 app.use('/api/live-classes', require('./routes/live-classes.routes'));

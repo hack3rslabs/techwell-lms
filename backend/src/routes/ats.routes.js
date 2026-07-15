@@ -43,7 +43,14 @@ router.post('/apply/external', async (req, res, next) => {
         });
 
         // Trigger Email (Async)
-        // TODO: Call email service to log "APPLICATION_RECEIVED"
+        const job = await prisma.job.findUnique({
+            where: { id: jobId },
+            include: { employer: { include: { employerProfile: true } } }
+        });
+        const companyName = job?.employer?.employerProfile?.companyName || 'Our Company';
+        
+        const { sendApplicationReceivedEmail } = require('../services/email.service');
+        sendApplicationReceivedEmail(email, name, job?.title || 'the position', companyName).catch(err => console.error('Failed to send application email:', err));
 
         res.status(201).json(application);
     } catch (error) {

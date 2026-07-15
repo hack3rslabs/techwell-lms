@@ -138,11 +138,42 @@ const sendPasswordResetOtpEmail = async (email, otp) => {
     return sendEmail(email, subject, html);
 };
 
+const sendApplicationReceivedEmail = async (applicantEmail, applicantName, jobTitle, companyName) => {
+    const subject = `Application Received: ${jobTitle} at ${companyName}`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Application Received</h1>
+            <p>Dear ${applicantName},</p>
+            <p>Thank you for applying for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p>
+            <p>We have successfully received your application and our recruitment team will review it shortly. We will reach out to you if your qualifications match our requirements.</p>
+            <p>Best regards,<br/>The ${companyName} Team</p>
+        </div>
+    `;
+    return sendEmail(applicantEmail, subject, html);
+};
+
+const sendStatusUpdateEmail = async (applicantEmail, applicantName, jobTitle, companyName, status) => {
+    const subject = `Application Update: ${jobTitle} at ${companyName}`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Application Status Update</h1>
+            <p>Dear ${applicantName},</p>
+            <p>Your application for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong> has been updated.</p>
+            <p>Current Status: <strong>${status}</strong></p>
+            <p>Thank you for your interest in joining our team.</p>
+            <p>Best regards,<br/>The ${companyName} Team</p>
+        </div>
+    `;
+    return sendEmail(applicantEmail, subject, html);
+};
+
 module.exports = {
     sendEmail,
     sendWelcomeEmail,
     sendCertificateEmail,
     sendInterviewScheduledEmail,
     sendOtpEmail,
-    sendPasswordResetOtpEmail
+    sendPasswordResetOtpEmail,
+    sendApplicationReceivedEmail,
+    sendStatusUpdateEmail
 };

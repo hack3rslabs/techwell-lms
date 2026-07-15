@@ -145,6 +145,31 @@ router.get('/', authenticate, async (req, res, next) => {
 });
 
 /**
+ * @route   GET /api/certificates/me
+ * @desc    Get current user's certificates
+ * @access  Private
+ */
+router.get('/me', authenticate, async (req, res, next) => {
+    try {
+        const certificates = await prisma.certificate.findMany({
+            where: {
+                userId: req.user.id,
+                status: 'ISSUED'
+            },
+            include: {
+                template: { select: { name: true, previewUrl: true } },
+                course: { select: { title: true } },
+                franchise: { select: { name: true, logoUrl: true } }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json({ certificates });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   GET /api/certificates/verify/:uniqueId
  * @desc    Public certificate verification
  * @access  Public

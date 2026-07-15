@@ -61,7 +61,18 @@ router.patch('/:id/status', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN'])
             data: { status }
         });
 
-        // TODO: Trigger Email/WhatsApp to student based on status change via RabbitMQ or NodeMailer
+        const { sendStatusUpdateEmail } = require('../services/email.service');
+        if (application.user && application.user.email) {
+            const companyName = application.drive?.companyName || 'Our Company';
+            const jobTitle = application.drive?.title || 'Campus Drive';
+            sendStatusUpdateEmail(
+                application.user.email,
+                application.user.name || 'Student',
+                jobTitle,
+                companyName,
+                status
+            ).catch(err => console.error('Failed to send status email:', err));
+        }
 
         res.json(updated);
     } catch (error) {

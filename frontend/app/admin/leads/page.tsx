@@ -74,6 +74,30 @@ export default function LeadsPage() {
     const [staffUsers, setStaffUsers] = React.useState<{id: string, name: string}[]>([])
     const [franchises, setFranchises] = React.useState<{id: string, name: string}[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
+
+    const [leadCounts, setLeadCounts] = React.useState<any>({ totalCount: 0, statusCounts: {} })
+
+    const fetchLeadCounts = React.useCallback(async () => {
+        try {
+            const res = await leadApi.getCounts()
+            if (res.data) {
+                setLeadCounts(res.data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch lead counts', error)
+        }
+    }, [])
+
+    React.useEffect(() => {
+        fetchLeadCounts()
+        
+        const handleRefresh = () => fetchLeadCounts()
+        if (typeof window !== 'undefined') {
+            window.addEventListener('lead-counts:refresh', handleRefresh)
+            return () => window.removeEventListener('lead-counts:refresh', handleRefresh)
+        }
+    }, [fetchLeadCounts])
+
     const [searchQuery, setSearchQuery] = React.useState('')
     const [selectedLeads, setSelectedLeads] = React.useState<string[]>([])
 
@@ -569,6 +593,30 @@ export default function LeadsPage() {
                 </div>
             </div>
 
+            {/* Quick Status Filters */}
+            <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar">
+                {[
+                    { label: 'Total Leads', value: 'ALL', count: leadCounts.totalCount || 0 },
+                    { label: 'New', value: 'NEW', count: leadCounts.statusCounts?.NEW || 0 },
+                    { label: 'Contacted', value: 'CONTACTED', count: leadCounts.statusCounts?.CONTACTED || 0 },
+                    { label: 'Pending / Interested', value: 'INTERESTED', count: leadCounts.statusCounts?.INTERESTED || 0 },
+                    { label: 'Qualified', value: 'QUALIFIED', count: leadCounts.statusCounts?.QUALIFIED || 0 },
+                    { label: 'Converted', value: 'CONVERTED', count: leadCounts.statusCounts?.CONVERTED || 0 },
+                    { label: 'Follow Up', value: 'FOLLOW_UP', count: leadCounts.statusCounts?.FOLLOW_UP || 0 },
+                    { label: 'Not Interested', value: 'LOST', count: leadCounts.statusCounts?.LOST || 0 },
+                ].map((status) => (
+                    <Button
+                        key={status.value}
+                        variant={statusFilter === status.value ? "default" : "outline"}
+                        size="sm"
+                        className={`whitespace-nowrap h-8 px-4 rounded-md font-medium text-xs shadow-sm ${statusFilter === status.value ? 'bg-primary text-primary-foreground' : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                        onClick={() => setStatusFilter(status.value)}
+                    >
+                        {status.label} {status.count > 0 && `(${status.count})`}
+                    </Button>
+                ))}
+            </div>
+
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -597,6 +645,7 @@ export default function LeadsPage() {
                                     <SelectItem value="INTERESTED">Interested</SelectItem>
                                     <SelectItem value="QUALIFIED">Qualified</SelectItem>
                                     <SelectItem value="CONVERTED">Converted</SelectItem>
+                                    <SelectItem value="FOLLOW_UP">Follow Up</SelectItem>
                                     <SelectItem value="LOST">Lost</SelectItem>
                                 </SelectContent>
                             </Select>

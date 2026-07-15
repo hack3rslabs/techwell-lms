@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Briefcase, Clock, Filter, ChevronRight, Building2, IndianRupee, Wifi, CheckCircle2, Loader2, X } from 'lucide-react';
+import { Search, MapPin, Briefcase, Clock, Filter, ChevronRight, Building2, IndianRupee, Wifi, CheckCircle2, Loader2, X, BrainCircuit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -62,6 +62,8 @@ export default function StudentJobsPage() {
     const [locationFilter, setLocationFilter] = useState('');
     const [typeFilter, setTypeFilter] = useState('All');
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+    const [atsMatch, setAtsMatch] = useState<any>(null);
+    const [loadingAts, setLoadingAts] = useState(false);
     const [applyingJob, setApplyingJob] = useState<Job | null>(null);
     const [applying, setApplying] = useState(false);
     const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
@@ -94,6 +96,20 @@ export default function StudentJobsPage() {
         fetchJobs();
         fetchMyApplications();
     }, []);
+
+    const handleSelectJob = async (job: Job) => {
+        setSelectedJob(job);
+        setAtsMatch(null);
+        setLoadingAts(true);
+        try {
+            const res = await jobsApi.getMatchScore(job.id);
+            if (res.data) setAtsMatch(res.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingAts(false);
+        }
+    };
 
     const handleApply = async () => {
         if (!applyingJob) return;
@@ -225,7 +241,7 @@ export default function StudentJobsPage() {
                                 <div
                                     key={job.id}
                                     className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-300 cursor-pointer flex flex-col overflow-hidden"
-                                    onClick={() => setSelectedJob(job)}
+                                    onClick={() => handleSelectJob(job)}
                                 >
                                     <div className="p-5 flex-1">
                                         {/* Company Header */}
@@ -349,6 +365,52 @@ export default function StudentJobsPage() {
                             </DialogHeader>
 
                             <div className="space-y-5 mt-2">
+                                {/* ATS Match Widget */}
+                                {loadingAts ? (
+                                    <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg animate-pulse border border-blue-100">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Analyzing your resume against this job...
+                                    </div>
+                                ) : atsMatch && atsMatch.matchScore !== null && atsMatch.matchScore !== undefined ? (
+                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="font-bold text-blue-900 flex items-center gap-2">
+                                                <BrainCircuit className="w-5 h-5" />
+                                                AI Match Insights
+                                            </h4>
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-2xl font-black text-blue-600">{atsMatch.matchScore}%</div>
+                                                <div className="text-xs text-blue-500 font-medium">Match Score</div>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-blue-800/80 mb-3">{atsMatch.briefFeedback || atsMatch.message}</p>
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span className="font-semibold text-emerald-700 block mb-1">Matched Skills</span>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {atsMatch.matchedKeywords?.map((k: string) => (
+                                                        <span key={k} className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">{k}</span>
+                                                    ))}
+                                                    {(!atsMatch.matchedKeywords || atsMatch.matchedKeywords.length === 0) && <span className="text-xs text-slate-400">None found</span>}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span className="font-semibold text-rose-700 block mb-1">Missing Skills</span>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {atsMatch.missingKeywords?.map((k: string) => (
+                                                        <span key={k} className="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">{k}</span>
+                                                    ))}
+                                                    {(!atsMatch.missingKeywords || atsMatch.missingKeywords.length === 0) && <span className="text-xs text-slate-400">None missing</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : atsMatch && atsMatch.message ? (
+                                    <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
+                                        {atsMatch.message}
+                                    </div>
+                                ) : null}
+
                                 <div>
                                     <h4 className="font-black text-slate-700 text-sm uppercase tracking-wider mb-2">Job Description</h4>
                                     <p className="text-slate-600 leading-relaxed whitespace-pre-wrap text-sm">{selectedJob.description}</p>

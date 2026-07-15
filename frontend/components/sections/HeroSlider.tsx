@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import api from '@/lib/api'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { 
   Sparkles, ArrowRight, Building2, ShieldCheck, 
-  Globe2, Code2, Users, Cpu, GraduationCap, Laptop, Briefcase, Database, Target, TrendingUp, Store, Handshake
+  Globe2, Code2, Users, Cpu, GraduationCap, Laptop, Briefcase, Database, Target, TrendingUp, Store, Handshake, Gift
 } from 'lucide-react'
 
 const SLIDES = [
@@ -177,6 +178,7 @@ const SLIDES = [
 
 export function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [heroAd, setHeroAd] = useState<any>(null)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -184,6 +186,14 @@ export function HeroSlider() {
     }, 6000) // 6 seconds per slide
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    api.get('/ads/active').then(res => {
+      const ads = res.data?.ads || [];
+      const hAd = ads.find((a: any) => a.position === 'HERO_CTA');
+      if (hAd) setHeroAd(hAd);
+    }).catch(console.error);
+  }, []);
 
   const slide = SLIDES[currentSlide]
 
@@ -329,6 +339,32 @@ export function HeroSlider() {
           />
         ))}
       </div>
+      {/* Floating Dynamic CTA */}
+      {heroAd ? (
+        <a 
+          href={heroAd.targetUrl || '#'} 
+          target="_blank" rel="noopener noreferrer"
+          onClick={() => api.post(`/ads/${heroAd.id}/click`).catch(console.error)}
+          className="absolute bottom-20 right-6 md:bottom-12 md:right-12 z-50 flex items-center justify-center w-20 h-20 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:scale-110 transition-all duration-300 group cursor-pointer overflow-hidden border-2 border-white/20"
+          title={heroAd.title}
+        >
+          <div className="absolute inset-0 rounded-full border-2 border-white/40 animate-ping opacity-75"></div>
+          {heroAd.imageUrl ? (
+             <img src={heroAd.imageUrl} alt={heroAd.title} className="w-full h-full object-cover rounded-full" />
+          ) : (
+             <Gift className="w-8 h-8 text-white drop-shadow-md group-hover:animate-pulse" />
+          )}
+        </a>
+      ) : (
+        <Link 
+          href="/offers" 
+          className="absolute bottom-20 right-6 md:bottom-12 md:right-12 z-50 flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-amber-500 to-orange-400 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:scale-110 hover:rotate-12 transition-all duration-300 animate-bounce group"
+          aria-label="View Special Offers"
+        >
+          <div className="absolute inset-0 rounded-full border-2 border-white/40 animate-ping opacity-75"></div>
+          <Gift className="w-8 h-8 text-white drop-shadow-md group-hover:animate-pulse" />
+        </Link>
+      )}
     </section>
   )
 }

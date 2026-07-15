@@ -26,13 +26,15 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             enrollmentsCount,
             interviewsCount,
             leadsCount,
+            upcomingFeesCount,
             campusDrivesCount,
             revenueData,
             activeTasksCount,
             activeTicketsCount,
             activeProjectsCount,
             franchisesCount,
-            certificatesCount
+            certificatesCount,
+            activeEnrollmentsForFees
         ] = await Promise.all([
             // Only count users if permitted, else 0
             rules.manageUsers ? prisma.user.count({
@@ -48,6 +50,7 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
                 where: req.user.instituteId ? { user: { instituteId: req.user.instituteId } } : {}
             }),
             prisma.lead.count(),
+            prisma.installment.count({ where: { status: 'PENDING' } }),
             prisma.campusDrive.count(),
             // Only agg revenue if permitted, else 0
             rules.viewFinance ? prisma.payment.aggregate({
@@ -68,8 +71,38 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
                 where: req.user.role === 'SUPER_ADMIN' ? { status: { notIn: ['DELIVERY', 'CANCELLED'] } } : { assigneeId: req.user.id, status: { notIn: ['DELIVERY', 'CANCELLED'] } }
             }),
             prisma.franchise.count(),
-            prisma.certificate.count()
+            prisma.certificate.count(),
+            // Get all active enrollments with their course price and payments
+            rules.viewFinance ? prisma.enrollment.findMany({
+                where: {
+                    status: 'ACTIVE',
+                    ...(req.user.instituteId ? { course: { instituteId: req.user.instituteId } } : {})
+                },
+                include: {
+                    course: { select: { price: true } },
+                    user: {
+                        include: {
+                            payments: {
+                                where: { status: 'SUCCESS' }
+                            }
+                        }
+                    }
+                }
+            }) : Promise.resolve([])
         ]);
+
+        // Calculate pending fees
+        let totalPendingFees = 0;
+        if (rules.viewFinance && activeEnrollmentsForFees && activeEnrollmentsForFees.length > 0) {
+            activeEnrollmentsForFees.forEach(enrollment => {
+                const coursePrice = Number(enrollment.course?.price || 0);
+                // Sum up payments related to this course specifically (if possible, or just all successful payments if that's the logic)
+                const payments = enrollment.user?.payments?.filter(p => p.courseId === enrollment.courseId) || [];
+                const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+                const pending = Math.max(0, coursePrice - totalPaid);
+                totalPendingFees += pending;
+            });
+        }
 
         // Get recent enrollments for chart/list
         const recentEnrollments = await prisma.enrollment.findMany({
@@ -87,13 +120,15 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
             enrollments: enrollmentsCount,
             interviews: interviewsCount,
             leads: leadsCount,
+            upcomingFeesCount: upcomingFeesCount,
             campusDrives: campusDrivesCount,
-            revenue: revenueData._sum.amount || 0,
+            revenue: revenueData?._sum?.amount || 0,
             activeTasks: activeTasksCount,
             activeTickets: activeTicketsCount,
             activeProjects: activeProjectsCount,
             franchises: franchisesCount,
             certificates: certificatesCount,
+            pendingFees: totalPendingFees,
             recentActivity: recentEnrollments
         });
     } catch (error) {
@@ -332,6 +367,82 @@ router.get('/enrollments', authenticate, checkPermission('STUDENTS'), async (req
  * @route   PATCH /api/admin/enrollments/:id/status
  * @desc    Update enrollment status
  */
+
+/**
+ * @route   POST /api/admin/enrollments/manual
+ * @desc    Manually enroll a student (Admin/Staff)
+ * @access  Private (Admin/Staff)
+ */
+router.post('/enrollments/manual', authenticate, checkPermission('STUDENTS'), async (req, res, next) => {
+    try {
+        const { userId, courseId, batchId, paymentMethod, couponCode, amountPaid } = req.body;
+        
+        if (!userId || !courseId) {
+            return res.status(400).json({ error: 'User and Course are required' });
+        }
+
+        const course = await prisma.course.findUnique({ where: { id: courseId } });
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+
+        // Calculate discount if coupon exists
+        let discountAmount = 0;
+        let finalAmount = course.price;
+        let appliedCouponId = null;
+
+        if (couponCode) {
+            const coupon = await prisma.coupon.findUnique({ where: { code: couponCode } });
+            if (coupon && coupon.isActive && new Date(coupon.expiryDate) > new Date()) {
+                if (coupon.discountType === 'PERCENTAGE') {
+                    discountAmount = (course.price * coupon.discountValue) / 100;
+                } else {
+                    discountAmount = coupon.discountValue;
+                }
+                finalAmount = course.price - discountAmount;
+                appliedCouponId = coupon.id;
+            }
+        }
+
+        // We use the amount passed from frontend if provided and validated, or the calculated one
+        const paymentAmount = amountPaid !== undefined ? parseFloat(amountPaid) : finalAmount;
+
+        // Create Payment
+        const payment = await prisma.payment.create({
+            data: {
+                orderId: `MANUAL_${Date.now()}_${userId.substring(0, 5)}`,
+                amount: paymentAmount,
+                status: 'COMPLETED',
+                paymentMethod: paymentMethod || 'CASH', // CASH or ONLINE
+                userId,
+                courseId
+            }
+        });
+
+        // Create Enrollment
+        const enrollment = await prisma.enrollment.create({
+            data: {
+                userId,
+                courseId,
+                batchId: batchId || null,
+                status: 'ACTIVE'
+            },
+            include: {
+                user: true,
+                course: true
+            }
+        });
+
+        res.status(201).json({ 
+            message: 'Enrollment successful', 
+            enrollment,
+            payment 
+        });
+
+    } catch (error) {
+        console.error('Manual enrollment error:', error);
+        next(error);
+    }
+});
+
 router.patch('/enrollments/:id/status', authenticate, checkPermission('STUDENTS'), async (req, res, next) => {
     try {
         const { status } = req.body;

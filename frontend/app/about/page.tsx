@@ -5,6 +5,7 @@ import { GraduationCap, Users, Award, Target, ArrowRight, Calendar } from 'lucid
 import { Button } from '@/components/ui/button'
 import { WhyTrust } from '@/components/home/WhyTrust'
 import { CredentialsSection } from '@/components/home/CredentialsSection'
+import { TeamSection } from '@/components/about/TeamSection'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -140,22 +141,7 @@ export default function AboutPage() {
             </section>
 
             {/* Team */}
-            {/* <section className="py-20">
-                <div className="container">
-                    <h2 className="text-3xl font-bold text-center mb-12">Leadership Team</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        {team.map((member, idx) => (
-                            <div key={idx} className="text-center">
-                                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 mx-auto mb-4 flex items-center justify-center">
-                                    <Users className="h-10 w-10 text-primary/50" />
-                                </div>
-                                <h3 className="font-semibold">{member.name}</h3>
-                                <p className="text-sm text-muted-foreground">{member.role}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section> */}
+            <TeamSection />
 
             {/* CTA */}
             {/* <section className="py-20 bg-primary text-primary-foreground">

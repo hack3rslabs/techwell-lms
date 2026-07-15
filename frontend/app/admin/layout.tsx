@@ -59,7 +59,7 @@ export default function AdminLayout({
                 <AdminTopBar isSidebarCollapsed={isSidebarCollapsed} />
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                     <div className="p-6 md:p-8">
                         <PermissionGuard>
                             {children}

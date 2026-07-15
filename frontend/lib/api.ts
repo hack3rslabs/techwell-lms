@@ -66,7 +66,7 @@ export const authApi = {
         api.post('/auth/verify-otp', data),
     resendOtp: (data: { email: string }) =>
         api.post('/auth/resend-otp', data),
-    login: (data: { email: string; password: string }) =>
+    login: (data: { email: string; password: string; trustDevice?: boolean }) =>
         api.post('/auth/login', data),
     refresh: () => api.post('/auth/refresh'),
     logout: () => api.post('/auth/logout'),
@@ -203,7 +203,8 @@ export const courseApi = {
 
 // Employer Request API
 export const employerRequestApi = {
-    submit: (data: { name: string; designation: string; email: string; phone?: string }) => api.post('/employer-requests', data),
+    submit: (data: { employerName: string; companyName: string; email: string; phone: string; website: string; address: string; password?: string; confirmPassword?: string }) => api.post('/employer-requests', data),
+    verifyOtp: (data: { email: string; otp: string }) => api.post('/employer-requests/verify-otp', data),
     getAll: () => api.get('/employer-requests'),
     getById: (id: string) => api.get(`/employer-requests/${id}`),
     approve: (id: string, data?: { adminNotes?: string }) => api.put(`/employer-requests/${id}/approve`, data),
@@ -526,6 +527,7 @@ export const batchesApi = {
 export const jobsApi = {
     getAll: (params?: any) => api.get('/jobs', { params }),
     getById: (id: string) => api.get(`/jobs/${id}`),
+    getMatchScore: (id: string) => api.get(`/jobs/${id}/match`),
     create: (data: any) => api.post('/jobs', data),
     update: (id: string, data: any) => api.put(`/jobs/${id}`, data),
     delete: (id: string) => api.delete(`/jobs/${id}`),
@@ -552,10 +554,11 @@ export const jobsApi = {
 
 // Messages API
 export const messagesApi = {
-    sendToAll: (data: { title: string; content: string; priority?: string }) => api.post('/messages/send/all', data),
-    sendToBatch: (data: { title: string; content: string; batchId: string; priority?: string }) => api.post('/messages/send/batch', data),
-    sendToCourse: (data: { title: string; content: string; courseId: string; priority?: string }) => api.post('/messages/send/course', data),
-    sendToStudent: (data: { title: string; content: string; studentId: string; priority?: string }) => api.post('/messages/send/student', data),
+    sendToAll: (data: { title: string; content: string; priority?: string }) => api.post('/messages/send-to-all', data),
+    sendToBatch: (data: { title: string; content: string; batchId: string; priority?: string }) => api.post('/messages/send-to-batch', data),
+    sendToCourse: (data: { title: string; content: string; courseId: string; priority?: string }) => api.post('/messages/send-to-course', data),
+    sendToStudent: (data: { title: string; content: string; studentId: string; priority?: string }) => api.post('/messages/send-to-student', data),
+    sendToStaff: (data: { title: string; content: string; priority?: string }) => api.post('/messages/send-to-staff', data),
 };
 
 // Campus Drives API
@@ -598,4 +601,28 @@ export const clientApi = {
     create: (data: any) => api.post('/clients', data),
     update: (id: string, data: any) => api.put(`/clients/${id}`, data),
     delete: (id: string) => api.delete(`/clients/${id}`),
+};
+
+// Team API
+export const teamApi = {
+    getPublic: () => api.get('/team/public'),
+    getAdminAll: () => api.get('/team/admin'),
+    create: (data: any) => api.post('/team/admin', data),
+    update: (id: string, data: any) => api.put(`/team/admin/${id}`, data),
+    delete: (id: string) => api.delete(`/team/admin/${id}`),
+};
+
+// Settings API
+export const settingsApi = {
+    getPublic: () => api.get('/settings/public'),
+    getAll: () => api.get('/settings'),
+    update: (data: any) => api.put('/settings', data),
+};
+
+// CMDB API
+export const cmdbApi = {
+    getAll: (params?: any) => api.get('/cmdb', { params }),
+    create: (data: any) => api.post('/cmdb', data),
+    update: (id: string, data: any) => api.put(`/cmdb/${id}`, data),
+    delete: (id: string) => api.delete(`/cmdb/${id}`),
 };

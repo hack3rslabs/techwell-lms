@@ -37,7 +37,7 @@ export default function EmployerLayout({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
             <EmployerSidebar />
             <div className="pl-64">
                 <main className="min-h-screen py-8 px-8">

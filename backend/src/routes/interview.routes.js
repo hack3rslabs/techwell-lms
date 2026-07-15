@@ -230,30 +230,27 @@ router.post('/', authenticate, async (req, res, next) => {
             select: { plan: true }
         });
 
-        // Limit FREE users to 2 interviews per month - BYPASSED FOR TESTING
-        /*
-        if (user.plan === 'FREE') {
-            const startOfMonth = new Date();
-            startOfMonth.setDate(1);
-            startOfMonth.setHours(0, 0, 0, 0);
+        // Limit FREE users to 3 interviews per day
+        if (user.plan === 'FREE' || user.plan === 'BASIC') {
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
 
             const interviewCount = await prisma.interview.count({
                 where: {
                     userId: userId,
                     createdAt: {
-                        gte: startOfMonth
+                        gte: startOfDay
                     }
                 }
             });
 
-            if (interviewCount >= 2) {
+            if (interviewCount >= 3) {
                 return res.status(403).json({
-                    error: 'Monthly limit reached',
-                    message: 'Starter plan is limited to 2 AI interviews per month. Please upgrade to Pro for unlimited sessions.'
+                    error: 'Daily limit reached',
+                    message: 'Free plan is limited to 3 AI interviews per day. Please upgrade to Pro for unlimited sessions.'
                 });
             }
         }
-        */
 
         const interview = await prisma.interview.create({
             data: {

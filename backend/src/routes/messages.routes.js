@@ -2,7 +2,9 @@ const express = require('express');
 const {
   sendMessageToStudents,
   sendMessageToBatch,
+  sendMessageToCourse,
   sendMessageToStudent,
+  sendMessageToStaff,
   getStudentMessages,
   markMessageAsRead,
   getUnreadCount,
@@ -29,7 +31,9 @@ router.put('/:messageId/read', markMessageAsRead);
 // Admin routes (require admin/instructor role)
 router.post('/send-to-all', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToStudents);
 router.post('/send-to-batch', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToBatch);
+router.post('/send-to-course', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToCourse);
 router.post('/send-to-student', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), sendMessageToStudent);
+router.post('/send-to-staff', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN'), sendMessageToStaff);
 router.get('/', authorize('ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN', 'STAFF'), getAllMessages);
 router.delete('/:messageId', authorize('ADMIN', 'SUPER_ADMIN', 'STAFF'), deleteMessage);
 

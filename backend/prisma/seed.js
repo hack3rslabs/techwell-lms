@@ -322,14 +322,18 @@ async function main() {
                 },
                 update: {
                     canRead: hasPermission,
-                    canWrite: hasPermission,
+                    canCreate: hasPermission,
+                    canUpdate: hasPermission,
+                    canDelete: hasPermission,
                     isDisabled: !hasPermission
                 },
                 create: {
                     roleId: dbRole.id,
                     featureId: feature.id,
                     canRead: hasPermission,
-                    canWrite: hasPermission,
+                    canCreate: hasPermission,
+                    canUpdate: hasPermission,
+                    canDelete: hasPermission,
                     isDisabled: !hasPermission
                 }
             });
@@ -344,6 +348,576 @@ async function main() {
             data: { systemRoleId: superAdminRole.id }
         });
         console.log('✅ Linked Super Admins to System Role');
+    }
+
+    
+    console.log('\n📜 Seeding Certificate Templates...');
+    const certificateTemplates = [
+        {
+      name: 'Techwell Internship Certificate',
+      description: 'Official techwell branding colors (Blue & Teal)',
+      designUrl: '/images/techwell-certificate-bg.png', // The generated background
+      previewUrl: '/images/techwell-certificate-bg.png',
+      isDefault: true,
+      isActive: true,
+      canvasData: JSON.stringify([
+        {
+          id: "t1",
+          type: "text",
+          value: "CERTIFICATE OF INTERNSHIP",
+          x: 50,
+          y: 28,
+          fontSize: 32,
+          fontFamily: "Georgia",
+          color: "#1469E2"
+        },
+        {
+          id: "t2",
+          type: "text",
+          value: "This certificate is presented to",
+          x: 50,
+          y: 38,
+          fontSize: 16,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn1",
+          type: "text",
+          value: "{{STUDENT_NAME}}",
+          x: 50,
+          y: 48,
+          fontSize: 48,
+          fontFamily: "Georgia",
+          color: "#1469E2"
+        },
+        {
+          id: "t3",
+          type: "text",
+          value: "For successfully completing the internship program in",
+          x: 50,
+          y: 58,
+          fontSize: 16,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn2",
+          type: "text",
+          value: "{{COURSE_NAME}}",
+          x: 50,
+          y: 64,
+          fontSize: 20,
+          fontFamily: "Arial",
+          color: "#1469E2"
+        },
+        {
+          id: "dyn3",
+          type: "text",
+          value: "Presented this {{ISSUE_DATE}}",
+          x: 50,
+          y: 72,
+          fontSize: 16,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "t4",
+          type: "text",
+          value: "_________________________",
+          x: 50,
+          y: 84,
+          fontSize: 18,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "t5",
+          type: "text",
+          value: "Internship Coordinator",
+          x: 50,
+          y: 88,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "qr1",
+          type: "qr",
+          value: "{{QR_CODE}}",
+          x: 15,
+          y: 80,
+          fontSize: 24,
+          fontFamily: "Arial",
+          color: "#000000"
+        },
+        {
+          id: "dyn4",
+          type: "text",
+          value: "ID: {{CERT_ID}}",
+          x: 15,
+          y: 92,
+          fontSize: 10,
+          fontFamily: "Arial",
+          color: "#777777"
+        }
+      ])
+    },
+        {
+      name: 'Techwell Advanced Certificate',
+      description: 'Official branding with Logo, Duration, Rank, Barcode',
+      designUrl: '/images/techwell-certificate-bg-2.png',
+      previewUrl: '/images/techwell-certificate-bg-2.png',
+      isDefault: false,
+      isActive: true,
+      canvasData: JSON.stringify([
+        {
+          id: "logo1",
+          type: "image",
+          value: "{{LOGO}}",
+          x: 50,
+          y: 15,
+          fontSize: 60, // Used as width in px for image
+          fontFamily: "Arial",
+          color: ""
+        },
+        {
+          id: "t1",
+          type: "text",
+          value: "CERTIFICATE OF COMPLETION",
+          x: 50,
+          y: 28,
+          fontSize: 32,
+          fontFamily: "Georgia",
+          color: "#1469E2"
+        },
+        {
+          id: "t2",
+          type: "text",
+          value: "THIS CERTIFICATE IS PROUDLY PRESENTED TO",
+          x: 50,
+          y: 38,
+          fontSize: 16,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn1",
+          type: "text",
+          value: "{{STUDENT_NAME}}",
+          x: 50,
+          y: 48,
+          fontSize: 42,
+          fontFamily: "Georgia",
+          color: "#1469E2"
+        },
+        {
+          id: "t3",
+          type: "text",
+          value: "For successfully completing the course:",
+          x: 50,
+          y: 56,
+          fontSize: 16,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn2",
+          type: "text",
+          value: "{{COURSE_NAME}}",
+          x: 50,
+          y: 62,
+          fontSize: 24,
+          fontFamily: "Arial",
+          color: "#1469E2"
+        },
+        {
+          id: "dyn_dur",
+          type: "text",
+          value: "Duration: {{DURATION}}",
+          x: 35,
+          y: 70,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#555555"
+        },
+        {
+          id: "dyn_rank",
+          type: "text",
+          value: "Grade/Rank: {{GRADE}}",
+          x: 65,
+          y: 70,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#555555"
+        },
+        {
+          id: "t4",
+          type: "text",
+          value: "_________________________",
+          x: 25,
+          y: 84,
+          fontSize: 18,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn_sign",
+          type: "text",
+          value: "{{SIGNATORY_NAME}}",
+          x: 25,
+          y: 88,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "t_sign_title",
+          type: "text",
+          value: "Authorized Signatory",
+          x: 25,
+          y: 91,
+          fontSize: 12,
+          fontFamily: "Arial",
+          color: "#777777"
+        },
+        {
+          id: "dyn_date",
+          type: "text",
+          value: "Issue Date: {{ISSUE_DATE}}",
+          x: 75,
+          y: 84,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "qr1",
+          type: "barcode",
+          value: "{{BARCODE}}",
+          x: 75,
+          y: 89,
+          fontSize: 60, // Used as width for barcode placeholder
+          fontFamily: "Arial",
+          color: "#000000"
+        },
+        {
+          id: "dyn_reg",
+          type: "text",
+          value: "Reg ID: {{CERT_ID}}",
+          x: 75,
+          y: 94,
+          fontSize: 10,
+          fontFamily: "Arial",
+          color: "#777777"
+        }
+      ])
+    },
+        {
+      name: 'Techwell Premium Certification',
+      description: 'A completely unique modern design with off-center alignment',
+      designUrl: '/images/techwell-premium-bg.png',
+      previewUrl: '/images/techwell-premium-bg.png',
+      isDefault: false,
+      isActive: true,
+      canvasData: JSON.stringify([
+        {
+          id: "logo1",
+          type: "image",
+          value: "{{LOGO}}",
+          x: 65,
+          y: 15,
+          fontSize: 80, // Used as width in px for image
+          fontFamily: "Arial",
+          color: ""
+        },
+        {
+          id: "t1",
+          type: "text",
+          value: "CERTIFICATE",
+          x: 65,
+          y: 28,
+          fontSize: 48,
+          fontFamily: "Georgia",
+          color: "#1469E2"
+        },
+        {
+          id: "t1b",
+          type: "text",
+          value: "OF EXCELLENCE",
+          x: 65,
+          y: 35,
+          fontSize: 24,
+          fontFamily: "Arial",
+          color: "#78C1B5"
+        },
+        {
+          id: "t2",
+          type: "text",
+          value: "This prestigious honor is awarded to",
+          x: 65,
+          y: 44,
+          fontSize: 16,
+          fontFamily: "Arial",
+          color: "#555555"
+        },
+        {
+          id: "dyn1",
+          type: "text",
+          value: "{{STUDENT_NAME}}",
+          x: 65,
+          y: 54,
+          fontSize: 44,
+          fontFamily: "Georgia",
+          color: "#1469E2"
+        },
+        {
+          id: "t3",
+          type: "text",
+          value: "in recognition of outstanding completion of:",
+          x: 65,
+          y: 64,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#777777"
+        },
+        {
+          id: "dyn2",
+          type: "text",
+          value: "{{COURSE_NAME}}",
+          x: 65,
+          y: 70,
+          fontSize: 22,
+          fontFamily: "Arial",
+          color: "#1469E2"
+        },
+        {
+          id: "dyn_dur",
+          type: "text",
+          value: "Duration: {{DURATION}}  |  Grade: {{GRADE}}",
+          x: 65,
+          y: 76,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#555555"
+        },
+        {
+          id: "t4",
+          type: "text",
+          value: "_________________________",
+          x: 40,
+          y: 88,
+          fontSize: 18,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn_sign",
+          type: "text",
+          value: "{{SIGNATORY_NAME}}",
+          x: 40,
+          y: 92,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "t_sign_title",
+          type: "text",
+          value: "Authorized Signatory",
+          x: 40,
+          y: 95,
+          fontSize: 12,
+          fontFamily: "Arial",
+          color: "#777777"
+        },
+        {
+          id: "dyn_date",
+          type: "text",
+          value: "Date: {{ISSUE_DATE}}",
+          x: 70,
+          y: 89,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn_reg",
+          type: "text",
+          value: "ID: {{CERT_ID}}",
+          x: 70,
+          y: 94,
+          fontSize: 12,
+          fontFamily: "Arial",
+          color: "#777777"
+        },
+        {
+          id: "qr1",
+          type: "barcode",
+          value: "{{BARCODE}}",
+          x: 90,
+          y: 91,
+          fontSize: 60, // Used as width for barcode placeholder
+          fontFamily: "Arial",
+          color: "#000000"
+        }
+      ])
+    },
+        {
+      name: 'Techwell Corporate Edition',
+      description: 'Rich corporate design with centered layout strictly inside borders',
+      designUrl: '/images/techwell-corporate-bg.png',
+      previewUrl: '/images/techwell-corporate-bg.png',
+      isDefault: true,
+      isActive: true,
+      canvasData: JSON.stringify([
+        {
+          id: "logo1",
+          type: "image",
+          value: "{{LOGO}}",
+          x: 50,
+          y: 20,
+          fontSize: 60,
+          fontFamily: "Arial",
+          color: ""
+        },
+        {
+          id: "t1",
+          type: "text",
+          value: "CERTIFICATE OF COMPLETION",
+          x: 50,
+          y: 32,
+          fontSize: 36,
+          fontFamily: "Georgia",
+          color: "#1469E2"
+        },
+        {
+          id: "t2",
+          type: "text",
+          value: "THIS IS PROUDLY PRESENTED TO",
+          x: 50,
+          y: 40,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#78C1B5"
+        },
+        {
+          id: "dyn1",
+          type: "text",
+          value: "{{STUDENT_NAME}}",
+          x: 50,
+          y: 48,
+          fontSize: 48,
+          fontFamily: "Georgia",
+          color: "#333333"
+        },
+        {
+          id: "t3",
+          type: "text",
+          value: "For successfully completing the rigorous requirements of",
+          x: 50,
+          y: 56,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#555555"
+        },
+        {
+          id: "dyn2",
+          type: "text",
+          value: "{{COURSE_NAME}}",
+          x: 50,
+          y: 63,
+          fontSize: 24,
+          fontFamily: "Arial",
+          color: "#1469E2"
+        },
+        {
+          id: "dyn_dur",
+          type: "text",
+          value: "Course Duration: {{DURATION}}  |  Final Grade: {{GRADE}}",
+          x: 50,
+          y: 70,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#555555"
+        },
+        {
+          id: "t4",
+          type: "text",
+          value: "_________________________",
+          x: 30,
+          y: 80,
+          fontSize: 18,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn_sign",
+          type: "text",
+          value: "{{SIGNATORY_NAME}}",
+          x: 30,
+          y: 84,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "t_sign_title",
+          type: "text",
+          value: "Authorized Signatory",
+          x: 30,
+          y: 87,
+          fontSize: 12,
+          fontFamily: "Arial",
+          color: "#777777"
+        },
+        {
+          id: "dyn_date",
+          type: "text",
+          value: "Issue Date: {{ISSUE_DATE}}",
+          x: 70,
+          y: 80,
+          fontSize: 14,
+          fontFamily: "Arial",
+          color: "#333333"
+        },
+        {
+          id: "dyn_reg",
+          type: "text",
+          value: "Certificate ID: {{CERT_ID}}",
+          x: 70,
+          y: 84,
+          fontSize: 12,
+          fontFamily: "Arial",
+          color: "#777777"
+        },
+        {
+          id: "qr1",
+          type: "barcode",
+          value: "{{BARCODE}}",
+          x: 50,
+          y: 83,
+          fontSize: 60,
+          fontFamily: "Arial",
+          color: "#000000"
+        }
+      ])
+    }
+    ];
+
+    for (const t of certificateTemplates) {
+        const existing = await prisma.certificateTemplate.findFirst({ where: { name: t.name } });
+        if (existing) {
+            await prisma.certificateTemplate.update({
+                where: { id: existing.id },
+                data: t
+            });
+        } else {
+            await prisma.certificateTemplate.create({
+                data: t
+            });
+        }
+        console.log('  ✅ Template:', t.name);
     }
 
     console.log('\n🎉 Seed completed!\n');

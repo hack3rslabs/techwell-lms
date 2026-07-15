@@ -47,7 +47,7 @@ export default function AdminEventsPage() {
         date: '',
         time: '',
         location: '',
-        status: 'Upcoming',
+        status: 'Pending Approval',
         seatsTotal: '100',
         iconName: '',
         generateCertificate: false,
@@ -85,7 +85,7 @@ export default function AdminEventsPage() {
             date: '',
             time: '',
             location: '',
-            status: 'Upcoming',
+            status: 'Pending Approval',
             seatsTotal: '100',
             iconName: '',
             generateCertificate: false,
@@ -104,7 +104,7 @@ export default function AdminEventsPage() {
             date: event.date ? format(new Date(event.date), 'yyyy-MM-dd') : '',
             time: event.time || '',
             location: event.location || '',
-            status: event.status || 'Upcoming',
+            status: event.status || 'Pending Approval',
             seatsTotal: event.seatsTotal?.toString() || '100',
             iconName: event.iconName || '',
             generateCertificate: event.generateCertificate || false,
@@ -244,7 +244,7 @@ export default function AdminEventsPage() {
                                             <div className="text-sm text-muted-foreground mt-1">{event.time}</div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={event.status === 'Completed' ? 'secondary' : (event.status === 'Upcoming' ? 'default' : 'outline')} className={event.status === 'Registration Open' ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : ''}>
+                                            <Badge variant={event.status === 'Completed' ? 'secondary' : (event.status === 'Upcoming' ? 'default' : (event.status === 'Pending Approval' ? 'destructive' : 'outline'))} className={event.status === 'Registration Open' ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : ''}>
                                                 {event.status}
                                             </Badge>
                                         </TableCell>
@@ -333,7 +333,8 @@ export default function AdminEventsPage() {
                                 <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v})}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Upcoming">Upcoming</SelectItem>
+                                        <SelectItem value="Pending Approval">Pending Approval</SelectItem>
+                                        <SelectItem value="Upcoming">Upcoming (Approved)</SelectItem>
                                         <SelectItem value="Registration Open">Registration Open</SelectItem>
                                         <SelectItem value="Completed">Completed</SelectItem>
                                     </SelectContent>
