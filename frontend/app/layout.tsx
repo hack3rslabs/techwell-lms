@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { BehaviorTrackingProvider } from "@/components/BehaviorTrackingProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
+import { TestModeBanner } from "@/components/shared/TestModeBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -107,11 +108,7 @@ export default function RootLayout({
                 Dashboard routes (/admin, /dashboard, /franchise-admin) get no public chrome.
               */}
               <ClientShell>
-                <div className="bg-destructive text-destructive-foreground text-center py-2 font-bold text-sm z-[9999] relative flex items-center justify-center gap-2">
-                  <span className="animate-pulse">⚠️</span>
-                  THIS SITE IS IN TEST MODE. PLEASE BE AWARE AND DO NOT MAKE ONLINE PAYMENTS.
-                  <span className="animate-pulse">⚠️</span>
-                </div>
+                <TestModeBanner />
                 {children}
               </ClientShell>
             </BehaviorTrackingProvider>
