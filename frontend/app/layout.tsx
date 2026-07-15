@@ -7,7 +7,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { BehaviorTrackingProvider } from "@/components/BehaviorTrackingProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
-import { TestModeBanner } from "@/components/shared/TestModeBanner";
+import { SystemStatusManager } from "@/components/shared/SystemStatusManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -108,7 +108,7 @@ export default function RootLayout({
                 Dashboard routes (/admin, /dashboard, /franchise-admin) get no public chrome.
               */}
               <ClientShell>
-                <TestModeBanner />
+                <SystemStatusManager />
                 {children}
               </ClientShell>
             </BehaviorTrackingProvider>
