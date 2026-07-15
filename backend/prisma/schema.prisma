@@ -21,6 +21,8 @@ model User {
   updatedAt                   DateTime                  @updatedAt
   permissions                 Json?
   plan                        Plan                      @default(FREE)
+  hasResumeAccess             Boolean                   @default(false)
+  hasAiInterviewAccess        Boolean                   @default(false)
   instituteId                 String?
   systemRoleId                String?
   college                     String?

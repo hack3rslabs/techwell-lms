@@ -41,7 +41,8 @@ const registerSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     phone: z.string().refine(val => !val || /^[6-9]\d{9}$/.test(val), 'Must be a valid 10-digit Indian mobile number').optional(),
     referredByCode: z.string().optional(),
-    role: z.enum(['STUDENT', 'EMPLOYER', 'INSTITUTE_ADMIN']).default('STUDENT')
+    role: z.enum(['STUDENT', 'EMPLOYER', 'INSTITUTE_ADMIN']).default('STUDENT'),
+    intent: z.enum(['COURSE', 'RESUME', 'INTERVIEW', 'ALL']).optional().default('COURSE')
 });
 
 const loginSchema = z.object({
@@ -117,6 +118,7 @@ router.post('/register', async (req, res, next) => {
             college: req.body.college,
             referredByCode: validatedData.referredByCode,
             role: validatedData.role,
+            intent: validatedData.intent,
             otp,
             createdAt: Date.now()
         });
@@ -194,7 +196,9 @@ router.post('/verify-otp', authLimiter, async (req, res, next) => {
             emailVerified: true,
             referralCode: generatedReferralCode,
             referredById: referredById,
-            role: pending.role
+            role: pending.role,
+            hasResumeAccess: pending.intent === 'RESUME' || pending.intent === 'ALL',
+            hasAiInterviewAccess: pending.intent === 'INTERVIEW' || pending.intent === 'ALL'
         };
 
         if (pending.dob) {

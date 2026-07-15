@@ -6,7 +6,8 @@ const maintenanceMiddleware = async (req, res, next) => {
         // Skip for auth, admin, and settings routes
         if (req.originalUrl.includes('/api/auth/') || 
             req.originalUrl.includes('/api/admin/') || 
-            req.originalUrl.includes('/api/settings/')) {
+            req.originalUrl.includes('/api/settings') ||
+            req.originalUrl.includes('/api/users/me')) {
             return next();
         }
 

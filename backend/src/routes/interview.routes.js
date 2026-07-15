@@ -227,8 +227,16 @@ router.post('/', authenticate, async (req, res, next) => {
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { plan: true }
+            select: { plan: true, role: true, hasAiInterviewAccess: true }
         });
+
+        if (user.role === 'STUDENT' && !user.hasAiInterviewAccess) {
+            return res.status(403).json({
+                error: 'Access Denied',
+                requiresPayment: true,
+                message: 'Please upgrade to unlock the AI Mock Interview platform.'
+            });
+        }
 
         // Limit FREE users to 3 interviews per day
         if (user.plan === 'FREE' || user.plan === 'BASIC') {

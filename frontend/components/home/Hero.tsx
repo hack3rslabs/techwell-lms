@@ -19,7 +19,7 @@ export function Hero() {
         {
             id: 1,
             title: "Automated Course Training",
-            subtitle: "Live Instructor-Led LMS",
+            subtitle: "Live Instructor-Led Training",
             image: "/images/hero/ai_training_robot.png",
             color: "from-blue-600 to-indigo-600"
         },

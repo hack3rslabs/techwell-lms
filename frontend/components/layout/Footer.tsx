@@ -34,10 +34,10 @@ const companyLinks = [
 const policyLinks = [
     { label: "Contact Us", href: "/contact" },
     { label: "Support Center", href: "/support" },
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms & Conditions", href: "/terms" },
-    { label: "Cookies", href: "/cookies" },
-    { label: "GDPR", href: "/gdpr" },
+    { label: "Privacy Policy", href: "/help/privacy" },
+    { label: "Terms & Conditions", href: "/help/terms" },
+    { label: "Cookies", href: "/help/cookies" },
+    { label: "GDPR", href: "/help/gdpr" },
 ]
 
 export function Footer() {

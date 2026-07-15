@@ -45,6 +45,9 @@ const ensureResumeCourse = async () => {
  * Paid access means enrolled in ANY course (paid or free) or has purchased the resume-builder unlock within 90 days (3 months).
  */
 const checkResumeAccess = async (userId) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user && user.hasResumeAccess) return true;
+
     await ensureResumeCourse();
     const enrollments = await prisma.enrollment.findMany({
         where: {
@@ -74,8 +77,10 @@ const checkResumeAccess = async (userId) => {
  */
 router.get('/check-access', authenticate, async (req, res, next) => {
     try {
-        await ensureResumeCourse();
         const userId = req.user.id;
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        
+        await ensureResumeCourse();
 
         const enrollments = await prisma.enrollment.findMany({
             where: {
@@ -106,10 +111,11 @@ router.get('/check-access', authenticate, async (req, res, next) => {
             }
         }
 
-        const hasAccess = hasPaidCourse || hasPaidResume;
+        const hasAccess = user?.hasResumeAccess || hasPaidCourse || hasPaidResume;
 
         return res.status(200).json({
             hasAccess,
+            hasResumeAccessFlag: user?.hasResumeAccess || false,
             price: 59,
             hasPaidCourse,
             hasPaidResume,

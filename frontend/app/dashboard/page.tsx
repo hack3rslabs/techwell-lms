@@ -31,7 +31,8 @@ import {
     CreditCard,
     Activity,
     Target,
-    Users
+    Users,
+    Lock
 } from 'lucide-react'
 import { NewInterviewDialog } from '@/components/interviews/NewInterviewDialog'
 import { StudentMessages } from '@/components/messages/StudentMessages'
@@ -698,7 +699,13 @@ export default function DashboardPage() {
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-2xl font-bold text-foreground">Interview History</h2>
-                                    <NewInterviewDialog />
+                                    {user?.hasAiInterviewAccess ? (
+                                        <NewInterviewDialog />
+                                    ) : (
+                                        <Button variant="outline" className="border-yellow-500/50 text-yellow-600 hover:bg-yellow-50" onClick={() => router.push('/upgrade?module=interview')}>
+                                            <Lock className="mr-2 h-4 w-4" /> Unlock AI Mock Interviews
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {/* Scheduled Job Interviews Section */}
@@ -938,15 +945,29 @@ export default function DashboardPage() {
                         {/* RESUME TAB */}
                         {activeTab === 'resume' && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
-                                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-50 pointer-events-none"></div>
-                                     <FileText className="h-16 w-16 text-primary mx-auto mb-6 relative z-10" />
-                                     <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">AI Resume Expert</h2>
-                                     <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Create a professional, ATS-optimized resume. Our AI expert will analyze your content for clarity, use industry-relevant keywords, and transform your responsibilities into impactful bullet points.</p>
-                                     <Button size="lg" className="relative z-10" onClick={() => router.push('/resume-builder')}>
-                                        <FileText className="mr-2 h-4 w-4" /> Edit & Enhance Resume
-                                     </Button>
-                                </div>
+                                {user?.hasResumeAccess ? (
+                                    <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
+                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-50 pointer-events-none"></div>
+                                         <FileText className="h-16 w-16 text-primary mx-auto mb-6 relative z-10" />
+                                         <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">AI Resume Expert</h2>
+                                         <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Create a professional, ATS-optimized resume. Our AI expert will analyze your content for clarity, use industry-relevant keywords, and transform your responsibilities into impactful bullet points.</p>
+                                         <Button size="lg" className="relative z-10" onClick={() => router.push('/resume-builder')}>
+                                            <FileText className="mr-2 h-4 w-4" /> Edit & Enhance Resume
+                                         </Button>
+                                    </div>
+                                ) : (
+                                    <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 opacity-50 pointer-events-none"></div>
+                                        <div className="mx-auto w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6 relative z-10">
+                                            <Lock className="h-8 w-8 text-yellow-600" />
+                                        </div>
+                                        <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">Unlock AI Resume Builder</h2>
+                                        <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Get access to our AI-powered ATS resume builder. Craft perfect resumes that pass ATS screenings and land you more interviews.</p>
+                                        <Button size="lg" className="relative z-10 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0" onClick={() => router.push('/upgrade?module=resume')}>
+                                            <Lock className="mr-2 h-4 w-4" /> Upgrade Now
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )}
 

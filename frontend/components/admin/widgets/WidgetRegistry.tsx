@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { MetricWidget } from './MetricWidget'
-import { CmdbWidget } from './CmdbWidget'
 import { 
     IndianRupee, 
     Calendar, 
@@ -27,7 +26,6 @@ export type WidgetId =
     | 'activeTasks'
     | 'consulting'
     | 'supportTickets'
-    | 'cmdb'
 
 export const DEFAULT_LAYOUT: WidgetId[] = [
     'revenue',
@@ -40,8 +38,7 @@ export const DEFAULT_LAYOUT: WidgetId[] = [
     'campusDrives',
     'activeTasks',
     'consulting',
-    'supportTickets',
-    'cmdb'
+    'supportTickets'
 ]
 
 interface WidgetRegistryProps {
@@ -185,8 +182,6 @@ export function WidgetRenderer({ id, stats }: WidgetRegistryProps) {
                     onClick={() => router.push('/admin/support')}
                 />
             )
-        case 'cmdb':
-            return <CmdbWidget />
         default:
             return null
     }

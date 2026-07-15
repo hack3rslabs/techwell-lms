@@ -56,6 +56,37 @@ const createUserSchema = z.object({
 });
 
 /**
+ * @route   POST /api/users/upgrade-test
+ * @desc    Simulate an upgrade for a module (Resume or Interview)
+ * @access  Private
+ */
+router.post('/upgrade-test', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { module } = req.body;
+
+        const updateData = {};
+        if (module === 'resume') {
+            updateData.hasResumeAccess = true;
+        } else if (module === 'interview') {
+            updateData.hasAiInterviewAccess = true;
+        } else {
+            return res.status(400).json({ error: 'Invalid module specified' });
+        }
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            select: { id: true, hasResumeAccess: true, hasAiInterviewAccess: true }
+        });
+
+        res.status(200).json({ message: 'Upgrade successful', user });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   POST /api/users/profile-image
  * @desc    Upload profile picture
  * @access  Private

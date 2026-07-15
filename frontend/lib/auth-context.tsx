@@ -30,7 +30,7 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string, trustDevice?: boolean) => Promise<{ require2FA?: boolean; tempToken?: string } | void>;
-    register: (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string) => Promise<{ user: User, devOtp?: string }>;
+    register: (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string, intent?: string) => Promise<{ user: User, devOtp?: string }>;
     verifyOtp: (email: string, otp: string) => Promise<void>;
     resendOtp: (email: string) => Promise<{success: boolean, devOtp?: string}>;
     logout: () => void;
@@ -86,8 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
     };
 
-    const register = async (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string): Promise<{ user: User, devOtp?: string }> => {
-        const response = await authApi.register({ email, password, name, phone, dob, qualification, college, referredByCode });
+    const register = async (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string, intent?: string): Promise<{ user: User, devOtp?: string }> => {
+        const response = await authApi.register({ email, password, name, phone, dob, qualification, college, referredByCode, intent });
         // Return a partial User object for type compatibility along with devOtp
         return {
             user: {

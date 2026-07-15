@@ -1,7 +1,7 @@
 {
-  "name": "Techwell Next-Gen LMS",
+  "name": "Techwell Next-Gen Platform",
   "short_name": "Techwell",
-  "description": "Techwell Next-Generation LMS & Business Platform",
+  "description": "Techwell Next-Generation Training & Business Platform",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

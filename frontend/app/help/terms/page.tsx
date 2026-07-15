@@ -9,7 +9,7 @@ export default function TermsAndConditionsPage() {
 
   const categories = [
     { id: "general", label: "General Terms", icon: FileSignature },
-    { id: "training", label: "LMS & Training", icon: BookOpen },
+    { id: "training", label: "Platform & Training", icon: BookOpen },
     { id: "consultancy", label: "Consultancy & Recruitment", icon: Users },
     { id: "employers", label: "B2B & Employers", icon: Briefcase },
     { id: "campus", label: "Campus Drives", icon: Building },
@@ -69,7 +69,7 @@ export default function TermsAndConditionsPage() {
                   <div>
                     <h2 className="text-3xl border-b pb-4 mb-6">1. General Master Terms</h2>
                     <p>
-                      Welcome to Techwell. These Master Terms of Service govern your access to and use of all Techwell platforms, including our Learning Management System (LMS), Candidate Consultancy pipeline, ATS, Campus Drive software, and all related mobile or web applications.
+                      Welcome to Techwell. These Master Terms of Service govern your access to and use of all Techwell platforms, including our Training Management Platform, Candidate Consultancy pipeline, ATS, Campus Drive software, and all related mobile or web applications.
                     </p>
                   </div>
                   <div>
@@ -98,7 +98,7 @@ export default function TermsAndConditionsPage() {
               {activeTab === "training" && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
                   <div>
-                    <h2 className="text-3xl border-b pb-4 mb-6">2. LMS & Training Programs</h2>
+                    <h2 className="text-3xl border-b pb-4 mb-6">2. Platform & Training Programs</h2>
                     <p>
                       Techwell offers self-paced, live, and hybrid courses. Access to purchased courses is granted on a per-user basis.
                     </p>

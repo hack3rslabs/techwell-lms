@@ -26,6 +26,7 @@ export default function RegisterPage() {
     const [qualification, setQualification] = React.useState('')
     const [college, setCollege] = React.useState('')
     const [referredByCode, setReferredByCode] = React.useState('')
+    const [intent, setIntent] = React.useState('COURSE')
     const [showPassword, setShowPassword] = React.useState(false)
     const [isLoading, setIsLoading] = React.useState(false)
     const [error, setError] = React.useState('')
@@ -68,7 +69,7 @@ export default function RegisterPage() {
         setIsLoading(true)
 
         try {
-            await register(email, password, name, dob, qualification, college, referredByCode)
+            await register(email, password, name, undefined, dob, qualification, college, referredByCode, intent)
             setStep('otp')
             setTimeLeft(60) // 60 seconds before resend is allowed
         } catch (err: any) {
@@ -320,18 +321,35 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label htmlFor="college" className="text-sm font-medium">College / University</label>
-                                    <Input
-                                        id="college"
-                                        type="text"
-                                        placeholder="Enter your college name"
-                                        value={college}
-                                        onChange={(e) => setCollege(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                        className="h-12 rounded-xl focus-visible:ring-primary/30"
-                                    />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label htmlFor="college" className="text-sm font-medium">College / University</label>
+                                        <Input
+                                            id="college"
+                                            type="text"
+                                            placeholder="Enter your college name"
+                                            value={college}
+                                            onChange={(e) => setCollege(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                            className="h-12 rounded-xl focus-visible:ring-primary/30"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label htmlFor="intent" className="text-sm font-medium">What brings you here?</label>
+                                        <select
+                                            id="intent"
+                                            value={intent}
+                                            onChange={(e) => setIntent(e.target.value)}
+                                            disabled={isLoading}
+                                            className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <option value="COURSE">Learn Courses</option>
+                                            <option value="RESUME">Build my Resume</option>
+                                            <option value="INTERVIEW">Practice Mock Interviews</option>
+                                            <option value="ALL">All of the above</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">

@@ -180,7 +180,7 @@ export default function CollegeReadinessPage() {
                         <div className="text-2xl font-black text-slate-100">
                             {isLoading ? <Loader2 className="h-4 w-4 animate-spin text-slate-500" /> : `${avgCompletion}%`}
                         </div>
-                        <p className="text-[10px] text-slate-500 mt-1">LMS progression indicator</p>
+                        <p className="text-[10px] text-slate-500 mt-1">Training progression indicator</p>
                     </CardContent>
                 </Card>
 

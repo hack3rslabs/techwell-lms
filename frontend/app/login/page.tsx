@@ -276,7 +276,7 @@ export default function LoginPage() {
                                 <motion.div key="login" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-7 relative z-10">
                                     <div className="text-center lg:text-left space-y-3 mb-8">
                                         <h2 className="text-4xl font-black tracking-tight text-white drop-shadow-md">Sign In</h2>
-                                        <p className="text-indigo-200/70 text-sm font-medium">Access your intelligent workspace.</p>
+                                        <p className="text-indigo-200/70 text-sm font-medium">Unified access portal for Students, Employers, Colleges, and Staff.</p>
                                     </div>
 
                                     {showIdleBanner && (
@@ -316,9 +316,9 @@ export default function LoginPage() {
                                                 <label htmlFor="password" className="text-sm font-bold text-indigo-100/90 uppercase tracking-wider text-[11px]">Password</label>
                                                 <Link 
                                                     href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`} 
-                                                    className="text-[11px] text-cyan-400 hover:text-cyan-300 transition-colors font-bold uppercase tracking-wider"
+                                                    className="text-[11px] text-cyan-400 hover:text-cyan-300 transition-all font-semibold tracking-wide hover:underline underline-offset-4 decoration-cyan-400/30"
                                                 >
-                                                    Recovery
+                                                    Forgot password?
                                                 </Link>
                                             </div>
                                             <div className="relative">
@@ -361,7 +361,7 @@ export default function LoginPage() {
                                                         <Loader2 className="mr-2 h-6 w-6 animate-spin text-indigo-600" />
                                                     ) : (
                                                         <>
-                                                            Access Terminal
+                                                            Login
                                                             <ArrowRight className="ml-2 w-5 h-5 opacity-80 group-hover:translate-x-1.5 transition-transform" />
                                                         </>
                                                     )}

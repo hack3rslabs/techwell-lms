@@ -103,8 +103,7 @@ export default function AdminDashboard() {
         campusDrives: true,
         activeTasks: true,
         consulting: true,
-        supportTickets: true,
-        cmdb: true
+        supportTickets: true
     })
 
     React.useEffect(() => {
@@ -212,7 +211,7 @@ export default function AdminDashboard() {
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="search"
-                            placeholder="Search CMDB..."
+                            placeholder="Search platform..."
                             className="pl-8 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
                         />
                     </div>
@@ -260,48 +259,24 @@ export default function AdminDashboard() {
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     {/* Advanced Stats Grid */}
                     {isMounted && (
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                            <Droppable droppableId="dashboard-widgets" direction="horizontal">
-                                {(provided) => (
-                                    <div 
-                                        className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
-                                        {...provided.droppableProps}
-                                        ref={provided.innerRef}
-                                    >
-                                        {layout.map((widgetId, index) => {
-                                            if (!visibleWidgets[widgetId]) return null
-                                            
-                                            // Handle permissions for specific widgets
-                                            if (widgetId === 'revenue' && !hasPermission('FINANCE')) return null
-                                            if (widgetId === 'upcomingFees' && !hasPermission('FINANCE')) return null
-                                            
-                                            // Determine column span for specific widgets (like revenue taking 2 cols)
-                                            const colSpanClass = widgetId === 'revenue' ? 'col-span-1 xl:col-span-2' : 'col-span-1'
-                                            
-                                            return (
-                                                <Draggable key={widgetId} draggableId={widgetId} index={index}>
-                                                    {(provided, snapshot) => (
-                                                        <div
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps}
-                                                            className={`${colSpanClass} ${snapshot.isDragging ? 'z-50 ring-2 ring-primary ring-offset-2 rounded-xl scale-[1.02] opacity-90' : ''}`}
-                                                            style={{
-                                                                ...provided.draggableProps.style,
-                                                                transition: snapshot.isDragging ? 'none' : provided.draggableProps.style?.transition
-                                                            }}
-                                                        >
-                                                            <WidgetRenderer id={widgetId} stats={stats} />
-                                                        </div>
-                                                    )}
-                                                </Draggable>
-                                            )
-                                        })}
-                                        {provided.placeholder}
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                            {layout.map((widgetId) => {
+                                if (!visibleWidgets[widgetId]) return null
+                                
+                                // Handle permissions for specific widgets
+                                if (widgetId === 'revenue' && !hasPermission('FINANCE')) return null
+                                if (widgetId === 'upcomingFees' && !hasPermission('FINANCE')) return null
+                                
+                                // Determine column span for specific widgets (like revenue taking 2 cols)
+                                const colSpanClass = widgetId === 'revenue' ? 'col-span-1 xl:col-span-2' : 'col-span-1'
+                                
+                                return (
+                                    <div key={widgetId} className={colSpanClass}>
+                                        <WidgetRenderer id={widgetId} stats={stats} />
                                     </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
+                                )
+                            })}
+                        </div>
                     )}
 
                     {/* Charts & Quick Actions Section */}

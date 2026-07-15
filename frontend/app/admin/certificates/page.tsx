@@ -1075,12 +1075,27 @@ export default function CertificatesPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Design URL</Label>
+                                        <Label>Template Design File</Label>
                                         <Input
-                                            value={newTemplate.designUrl}
-                                            onChange={e => setNewTemplate({ ...newTemplate, designUrl: e.target.value })}
-                                            placeholder="https://... (image URL)"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+                                                const formData = new FormData();
+                                                formData.append('templateImage', file);
+                                                try {
+                                                    const res = await api.post('/certificates/templates/upload', formData, {
+                                                        headers: { 'Content-Type': 'multipart/form-data' }
+                                                    });
+                                                    setNewTemplate({ ...newTemplate, designUrl: res.data.designUrl });
+                                                } catch (err) {
+                                                    console.error('Failed to upload image', err);
+                                                    alert('Failed to upload image');
+                                                }
+                                            }}
                                         />
+                                        {newTemplate.designUrl && <p className="text-sm text-green-600">File uploaded successfully!</p>}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Switch
