@@ -41,7 +41,9 @@ router.get('/public', async (req, res, next) => {
                 supportEmail: true,
                 phone: true,
                 address: true,
-                isMaintenanceMode: true
+                isMaintenanceMode: true,
+                isTestMode: true,
+                showOurTeam: true
             }
         });
         res.json(settings);

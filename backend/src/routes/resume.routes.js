@@ -45,6 +45,9 @@ const ensureResumeCourse = async () => {
  * Paid access means enrolled in ANY course (paid or free) or has purchased the resume-builder unlock within 90 days (3 months).
  */
 const checkResumeAccess = async (userId) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user && user.hasResumeAccess) return true;
+
     await ensureResumeCourse();
     const enrollments = await prisma.enrollment.findMany({
         where: {
@@ -74,8 +77,10 @@ const checkResumeAccess = async (userId) => {
  */
 router.get('/check-access', authenticate, async (req, res, next) => {
     try {
-        await ensureResumeCourse();
         const userId = req.user.id;
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        
+        await ensureResumeCourse();
 
         const enrollments = await prisma.enrollment.findMany({
             where: {
@@ -106,10 +111,11 @@ router.get('/check-access', authenticate, async (req, res, next) => {
             }
         }
 
-        const hasAccess = hasPaidCourse || hasPaidResume;
+        const hasAccess = user?.hasResumeAccess || hasPaidCourse || hasPaidResume;
 
         return res.status(200).json({
             hasAccess,
+            hasResumeAccessFlag: user?.hasResumeAccess || false,
             price: 59,
             hasPaidCourse,
             hasPaidResume,
@@ -239,20 +245,7 @@ router.post('/enhance', authenticate, async (req, res, next) => {
             return res.status(400).json({ error: "resumeData is required" });
         }
 
-        const { OpenAI } = require('openai');
-        
-        // Fetch OpenAI configuration from DB
-        const aiConfig = await prisma.aiIntegration.findUnique({ where: { provider: 'OPENAI' } });
-        
-        if (!aiConfig || !aiConfig.isActive || !aiConfig.config || !aiConfig.config.apiKey) {
-            return res.status(503).json({ 
-                error: "AI Services Unavailable", 
-                message: "OpenAI is not configured in the Integrations Manager. Please contact your admin." 
-            });
-        }
-        
-        const openai = new OpenAI({ apiKey: aiConfig.config.apiKey });
-        const selectedModel = aiConfig.config.model || "gpt-4o-mini";
+        const aiService = require('../services/ai.service');
 
         let personaPrompt = "";
         
@@ -331,14 +324,7 @@ Original Resume Data (JSON):
 ${JSON.stringify(resumeData, null, 2)}
 `;
 
-        const response = await openai.chat.completions.create({
-            model: selectedModel,
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7
-        });
-        
-        const responseText = response.choices[0].message.content;
-        
+        const responseText = await aiService.generate(prompt);
         let cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
         const enhancedData = JSON.parse(cleanJson);
 

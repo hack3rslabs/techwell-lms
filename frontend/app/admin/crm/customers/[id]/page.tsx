@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, Sparkles, AlertTriangle } from 'lucide-react';
+import { Mail, Phone, MapPin, Sparkles, AlertTriangle, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
 export default function Customer360Profile({ params }: { params: { id: string } }) {
@@ -85,12 +86,19 @@ export default function Customer360Profile({ params }: { params: { id: string } 
       {/* Header section */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold flex items-center space-x-2">
-            <span>{customer.name}</span>
-            <Badge variant={customer.aiPriority === 'HIGH' ? 'destructive' : 'default'}>
-              {customer.aiPriority} Priority
-            </Badge>
-          </h1>
+          <div className="flex items-center space-x-4">
+            <Link href="/admin/crm/dashboard">
+              <Button variant="outline" size="icon">
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold flex items-center space-x-2">
+              <span>{customer.name}</span>
+              <Badge variant={customer.aiPriority === 'HIGH' ? 'destructive' : 'default'}>
+                {customer.aiPriority} Priority
+              </Badge>
+            </h1>
+          </div>
           <div className="flex space-x-4 mt-2 text-muted-foreground text-sm">
             <span className="flex items-center"><Mail className="w-4 h-4 mr-1"/> {customer.email}</span>
             <span className="flex items-center"><Phone className="w-4 h-4 mr-1"/> {customer.phone}</span>

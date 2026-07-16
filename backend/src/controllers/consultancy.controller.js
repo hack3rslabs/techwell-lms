@@ -22,11 +22,63 @@ exports.verifyInvitation = async (req, res) => {
             return res.status(400).json({ success: false, message: 'This invitation has expired.' });
         }
 
-        if (invitation.status !== 'INVITED' && invitation.status !== 'PENDING_ACCEPTANCE') {
-            return res.status(400).json({ success: false, message: 'This invitation has already been processed.' });
+        // If status is CREATED or SENT, automatically transition to OPENED when they hit verify
+        if (invitation.status === 'CREATED' || invitation.status === 'SENT') {
+            await prisma.consultancyInvitation.update({
+                where: { id: invitation.id },
+                data: { status: 'OPENED', openedAt: new Date() }
+            });
+            invitation.status = 'OPENED';
+        }
+
+        // Only allow progression if not already accepted/closed
+        if (['AGREEMENT_ACCEPTED', 'ACTIVE', 'CLOSED', 'JOINED', 'COMPLETED', 'OFFER_RELEASED'].includes(invitation.status)) {
+             return res.status(400).json({ success: false, message: 'This invitation has already been processed.' });
         }
 
         res.json({ success: true, invitation });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.updatePublicStatus = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { status } = req.body;
+        
+        const invitation = await prisma.consultancyInvitation.findUnique({ where: { token } });
+        if (!invitation) return res.status(404).json({ success: false, message: 'Invalid invitation link.' });
+
+        const dataToUpdate = { status };
+        
+        // Track timestamps for progression
+        if (status === 'STARTED' && !invitation.startedAt) dataToUpdate.startedAt = new Date();
+        if (status === 'SUBMITTED' && !invitation.submittedAt) dataToUpdate.submittedAt = new Date();
+        
+        const updated = await prisma.consultancyInvitation.update({
+            where: { id: invitation.id },
+            data: dataToUpdate
+        });
+        
+        res.json({ success: true, invitation: updated });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.uploadCandidateDocument = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+        
+        const { token } = req.params;
+        const invitation = await prisma.consultancyInvitation.findUnique({ where: { token } });
+        if (!invitation) return res.status(404).json({ success: false, message: 'Invalid invitation link.' });
+
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+
+        res.json({ success: true, url: fileUrl });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -38,8 +90,15 @@ exports.submitAgreement = async (req, res) => {
         const data = req.body;
 
         const invitation = await prisma.consultancyInvitation.findUnique({ where: { token } });
-        if (!invitation || invitation.status !== 'INVITED' && invitation.status !== 'PENDING_ACCEPTANCE') {
-            return res.status(400).json({ success: false, message: 'Invalid or expired invitation.' });
+        
+        if (!invitation) {
+            return res.status(404).json({ success: false, message: 'Invalid invitation link.' });
+        }
+        if (new Date() > new Date(invitation.expiresAt)) {
+            return res.status(400).json({ success: false, message: 'This invitation has expired.' });
+        }
+        if (['AGREEMENT_ACCEPTED', 'ACTIVE', 'CLOSED', 'JOINED', 'COMPLETED', 'OFFER_RELEASED'].includes(invitation.status)) {
+            return res.status(400).json({ success: false, message: 'This invitation has already been processed.' });
         }
 
         // Create Agreement
@@ -120,9 +179,9 @@ exports.submitAgreement = async (req, res) => {
 exports.getDashboardStats = async (req, res) => {
     try {
         const statuses = [
-            'INVITED', 'PENDING_ACCEPTANCE', 'AGREEMENT_ACCEPTED', 
+            'INVITED', 'OPENED', 'STARTED', 'SUBMITTED', 'PENDING_ACCEPTANCE', 'AGREEMENT_ACCEPTED', 
             'PROCESSING', 'INTERVIEW_SCHEDULED', 'OFFER_RELEASED', 
-            'JOINED', 'COMPLETED', 'CLOSED'
+            'JOINED', 'COMPLETED', 'CLOSED', 'EXPIRED'
         ];
 
         const grouped = await prisma.consultancyInvitation.groupBy({

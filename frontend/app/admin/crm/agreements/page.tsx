@@ -11,11 +11,13 @@ import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { useAuth } from '@/lib/auth-context'
 
 export default function AgreementsDashboard() {
     const [agreements, setAgreements] = useState<any[]>([])
     const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(true)
+    const { hasPermission } = useAuth()
 
     async function fetchAgreements() {
         try {
@@ -60,11 +62,13 @@ export default function AgreementsDashboard() {
                     <h1 className="text-2xl font-bold tracking-tight">Client Agreements</h1>
                     <p className="text-muted-foreground">Manage contracts, NDAs, and SLAs</p>
                 </div>
-                <Link href="/admin/crm/agreements/builder">
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" /> New Agreement
-                    </Button>
-                </Link>
+                {hasPermission('CENTRAL_CRM', 'create') && (
+                    <Link href="/admin/crm/agreements/builder">
+                        <Button>
+                            <Plus className="mr-2 h-4 w-4" /> New Agreement
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
@@ -146,11 +150,13 @@ export default function AgreementsDashboard() {
                                                     }}>
                                                         <FileText className="h-4 w-4 text-green-500" />
                                                     </Button>
-                                                    <Link href={`/admin/crm/agreements/builder?id=${agreement.id}`}>
-                                                        <Button variant="ghost" size="icon" title="Edit">
-                                                            <Edit className="h-4 w-4 text-gray-500" />
-                                                        </Button>
-                                                    </Link>
+                                                    {hasPermission('CENTRAL_CRM', 'update') && (
+                                                        <Link href={`/admin/crm/agreements/builder?id=${agreement.id}`}>
+                                                            <Button variant="ghost" size="icon" title="Edit">
+                                                                <Edit className="h-4 w-4 text-gray-500" />
+                                                            </Button>
+                                                        </Link>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>

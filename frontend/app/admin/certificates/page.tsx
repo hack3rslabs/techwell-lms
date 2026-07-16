@@ -43,8 +43,9 @@ import {
 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportToCSV } from '@/lib/export-utils'
-import { certificateApi, studentsApi, courseApi, batchesApi } from '@/lib/api'
+import api, { certificateApi, studentsApi, courseApi, batchesApi } from '@/lib/api'
 import { toast } from 'sonner'
+import { useAuth } from '@/lib/auth-context'
 
 interface Certificate {
     id: string
@@ -103,6 +104,9 @@ interface CertificateSettings {
 }
 
 export default function CertificatesPage() {
+    // Auth Context
+    const { hasPermission } = useAuth()
+    
     // State
     const [certificates, setCertificates] = useState<Certificate[]>([])
     const [templates, setTemplates] = useState<CertificateTemplate[]>([])
@@ -274,12 +278,11 @@ export default function CertificatesPage() {
 
     const handleUpdateStatus = async (id: string, newStatus: string) => {
         try {
-            const res = await fetch(`/api/certificates/${id}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus, revocationReason: newStatus === 'REVOKED' ? 'Admin action' : undefined })
-            })
-            if (res.ok) {
+            const res = await api.put(`/certificates/${id}/status`, {
+                status: newStatus,
+                revocationReason: newStatus === 'REVOKED' ? 'Admin action' : undefined
+            });
+            if (res.status === 200 || res.data?.success) {
                 setCertificates(certificates.map(c => c.id === id ? { ...c, status: newStatus as any, isValid: newStatus === 'ISSUED' } : c))
                 fetchData() // Refresh stats
             }
@@ -320,7 +323,7 @@ export default function CertificatesPage() {
                     text = text.replace('{{CERT_ID}}', cert.uniqueId);
                     text = text.replace('{{GRADE}}', cert.grade || 'N/A');
                     text = text.replace('{{DURATION}}', '4 Months');
-                    text = text.replace('{{SIGNATORY_NAME}}', cert.signatoryName || 'Steven Wilson');
+                    text = text.replace('{{SIGNATORY_NAME}}', cert.signatoryName || settings?.defaultSignatoryName || 'U Purushottama Rao');
                     
                     if (el.type === 'qr' || el.type === 'barcode') {
                         return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%); font-family: ${el.fontFamily}; font-size: ${el.fontSize}px; color: ${el.color};">
@@ -332,7 +335,7 @@ export default function CertificatesPage() {
                     }
                     if (el.type === 'image' || text === '{{LOGO}}') {
                         return `<div style="position: absolute; left: ${el.x}%; top: ${el.y}%; transform: translate(-50%, -50%);">
-                            <img src="${window.location.origin}/logo-dark.png" alt="Logo" style="height: 40px; object-fit: contain;" />
+                            <img src="${window.location.origin}/logo-light.png" alt="Logo" style="height: 40px; object-fit: contain;" />
                         </div>`;
                     }
                     
@@ -423,8 +426,8 @@ export default function CertificatesPage() {
                         .corner-bl { bottom: 20px; left: 20px; border-top: 0; border-right: 0; }
                         .corner-br { bottom: 20px; right: 20px; border-top: 0; border-left: 0; }
                         
-                        .header { text-align: center; margin-bottom: 25px; }
-                        .logo { height: 70px; margin-bottom: 10px; }
+                        .header { text-align: center; margin-bottom: 10px; }
+                        .logo { height: 70px; margin-bottom: 5px; }
                         .title { 
                             font-family: 'Cinzel', serif; 
                             color: #cfb53b; 
@@ -442,7 +445,7 @@ export default function CertificatesPage() {
                             margin-top: 5px;
                         }
                         
-                        .content { text-align: center; margin-top: 40px; }
+                        .content { text-align: center; margin-top: 15px; }
                         .presented-to { 
                             font-family: 'Montserrat', sans-serif; 
                             font-size: 16px; 
@@ -454,18 +457,19 @@ export default function CertificatesPage() {
                             font-family: 'Playfair Display', serif; 
                             font-size: 56px; 
                             color: #0f172a; 
-                            margin: 20px 0;
+                            margin: 10px 0;
+                            line-height: 1.1;
                             font-style: italic;
                         }
                         .divider {
                             width: 60%;
                             height: 2px;
                             background: linear-gradient(90deg, transparent, #cfb53b, transparent);
-                            margin: 0 auto 30px auto;
+                            margin: 0 auto 15px auto;
                         }
                         .description { 
                             font-family: 'Montserrat', sans-serif; 
-                            font-size: 16px; 
+                            font-size: 14px; 
                             color: #475569;
                             line-height: 1.6;
                             max-width: 800px;
@@ -475,7 +479,8 @@ export default function CertificatesPage() {
                             font-family: 'Cinzel', serif; 
                             font-size: 28px; 
                             color: #0f172a; 
-                            margin: 20px 0;
+                            margin: 10px 0;
+                            line-height: 1.2;
                             font-weight: 700;
                         }
 
@@ -513,9 +518,8 @@ export default function CertificatesPage() {
                         
                         .badge {
                             position: absolute;
-                            bottom: 35px;
-                            left: 50%;
-                            transform: translateX(-50%);
+                            top: 40px;
+                            right: 40px;
                             width: 100px;
                             height: 100px;
                             background: linear-gradient(135deg, #1D4ED8, #4f46e5);
@@ -565,7 +569,7 @@ export default function CertificatesPage() {
                             
                             <div class="header">
                                 <!-- Logo Placement -->
-                                <img src="${window.location.origin}/logo-dark.png" alt="Techwell Logo" class="logo" style="height: 60px; margin-bottom: 20px;" onerror="this.style.display='none'" />
+                                <img src="${window.location.origin}/logo-light.png" alt="Techwell Logo" class="logo" style="height: 60px; margin-bottom: 20px;" onerror="this.style.display='none'" />
                                 <h1 class="title">Certificate</h1>
                                 <div class="subtitle">Of Achievement</div>
                             </div>
@@ -579,13 +583,7 @@ export default function CertificatesPage() {
                                 ${cert.grade ? `<div class="description" style="margin-top: 10px;">Achieved with Grade: <strong style="color:#0f172a;">${cert.grade}</strong></div>` : ''}
                             </div>
                             
-                            <div class="badge">
-                                <div class="badge-inner">
-                                    <div class="badge-text">OFFICIAL</div>
-                                    <div class="badge-text">CERTIFIED</div>
-                                    <div class="badge-year">${new Date(cert.issueDate).getFullYear()}</div>
-                                </div>
-                            </div>
+
                             
                             <div class="footer">
                                 <div class="date-block">
@@ -598,13 +596,21 @@ export default function CertificatesPage() {
                                     <div class="signature-line">
                                         <!-- Signature Image Could Go Here -->
                                     </div>
-                                    <div class="sign-text">${cert.signatoryName || 'Authorized Signatory'}</div>
-                                    <div class="sign-title">${cert.signatoryTitle || 'Academic Director'}</div>
+                                    <div class="sign-text">${cert.signatoryName || settings?.defaultSignatoryName || 'U Purushottama Rao'}</div>
+                                    <div class="sign-title">${cert.signatoryTitle || settings?.defaultSignatoryTitle || 'Managing Director'}</div>
                                 </div>
                             </div>
 
                             <div class="meta-info">
                                 VERIFICATION ID: ${cert.uniqueId} | VERIFY AT: ${window.location.origin}/certificate/${cert.uniqueId}
+                            </div>
+                            
+                            <div class="badge" style="z-index: 20;">
+                                <div class="badge-inner">
+                                    <div class="badge-text">OFFICIAL</div>
+                                    <div class="badge-text">CERTIFIED</div>
+                                    <div class="badge-year">${new Date(cert.issueDate).getFullYear()}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -759,10 +765,12 @@ export default function CertificatesPage() {
                                 />
                             </div>
                             <div className="flex gap-2">
-                                <Button variant="default" onClick={openBatchModal}>
-                                    <Award className="mr-2 h-4 w-4" />
-                                    Batch Generate
-                                </Button>
+                                {hasPermission('CERTIFICATES', 'create') && (
+                                    <Button variant="default" onClick={openBatchModal}>
+                                        <Award className="mr-2 h-4 w-4" />
+                                        Batch Generate
+                                    </Button>
+                                )}
                                 <Button variant="outline" onClick={handleExportAll}>
                                     <Download className="mr-2 h-4 w-4" />
                                     Export All
@@ -809,14 +817,19 @@ export default function CertificatesPage() {
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {cert.status === 'PENDING' && (
+                                                    {cert.status === 'PENDING' && hasPermission('CERTIFICATES', 'update') && (
                                                         <Button variant="outline" size="sm" className="mr-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleUpdateStatus(cert.id, 'ISSUED')}>
                                                             Approve
                                                         </Button>
                                                     )}
-                                                    {cert.status === 'ISSUED' && (
+                                                    {cert.status === 'ISSUED' && hasPermission('CERTIFICATES', 'update') && (
                                                         <Button variant="outline" size="sm" className="mr-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleUpdateStatus(cert.id, 'REVOKED')}>
                                                             Revoke
+                                                        </Button>
+                                                    )}
+                                                    {cert.status === 'REVOKED' && hasPermission('CERTIFICATES', 'update') && (
+                                                        <Button variant="outline" size="sm" className="mr-2 text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => handleUpdateStatus(cert.id, 'ISSUED')}>
+                                                            Re-issue
                                                         </Button>
                                                     )}
                                                     <Button variant="ghost" size="sm" onClick={() => handleViewCertificate(cert)}>
@@ -1031,6 +1044,7 @@ export default function CertificatesPage() {
                 {/* TEMPLATES TAB */}
                 <TabsContent value="templates" className="mt-6">
                     <div className="flex justify-end mb-4">
+                        {hasPermission('CERTIFICATES', 'create') && (
                         <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
                             <DialogTrigger asChild>
                                 <Button>
@@ -1061,12 +1075,27 @@ export default function CertificatesPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Design URL</Label>
+                                        <Label>Template Design File</Label>
                                         <Input
-                                            value={newTemplate.designUrl}
-                                            onChange={e => setNewTemplate({ ...newTemplate, designUrl: e.target.value })}
-                                            placeholder="https://... (image URL)"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+                                                const formData = new FormData();
+                                                formData.append('templateImage', file);
+                                                try {
+                                                    const res = await api.post('/certificates/templates/upload', formData, {
+                                                        headers: { 'Content-Type': 'multipart/form-data' }
+                                                    });
+                                                    setNewTemplate({ ...newTemplate, designUrl: res.data.designUrl });
+                                                } catch (err) {
+                                                    console.error('Failed to upload image', err);
+                                                    alert('Failed to upload image');
+                                                }
+                                            }}
                                         />
+                                        {newTemplate.designUrl && <p className="text-sm text-green-600">File uploaded successfully!</p>}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Switch
@@ -1082,6 +1111,7 @@ export default function CertificatesPage() {
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
+                        )}
                     </div>
                     <div className="space-y-8 mt-6">
                         {Object.entries(
@@ -1149,14 +1179,16 @@ export default function CertificatesPage() {
                                                         <Settings className="w-4 h-4 mr-2" />
                                                         Design Studio
                                                     </Button>
-                                                    {!template.isDefault && (
+                                                    {!template.isDefault && hasPermission('CERTIFICATES', 'update') && (
                                                         <Button variant="secondary" size="sm" onClick={() => handleSetDefaultTemplate(template.id)}>
                                                             Make Default
                                                         </Button>
                                                     )}
-                                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
-                                                        <Trash2 className="w-4 h-4 text-destructive" />
-                                                    </Button>
+                                                    {hasPermission('CERTIFICATES', 'delete') && (
+                                                        <Button variant="ghost" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
+                                                            <Trash2 className="w-4 h-4 text-destructive" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -1180,7 +1212,7 @@ export default function CertificatesPage() {
                             <CardTitle>Certificate Settings</CardTitle>
                             <CardDescription>Configure certificate generation options, signatures, and branding.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-8">
+                        <CardContent className={`space-y-8 ${!hasPermission('CERTIFICATES', 'update') ? 'pointer-events-none opacity-80' : ''}`}>
                             {settings ? (
                                 <>
                                     {/* ID Format */}
@@ -1411,12 +1443,14 @@ export default function CertificatesPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-end pt-4 border-t">
-                                        <Button onClick={handleSaveSettings} disabled={isSaving}>
-                                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                            Save Settings
-                                        </Button>
-                                    </div>
+                                    {hasPermission('CERTIFICATES', 'update') && (
+                                        <div className="flex justify-end pt-4 border-t">
+                                            <Button onClick={handleSaveSettings} disabled={isSaving}>
+                                                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                                Save Settings
+                                            </Button>
+                                        </div>
+                                    )}
                                 </>
                             ) : (
                                 <div className="text-center py-8">

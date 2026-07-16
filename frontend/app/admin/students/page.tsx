@@ -44,6 +44,8 @@ import {
     AlertCircle,
     CheckCircle2,
     Banknote,
+    UploadCloud,
+    ShieldCheck
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
@@ -157,6 +159,11 @@ export default function StudentsPage() {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false)
     const [activeStudentForPayment, setActiveStudentForPayment] = React.useState<StudentRecord | null>(null)
     const [paymentForm, setPaymentForm] = React.useState({ courseIds: [] as string[], amount: '', paymentMethod: 'CASH', orderId: '', note: '', status: 'SUCCESS' })
+
+    // Bulk Upload States
+    const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false)
+    const [isUploading, setIsUploading] = React.useState(false)
+    const [uploadFile, setUploadFile] = React.useState<File | null>(null)
 
     // Batch Modal States
     const [isBatchModalOpen, setIsBatchModalOpen] = React.useState(false)
@@ -422,6 +429,8 @@ export default function StudentsPage() {
         s.email.toLowerCase().includes(batchSearch.toLowerCase())
     )
 
+    // Removed unimplemented mock features (Bulk Upload, Verify Profile)
+
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-8">
             {/* Header */}
@@ -431,7 +440,7 @@ export default function StudentsPage() {
                         Students
                     </h1>
                     <p className="text-muted-foreground mt-2 text-lg">
-                        Students created after successful payment and enrollment
+                        All registered students in the platform
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -452,6 +461,7 @@ export default function StudentsPage() {
                         <Users className="h-4 w-4" />
                         Create Batch
                     </Button>
+
                     <Button
                         size="sm"
                         onClick={handleExportCSV}
@@ -721,6 +731,7 @@ export default function StudentsPage() {
                                                                 )}
                                                                 {student.paymentDone ? 'Paid' : 'Payment Done'}
                                                             </Button>
+
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -1051,6 +1062,7 @@ export default function StudentsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
 
         </div>
     )

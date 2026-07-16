@@ -16,6 +16,7 @@ const platformLinks = [
     { label: "Resume Builder", href: "/resume-builder" },
     { label: "Jobs & Placements", href: "/jobs" },
     { label: "Career Guide", href: "/career-guide" },
+    { label: "Final Year Projects", href: "/projects" },
     { label: "Student Verification", href: "/verify" },
 ]
 
@@ -34,10 +35,10 @@ const companyLinks = [
 const policyLinks = [
     { label: "Contact Us", href: "/contact" },
     { label: "Support Center", href: "/support" },
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms & Conditions", href: "/terms" },
-    { label: "Cookies", href: "/cookies" },
-    { label: "GDPR", href: "/gdpr" },
+    { label: "Privacy Policy", href: "/help/privacy" },
+    { label: "Terms & Conditions", href: "/help/terms" },
+    { label: "Cookies", href: "/help/cookies" },
+    { label: "GDPR", href: "/help/gdpr" },
 ]
 
 export function Footer() {
@@ -173,7 +174,7 @@ export function Footer() {
                 </div>
 
                 <div className="mt-10 flex flex-col gap-3 border-t border-border/60 pt-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-                    <p>© {new Date().getFullYear()} Techwell. All rights reserved.</p>
+                    <p>© 2015 to {new Date().getFullYear()} Techwell. All rights reserved.</p>
                     <a href="https://elearnstack.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground transition-colors">
                         <span>Explore Elearnstack</span>
                         <ExternalLink className="h-3.5 w-3.5" />

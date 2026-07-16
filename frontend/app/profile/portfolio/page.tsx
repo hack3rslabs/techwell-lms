@@ -60,7 +60,7 @@ export default function PortfolioSettingsPage() {
             alert('Settings saved!')
         } catch (error) {
             console.error('Failed to save settings:', error)
-            alert('Settings saved (mock)')
+            alert('Failed to save settings. Please try again.')
         } finally {
             setIsSaving(false)
         }

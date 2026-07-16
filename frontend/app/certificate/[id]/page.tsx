@@ -90,11 +90,24 @@ export default function CertificatePublicPage() {
     };
 
     const renderText = (label: string) => {
+        if (!label) return '';
         let text = label;
+        
+        // Legacy support
         text = text.replace('{Student Name}', certificate?.studentName || certificate?.user?.name || '');
         text = text.replace('{Course Name}', certificate?.courseName || certificate?.course?.title || '');
         text = text.replace('{Issue Date}', certificate?.issueDate ? new Date(certificate.issueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '');
         text = text.replace('{Certificate ID}', certificate?.uniqueId || '');
+
+        // New token support
+        text = text.replace('{{STUDENT_NAME}}', certificate?.studentName || certificate?.user?.name || '');
+        text = text.replace('{{COURSE_NAME}}', certificate?.courseName || certificate?.course?.title || '');
+        text = text.replace('{{CERT_TITLE}}', certificate?.template?.name || 'Certificate of Completion');
+        text = text.replace('{{ISSUE_DATE}}', certificate?.issueDate ? new Date(certificate.issueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '');
+        text = text.replace('{{CERT_ID}}', certificate?.uniqueId || '');
+        text = text.replace('{{SIGNATORY_NAME}}', certificate?.signatoryName || 'U Purushottama Rao');
+        text = text.replace('{{SIGNATORY_TITLE}}', certificate?.signatoryTitle || 'Managing Director');
+        
         return text;
     };
 
@@ -252,8 +265,8 @@ export default function CertificatePublicPage() {
                                                     <div>{certificate.uniqueId}</div>
                                                 </div>
                                             ) : el.type === 'image' ? (
-                                                <div className="flex items-center justify-center" style={{ width: el.fontSize * 6, height: el.fontSize * 6 }}>
-                                                    <Image src="/logo-dark.png" alt="Logo" width={160} height={160} className="object-contain drop-shadow-sm" />
+                                                <div className="flex items-center justify-center bg-white rounded-md p-2 shadow-sm" style={{ width: el.fontSize * 6, height: el.fontSize * 6 }}>
+                                                    <Image src="/logo-dark.png" alt="Logo" width={160} height={160} className="object-contain" />
                                                 </div>
                                             ) : (
                                                 renderText(el.value || el.label)
@@ -291,8 +304,8 @@ export default function CertificatePublicPage() {
                                                     <div>{certificate.uniqueId}</div>
                                                 </div>
                                             ) : el.type === 'image' ? (
-                                                <div className="flex items-center justify-center" style={{ width: `calc(${el.fontSize} * 0.5cqw)`, height: `calc(${el.fontSize} * 0.5cqw)` }}>
-                                                    <Image src="/logo-dark.png" alt="Logo" width={80} height={80} className="object-contain drop-shadow-sm" />
+                                                <div className="flex items-center justify-center bg-white rounded-md p-1 shadow-sm" style={{ width: `calc(${el.fontSize} * 0.5cqw)`, height: `calc(${el.fontSize} * 0.5cqw)` }}>
+                                                    <Image src="/logo-dark.png" alt="Logo" width={80} height={80} className="object-contain" />
                                                 </div>
                                             ) : (
                                                 renderText(el.value || el.label)

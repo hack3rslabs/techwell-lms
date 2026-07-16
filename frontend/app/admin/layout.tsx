@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { AdminSidebar } from "@/components/admin/AdminSidebar"
 import { PermissionGuard } from "@/components/shared/PermissionGuard"
+import { AdminTopBar } from "@/components/admin/AdminTopBar"
 
 export default function AdminLayout({
     children,
@@ -18,55 +19,54 @@ export default function AdminLayout({
 
     useEffect(() => {
         if (!isLoading) {
-            // If not logged in, go to login
             if (!isAuthenticated) {
                 router.push('/login')
                 return
             }
-
-            // Students are never allowed in Admin
             if (user?.role === 'STUDENT') {
                 router.push('/dashboard')
                 return
             }
-
-            // All other roles (SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, etc.)
-            // are allowed in — the sidebar filters features by permission
         }
     }, [isLoading, isAuthenticated, user, router])
 
-    // Show spinner while auth is resolving
     if (isLoading) {
         return (
-            <div className="h-screen flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                    <p className="text-sm text-muted-foreground">Loading workspace...</p>
+                </div>
             </div>
         )
     }
 
-    // Safety check for final render — only block students and unauthenticated users
-    const isStudent = user?.role === 'STUDENT';
-
-    if (!isAuthenticated || isStudent) {
+    if (!isAuthenticated || user?.role === 'STUDENT') {
         return null
     }
 
     return (
-        <div className="flex min-h-screen no-scrollbar">
-
-            {/* Sidebar */}
-            <AdminSidebar 
-                isCollapsed={isSidebarCollapsed} 
-                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+        <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+            {/* Fixed Sidebar */}
+            <AdminSidebar
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             />
 
-            {/* Main Content */}
-            <div className={`flex-1 p-8 bg-muted/10 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
-                <PermissionGuard>
-                    {children}
-                </PermissionGuard>
-            </div>
+            {/* Main workspace — scrollable */}
+            <div className={`flex flex-col flex-1 min-w-0 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
+                {/* Sticky Top Bar */}
+                <AdminTopBar isSidebarCollapsed={isSidebarCollapsed} />
 
+                {/* Page Content */}
+                <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
+                    <div className="p-6 md:p-8">
+                        <PermissionGuard>
+                            {children}
+                        </PermissionGuard>
+                    </div>
+                </main>
+            </div>
         </div>
     )
 }

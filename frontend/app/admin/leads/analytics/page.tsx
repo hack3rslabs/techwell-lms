@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { ArrowLeft, Target, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import api from "@/lib/api"
 
 export default function LeadAnalytics() {
     const [leads, setLeads] = useState<any[]>([])
@@ -15,15 +16,15 @@ export default function LeadAnalytics() {
         const fetchData = async () => {
             try {
                 const [leadsRes, readinessRes] = await Promise.all([
-                    fetch('/api/leads?limit=1000', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                    fetch('/api/candidates/admin/placement-readiness', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+                    api.get('/leads?limit=1000'),
+                    api.get('/candidates/admin/placement-readiness')
                 ]);
                 
-                const leadsData = await leadsRes.json();
+                const leadsData = leadsRes.data;
                 setLeads(leadsData.data || leadsData || []);
 
-                if (readinessRes.ok) {
-                    const rData = await readinessRes.json();
+                if (readinessRes.status === 200 || readinessRes.data) {
+                    const rData = readinessRes.data;
                     setReadinessData(rData);
                 }
             } catch (error) {

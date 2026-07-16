@@ -93,14 +93,7 @@ export function InstituteSidebar() {
 
             {/* Footer */}
             <div className="p-4 border-t border-gray-100 bg-gray-50/50 space-y-3">
-                <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 text-gray-500 hover:text-red-600 hover:bg-red-50"
-                    onClick={logout}
-                >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                </Button>
+
             </div>
         </div>
     )

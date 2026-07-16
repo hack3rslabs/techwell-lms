@@ -82,6 +82,24 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: '/terms', destination: '/help/terms', permanent: true },
+      { source: '/privacy', destination: '/help/privacy', permanent: true },
+      { source: '/cookies', destination: '/help/cookies', permanent: true },
+      { source: '/gdpr', destination: '/help/gdpr', permanent: true },
+      { source: '/ai-policy', destination: '/help/ai-policy', permanent: true },
+      { source: '/data-processing', destination: '/help/data-processing', permanent: true },
+      { source: '/placement-policy', destination: '/help/placement-policy', permanent: true },
+      { source: '/refund-policy', destination: '/help/refund-policy', permanent: true },
+      { source: '/student-agreement', destination: '/help/student-agreement', permanent: true },
+      { source: '/college-agreement', destination: '/help/college-agreement', permanent: true },
+      { source: '/consultancy-agreement', destination: '/help/consultancy-agreement', permanent: true },
+      { source: '/campus-hiring-agreement', destination: '/help/campus-hiring-agreement', permanent: true },
+      { source: '/campus-to-career', destination: '/help/campus-to-career', permanent: true },
+      { source: '/career-guide', destination: '/help/career-guide', permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

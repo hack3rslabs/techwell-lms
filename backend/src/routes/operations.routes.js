@@ -110,6 +110,25 @@ router.get('/kpis', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'MANAGER'), 
         // Calculate a dummy conversion rate for visual purposes if data is low
         const conversionRate = totalLeads > 0 ? ((activeStudents / totalLeads) * 100).toFixed(1) : 0;
 
+        // Fetch actual revenue from successful payments
+        const revenueAgg = await prisma.payment.aggregate({
+            _sum: { amount: true },
+            where: { status: 'SUCCESS' }
+        });
+        const totalRevenue = revenueAgg._sum.amount || 0;
+        
+        // Format revenue as currency
+        const formattedRevenue = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+        }).format(totalRevenue);
+
+        // Fetch actual active batches
+        const activeBatchesCount = await prisma.batch.count({
+            where: { status: { in: ['ACTIVE', 'UPCOMING'] } }
+        });
+
         res.json({
             metrics: {
                 totalLeads,
@@ -117,8 +136,8 @@ router.get('/kpis', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'MANAGER'), 
                 placementReady,
                 hiredCandidates,
                 conversionRate: `${conversionRate}%`,
-                monthlyRevenue: "₹12,45,000", // Dummy data for visual enhancement
-                activeBatches: 14
+                monthlyRevenue: formattedRevenue,
+                activeBatches: activeBatchesCount
             }
         });
     } catch (error) {

@@ -10,6 +10,10 @@ const adminRoleCheck = (allowedRoles = ['ADMIN']) => {
                 return res.status(401).json({ error: 'Unauthorized - No user found' });
             }
 
+            if (req.user.role === 'SUPER_ADMIN') {
+                return next();
+            }
+
             // Check if user role is in allowed roles
             if (!allowedRoles.includes(req.user.role)) {
                 return res.status(403).json({ 

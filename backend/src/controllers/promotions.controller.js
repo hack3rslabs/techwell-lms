@@ -61,7 +61,12 @@ exports.getDashboardStats = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const { status, type, zone, search, page = 1, limit = 20 } = req.query;
+    const status = req.query.status ? String(req.query.status) : undefined;
+    const type = req.query.type ? String(req.query.type) : undefined;
+    const zone = req.query.zone ? String(req.query.zone) : undefined;
+    const search = req.query.search ? String(req.query.search) : undefined;
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 20;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const where = {};

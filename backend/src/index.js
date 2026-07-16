@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { DATABASE_HELP, getDatabaseHealth, isDatabaseOfflineError } = require('./utils/database');
+const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
@@ -11,6 +12,7 @@ const courseRoutes = require('./routes/course.routes');
 const interviewRoutes = require('./routes/interview.routes');
 const eventsRoutes = require('./routes/events.routes');
 const settingsRoutes = require('./routes/settings.routes');
+const assessmentRoutes = require('./routes/assessments.routes');
 
 const { twilioRouter } = require('./ai-core/providers/twilio');
 
@@ -19,13 +21,12 @@ const app = express();
 // Bulletproof Manual CORS Middleware
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin && (origin.endsWith('techwell.co.in') || origin.includes('localhost') || origin.includes('192.168.'))) {
+    if (origin && (origin.endsWith('techwell.co.in') || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('192.168.'))) {
         res.setHeader('Access-Control-Allow-Origin', origin);
     } else if (process.env.FRONTEND_URL) {
         res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL.replace(/\/$/, ''));
-    } else {
-        res.setHeader('Access-Control-Allow-Origin', '*');
     }
+    // Removed the wildcard '*' fallback to prevent A05 Security Misconfiguration when credentials are true
     
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     
@@ -82,10 +83,29 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
+// Stricter Rate Limiter for Authentication & AI endpoints
+const strictLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // Limit each IP to 20 requests per windowMs
+    message: { error: 'Too many requests, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api/auth/login', strictLimiter);
+app.use('/api/ai', strictLimiter);
+app.use('/api/ai-blog', strictLimiter);
+
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(cookieParser());
 
 // API Routes
+const { maintenanceMiddleware } = require('./middleware/maintenanceMiddleware');
+const auditMiddleware = require('./middleware/audit');
+
+app.use('/api', maintenanceMiddleware);
+app.use('/api', auditMiddleware);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/courses', courseRoutes);
@@ -123,6 +143,7 @@ app.use('/api/portfolio', require('./routes/portfolio.routes'));
 app.use('/api/ai', require('./routes/ai.routes'));
 app.use('/api/video', require('./routes/video.routes'));
 app.use('/api/jobs', require('./routes/jobs.routes'));
+app.use('/api/campus-drives', require('./routes/campusDrives.routes'));
 app.use('/api/campus-drives', require('./routes/campus-drives.routes'));
 app.use('/api/campus-applications', require('./routes/campus-applications.routes'));
 app.use('/api/tasks', require('./routes/tasks.routes'));
@@ -130,7 +151,6 @@ app.use('/api/email-settings', require('./routes/email-settings.routes'));
 app.use('/api/reports', require('./routes/reports.routes'));
 app.use('/api/tickets', require('./routes/tickets.routes'));
 app.use('/api/institutes', require('./routes/institute.routes'));
-app.use('/api/campus-drives', require('./routes/campusDrives.routes'));
 app.use('/api/bulk-upload', require('./routes/bulkUpload.routes'));
 app.use('/api/consultancy-analytics', require('./routes/consultancyAnalytics.routes'));
 app.use('/api/live-classes', require('./routes/live-classes.routes'));
@@ -138,11 +158,11 @@ app.use('/api/blogs', require('./routes/blog.routes'));
 app.use('/api/ai/blog', require('./routes/ai-blog.routes'));
 app.use('/api/ats', require('./routes/ats.routes'));
 app.use('/api/ai-settings', require('./routes/ai-settings.routes'));
+app.use('/api/admin/ai-management', require('./routes/ai-management.routes'));
 app.use('/api/trainer', require('./routes/trainer.routes'));
 app.use('/api/behavior', require('./routes/behavior.routes'));
 app.use('/api/library', require('./routes/library.routes'));
 app.use('/api/chatgpt', require('./routes/chatgpt.routes'));
-// app.use('/api/enrollment-requests', require('./routes/enrollment-requests.routes'));
 app.use('/api/employer-requests', require('./routes/employer-requests.routes'));
 app.use('/api/messages', require('./routes/messages.routes'));
 app.use('/api/course-categories', require('./routes/course-categories.routes'));
@@ -152,6 +172,7 @@ app.use('/api/coupons', require('./routes/coupons.routes'));
 app.use('/api/candidates', require('./routes/candidate.routes'));
 app.use('/api/assessments', require('./routes/assessment.routes'));
 app.use('/api/quizzes', require('./routes/quiz.routes'));
+app.use('/api/assessments', assessmentRoutes);
 app.use('/api/operations', require('./routes/operations.routes'));
 app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
 app.use('/api/success-stories', require('./routes/success-stories.routes'));

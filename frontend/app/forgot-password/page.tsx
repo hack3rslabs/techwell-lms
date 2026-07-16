@@ -4,53 +4,20 @@ import * as React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Eye, EyeOff, Loader2, AlertTriangle, X } from 'lucide-react'
-import { LoginCharacter } from '@/components/auth/LoginCharacter'
+import { Loader2, ArrowRight, ShieldCheck, MailCheck, AlertCircle } from 'lucide-react'
+import { motion, AnimatePresence, Variants } from 'framer-motion'
+import api from '@/lib/api'
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const { login, verify2FA, isAuthenticated, user } = useAuth()
 
-    const [email, setEmail] = React.useState('')
-    const [password, setPassword] = React.useState('')
-    const [showPassword, setShowPassword] = React.useState(false)
+    const [email, setEmail] = React.useState(searchParams.get('email') || '')
     const [isLoading, setIsLoading] = React.useState(false)
     const [error, setError] = React.useState('')
-    const [charState, setCharState] = React.useState<"normal" | "shy" | "peeking">("normal")
-    const [showIdleBanner, setShowIdleBanner] = React.useState(false)
-
-    // 2FA Challenge States
-    const [show2FAChallenge, setShow2FAChallenge] = React.useState(false)
-    const [tempToken, setTempToken] = React.useState('')
-    const [twoFactorCode, setTwoFactorCode] = React.useState('')
-    const [trustDevice, setTrustDevice] = React.useState(false)
-    const [is2FAVerifying, setIs2FAVerifying] = React.useState(false)
-
-    React.useEffect(() => {
-        if (isAuthenticated && user) {
-            if (user.role === 'STUDENT') {
-                router.push('/dashboard')
-            } else if (user.role === 'EMPLOYER') {
-                router.push('/employer/dashboard')
-            } else if (user.role === 'INSTITUTE_ADMIN') {
-                router.push('/institute/dashboard')
-            } else {
-                // SUPER_ADMIN, ADMIN, STAFF, INSTRUCTOR, etc.
-                router.push('/admin')
-            }
-        }
-    }, [isAuthenticated, user, router])
-
-    React.useEffect(() => {
-        if (searchParams.get('reason') === 'idle') {
-            setShowIdleBanner(true)
-        }
-    }, [searchParams])
+    const [success, setSuccess] = React.useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -58,192 +25,120 @@ export default function LoginPage() {
         setIsLoading(true)
 
         try {
-            const res = await login(email, password)
-            if (res && res.require2FA) {
-                setTempToken(res.tempToken || '')
-                setShow2FAChallenge(true)
-                setPassword('')
+            const res = await api.post('/auth/forgot-password', { email })
+            if (res.data.success || res.status === 200) {
+                setSuccess(true)
+            } else {
+                setError(res.data.message || 'Failed to send reset link')
             }
-        } catch (err: unknown) {
-            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Login failed. Please try again.'
-            setError(errorMessage)
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.response?.data?.error || 'An error occurred while sending the reset link')
         } finally {
             setIsLoading(false)
         }
     }
 
-    const handle2FAVerify = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError('')
-        setIs2FAVerifying(true)
-
-        try {
-            await verify2FA(twoFactorCode, tempToken, trustDevice)
-        } catch (err: unknown) {
-            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Verification failed. Please check your authenticator code.'
-            setError(errorMessage)
-        } finally {
-            setIs2FAVerifying(false)
-        }
+    // Animation variants
+    const containerVariants: Variants = {
+        hidden: { opacity: 0, scale: 0.95 },
+        visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 } },
+        exit: { opacity: 0, scale: 0.9, filter: 'blur(10px)', transition: { duration: 0.4 } }
     }
-
-    // Character animation logic
-    const handlePasswordFocus = () => {
-        if (showPassword) setCharState("peeking")
-        else setCharState("shy")
+    
+    const itemVariants: Variants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.5, type: 'spring', stiffness: 100 } }
     }
-
-    const handlePasswordBlur = () => {
-        setCharState("normal")
-    }
-
-    React.useEffect(() => {
-        if (charState === "shy" && showPassword) {
-            setCharState("peeking")
-        } else if (charState === "peeking" && !showPassword) {
-            setCharState("shy")
-        }
-    }, [showPassword, charState])
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5">
-            <div className="w-full max-w-5xl space-y-6">
-                <div className="flex flex-col items-center mb-8">
-                    <Link href="/">
-                        <Image src="/logo-light.png" alt="Techwell" width={160} height={48} className="dark:hidden" priority />
-                        <Image src="/logo-dark.png" alt="Techwell" width={160} height={48} className="hidden dark:block" priority />
-                    </Link>
-                </div>
+        <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-slate-950 text-white font-sans">
+            {/* Ultra Premium 3D Animated Background (Consistent with Login) */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <motion.div 
+                    animate={{ 
+                        rotate: [0, 90, 180, 270, 360],
+                        scale: [1, 1.2, 1, 1.1, 1],
+                        x: [0, 50, -50, 20, 0],
+                        y: [0, -50, 50, -20, 0]
+                    }} 
+                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                    className="absolute -top-[10%] -right-[5%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-br from-indigo-500/40 via-purple-500/20 to-transparent blur-[120px] opacity-80 mix-blend-screen"
+                />
+                <motion.div 
+                    animate={{ 
+                        rotate: [360, 270, 180, 90, 0],
+                        scale: [1, 1.3, 0.9, 1.2, 1],
+                        x: [0, -60, 40, -30, 0],
+                        y: [0, 60, -40, 30, 0]
+                    }} 
+                    transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                    className="absolute -bottom-[10%] -left-[5%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-cyan-500/30 via-emerald-500/20 to-transparent blur-[120px] opacity-80 mix-blend-screen"
+                />
+            </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    {/* Left Side: Animated Character & Brand Message */}
-                    <div className="hidden lg:flex flex-col items-center justify-center p-12 bg-primary/5 rounded-[3rem] border border-primary/10 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/20 transition-colors" />
-                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 rounded-full -ml-16 -mb-16 blur-3xl group-hover:bg-primary/20 transition-colors" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
-                        <LoginCharacter state={charState} />
+            <div className="w-full max-w-7xl z-10 flex flex-col lg:flex-row items-center justify-center gap-12 p-6 lg:p-12 h-full min-h-screen">
+                
+                {/* Right Side: Ultra Glassmorphic Form (Centered for Forgot Password) */}
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9, rotateY: 15 }}
+                    animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
+                    style={{ perspective: 1000 }}
+                    className="w-full max-w-md lg:max-w-[460px]"
+                >
+                    {/* The 3D Glass Card */}
+                    <div className="bg-[#0f172a]/60 backdrop-blur-[40px] p-8 sm:p-12 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.2)] border border-slate-700/50 relative overflow-hidden group">
+                        
+                        {/* Dynamic border gradient */}
+                        <div className="absolute -inset-[1px] bg-gradient-to-br from-indigo-500/30 via-purple-500/0 to-cyan-500/30 rounded-[2.5rem] -z-10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                        <div className="text-center mt-12 space-y-4 relative z-10">
-                            <h2 className="text-3xl font-extrabold text-primary tracking-tight">Secure Your Future</h2>
-                            <p className="text-muted-foreground text-lg max-w-[320px] leading-relaxed">
-                                Join the ecosystem of innovation and professional growth with Techwell.
-                            </p>
-                            <div className="pt-4 flex justify-center gap-2">
-                                <div className="h-1.5 w-8 rounded-full bg-primary/40" />
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary/20" />
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary/20" />
-                            </div>
+                        {/* Mobile Logo */}
+                        <div className="flex justify-center mb-10">
+                            <Link href="/">
+                                <div className="p-3 bg-white/10 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.37)] border border-white/20">
+                                    <Image src="/logo-dark.png" alt="Techwell" width={140} height={40} priority />
+                                </div>
+                            </Link>
                         </div>
-                    </div>
 
-                    {/* Right Side: Login Form */}
-                    <div className="flex flex-col space-y-8">
-                        {/* Mobile Character View */}
-                        <div className="lg:hidden scale-75 transform -mb-8">
-                            <LoginCharacter state={charState} />
-                        </div>
-
-                        <Card className="border-muted shadow-2xl backdrop-blur-sm bg-background/90 rounded-2xl">
-                            <CardHeader className="text-center pt-10 pb-6">
-                                <CardTitle className="text-3xl font-bold tracking-tight">
-                                    {show2FAChallenge ? 'Two-Factor Verification' : 'Welcome Back'}
-                                </CardTitle>
-                                <CardDescription className="text-base">
-                                    {show2FAChallenge ? 'Enter the 6-digit code from your authenticator app' : 'Sign in to your Techwell account'}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="px-8 pb-10">
-                                {showIdleBanner && (
-                                    <div
-                                        role="alert"
-                                        className="flex items-start gap-3 p-4 text-sm font-medium text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/40 animate-in fade-in slide-in-from-top-2 duration-300 mb-5"
-                                    >
-                                        <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
-                                        <span className="flex-1">
-                                            You were automatically logged out due to inactivity.
-                                            Please sign in again to continue.
-                                        </span>
-                                        <button
-                                            aria-label="Dismiss"
-                                            onClick={() => setShowIdleBanner(false)}
-                                            className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 transition-colors flex-shrink-0"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                )}
-
-                                {error && (
-                                    <div className="p-4 text-sm font-medium text-red-500 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/30 animate-in fade-in zoom-in duration-300 mb-5">
-                                        {error}
-                                    </div>
-                                )}
-
-                                {show2FAChallenge ? (
-                                    <form onSubmit={handle2FAVerify} className="space-y-6">
-                                        <div className="space-y-3 flex flex-col items-center">
-                                            <label htmlFor="twoFactorCode" className="text-sm font-semibold text-center w-full">
-                                                Authenticator Code
-                                            </label>
-                                            <Input
-                                                id="twoFactorCode"
-                                                type="text"
-                                                inputMode="numeric"
-                                                pattern="[0-9]*"
-                                                placeholder="000 000"
-                                                value={twoFactorCode}
-                                                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                                required
-                                                disabled={is2FAVerifying}
-                                                className="h-14 text-center tracking-[0.25em] font-mono text-2xl rounded-xl border-muted focus:ring-primary/20 max-w-[240px]"
-                                                maxLength={6}
-                                                autoFocus
-                                            />
+                        <AnimatePresence mode="wait">
+                            {success ? (
+                                <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-7 relative z-10">
+                                    <div className="text-center space-y-3 mb-8">
+                                        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 rounded-3xl flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(52,211,153,0.2)] border border-emerald-400/30">
+                                            <MailCheck className="w-10 h-10 text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
                                         </div>
+                                        <h2 className="text-3xl font-black tracking-tight text-white">Check Your Email</h2>
+                                        <p className="text-indigo-200/70 text-sm font-medium px-4">
+                                            We've sent password reset instructions to <br/><strong className="text-white">{email}</strong>
+                                        </p>
+                                    </div>
+                                    <motion.div variants={itemVariants} className="pt-2 text-center">
+                                        <Link href="/login" className="text-sm font-semibold text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-wider">
+                                            Back to Login
+                                        </Link>
+                                    </motion.div>
+                                </motion.div>
+                            ) : (
+                                <motion.div key="forgot" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-7 relative z-10">
+                                    <div className="text-center space-y-3 mb-8">
+                                        <h2 className="text-3xl font-black tracking-tight text-white drop-shadow-md">Reset Password</h2>
+                                        <p className="text-indigo-200/70 text-sm font-medium">Enter your email to receive reset instructions.</p>
+                                    </div>
 
-                                        <div className="flex items-center space-x-2 py-1 select-none">
-                                            <input
-                                                id="trustDevice"
-                                                type="checkbox"
-                                                checked={trustDevice}
-                                                onChange={(e) => setTrustDevice(e.target.checked)}
-                                                className="h-4 w-4 rounded border-muted text-primary focus:ring-primary/20 cursor-pointer"
-                                            />
-                                            <label htmlFor="trustDevice" className="text-sm text-muted-foreground cursor-pointer font-medium">
-                                                Trust this device for 30 days
-                                            </label>
-                                        </div>
+                                    {error && (
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="p-4 text-sm font-bold text-rose-200 bg-rose-500/20 backdrop-blur-xl rounded-2xl border border-rose-500/40 text-center shadow-[0_0_20px_rgba(244,63,94,0.2)] flex items-center gap-2">
+                                            <AlertCircle className="w-4 h-4 shrink-0" />
+                                            <span className="flex-1 text-left">{error}</span>
+                                        </motion.div>
+                                    )}
 
-                                        <Button type="submit" className="w-full h-14 text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/25 rounded-xl transition-all active:scale-[0.98]" disabled={is2FAVerifying || twoFactorCode.length !== 6}>
-                                            {is2FAVerifying ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                                    Verifying Identity...
-                                                </>
-                                            ) : (
-                                                'Verify Code'
-                                            )}
-                                        </Button>
-
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            onClick={() => {
-                                                setShow2FAChallenge(false)
-                                                setTwoFactorCode('')
-                                                setError('')
-                                            }}
-                                            className="w-full h-12 text-sm text-muted-foreground hover:text-primary transition-all rounded-xl"
-                                        >
-                                            Back to Credentials Login
-                                        </Button>
-                                    </form>
-                                ) : (
                                     <form onSubmit={handleSubmit} className="space-y-5">
-                                        <div className="space-y-2.5">
-                                            <label htmlFor="email" className="text-sm font-semibold ml-1">
-                                                Email Address
-                                            </label>
+                                        <motion.div variants={itemVariants} className="space-y-2 relative group/input">
+                                            <label htmlFor="email" className="text-sm font-bold text-indigo-100/90 pl-1 uppercase tracking-wider text-[11px]">Work Email</label>
+                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-20 group-focus-within/input:opacity-50 transition duration-500"></div>
                                             <Input
                                                 id="email"
                                                 type="email"
@@ -252,71 +147,39 @@ export default function LoginPage() {
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
                                                 disabled={isLoading}
-                                                onFocus={() => setCharState("normal")}
-                                                className="h-12 rounded-xl focus:ring-primary/20"
+                                                className="relative h-14 rounded-2xl bg-slate-900/80 border-slate-700/50 text-white focus-visible:ring-indigo-500/50 shadow-inner px-4 text-base placeholder:text-slate-500 transition-all font-medium"
                                             />
-                                        </div>
+                                        </motion.div>
 
-                                        <div className="space-y-2.5">
-                                            <div className="flex justify-between items-center ml-1">
-                                                <label htmlFor="password" className="text-sm font-semibold">
-                                                    Password
-                                                </label>
-                                                <Link 
-                                                    href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`} 
-                                                    className="text-xs text-primary hover:underline font-medium"
-                                                >
-                                                    Forgot password?
-                                                </Link>
-                                            </div>
-                                            <div className="relative">
-                                                <Input
-                                                    id="password"
-                                                    type={showPassword ? 'text' : 'password'}
-                                                    placeholder="••••••••"
-                                                    value={password}
-                                                    onChange={(e) => setPassword(e.target.value)}
-                                                    required
-                                                    disabled={isLoading}
-                                                    className="h-12 rounded-xl pr-12 focus:ring-primary/20"
-                                                    onFocus={handlePasswordFocus}
-                                                    onBlur={handlePasswordBlur}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors p-1"
-                                                >
-                                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <Button type="submit" className="w-full h-14 text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/25 rounded-xl transition-all active:scale-[0.98]" disabled={isLoading}>
-                                            {isLoading ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                                    Verifying Identity...
-                                                </>
-                                            ) : (
-                                                'Sign In'
-                                            )}
-                                        </Button>
+                                        <motion.div variants={itemVariants} className="pt-4">
+                                            <Button type="submit" className="relative w-full h-14 text-lg font-black rounded-2xl bg-white hover:bg-slate-100 text-slate-900 shadow-[0_10px_30px_-10px_rgba(255,255,255,0.3)] transition-all group active:scale-[0.98] border-none overflow-hidden" disabled={isLoading}>
+                                                <span className="relative z-10 flex items-center justify-center">
+                                                    {isLoading ? (
+                                                        <Loader2 className="mr-2 h-6 w-6 animate-spin text-indigo-600" />
+                                                    ) : (
+                                                        <>
+                                                            Send Reset Link
+                                                            <ArrowRight className="ml-2 w-5 h-5 opacity-80 group-hover:translate-x-1.5 transition-transform" />
+                                                        </>
+                                                    )}
+                                                </span>
+                                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-100 to-cyan-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            </Button>
+                                        </motion.div>
                                     </form>
-                                )}
 
-                                <div className="mt-8 pt-6 border-t border-muted/60 text-center text-sm">
-                                    <span className="text-muted-foreground">New to Techwell? </span>
-                                    <Link href="/register" className="text-primary hover:underline font-bold">
-                                        Create a free account
-                                    </Link>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    <motion.div variants={itemVariants} className="pt-6 text-center text-[12px] font-semibold text-slate-400 uppercase tracking-wider">
+                                        Remember your password?{' '}
+                                        <Link href="/login" className="text-indigo-400 font-black hover:text-white transition-colors ml-1">
+                                            Login Here
+                                        </Link>
+                                    </motion.div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     )
 }
-

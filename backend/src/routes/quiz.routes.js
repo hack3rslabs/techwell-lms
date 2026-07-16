@@ -43,15 +43,7 @@ router.post('/generate', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRU
         const numQuestions = count || 5;
 
         if (!GEMINI_KEY) {
-            // Mock response for local development without API Key
-            const mockQuizzes = Array.from({ length: numQuestions }).map((_, i) => ({
-                question: `Mock generated question ${i + 1} about ${topic}?`,
-                options: ["Option A", "Option B", "Option C", "Option D"],
-                correctAnswer: "Option A",
-                explanation: `This is a mock explanation for question ${i + 1}.`
-            }));
-            
-            return res.json({ generated: mockQuizzes });
+            return res.status(500).json({ error: 'AI capabilities are currently disabled due to missing configuration.' });
         }
 
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });

@@ -20,11 +20,12 @@ export default function AtsChecker() {
 
         setLoading(true);
         try {
-            const res = await fetch('/api/ats-checker/analyze', {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/career-hub/ats-analyze`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ resumeText, jobDescription })
             });

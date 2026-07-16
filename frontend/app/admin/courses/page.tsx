@@ -56,7 +56,7 @@ type CourseStatus = "ALL" | "PUBLISHED" | "DRAFT"
 
 export default function AdminCoursesPage() {
     const router = useRouter()
-    const { canWrite } = useAuth()
+    const { hasPermission } = useAuth()
     const [courses, setCourses] = React.useState<Course[]>([])
     const [pagination, setPagination] = React.useState<Pagination>({
         page: 1,
@@ -149,7 +149,7 @@ export default function AdminCoursesPage() {
                         Manage all course content, publishing status and curriculum.
                     </p>
                 </div>
-                {canWrite("COURSES") && (
+                {hasPermission("COURSES", "create") && (
                     <Button onClick={() => router.push("/admin/courses/new")}>
                         <Plus className="mr-2 h-4 w-4" />
                         Create New Course
@@ -296,7 +296,7 @@ export default function AdminCoursesPage() {
                                             {Number(course.price) === 0 ? "Free" : `₹${Number(course.price).toLocaleString("en-IN")}`}
                                         </span>
                                         <div className="flex gap-2">
-                                            {canWrite("COURSES") && (
+                                            {hasPermission("COURSES", "delete") && (
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -315,7 +315,7 @@ export default function AdminCoursesPage() {
                                                 size="sm"
                                                 onClick={() => router.push(`/admin/courses/${course.id}/edit`)}
                                             >
-                                                {canWrite("COURSES") ? "Manage" : "View"}
+                                                {hasPermission("COURSES", "update") ? "Manage" : "View"}
                                             </Button>
                                         </div>
                                     </div>

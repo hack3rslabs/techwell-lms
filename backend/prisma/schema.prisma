@@ -21,6 +21,8 @@ model User {
   updatedAt                   DateTime                  @updatedAt
   permissions                 Json?
   plan                        Plan                      @default(FREE)
+  hasResumeAccess             Boolean                   @default(false)
+  hasAiInterviewAccess        Boolean                   @default(false)
   instituteId                 String?
   systemRoleId                String?
   college                     String?
@@ -95,6 +97,15 @@ model User {
   blogComments                BlogComment[]
   customerId                  String?
   customer                    Customer?                 @relation(fields: [customerId], references: [id])
+  
+  // Gamification
+  xp                          Int                       @default(0)
+  currentStreak               Int                       @default(0)
+  lastLoginDate               DateTime?
+  badges                      UserBadge[]
+
+  createdAssessments          Assessment[]
+  assessmentAttempts          AssessmentAttempt[]
   assignedLeads               Lead[]                    @relation("AssignedLeads")
   assignedCustomers           Customer[]                @relation("AssignedCustomers")
   consultingResources         ConsultingResource[]
@@ -103,6 +114,7 @@ model User {
   franchiseId                 String?
   franchise                   Franchise?                @relation(fields: [franchiseId], references: [id])
   approvedFranchises          Franchise[]               @relation("FranchiseApprover")
+  department                  String?
 }
 
 model SystemRole {
@@ -132,8 +144,10 @@ model RolePermission {
   id         String        @id @default(cuid())
   roleId     String
   featureId  String
+  canCreate  Boolean       @default(false)
   canRead    Boolean       @default(false)
-  canWrite   Boolean       @default(false)
+  canUpdate  Boolean       @default(false)
+  canDelete  Boolean       @default(false)
   isDisabled Boolean       @default(false)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
@@ -181,6 +195,11 @@ model Institute {
   campusDrives          CampusDriveInstitute[]
   bulkUploads           BulkUploadLog[]
   consultancyCoords     ConsultancyCoordination[]
+
+  departments       String[] @default([])
+  branches          String[] @default([])
+  academicYears     String[] @default([])
+  placementCalendar Json?
 }
 
 model Course {
@@ -238,6 +257,7 @@ model Course {
   announcements        Announcement[]
   batches              Batch[]
   certificates         Certificate[]
+  assessments          Assessment[]
   courseCategory       CourseCategory?     @relation(fields: [categoryId], references: [id])
   Coupon               Coupon?             @relation(fields: [couponId], references: [id])
   institute            Institute?          @relation(fields: [instituteId], references: [id])
@@ -433,6 +453,7 @@ model Enrollment {
   batch              Batch?           @relation(fields: [batchId], references: [id])
   course             Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  installments       Installment[]
 
   @@unique([userId, courseId])
 }
@@ -507,6 +528,7 @@ model Interview {
   evaluation      InterviewEvaluation?
   questions       InterviewQuestion[]
   responses       InterviewResponse[]
+  jobApplications JobApplication[]
 }
 
 model InterviewQuestion {
@@ -593,22 +615,36 @@ model InterviewSettings {
 }
 
 model Payment {
-  id        String   @id @default(cuid())
-  orderId   String   @unique
-  paymentId String?  @unique
-  signature String?
+  id            String     @id @default(cuid())
+  orderId       String     @unique
+  paymentId     String?    @unique
+  signature     String?
   amount        Float
-  currency      String   @default("INR")
-  status        String   @default("PENDING")
-  paymentMethod String   @default("ONLINE") // ONLINE, CASH_FRANCHISE
+  currency      String     @default("INR")
+  status        String     @default("PENDING")
+  paymentMethod String     @default("ONLINE") // ONLINE, CASH_FRANCHISE
   userId        String
   courseId      String
   franchiseId   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   course        Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user          User       @relation(fields: [userId], references: [id])
   franchise     Franchise? @relation(fields: [franchiseId], references: [id])
+}
+
+model Installment {
+  id           String      @id @default(cuid())
+  enrollmentId String
+  amount       Float
+  dueDate      DateTime
+  status       String      @default("PENDING") // PENDING, PAID, OVERDUE
+  paidDate     DateTime?
+  paymentId    String?     @unique
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  enrollment   Enrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 }
 
 model ForumCategory {
@@ -721,17 +757,17 @@ model Certificate {
   uniqueId         String               @unique
   userId           String?
   regId            String?
-  courseId         String?              // Made optional for Webinars/Events
-  enrollmentId     String?              // Made optional for Webinars/Events
-  referenceId      String?              // Links to Webinar, Workshop, Event
-  referenceType    String?              // "COURSE", "WEBINAR", "WORKSHOP", "EVENT"
+  courseId         String? // Made optional for Webinars/Events
+  enrollmentId     String? // Made optional for Webinars/Events
+  referenceId      String? // Links to Webinar, Workshop, Event
+  referenceType    String? // "COURSE", "WEBINAR", "WORKSHOP", "EVENT"
   studentName      String
-  courseName       String               // Can double as Event/Webinar Name
+  courseName       String // Can double as Event/Webinar Name
   courseCategory   String?
-  trainingHours    Int?                 // New Enterprise Field
-  skillsEarned     Json?                // New Enterprise Field
-  learningOutcomes Json?                // New Enterprise Field
-  credentialHash   String?              // Secure SHA-256 Hash
+  trainingHours    Int? // New Enterprise Field
+  skillsEarned     Json? // New Enterprise Field
+  learningOutcomes Json? // New Enterprise Field
+  credentialHash   String? // Secure SHA-256 Hash
   issueDate        DateTime             @default(now())
   expiryDate       DateTime?
   templateId       String?
@@ -773,7 +809,7 @@ model CertificateTemplate {
   isActive       Boolean       @default(true)
   layout         Json?
   canvasData     Json?
-  versionHistory Json?         // New Enterprise Field: Tracks previous layouts
+  versionHistory Json? // New Enterprise Field: Tracks previous layouts
   instituteId    String        @default("default")
   purpose        String        @default("COURSE_COMPLETION")
   createdAt      DateTime      @default(now())
@@ -1130,16 +1166,16 @@ model TicketMessage {
 }
 
 model Event {
-  id               String   @id @default(cuid())
-  title            String
-  description      String?
-  type             String   @default("Webinar")
-  date             DateTime
-  time             String
-  location         String
-  status           String   @default("Upcoming")
-  seatsTotal       Int      @default(100)
-  seatsBooked      Int      @default(0)
+  id                    String   @id @default(cuid())
+  title                 String
+  description           String?
+  type                  String   @default("Webinar")
+  date                  DateTime
+  time                  String
+  location              String
+  status                String   @default("Upcoming")
+  seatsTotal            Int      @default(100)
+  seatsBooked           Int      @default(0)
   iconName              String?
   customFormFields      Json?
   generateCertificate   Boolean  @default(false)
@@ -1147,6 +1183,8 @@ model Event {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   imageUrl              String?
+  isApproved            Boolean  @default(false)
+  approvedById          String?
 }
 
 model PaymentConfig {
@@ -1181,6 +1219,7 @@ model SystemSettings {
   faviconUrl            String?
   primaryColor          String   @default("#2563eb")
   isMaintenanceMode     Boolean  @default(false)
+  isTestMode            Boolean  @default(false)
   address               String?
   phone                 String?
   updatedAt             DateTime @updatedAt
@@ -1247,6 +1286,8 @@ model EmployerRequest {
   approvedUserId  String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  activationCode  String?
+  emailVerified   Boolean  @default(false)
 
   @@index([email])
   @@index([status])
@@ -1272,6 +1313,7 @@ model Job {
   expiresAt     DateTime?
   publishedAt   DateTime?
   qualification String?
+  linkedCourseId String?
   employer      User             @relation(fields: [employerId], references: [id])
   applications  JobApplication[]
 }
@@ -1297,8 +1339,29 @@ model JobApplication {
   applicant        User?             @relation(fields: [applicantId], references: [id])
   job              Job               @relation(fields: [jobId], references: [id])
   interviews       JobInterview[]
+  offers           JobOffer[]
+  linkedInterviewId String?
+  linkedInterview  Interview?        @relation(fields: [linkedInterviewId], references: [id])
 
   @@unique([jobId, applicantId])
+}
+
+model JobOffer {
+  id               String         @id @default(cuid())
+  applicationId    String
+  ctc              String?
+  salaryBreakup    Json?
+  location         String?
+  reportingManager String?
+  reportingAddress String?
+  designation      String?
+  department       String?
+  doj              DateTime?
+  status           String         @default("RELEASED") // RELEASED, ACCEPTED, DECLINED, WITHDRAWN
+  offerLetterUrl   String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  application      JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
 
 model JobInterview {
@@ -1569,6 +1632,12 @@ model CandidateProfile {
   passedOutYear   String?
   pinCode         String?
   state           String?
+  cgpa            Float?
+  backlogs        Int                   @default(0)
+  projects        Json?
+  internships     Json?
+  certifications  Json?
+  placementStatus String                @default("NOT_INTERESTED") // PLACED, WAITING, HIGHER_STUDIES, ENTREPRENEUR, INTERNSHIP, CAREER_BREAK, NOT_INTERESTED
   lead            Lead?                 @relation(fields: [leadId], references: [id])
   user            User?                 @relation(fields: [userId], references: [id])
   customerId      String?
@@ -1884,23 +1953,31 @@ model ReferralReward {
 }
 
 model ConsultancyInvitation {
-  id            String                @id @default(cuid())
+  id            String            @id @default(cuid())
   email         String
   name          String
   phone         String?
-  status        ConsultancyStatus     @default(INVITED)
-  token         String                @unique
+  status        ConsultancyStatus @default(CREATED)
+  token         String            @unique
   expiresAt     DateTime
-  agreementId   String?               @unique
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  agreementId   String?           @unique
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   customTerms   String?
   feePercentage String?
   advanceFee    Float?
   totalFee      Float?
   jobRole       String?
   prefilledData Json?
-  agreement     ConsultancyAgreement? @relation(fields: [agreementId], references: [id])
+
+  openedAt    DateTime?
+  startedAt   DateTime?
+  submittedAt DateTime?
+  verifiedAt  DateTime?
+  approvedAt  DateTime?
+  acceptedAt  DateTime?
+
+  agreement ConsultancyAgreement? @relation(fields: [agreementId], references: [id])
 }
 
 model ConsultancyAgreement {
@@ -2178,6 +2255,10 @@ enum Role {
   FRANCHISE_STAFF
   FRANCHISE_TRAINER
   FRANCHISE_COUNSELLOR
+  TELE_SALES
+  COUNSELLOR
+  DEMO_USER
+  COLLEGE_ADMIN
 }
 
 enum Plan {
@@ -2266,6 +2347,7 @@ enum LeadStatus {
   INTERESTED
   QUALIFIED
   CONVERTED
+  FOLLOW_UP
   LOST
 }
 
@@ -2391,6 +2473,24 @@ enum ApplicationStatus {
   INTERVIEW_COMPLETED
   HIRED
   REVIEWING
+  REGISTERED
+  ELIGIBLE
+  ASSESSMENT
+  GD
+  TECH_ROUND_1
+  TECH_ROUND_2
+  MANAGER_ROUND
+  HR_ROUND
+  FINAL_SELECTION
+  OFFER_RELEASED
+  OFFER_ACCEPTED
+  OFFER_DECLINED
+  BG_VERIFICATION
+  DOCS_VERIFIED
+  JOINED
+  NOT_JOINED
+  ON_HOLD
+  WITHDRAWN
 }
 
 enum InterviewRoundType {
@@ -2415,15 +2515,27 @@ enum EmailStatus {
 }
 
 enum ConsultancyStatus {
+  CREATED
+  SENT
+  OPENED
+  STARTED
+  DRAFT
+  SUBMITTED
+  VERIFIED
+  APPROVED
+  AGREEMENT_ACCEPTED
+  ACTIVE
+  CLOSED
+  EXPIRED
+
+  // Legacy statuses for backward compatibility
   INVITED
   PENDING_ACCEPTANCE
-  AGREEMENT_ACCEPTED
   PROCESSING
   INTERVIEW_SCHEDULED
   OFFER_RELEASED
   JOINED
   COMPLETED
-  CLOSED
 }
 
 enum MediaType {
@@ -2555,6 +2667,9 @@ model CampusDrive {
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
+  assessmentLink String?
+  workflowStages Json? // To track custom pipeline stages
+
   // Dynamic Job Mela Builder Configs
   participatingCompanies Json? // List of companies with name, logo, roles, etc.
   customFormFields       Json? // Array of field configurations for the lead gen form
@@ -2562,6 +2677,7 @@ model CampusDrive {
   hostType               String? @default("TECHWELL")
   hostName               String?
   hostLogo               String?
+  linkedCourseId         String?
 
   employer   User                   @relation("EmployerCampusDrives", fields: [employerId], references: [id])
   institutes CampusDriveInstitute[]
@@ -2590,7 +2706,7 @@ model CampusDriveStudent {
   targetEmployerId String? // Added for Multi-Company Job Melas
   targetRole       String? // Added for Multi-Company Job Melas
 
-  status         String   @default("ELIGIBLE") // ELIGIBLE, INVITED, APPLIED, SHORTLISTED, TECH_INTERVIEW, HR_INTERVIEW, SELECTED, OFFERED, JOINED, REJECTED
+  status         String   @default("ELIGIBLE") // ELIGIBLE, INVITED, REGISTERED, ASSESSMENT, SHORTLISTED, GD, TECH_INTERVIEW, HR_INTERVIEW, SELECTED, OFFERED, JOINED, REJECTED, WITHDRAWN
   resumeUrl      String?
   offerLetterUrl String?
   ctc            String?
@@ -2995,34 +3111,36 @@ model ConsultingResource {
 // -----------------------------------------------------------------------------
 
 model Franchise {
-  id                   String                  @id @default(cuid())
+  id                   String   @id @default(cuid())
   name                 String
-  franchiseType        String                  @default("INDIVIDUAL") // INDIVIDUAL, COMPANY
+  franchiseType        String   @default("INDIVIDUAL") // INDIVIDUAL, COMPANY
   contactPerson        String
-  email                String                  @unique
+  email                String   @unique
   phone                String
   address              String?
   state                String?
   district             String?
+  mandal               String?
   city                 String?
   pincode              String?
-  exclusiveTerritory   Boolean                 @default(false)
+  nearbyLeadsRadius    Int      @default(10) // km radius
+  exclusiveTerritory   Boolean  @default(false)
   geoLocation          String?
   googleMapsUrl        String?
   googleBusinessUrl    String?
   website              String?
   socialMedia          Json?
   logoUrl              String?
-  branchCode           String?                 @unique
+  branchCode           String?  @unique
   businessHours        Json?
-  gallery              String[]                @default([])
-  status               String                  @default("PENDING") // PENDING, ACTIVE, SUSPENDED, EXPIRED
+  gallery              String[] @default([])
+  status               String   @default("PENDING") // PENDING, ACTIVE, SUSPENDED, EXPIRED
   adminRemarks         String?
   approvedById         String?
-  royaltyPercentage    Float                   @default(30.0) // 30% goes to Techwell
-  commissionPercentage Float                   @default(0.0)
-  createdAt            DateTime                @default(now())
-  updatedAt            DateTime                @updatedAt
+  royaltyPercentage    Float    @default(30.0) // 30% goes to Techwell
+  commissionPercentage Float    @default(0.0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   users                User[]
   courses              Course[]
@@ -3037,113 +3155,187 @@ model Franchise {
   resources            FranchiseResource[]
   certificateTemplates CertificateTemplate[]
 
-  approvedBy           User?                   @relation("FranchiseApprover", fields: [approvedById], references: [id])
+  approvedBy User? @relation("FranchiseApprover", fields: [approvedById], references: [id])
 }
 
 model FranchiseVerification {
-  id                   String      @id @default(cuid())
-  franchiseId          String      @unique
-  panNumber            String?
-  panUrl               String?
-  gstNumber            String?
-  gstUrl               String?
-  msmeNumber           String?
-  msmeUrl              String?
-  firmRegistrationUrl  String?
-  tradeLicenseUrl      String?
-  aadhaarNumber        String?
-  aadhaarUrl           String?
-  addressProofUrl      String?
-  bankDetails          Json?
-  cancelledChequeUrl   String?
-  digitalSignatureUrl  String?
-  otherDocuments       Json?
-  status               String      @default("PENDING") // PENDING, APPROVED, REJECTED
-  remarks              String?
-  verifiedAt           DateTime?
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  id                  String    @id @default(cuid())
+  franchiseId         String    @unique
+  panNumber           String?
+  panUrl              String?
+  gstNumber           String?
+  gstUrl              String?
+  msmeNumber          String?
+  msmeUrl             String?
+  firmRegistrationUrl String?
+  tradeLicenseUrl     String?
+  aadhaarNumber       String?
+  aadhaarUrl          String?
+  addressProofUrl     String?
+  bankDetails         Json?
+  cancelledChequeUrl  String?
+  digitalSignatureUrl String?
+  otherDocuments      Json?
+  status              String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  remarks             String?
+  verifiedAt          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  franchise Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
 }
 
 model FranchiseSubscription {
-  id                   String      @id @default(cuid())
-  franchiseId          String
-  planName             String
-  registrationFee      Float       @default(0)
-  franchiseFee         Float       @default(0)
-  renewalFee           Float       @default(0)
-  securityDeposit      Float       @default(0)
-  totalAmount          Float       @default(0)
-  status               String      @default("PENDING") // PENDING, PAID, CANCELLED, EXPIRED
-  paymentId            String?
-  startDate            DateTime?
-  endDate              DateTime?
-  renewalReminderSent  Boolean     @default(false)
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  id                  String    @id @default(cuid())
+  franchiseId         String
+  planName            String
+  registrationFee     Float     @default(0)
+  franchiseFee        Float     @default(0)
+  renewalFee          Float     @default(0)
+  securityDeposit     Float     @default(0)
+  totalAmount         Float     @default(0)
+  status              String    @default("PENDING") // PENDING, PAID, CANCELLED, EXPIRED
+  paymentId           String?
+  startDate           DateTime?
+  endDate             DateTime?
+  renewalReminderSent Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  franchise Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
 }
 
 model FranchiseRevenue {
-  id                   String      @id @default(cuid())
-  franchiseId          String
-  transactionType      String      // STUDENT_FEE, ROYALTY, COMMISSION
-  amount               Float       @default(0)
-  franchiseShare       Float       @default(0)
-  techwellShare        Float       @default(0)
-  status               String      @default("PENDING") // PENDING, SETTLED
-  studentId            String?
-  enrollmentId         String?
-  settlementDate       DateTime?
-  referenceId          String?
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  id              String    @id @default(cuid())
+  franchiseId     String
+  transactionType String // STUDENT_FEE, ROYALTY, COMMISSION
+  amount          Float     @default(0)
+  franchiseShare  Float     @default(0)
+  techwellShare   Float     @default(0)
+  status          String    @default("PENDING") // PENDING, SETTLED
+  studentId       String?
+  enrollmentId    String?
+  settlementDate  DateTime?
+  referenceId     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  franchise Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
 }
 
 model FranchiseAgreement {
-  id                   String      @id @default(cuid())
-  franchiseId          String
-  version              String      @default("1.0")
-  content              String      @db.Text
-  digitalSignatureUrl  String?
-  termsAccepted        Boolean     @default(false)
-  acceptedAt           DateTime?
-  ipAddress            String?
-  status               String      @default("ACTIVE") // ACTIVE, EXPIRED, RENEWED
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  id                  String    @id @default(cuid())
+  franchiseId         String
+  version             String    @default("1.0")
+  content             String    @db.Text
+  digitalSignatureUrl String?
+  termsAccepted       Boolean   @default(false)
+  acceptedAt          DateTime?
+  ipAddress           String?
+  status              String    @default("ACTIVE") // ACTIVE, EXPIRED, RENEWED
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  franchise Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
 }
 
 model FranchiseLedger {
-  id                   String      @id @default(cuid())
-  franchiseId          String
-  transactionType      String      // CREDIT (Techwell owes Franchise), DEBIT (Franchise owes Techwell), SETTLEMENT (Payment made)
-  amount               Float
-  balanceAfter         Float
-  description          String?
-  referenceId          String?     // e.g., Enrollment ID or Payment ID
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  id              String   @id @default(cuid())
+  franchiseId     String
+  transactionType String // CREDIT (Techwell owes Franchise), DEBIT (Franchise owes Techwell), SETTLEMENT (Payment made)
+  amount          Float
+  balanceAfter    Float
+  description     String?
+  referenceId     String? // e.g., Enrollment ID or Payment ID
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  franchise            Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  franchise Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
 }
 
 model FranchiseResource {
-  id                   String      @id @default(cuid())
-  franchiseId          String?     // If null, it's global for all franchises
-  title                String
-  description          String?
-  fileUrl              String
-  resourceType         String      // BROCHURE, BANNER, SYLLABUS, VIDEO
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  id           String   @id @default(cuid())
+  franchiseId  String? // If null, it's global for all franchises
+  title        String
+  description  String?
+  fileUrl      String
+  resourceType String // BROCHURE, BANNER, SYLLABUS, VIDEO
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  franchise            Franchise?  @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  franchise Franchise? @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+}
+
+model Assessment {
+  id            String               @id @default(cuid())
+  title         String
+  description   String?
+  type          String               @default("MCQ") // MCQ, CODING, MIXED
+  duration      Int                  @default(60) // in minutes
+  passingScore  Int                  @default(50)
+  employerId    String
+  courseId      String?
+  isPublished   Boolean              @default(false)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  employer      User                 @relation(fields: [employerId], references: [id])
+  course        Course?              @relation(fields: [courseId], references: [id])
+  questions     AssessmentQuestion[]
+  attempts      AssessmentAttempt[]
+}
+
+model AssessmentQuestion {
+  id           String     @id @default(cuid())
+  assessmentId String
+  text         String
+  type         String     @default("MCQ") // MCQ, CODING
+  options      Json?      // e.g. ["A", "B", "C", "D"]
+  correctAnswer String?
+  marks        Int        @default(1)
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model AssessmentAttempt {
+  id           String     @id @default(cuid())
+  assessmentId String
+  userId       String
+  score        Float      @default(0)
+  status       String     @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, ABANDONED
+  responses    Json?      // Map of questionId -> user response
+  startedAt    DateTime   @default(now())
+  completedAt  DateTime?
+  proctorLogs  Json?      // Array of tab switches, warnings
+
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, userId])
+}
+
+// Gamification Models
+model Badge {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  iconUrl     String?     // URL or lucide icon name
+  xpRequired  Int         @default(0)
+  createdAt   DateTime    @default(now())
+
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  awardedAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
 }

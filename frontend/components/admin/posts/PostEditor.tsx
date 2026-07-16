@@ -11,6 +11,7 @@ import { ArrowLeft, Save, Image as ImageIcon, Globe, Settings, Eye } from 'lucid
 import Link from 'next/link';
 import api, { uploadApi } from '@/lib/api';
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/lib/auth-context';
 import { RichTextEditor } from '@/components/editor/RichTextEditor';
 import { getFullImageUrl } from '@/lib/image-utils';
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,7 @@ function PostEditorContent() {
     const postId = searchParams.get('id');
     const isEdit = !!postId;
     const { toast } = useToast();
+    const { hasPermission } = useAuth();
 
     const [loading, setLoading] = useState(isEdit);
     const [saving, setSaving] = useState(false);
@@ -170,16 +172,18 @@ function PostEditorContent() {
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={() => handleSave(false)} disabled={saving}>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Draft
-                    </Button>
-                    <Button onClick={() => handleSave(true)} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
-                        <Globe className="mr-2 h-4 w-4" />
-                        {formData.status === 'PUBLISHED' ? 'Update Published' : 'Publish Now'}
-                    </Button>
-                </div>
+                {hasPermission('BLOGS', isEdit ? 'update' : 'create') && (
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={() => handleSave(false)} disabled={saving}>
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Draft
+                        </Button>
+                        <Button onClick={() => handleSave(true)} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+                            <Globe className="mr-2 h-4 w-4" />
+                            {formData.status === 'PUBLISHED' ? 'Update Published' : 'Publish Now'}
+                        </Button>
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

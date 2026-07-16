@@ -3,7 +3,8 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import api from "@/lib/api"
+import api, { jobsApi } from "@/lib/api"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -234,8 +235,14 @@ export default function EmployerJobsPage() {
                                                         <Edit className="mr-2 h-4 w-4 text-gray-400" /> Edit Details
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
-                                                        disabled
-                                                        className="text-gray-400 rounded-lg font-medium opacity-50 cursor-not-allowed"
+                                                        onClick={async () => {
+                                                            try {
+                                                                await jobsApi.update(job.id, { status: 'CLOSED' })
+                                                                toast.success('Job closed')
+                                                                fetchJobs()
+                                                            } catch { toast.error('Failed to close job') }
+                                                        }}
+                                                        className="cursor-pointer text-amber-700 rounded-lg focus:bg-amber-50 font-medium"
                                                     >
                                                         <Briefcase className="mr-2 h-4 w-4" /> Close Job
                                                     </DropdownMenuItem>

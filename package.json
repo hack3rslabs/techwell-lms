@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "bulk-rbac-update.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hack3rslabs/techwell-lms.git"
@@ -16,5 +14,9 @@
   "bugs": {
     "url": "https://github.com/hack3rslabs/techwell-lms/issues"
   },
-  "homepage": "https://github.com/hack3rslabs/techwell-lms#readme"
+  "homepage": "https://github.com/hack3rslabs/techwell-lms#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.1.1"
+  }
 }

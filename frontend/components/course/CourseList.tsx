@@ -141,22 +141,6 @@ export default function CourseList() {
 
     return (
         <div className="container py-8">
-            {/* Header */}
-            <div className="mb-8 max-w-2xl">
-                <h1 className="text-4xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-teal-500">
-                    {isJobPrepOnly ? "Job Placement & Career Programs" : "Explore Courses"}
-                </h1>
-                <p className="text-xl text-muted-foreground">
-                    {isJobPrepOnly 
-                        ? "Curated programs mapped directly to MNC readiness, placement assistance, and intensive training."
-                        : "Master the most in-demand tech skills with live, trainer-led courses."}
-                    {!isLoading && total > 0 && (
-                        <span className="ml-2 text-lg font-semibold text-primary">
-                            {total} program{total > 1 ? 's' : ''} available
-                        </span>
-                    )}
-                </p>
-            </div>
 
             {/* Events & Webinars — Compact Ribbon */}
             <div className="mb-8 flex items-center justify-between gap-4 bg-gradient-to-r from-indigo-950 to-indigo-800 rounded-2xl px-5 py-3 border border-indigo-700/50 shadow-sm overflow-hidden relative">

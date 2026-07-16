@@ -14,6 +14,43 @@ router.post('/landing-pages/views/:slug', marketingController.incrementPageViews
 router.use(protect);
 router.use(authorize('SUPER_ADMIN', 'ADMIN', 'MANAGER'));
 
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, '../../uploads/marketing');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'asset-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage });
+
+router.post('/landing-pages/assets/upload', upload.single('image'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+        const fileUrl = `${req.protocol}://${req.get('host')}/uploads/marketing/${req.file.filename}`;
+        res.json({
+            data: [
+                {
+                    src: fileUrl,
+                    type: 'image'
+                }
+            ]
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Landing Pages
 router.get('/landing-pages', marketingController.getLandingPages);
 router.post('/landing-pages', marketingController.createLandingPage);

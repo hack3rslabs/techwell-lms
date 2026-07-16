@@ -67,36 +67,9 @@ export default function AdminAISettingsPage() {
         try {
             const res = await api.get('/ai/providers')
             setProviders(res.data)
-        } catch {
-            // console.error('Failed to fetch providers:', error)
-            // Mock data for demo
-            setProviders([
-                {
-                    id: '1',
-                    name: 'OpenAI GPT-4',
-                    provider: 'OPENAI',
-                    apiKey: '',
-                    model: 'gpt-4',
-                    isActive: true,
-                    isDefault: true,
-                    currentUsage: 125000,
-                    usageLimit: 500000,
-                    temperature: 0.7,
-                    maxTokens: 2048
-                },
-                {
-                    id: '2',
-                    name: 'Google Gemini Pro',
-                    provider: 'GOOGLE',
-                    apiKey: '',
-                    model: 'gemini-pro',
-                    isActive: false,
-                    isDefault: false,
-                    currentUsage: 0,
-                    temperature: 0.7,
-                    maxTokens: 2048
-                }
-            ])
+        } catch (error) {
+            console.error('Failed to fetch providers:', error)
+            setProviders([])
         } finally {
             setIsLoading(false)
         }
@@ -107,15 +80,12 @@ export default function AdminAISettingsPage() {
         try {
             const res = await api.get('/ai/usage')
             setUsage(res.data)
-        } catch {
+        } catch (error) {
+            console.error('Failed to fetch usage stats:', error)
             setUsage({
-                total: { tokens: 125000, requests: 450 },
+                total: { tokens: 0, requests: 0 },
                 byProvider: [],
-                byFeature: [
-                    { feature: 'Q&A_TRAINING', _sum: { tokensUsed: 50000 }, _count: 200 },
-                    { feature: 'INTERVIEW', _sum: { tokensUsed: 45000 }, _count: 150 },
-                    { feature: 'COURSE_CREATION', _sum: { tokensUsed: 30000 }, _count: 100 }
-                ]
+                byFeature: []
             })
         }
     }
@@ -134,10 +104,9 @@ export default function AdminAISettingsPage() {
             fetchProviders()
             setShowAddForm(false)
             resetForm()
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to add provider:', error)
-            alert('Provider added (mock)')
-            setShowAddForm(false)
+            alert(error.response?.data?.error || 'Failed to add provider')
         }
     }
 
@@ -166,8 +135,8 @@ export default function AdminAISettingsPage() {
         try {
             const res = await api.post(`/ai/providers/${id}/test`)
             setTestResult({ id, success: res.data.success, message: res.data.message })
-        } catch {
-            setTestResult({ id, success: true, message: 'Connection test passed (mock)' })
+        } catch (error: any) {
+            setTestResult({ id, success: false, message: error.response?.data?.error || 'Connection failed' })
         } finally {
             setTestingId(null)
         }

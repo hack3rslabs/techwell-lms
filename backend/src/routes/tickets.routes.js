@@ -104,6 +104,32 @@ router.get('/', authenticate, checkPermission('TICKETS'), async (req, res, next)
 });
 
 /**
+ * @route   GET /api/tickets/staff/list
+ * @desc    Get all staff members for ticket assignment
+ * @access  Private
+ */
+router.get('/staff/list', authenticate, checkPermission('TICKETS'), async (req, res, next) => {
+    try {
+        const staff = await prisma.user.findMany({
+            where: {
+                role: { in: ['STAFF', 'ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'] },
+                isActive: true
+            },
+            select: {
+                id: true,
+                name: true,
+                role: true,
+                email: true
+            },
+            orderBy: { name: 'asc' }
+        });
+        res.json({ users: staff });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   GET /api/tickets/:id
  * @desc    Get ticket details with messages
  * @access  Private

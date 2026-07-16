@@ -8,7 +8,7 @@ import { userApi, uploadApi } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { User as UserIcon, Mail, Phone, Save, Loader2, Shield, Camera, Crown } from 'lucide-react'
+import { User as UserIcon, Mail, Phone, Save, Loader2, Shield, Camera, Crown, FileText, UploadCloud, Sparkles } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 
@@ -38,6 +38,9 @@ export default function ProfilePage() {
     })
 
     const fileInputRef = React.useRef<HTMLInputElement>(null)
+    const resumeInputRef = React.useRef<HTMLInputElement>(null)
+    const [isParsingResume, setIsParsingResume] = React.useState(false)
+    const [resumeData, setResumeData] = React.useState<any>(null)
 
     React.useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -102,6 +105,38 @@ export default function ProfilePage() {
             toast.error('Failed to upload image')
         } finally {
             setIsUploading(false)
+        }
+    }
+
+    const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('PDF size must be less than 10MB')
+            return
+        }
+
+        setIsParsingResume(true)
+        const formData = new FormData()
+        formData.append('resume', file)
+
+        try {
+            const res = await fetch('/api/ai/parse-resume', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: formData
+            })
+            const data = await res.json()
+            if (res.ok) {
+                setResumeData(data)
+                toast.success('Resume intelligently parsed by AI!')
+            } else {
+                toast.error(data.error || 'Failed to parse resume')
+            }
+        } catch (error) {
+            toast.error('Error connecting to AI service')
+        } finally {
+            setIsParsingResume(false)
         }
     }
 
@@ -274,6 +309,89 @@ export default function ProfilePage() {
                                 <p className="text-xs text-gray-400">Member since {new Date().getFullYear()}</p>
                                 <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={logout}>
                                     Sign Out
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* AI Resume Parser Section */}
+                <Card className="col-span-1 md:col-span-3 bg-white border-blue-100 dark:bg-slate-900 shadow-sm rounded-xl overflow-hidden mt-6">
+                    <CardHeader className="bg-blue-50/50 dark:bg-slate-800/50 border-b border-blue-100 dark:border-slate-800 pb-6">
+                        <CardTitle className="text-xl flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-blue-500" />
+                            AI Resume Auto-Fill
+                        </CardTitle>
+                        <CardDescription>
+                            Upload your PDF resume. Our AI will automatically extract your skills, education, and experience to build your Techwell Candidate Profile.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        {!resumeData ? (
+                            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-xl bg-gray-50/50 dark:bg-slate-950/50">
+                                <FileText className="w-12 h-12 text-gray-300 mb-4" />
+                                <input
+                                    type="file"
+                                    ref={resumeInputRef}
+                                    className="hidden"
+                                    accept="application/pdf"
+                                    onChange={handleResumeUpload}
+                                />
+                                <Button 
+                                    onClick={() => resumeInputRef.current?.click()} 
+                                    disabled={isParsingResume}
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                    {isParsingResume ? (
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Extracting Data...</>
+                                    ) : (
+                                        <><UploadCloud className="mr-2 h-4 w-4" /> Upload PDF Resume</>
+                                    )}
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="p-4 bg-green-50 text-green-700 rounded-lg text-sm border border-green-100 flex items-center justify-between">
+                                    <span className="font-medium">✅ Resume parsed successfully! Review the extracted data below.</span>
+                                    <Button variant="outline" size="sm" onClick={() => setResumeData(null)}>Reset</Button>
+                                </div>
+                                
+                                <div>
+                                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Skills Extracted</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {Array.isArray(resumeData.skills) && resumeData.skills.map((skill: string, i: number) => (
+                                            <Badge key={i} variant="secondary" className="bg-blue-100 text-blue-700">{skill}</Badge>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Education</h4>
+                                        <ul className="space-y-2">
+                                            {Array.isArray(resumeData.education) && resumeData.education.map((edu: any, i: number) => (
+                                                <li key={i} className="text-sm p-3 bg-gray-50 rounded border">
+                                                    <div className="font-bold">{edu.degree}</div>
+                                                    <div className="text-gray-500">{edu.institution} {edu.year ? `(${edu.year})` : ''}</div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Experience</h4>
+                                        <ul className="space-y-2">
+                                            {Array.isArray(resumeData.experience) && resumeData.experience.map((exp: any, i: number) => (
+                                                <li key={i} className="text-sm p-3 bg-gray-50 rounded border">
+                                                    <div className="font-bold">{exp.role}</div>
+                                                    <div className="text-gray-500">{exp.company} {exp.duration ? `(${exp.duration})` : ''}</div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <Button className="w-full mt-4 bg-blue-600 hover:bg-blue-700">
+                                    Save as Official Candidate Profile
                                 </Button>
                             </div>
                         )}

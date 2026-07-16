@@ -551,3 +551,49 @@ exports.addResource = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.getFranchiseDashboard = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (req.user.role !== 'SUPER_ADMIN' && req.user.franchiseId !== id) {
+            return res.status(403).json({ error: 'Not authorized' });
+        }
+
+        const stats = await prisma.$transaction([
+            prisma.user.count({ where: { franchiseId: id, role: 'STUDENT' } }),
+            prisma.lead.count({ where: { franchiseId: id } }),
+            prisma.payment.aggregate({ where: { franchiseId: id, status: 'SUCCESS' }, _sum: { amount: true } }),
+            prisma.enrollment.count({ where: { user: { franchiseId: id } } })
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                totalStudents: stats[0],
+                totalLeads: stats[1],
+                totalRevenue: stats[2]?._sum?.amount || 0,
+                totalEnrollments: stats[3]
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.getFranchiseLeads = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (req.user.role !== 'SUPER_ADMIN' && req.user.franchiseId !== id) {
+            return res.status(403).json({ error: 'Not authorized' });
+        }
+        
+        const leads = await prisma.lead.findMany({
+            where: { franchiseId: id },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json({ success: true, data: leads });
+    } catch (err) {
+        next(err);
+    }
+};

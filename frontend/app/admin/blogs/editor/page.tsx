@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner'
 import { getFullImageUrl } from '@/lib/image-utils'
 import { RichTextEditor } from '@/components/editor/RichTextEditor'
+import { ImageUploadInfo } from '@/components/ui/ImageUploadInfo'
 
 function BlogEditorContent() {
     const router = useRouter()
@@ -263,6 +264,9 @@ function BlogEditorContent() {
                                             <input type="file" className="hidden" accept="image/*" onChange={handleCoverImageChange} disabled={isUploadingCover} />
                                         </label>
                                     )}
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <ImageUploadInfo />
+                                    </div>
                                 </div>
 
                                 {/* Classification */}

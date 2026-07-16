@@ -110,14 +110,6 @@ export function EmployerSidebar() {
                         Post Job
                     </Button>
                 </Link>
-                <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 text-gray-500 hover:text-red-600 hover:bg-red-50"
-                    onClick={logout}
-                >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                </Button>
             </div>
         </div>
     )

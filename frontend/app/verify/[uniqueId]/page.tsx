@@ -128,14 +128,10 @@ export default function VerificationPortal() {
 
                     </div>
                     
-                    <div className="bg-slate-50 p-6 border-t flex justify-between items-center flex-wrap gap-4">
+                    <div className="bg-slate-50 p-6 border-t flex justify-center sm:justify-start items-center flex-wrap gap-4">
                         <p className="text-sm text-slate-500">
                             Verification powered by Corporate Blockchain Auth
                         </p>
-                        <Button className="flex items-center gap-2">
-                            <Download className="w-4 h-4" />
-                            Download PDF
-                        </Button>
                     </div>
                 </Card>
             </div>

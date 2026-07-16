@@ -16,6 +16,7 @@ import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { Loader2, Plus, QrCode, Edit, Trash2, Calendar, Users, GripVertical, Settings2, Link as LinkIcon, Trash, Award } from 'lucide-react'
 import api from '@/lib/api'
+import { ImageUploadInfo } from '@/components/ui/ImageUploadInfo'
 
 interface CustomField {
     id: string
@@ -47,7 +48,7 @@ export default function AdminEventsPage() {
         date: '',
         time: '',
         location: '',
-        status: 'Upcoming',
+        status: 'Pending Approval',
         seatsTotal: '100',
         iconName: '',
         generateCertificate: false,
@@ -85,7 +86,7 @@ export default function AdminEventsPage() {
             date: '',
             time: '',
             location: '',
-            status: 'Upcoming',
+            status: 'Pending Approval',
             seatsTotal: '100',
             iconName: '',
             generateCertificate: false,
@@ -104,7 +105,7 @@ export default function AdminEventsPage() {
             date: event.date ? format(new Date(event.date), 'yyyy-MM-dd') : '',
             time: event.time || '',
             location: event.location || '',
-            status: event.status || 'Upcoming',
+            status: event.status || 'Pending Approval',
             seatsTotal: event.seatsTotal?.toString() || '100',
             iconName: event.iconName || '',
             generateCertificate: event.generateCertificate || false,
@@ -244,7 +245,7 @@ export default function AdminEventsPage() {
                                             <div className="text-sm text-muted-foreground mt-1">{event.time}</div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={event.status === 'Completed' ? 'secondary' : (event.status === 'Upcoming' ? 'default' : 'outline')} className={event.status === 'Registration Open' ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : ''}>
+                                            <Badge variant={event.status === 'Completed' ? 'secondary' : (event.status === 'Upcoming' ? 'default' : (event.status === 'Pending Approval' ? 'destructive' : 'outline'))} className={event.status === 'Registration Open' ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : ''}>
                                                 {event.status}
                                             </Badge>
                                         </TableCell>
@@ -296,7 +297,7 @@ export default function AdminEventsPage() {
                             <div className="space-y-2 md:col-span-2">
                                 <Label>Event Image URL</Label>
                                 <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.jpg" />
-                                <p className="text-xs text-muted-foreground">Recommended size: 1200x630px, High Quality.</p>
+                                <ImageUploadInfo />
                                 {formData.imageUrl && (
                                     <div className="mt-2 w-full max-w-sm h-40 border rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                                         { }
@@ -333,7 +334,8 @@ export default function AdminEventsPage() {
                                 <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v})}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Upcoming">Upcoming</SelectItem>
+                                        <SelectItem value="Pending Approval">Pending Approval</SelectItem>
+                                        <SelectItem value="Upcoming">Upcoming (Approved)</SelectItem>
                                         <SelectItem value="Registration Open">Registration Open</SelectItem>
                                         <SelectItem value="Completed">Completed</SelectItem>
                                     </SelectContent>

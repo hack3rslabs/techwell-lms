@@ -71,24 +71,8 @@ export default function PublicPortfolioPage() {
         } catch (err: unknown) {
             const error = err as { response?: { status?: number } }
             setError(error.response?.status === 404 ? 'Portfolio not found' : 'Failed to load portfolio')
-            // Mock data for demo
-            setPortfolio({
-                user: {
-                    id: '1',
-                    name: 'John Doe',
-                    headline: 'Full Stack Developer | React | Node.js',
-                    portfolioPublic: true
-                },
-                certificates: [
-                    { id: '1', uniqueId: 'CERT-2026-00001', courseName: 'Advanced JavaScript', courseCategory: 'Development', issueDate: '2026-01-15', grade: 'A', isPublic: true },
-                    { id: '2', uniqueId: 'CERT-2026-00002', courseName: 'React Masterclass', courseCategory: 'Development', issueDate: '2026-01-20', grade: 'A+', isPublic: true }
-                ],
-                interviewAchievements: [
-                    { id: '1', domain: 'Frontend', role: 'Senior React Developer', score: 92, completedAt: '2026-01-25', isPublic: true },
-                    { id: '2', domain: 'Backend', role: 'Node.js Developer', score: 88, completedAt: '2026-01-28', isPublic: true }
-                ],
-                stats: { totalCertificates: 2, totalInterviews: 2, averageScore: 90 }
-            })
+            // No mock fallback
+            setPortfolio(null)
         } finally {
             setIsLoading(false)
         }

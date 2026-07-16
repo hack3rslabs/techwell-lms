@@ -87,7 +87,7 @@ export default function FranchiseRequestClient() {
             <CheckCircle2 className="h-6 w-6" />
           </div>
           <h3 className="text-lg font-bold mb-2">Turnkey Curriculum</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Access to constantly updated, industry-curated syllabus and placement LMS.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Access to constantly updated, industry-curated syllabus and placement platform.</p>
         </div>
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
           <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 mx-auto rounded-full flex items-center justify-center mb-4">

@@ -12,6 +12,7 @@ import {
 import Link from 'next/link';
 import api from '@/lib/api';
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/lib/auth-context';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -52,9 +53,10 @@ export default function PostsDashboard() {
     const [analytics, setAnalytics] = useState<Analytics | null>(null);
     const [loading, setLoading] = useState(true);
     const [analyticsLoading, setAnalyticsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('ALL');
+    const [searchQuery, setSearchQuery] = useState('');
     const { toast } = useToast();
+    const { hasPermission } = useAuth();
 
     const fetchPosts = async () => {
         try {
@@ -130,11 +132,13 @@ export default function PostsDashboard() {
                     </h1>
                     <p className="text-muted-foreground mt-1">Manage articles, track performance & reach.</p>
                 </div>
-                <Link href="/admin/posts/create">
-                    <Button className="bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20">
-                        <Plus className="mr-2 h-4 w-4" /> Add New Post
-                    </Button>
-                </Link>
+                {hasPermission('BLOGS', 'create') && (
+                    <Link href="/admin/posts/create">
+                        <Button className="bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20">
+                            <Plus className="mr-2 h-4 w-4" /> Add New Post
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             {/* Analytics Stats Row */}
@@ -353,23 +357,27 @@ export default function PostsDashboard() {
                                                             </Button>
                                                         </Link>
                                                     )}
-                                                    <Link href={`/admin/posts/edit?id=${post.id}`}>
-                                                        <Button variant="ghost" size="icon" title="Edit" className="h-8 w-8 text-muted-foreground hover:text-slate-900">
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                    </Link>
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                                                                <MoreHorizontal className="h-4 w-4" />
+                                                    {hasPermission('BLOGS', 'update') && (
+                                                        <Link href={`/admin/posts/edit?id=${post.id}`}>
+                                                            <Button variant="ghost" size="icon" title="Edit" className="h-8 w-8 text-muted-foreground hover:text-slate-900">
+                                                                <Edit className="h-4 w-4" />
                                                             </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => handleDelete(post.id)} className="text-red-600 focus:text-red-700">
-                                                                <Trash2 className="h-4 w-4 mr-2" /> Delete Post
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                        </Link>
+                                                    )}
+                                                    {hasPermission('BLOGS', 'delete') && (
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem onClick={() => handleDelete(post.id)} className="text-red-600 focus:text-red-700">
+                                                                    <Trash2 className="h-4 w-4 mr-2" /> Delete Post
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

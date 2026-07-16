@@ -56,6 +56,37 @@ const createUserSchema = z.object({
 });
 
 /**
+ * @route   POST /api/users/upgrade-test
+ * @desc    Simulate an upgrade for a module (Resume or Interview)
+ * @access  Private
+ */
+router.post('/upgrade-test', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { module } = req.body;
+
+        const updateData = {};
+        if (module === 'resume') {
+            updateData.hasResumeAccess = true;
+        } else if (module === 'interview') {
+            updateData.hasAiInterviewAccess = true;
+        } else {
+            return res.status(400).json({ error: 'Invalid module specified' });
+        }
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            select: { id: true, hasResumeAccess: true, hasAiInterviewAccess: true }
+        });
+
+        res.status(200).json({ message: 'Upgrade successful', user });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   POST /api/users/profile-image
  * @desc    Upload profile picture
  * @access  Private
@@ -156,7 +187,7 @@ router.put('/me', authenticate, async (req, res, next) => {
  */
 router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, role, search } = req.query;
+        const { page = 1, limit = 20, role, excludeRole, search } = req.query;
         const where = {};
         
         // Scope to franchise if FRANCHISE_ADMIN
@@ -175,6 +206,15 @@ router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) =
              // Keep the restricted roles if no specific role is requested
              where.role = { in: ['STUDENT', 'STAFF', 'INSTRUCTOR'] };
         }
+        
+        if (excludeRole) {
+            if (excludeRole.includes(',')) {
+                where.role = { notIn: excludeRole.split(',') };
+            } else {
+                where.role = { not: excludeRole };
+            }
+        }
+        
         if (search) {
             where.OR = [
                 { name: { contains: search, mode: 'insensitive' } },

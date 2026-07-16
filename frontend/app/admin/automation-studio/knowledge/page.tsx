@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import api from "@/lib/api";
 
 export default function KnowledgeTrainer() {
   const [documents, setDocuments] = useState([]);
@@ -8,11 +10,10 @@ export default function KnowledgeTrainer() {
   const [isTraining, setIsTraining] = useState(false);
 
   const fetchDocs = () => {
-    fetch('/api/admin/automation-studio/knowledge')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setDocuments(data.data);
-      });
+    api.get('/admin/automation-studio/knowledge')
+      .then(res => {
+        if (res.data?.success) setDocuments(res.data.data);
+      }).catch(err => console.error(err));
   };
 
   useEffect(() => {
@@ -22,23 +23,19 @@ export default function KnowledgeTrainer() {
   }, []);
 
   const handleTrain = async () => {
-    if (!url) return alert("Please enter a URL");
+    if (!url) return toast.error("Please enter a URL");
     setIsTraining(true);
     try {
-      const res = await fetch('/api/admin/automation-studio/knowledge/train/url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-      const data = await res.json();
-      if (data.success) {
+      const res = await api.post('/admin/automation-studio/knowledge/train/url', { url });
+      if (res.data?.success) {
         setUrl("");
         fetchDocs();
+        toast.success("Training started successfully");
       } else {
-        alert("Error: " + data.error);
+        toast.error("Error: " + (res.data?.error || res.data?.message));
       }
-    } catch (e) {
-      alert("Failed to start training.");
+    } catch (e: any) {
+      toast.error("Failed to start training: " + (e.response?.data?.error || e.message));
     }
     setIsTraining(false);
   };

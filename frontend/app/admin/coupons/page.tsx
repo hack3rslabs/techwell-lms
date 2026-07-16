@@ -34,7 +34,7 @@ interface Coupon {
 }
 
 export default function AdminCouponsPage() {
-    const { canWrite } = useAuth()
+    const { hasPermission } = useAuth()
 
     const [courses, setCourses] = React.useState<CourseOption[]>([])
     const [coupons, setCoupons] = React.useState<Coupon[]>([])
@@ -264,7 +264,7 @@ export default function AdminCouponsPage() {
                                     }
                                     placeholder="SUMMER25"
                                     disabled={
-                                        !canWrite("COURSES")
+                                        !hasPermission("COUPONS", "create")
                                     }
                                     required
                                 />
@@ -294,8 +294,8 @@ export default function AdminCouponsPage() {
                                             })
                                         }
                                         disabled={
-                                            !canWrite(
-                                                "COURSES"
+                                            !hasPermission(
+                                                "COUPONS", "create"
                                             )
                                         }
                                         required
@@ -323,8 +323,8 @@ export default function AdminCouponsPage() {
                                             })
                                         }
                                         disabled={
-                                            !canWrite(
-                                                "COURSES"
+                                            !hasPermission(
+                                                "COUPONS", "create"
                                             )
                                         }
                                         required
@@ -341,7 +341,7 @@ export default function AdminCouponsPage() {
                                         type="date"
                                         value={form.startDate}
                                         onChange={(event) => setForm({...form, startDate: event.target.value})}
-                                        disabled={!canWrite("COURSES")}
+                                        disabled={!hasPermission("COUPONS", "create")}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -353,7 +353,7 @@ export default function AdminCouponsPage() {
                                         type="number"
                                         value={form.usageLimit}
                                         onChange={(event) => setForm({...form, usageLimit: event.target.value})}
-                                        disabled={!canWrite("COURSES")}
+                                        disabled={!hasPermission("COUPONS", "create")}
                                         placeholder="Max numbers apply"
                                     />
                                 </div>
@@ -386,8 +386,8 @@ export default function AdminCouponsPage() {
                                         })
                                     }}
                                     disabled={
-                                        !canWrite(
-                                            "COURSES"
+                                        !hasPermission(
+                                            "COUPONS", "create"
                                         )
                                     }
                                     required
@@ -421,7 +421,7 @@ export default function AdminCouponsPage() {
                                 className="w-full"
                                 disabled={
                                     isSaving ||
-                                    !canWrite("COURSES")
+                                    !hasPermission("COUPONS", "create")
                                 }
                             >
                                 {isSaving ? (
@@ -516,8 +516,8 @@ export default function AdminCouponsPage() {
                                                 )
                                             }
                                             disabled={
-                                                !canWrite(
-                                                    "COURSES"
+                                                !hasPermission(
+                                                    "COUPONS", "update"
                                                 )
                                             }
                                         >
@@ -536,8 +536,8 @@ export default function AdminCouponsPage() {
                                                 )
                                             }
                                             disabled={
-                                                !canWrite(
-                                                    "COURSES"
+                                                !hasPermission(
+                                                    "COUPONS", "delete"
                                                 )
                                             }
                                         >

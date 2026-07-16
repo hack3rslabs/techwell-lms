@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit2, Trash2, Link as LinkIcon, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { Textarea } from '@/components/ui/textarea'
+import api from '@/lib/api'
 
 export default function LandingPages() {
     const [pages, setPages] = React.useState<any[]>([])
@@ -27,10 +28,8 @@ export default function LandingPages() {
     const [seoDesc, setSeoDesc] = React.useState('')
 
     const fetchPages = () => {
-        fetch('/api/admin/marketing/landing-pages', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }).then(res => res.json()).then(data => {
-            if (data.success) setPages(data.pages || [])
+        api.get('/admin/marketing/landing-pages').then(res => {
+            if (res.data?.success) setPages(res.data.pages || [])
         }).catch(console.error)
     }
 
@@ -42,16 +41,8 @@ export default function LandingPages() {
         e.preventDefault()
         setIsLoading(true)
         try {
-            const res = await fetch('/api/admin/marketing/landing-pages', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('token')}` 
-                },
-                body: JSON.stringify({ title, slug, content: { html: content }, status, seoTitle, seoDesc })
-            })
-            const data = await res.json()
-            if (data.success) {
+            const res = await api.post('/admin/marketing/landing-pages', { title, slug, content: { html: content }, status, seoTitle, seoDesc })
+            if (res.data?.success) {
                 toast({ title: 'Success', description: 'Landing page created successfully' })
                 setIsOpen(false)
                 fetchPages()
@@ -61,10 +52,10 @@ export default function LandingPages() {
                 setSeoTitle('')
                 setSeoDesc('')
             } else {
-                toast({ title: 'Error', description: data.error || data.message, variant: 'destructive' })
+                toast({ title: 'Error', description: res.data?.error || res.data?.message, variant: 'destructive' })
             }
         } catch (error: any) {
-            toast({ title: 'Error', description: error.message, variant: 'destructive' })
+            toast({ title: 'Error', description: error.response?.data?.error || error.message, variant: 'destructive' })
         } finally {
             setIsLoading(false)
         }
@@ -73,11 +64,8 @@ export default function LandingPages() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this page?')) return
         try {
-            const res = await fetch(`/api/admin/marketing/landing-pages/${id}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            })
-            if (res.ok) fetchPages()
+            const res = await api.delete(`/admin/marketing/landing-pages/${id}`)
+            if (res.status === 200 || res.data?.success) fetchPages()
         } catch (error) {
             console.error(error)
         }

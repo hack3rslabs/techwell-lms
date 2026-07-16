@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react"
 
 export default function TrainingManagerPage() {
     const router = useRouter()
-    const { canWrite } = useAuth()
+    const { hasPermission } = useAuth()
     const [stats, setStats] = React.useState({
         activeCourses: 0,
         activeBatches: 0,
@@ -32,8 +32,8 @@ export default function TrainingManagerPage() {
                 setStats({
                     activeCourses: coursesRes.data?.pagination?.total || 0,
                     activeBatches: Array.isArray(batchesRes.data) ? batchesRes.data.length : 0,
-                    totalStudents: 1250, // Mock: this should come from a centralized /api/admin/training/stats
-                    liveClasses: 8       // Mock: this should come from a centralized /api/admin/training/stats
+                    totalStudents: 0,
+                    liveClasses: 0
                 })
             } catch (error) {
                 console.error("Failed to load training stats:", error)

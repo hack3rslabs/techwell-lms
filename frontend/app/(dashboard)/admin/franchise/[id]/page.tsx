@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/lib/auth-context';
 
 export default function FranchiseProfile() {
     const { id } = useParams();
     const router = useRouter();
     const [franchise, setFranchise] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const { hasPermission } = useAuth();
 
     useEffect(() => {
         const fetchFranchise = async () => {
@@ -101,7 +103,7 @@ export default function FranchiseProfile() {
                                                     {v.gstUrl && <a href={v.gstUrl} target="_blank" className="text-blue-500 text-sm">View Document</a>}
                                                 </div>
                                             </div>
-                                            {v.status === 'PENDING' && (
+                                            {v.status === 'PENDING' && hasPermission('FRANCHISES', 'update') && (
                                                 <div className="mt-4 flex space-x-2">
                                                     <Button size="sm" variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200">Approve</Button>
                                                     <Button size="sm" variant="outline" className="bg-red-50 text-red-700 hover:bg-red-100 border-red-200">Reject</Button>

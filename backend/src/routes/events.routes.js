@@ -12,6 +12,23 @@ const { authenticate, checkPermission } = require('../middleware/auth');
 router.get('/', async (req, res, next) => {
     try {
         const events = await prisma.event.findMany({
+            where: { isApproved: true },
+            orderBy: { date: 'asc' }
+        });
+        res.json(events);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/events/all
+ * @desc    Get all events (admin only)
+ * @access  Private/Admin
+ */
+router.get('/all', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const events = await prisma.event.findMany({
             orderBy: { date: 'asc' }
         });
         res.json(events);
@@ -48,6 +65,30 @@ router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) 
         });
 
         res.status(201).json(event);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PUT /api/events/:id/approve
+ * @desc    Approve an event (Manager check)
+ * @access  Private/Admin
+ */
+router.put('/:id/approve', authenticate, checkPermission('MANAGER'), async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { isApproved } = req.body; // true or false
+
+        const event = await prisma.event.update({
+            where: { id },
+            data: {
+                isApproved: isApproved,
+                approvedById: isApproved ? req.user.id : null
+            }
+        });
+
+        res.json({ success: true, event });
     } catch (error) {
         next(error);
     }

@@ -322,14 +322,18 @@ async function main() {
                 },
                 update: {
                     canRead: hasPermission,
-                    canWrite: hasPermission,
+                    canCreate: hasPermission,
+                    canUpdate: hasPermission,
+                    canDelete: hasPermission,
                     isDisabled: !hasPermission
                 },
                 create: {
                     roleId: dbRole.id,
                     featureId: feature.id,
                     canRead: hasPermission,
-                    canWrite: hasPermission,
+                    canCreate: hasPermission,
+                    canUpdate: hasPermission,
+                    canDelete: hasPermission,
                     isDisabled: !hasPermission
                 }
             });
@@ -344,6 +348,34 @@ async function main() {
             data: { systemRoleId: superAdminRole.id }
         });
         console.log('✅ Linked Super Admins to System Role');
+    }
+
+    
+    console.log('\n📜 Seeding Certificate Templates...');
+    const fs = require('fs');
+    const path = require('path');
+    let certificateTemplates = [];
+    const templatesPath = path.join(__dirname, 'templates.json');
+    if (fs.existsSync(templatesPath)) {
+        certificateTemplates = JSON.parse(fs.readFileSync(templatesPath, 'utf8'));
+        console.log(`Loaded ${certificateTemplates.length} templates from templates.json`);
+    } else {
+        console.log('templates.json not found. Skipping templates seeding.');
+    }
+
+    for (const t of certificateTemplates) {
+        const existing = await prisma.certificateTemplate.findFirst({ where: { name: t.name } });
+        if (existing) {
+            await prisma.certificateTemplate.update({
+                where: { id: existing.id },
+                data: t
+            });
+        } else {
+            await prisma.certificateTemplate.create({
+                data: t
+            });
+        }
+        console.log('  ✅ Template:', t.name);
     }
 
     console.log('\n🎉 Seed completed!\n');

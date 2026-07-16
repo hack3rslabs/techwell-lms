@@ -149,7 +149,7 @@ export default function CourseLearnPage() {
 
             // Call API
             await api.post(`/courses/${course?.id}/lessons/${lessonId}/complete`, {
-                timeSpent: 100, // Mock time
+                timeSpent: 100,
                 score
             })
 

@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { z } = require('zod');
 const { authenticate, authorize } = require('../middleware/auth');
+const { sendEmail } = require('../utils/emailSender');
 
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
@@ -33,7 +34,7 @@ const employerRequestSchema = z.object({
     employerName: z.string().trim().min(2, 'Employer name is required').max(120),
     email: z.string().trim().email('Invalid email format').transform(value => value.toLowerCase()),
     phone: z.string().trim().min(7, 'Phone number is required').max(30),
-    website: z.union([z.string().trim().url('Website must be a valid URL'), z.literal('')]).optional(),
+    website: z.string().trim().url('Website must be a valid URL'),
     address: z.string().trim().min(5, 'Business address is required').max(500),
     password: z.string().min(8, 'Password must be at least 8 characters').max(128),
     confirmPassword: z.string(),
@@ -69,6 +70,7 @@ function requestSelect() {
         adminNotes: true,
         rejectionReason: true,
         approvedUserId: true,
+        emailVerified: true,
         createdAt: true,
         updatedAt: true,
     };
@@ -100,28 +102,40 @@ router.post('/', async (req, res, next) => {
         ]);
 
         if (existingUser || existingRequest) {
-            return res.status(409).json({ success: false, message: 'Email already exists.' });
+            return res.status(409).json({ success: false, message: 'Email already exists or request is pending.' });
         }
 
+        const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
         const passwordHash = await bcrypt.hash(data.password, 12);
+        
         const employerRequest = await prisma.employerRequest.create({
             data: {
                 employerName: data.employerName,
                 companyName: data.companyName,
                 email: data.email,
                 phone: data.phone,
-                website: data.website || null,
+                website: data.website,
                 address: data.address,
                 passwordHash,
                 status: 'PENDING',
+                activationCode,
+                emailVerified: false,
             },
             select: requestSelect(),
         });
 
+        // Send OTP email
+        await sendEmail({
+            to: data.email,
+            subject: 'Verify your Techwell Employer Registration',
+            text: `Hello ${data.employerName},\n\nYour OTP for Techwell Employer Registration is: ${activationCode}\n\nPlease enter this code to verify your business email address.\n\nThank you,\nTechwell Team`,
+            html: `<p>Hello ${data.employerName},</p><p>Your OTP for Techwell Employer Registration is: <strong>${activationCode}</strong></p><p>Please enter this code to verify your business email address.</p><p>Thank you,<br/>Techwell Team</p>`
+        });
+
         return res.status(201).json({
             success: true,
-            message: 'Employer request submitted successfully. You can login after admin approval.',
-            data: employerRequest,
+            message: 'Employer request submitted successfully. Please check your email for the verification code.',
+            data: { email: employerRequest.email }, // Return minimal data for OTP step
         });
     } catch (error) {
         if (error instanceof z.ZodError) {
@@ -134,6 +148,47 @@ router.post('/', async (req, res, next) => {
         if (error.code === 'P2002') {
             return res.status(409).json({ success: false, message: 'Email already exists.' });
         }
+        return next(error);
+    }
+});
+
+/**
+ * POST /api/employer-requests/verify-otp
+ * Verifies the OTP sent to the employer's email.
+ */
+router.post('/verify-otp', async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
+        }
+
+        const request = await prisma.employerRequest.findFirst({
+            where: { email: { equals: email, mode: 'insensitive' } }
+        });
+
+        if (!request) {
+            return res.status(404).json({ success: false, message: 'Registration request not found.' });
+        }
+
+        if (request.activationCode !== otp) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+        }
+
+        await prisma.employerRequest.update({
+            where: { id: request.id },
+            data: { 
+                emailVerified: true,
+                activationCode: null // clear OTP after successful verification
+            }
+        });
+
+        return res.json({
+            success: true,
+            message: 'Email verified successfully. Please wait for admin approval.',
+        });
+    } catch (error) {
         return next(error);
     }
 });

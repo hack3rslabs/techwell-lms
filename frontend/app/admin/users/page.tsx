@@ -37,7 +37,9 @@ interface Role {
     rolePermissions: Array<{
         featureId: string
         canRead: boolean
-        canWrite: boolean
+        canCreate: boolean
+        canUpdate: boolean
+        canDelete: boolean
         isDisabled: boolean
     }>
     _count?: { users: number }
@@ -221,26 +223,28 @@ export default function AdminUsersPage() {
             permissions: role.rolePermissions.map(rp => ({
                 featureId: rp.featureId,
                 canRead: rp.canRead,
-                canWrite: rp.canWrite,
+                canCreate: rp.canCreate,
+                canUpdate: rp.canUpdate,
+                canDelete: rp.canDelete,
                 isDisabled: rp.isDisabled
             }))
         });
         setIsCreateFormOpen(true);
     }
 
-    const handlePermissionLevelChange = (featureId: string, level: 'canRead' | 'canWrite' | 'isDisabled', value: boolean) => {
+    const handlePermissionLevelChange = (featureId: string, level: 'canRead' | 'canCreate' | 'canUpdate' | 'canDelete' | 'isDisabled', value: boolean) => {
         setNewRoleData(prev => {
             const existing = prev.permissions.find(p => p.featureId === featureId);
             let updatedPermissions = [...prev.permissions];
             if (existing) {
                 const updated = { ...existing, [level]: value };
-                if (level === 'isDisabled' && value) { updated.canRead = false; updated.canWrite = false; }
-                if (level === 'canWrite' && value) { updated.canRead = true; updated.isDisabled = false; }
-                if ((level === 'canRead' || level === 'canWrite') && value) { updated.isDisabled = false; }
+                if (level === 'isDisabled' && value) { updated.canRead = false; updated.canCreate = false; updated.canUpdate = false; updated.canDelete = false; }
+                if (['canCreate', 'canUpdate', 'canDelete'].includes(level) && value) { updated.canRead = true; updated.isDisabled = false; }
+                if (level === 'canRead' && value) { updated.isDisabled = false; }
                 updatedPermissions = updatedPermissions.map(p => p.featureId === featureId ? updated : p);
             } else {
-                const initial = { featureId, canRead: false, canWrite: false, isDisabled: false, [level]: value };
-                if (level === 'canWrite' && value) initial.canRead = true;
+                const initial = { featureId, canRead: false, canCreate: false, canUpdate: false, canDelete: false, isDisabled: false, [level]: value };
+                if (['canCreate', 'canUpdate', 'canDelete'].includes(level) && value) initial.canRead = true;
                 updatedPermissions.push(initial);
             }
             return { ...prev, permissions: updatedPermissions };
@@ -401,17 +405,19 @@ export default function AdminUsersPage() {
                         </div>
                         <div className="border rounded-xl border-white/10 overflow-hidden">
                             <table className="w-full text-xs text-left">
-                                <thead className="bg-white/5 border-b border-white/10"><tr><th className="p-3 font-bold uppercase">Module</th><th className="p-3 font-bold uppercase text-center">Read</th><th className="p-3 font-bold uppercase text-center">Write</th><th className="p-3 font-bold uppercase text-center">Disable</th></tr></thead>
+                                <thead className="bg-white/5 border-b border-white/10"><tr><th className="p-3 font-bold uppercase">Module</th><th className="p-3 font-bold uppercase text-center">Read</th><th className="p-3 font-bold uppercase text-center">Create</th><th className="p-3 font-bold uppercase text-center">Update</th><th className="p-3 font-bold uppercase text-center">Delete</th><th className="p-3 font-bold uppercase text-center">Disable</th></tr></thead>
                                 <tbody>
                                     {Array.from(new Set(permissions.map(p => p.module || 'General'))).map(moduleName => (
                                         <React.Fragment key={moduleName}>
                                             <tr className="bg-white/5"><td colSpan={4} className="p-2 px-3 font-black text-[9px] uppercase text-primary/70">{moduleName}</td></tr>
                                             {permissions.filter(p => (p.module || 'General') === moduleName).map(perm => {
-                                                const p = newRoleData.permissions.find(pr => pr.featureId === perm.id) || { canRead: false, canWrite: false, isDisabled: false };
+                                                const p = newRoleData.permissions.find(pr => pr.featureId === perm.id) || { canRead: false, canCreate: false, canUpdate: false, canDelete: false, isDisabled: false };
                                                 return (
                                                     <tr key={perm.id} className="border-b border-white/5 last:border-0"><td className="p-3 font-medium">{perm.name}</td>
                                                         <td className="p-3 text-center"><Checkbox checked={p.canRead} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canRead', !!v)} /></td>
-                                                        <td className="p-3 text-center"><Checkbox checked={p.canWrite} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canWrite', !!v)} /></td>
+                                                        <td className="p-3 text-center"><Checkbox checked={p.canCreate} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canCreate', !!v)} /></td>
+                                                        <td className="p-3 text-center"><Checkbox checked={p.canUpdate} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canUpdate', !!v)} /></td>
+                                                        <td className="p-3 text-center"><Checkbox checked={p.canDelete} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canDelete', !!v)} /></td>
                                                         <td className="p-3 text-center"><Checkbox checked={p.isDisabled} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'isDisabled', !!v)} /></td>
                                                     </tr>
                                                 )

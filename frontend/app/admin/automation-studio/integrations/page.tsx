@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import api from "@/lib/api";
 
 export default function IntegrationsManager() {
   const [integrations, setIntegrations] = useState([]);
@@ -17,11 +18,10 @@ export default function IntegrationsManager() {
   const [openAiForm, setOpenAiForm] = useState({ apiKey: '', model: 'gpt-4o-mini' });
 
   function fetchIntegrations() {
-    fetch('/api/admin/automation-studio/integrations')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setIntegrations(data.data);
-      });
+    api.get('/admin/automation-studio/integrations')
+      .then(res => {
+        if (res.data?.success) setIntegrations(res.data.data);
+      }).catch(err => console.error(err));
   }
 
   useEffect(() => {
@@ -29,11 +29,10 @@ export default function IntegrationsManager() {
     
     // Poll WhatsApp Web Status
     const waInterval = setInterval(() => {
-      fetch('/api/admin/automation-studio/integrations/whatsapp-qr')
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setWaStatus(data.data);
+      api.get('/admin/automation-studio/integrations/whatsapp-qr')
+        .then(res => {
+          if (res.data?.success) {
+            setWaStatus(res.data.data);
           }
         }).catch(err => console.error(err));
     }, 3000);
@@ -50,17 +49,12 @@ export default function IntegrationsManager() {
     if (provider === 'OPENAI') configPayload = openAiForm;
 
     try {
-      const res = await fetch('/api/admin/automation-studio/integrations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider,
-          config: configPayload,
-          isActive: true
-        })
+      const res = await api.post('/admin/automation-studio/integrations', {
+        provider,
+        config: configPayload,
+        isActive: true
       });
-      const data = await res.json();
-      if (data.success) {
+      if (res.data?.success) {
         toast.success(`${provider} Integration saved successfully!`);
         fetchIntegrations();
         // Clear forms
@@ -69,10 +63,10 @@ export default function IntegrationsManager() {
         setMetaWaForm({ accessToken: '', phoneNumberId: '', businessAccountId: '' });
         setOpenAiForm({ apiKey: '', model: 'gpt-4o-mini' });
       } else {
-        toast.error("Error saving: " + data.error);
+        toast.error("Error saving: " + (res.data?.error || res.data?.message));
       }
-    } catch (e) {
-      toast.error("Failed to connect to server");
+    } catch (e: any) {
+      toast.error("Failed to connect to server: " + (e.response?.data?.error || e.message));
     }
   };
 
@@ -82,8 +76,13 @@ export default function IntegrationsManager() {
   }
 
   const handleWaLogout = async () => {
-    await fetch('/api/admin/automation-studio/integrations/whatsapp-logout', { method: 'POST' });
-    toast.success("Logged out of WhatsApp Web");
+    try {
+      await api.post('/admin/automation-studio/integrations/whatsapp-logout');
+      toast.success("Logged out of WhatsApp Web");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to logout of WhatsApp");
+    }
   };
 
   return (

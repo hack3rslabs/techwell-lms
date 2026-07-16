@@ -514,7 +514,7 @@ export default function ResumeBuilder() {
                   <Trash2 className="w-5 h-5"/>
                 </button>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mr-8 mb-6">
-                   {renderArrayTextInput("Project Title", "projects", idx, "name", "e.g. AI-Powered LMS")}
+                   {renderArrayTextInput("Project Title", "projects", idx, "name", "e.g. AI-Powered Platform")}
                    {renderArrayTextInput("Technologies Used", "projects", idx, "technologies", "e.g. Next.js, OpenAI, Python")}
                    {renderArrayTextInput("GitHub URL", "projects", idx, "githubUrl", "https://github.com/...")}
                    {renderArrayTextInput("Live Demo URL", "projects", idx, "liveUrl", "https://...")}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Plus, Trash2, Building2, Briefcase, MapPin, X } from 'lucide-react';
 import Link from 'next/link';
+import api from '@/lib/api';
 
 interface Company {
     id: string;
@@ -79,28 +80,20 @@ export default function CreateCampusDrive() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const res = await fetch('/api/campus-drives', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
-                    participatingCompanies: companies.length > 0 ? companies : undefined
-                })
+            const res = await api.post('/campus-drives', {
+                ...formData,
+                skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
+                participatingCompanies: companies.length > 0 ? companies : undefined
             });
 
-            if (res.ok) {
+            if (res.status === 201 || res.data?.success || res.status === 200) {
                 alert('Campus Drive created successfully!');
                 router.push('/admin/campus-drives');
             } else {
-                const data = await res.json();
-                alert(data.error || 'Failed to create drive');
+                alert(res.data?.error || res.data?.message || 'Failed to create drive');
             }
-        } catch {
-            alert('An error occurred');
+        } catch (error: any) {
+            alert(error.response?.data?.error || 'An error occurred');
         } finally {
             setSubmitting(false);
         }

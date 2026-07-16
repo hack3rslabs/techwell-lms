@@ -142,13 +142,26 @@ export default function AdminMessagesPage() {
             setStudents([])
         }
     }, [])
+    
+    const [staff, setStaff] = useState<Student[]>([])
+    const fetchStaff = useCallback(async () => {
+        try {
+            const response = await api.get('/users?role=STAFF,ADMIN,SUPER_ADMIN&skip=0&take=100')
+            setStaff(response.data.users || response.data.data || [])
+        } catch (error) {
+            console.error('Error fetching staff:', error)
+            setStaff([])
+        }
+    }, [])
+
     // Fetch sent messages
     useEffect(() => {
         fetchMessages()
         fetchBatches()
         fetchCourses()
         fetchStudents()
-    }, [fetchMessages, fetchBatches, fetchCourses, fetchStudents])
+        fetchStaff()
+    }, [fetchMessages, fetchBatches, fetchCourses, fetchStudents, fetchStaff])
 
     const resetForm = () => {
         setTitle('')
@@ -157,6 +170,45 @@ export default function AdminMessagesPage() {
         setSelectedBatch('')
         setSelectedCourse('')
         setSelectedStudent('')
+        setSelectedStaff('')
+    }
+    
+    const [selectedStaff, setSelectedStaff] = useState('')
+
+    const handleSendToStaff = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!title.trim() || !content.trim() || !selectedStaff) {
+            setErrorMessage('Title, content, and staff member are required')
+            return
+        }
+
+        try {
+            setMessageLoading(true)
+            const { messagesApi } = await import('@/lib/api')
+            if (selectedStaff === 'ALL') {
+                await messagesApi.sendToStaff({
+                    title,
+                    content,
+                    priority
+                })
+            } else {
+                await messagesApi.sendToStudent({
+                    title,
+                    content,
+                    studentId: selectedStaff,
+                    priority
+                })
+            }
+            setSuccessMessage('Internal message sent successfully')
+            resetForm()
+            fetchMessages()
+            setTimeout(() => setSuccessMessage(''), 3000)
+        } catch (error) {
+            setErrorMessage('Failed to send message')
+            console.error(error)
+        } finally {
+            setMessageLoading(false)
+        }
     }
 
     const handleSendToAll = async (e: React.FormEvent) => {
@@ -317,26 +369,30 @@ export default function AdminMessagesPage() {
 
                 {/* Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-5">
+                    <TabsList className="grid w-full grid-cols-6">
                         <TabsTrigger value="send-all" className="flex items-center gap-2">
                             <Users className="w-4 h-4" />
-                            <span className="hidden sm:inline">All Students</span>
+                            <span className="hidden md:inline">All Students</span>
                         </TabsTrigger>
                         <TabsTrigger value="send-course" className="flex items-center gap-2">
                             <BookOpen className="w-4 h-4" />
-                            <span className="hidden sm:inline">By Course</span>
+                            <span className="hidden md:inline">Course</span>
                         </TabsTrigger>
                         <TabsTrigger value="send-batch" className="flex items-center gap-2">
                             <Users className="w-4 h-4" />
-                            <span className="hidden sm:inline">By Batch</span>
+                            <span className="hidden md:inline">Batch</span>
                         </TabsTrigger>
                         <TabsTrigger value="send-student" className="flex items-center gap-2">
                             <MessageSquare className="w-4 h-4" />
-                            <span className="hidden sm:inline">Individual</span>
+                            <span className="hidden md:inline">Student</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="send-staff" className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-purple-600" />
+                            <span className="hidden md:inline font-semibold text-purple-700">Internal Team</span>
                         </TabsTrigger>
                         <TabsTrigger value="history" className="flex items-center gap-2">
                             <Eye className="w-4 h-4" />
-                            <span className="hidden sm:inline">History</span>
+                            <span className="hidden md:inline">History</span>
                         </TabsTrigger>
                     </TabsList>
 
@@ -678,6 +734,100 @@ export default function AdminMessagesPage() {
                                             <>
                                                 <Send className="mr-2 h-4 w-4" />
                                                 Send to Student
+                                            </>
+                                        )}
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Send to Staff Tab */}
+                    <TabsContent value="send-staff" className="space-y-4">
+                        <Card className="border-purple-200 shadow-sm">
+                            <CardHeader className="bg-purple-50/50 rounded-t-lg border-b border-purple-100">
+                                <CardTitle className="text-purple-900">Internal Team Communication</CardTitle>
+                                <CardDescription className="text-purple-700/70">Send announcements or direct messages to staff members and admins</CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <form onSubmit={handleSendToStaff} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Select Recipient
+                                        </label>
+                                        <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+                                            <SelectTrigger className="border-purple-200 focus:ring-purple-500">
+                                                <SelectValue placeholder="Choose a team member" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ALL" className="font-bold text-purple-700">Everyone (All Staff & Admins)</SelectItem>
+                                                {staff.map((member) => (
+                                                    <SelectItem key={member.id} value={member.id}>
+                                                        {member.name} ({member.email})
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Title
+                                        </label>
+                                        <Input
+                                            placeholder="Message title"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            required
+                                            className="border-purple-200 focus:ring-purple-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Message Content
+                                        </label>
+                                        <Textarea
+                                            placeholder="Enter your message..."
+                                            value={content}
+                                            onChange={(e) => setContent(e.target.value)}
+                                            rows={6}
+                                            required
+                                            className="border-purple-200 focus:ring-purple-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Priority
+                                        </label>
+                                        <Select value={priority} onValueChange={setPriority}>
+                                            <SelectTrigger className="border-purple-200 focus:ring-purple-500">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="LOW">Low</SelectItem>
+                                                <SelectItem value="NORMAL">Normal</SelectItem>
+                                                <SelectItem value="HIGH">High</SelectItem>
+                                                <SelectItem value="URGENT">Urgent</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <Button
+                                        type="submit"
+                                        disabled={messageLoading || !selectedStaff}
+                                        className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                                    >
+                                        {messageLoading ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Sending...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Send className="mr-2 h-4 w-4" />
+                                                Send Internal Message
                                             </>
                                         )}
                                     </Button>

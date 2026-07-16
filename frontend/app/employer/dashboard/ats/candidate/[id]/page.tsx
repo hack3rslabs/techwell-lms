@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
@@ -132,6 +135,12 @@ export default function CandidateProfilePage() {
     const [hoverRating, setHoverRating] = useState(0)
     const [selectedRating, setSelectedRating] = useState(0)
 
+    // Assessment Sending
+    const [isAssessmentDialogOpen, setIsAssessmentDialogOpen] = useState(false)
+    const [assessments, setAssessments] = useState<any[]>([])
+    const [selectedAssessmentId, setSelectedAssessmentId] = useState("")
+    const [sendingAssessment, setSendingAssessment] = useState(false)
+
     const fetchData = useCallback(async () => {
         try {
             const res = await api.get(`/ats/applications/detail/${id}`)
@@ -197,6 +206,35 @@ export default function CandidateProfilePage() {
             await api.patch(`/ats/rate/${id}`, { rating })
         } catch (error) {
             console.error('Failed to rate:', error)
+        }
+    }
+
+    const openAssessmentDialog = async () => {
+        setIsAssessmentDialogOpen(true)
+        if (assessments.length === 0) {
+            try {
+                const res = await api.get('/assessments')
+                setAssessments(res.data)
+            } catch (err) {
+                toast.error("Failed to fetch assessments")
+            }
+        }
+    }
+
+    const handleSendAssessment = async () => {
+        if (!selectedAssessmentId) return
+        setSendingAssessment(true)
+        try {
+            const email = application?.applicant?.email || application?.externalEmail;
+            const name = application?.applicant?.name || application?.externalName || "Candidate";
+            await api.post(`/assessments/${selectedAssessmentId}/send`, { candidateEmail: email, candidateName: name })
+            toast.success("Assessment link sent to candidate!")
+            setIsAssessmentDialogOpen(false)
+            setSelectedAssessmentId("")
+        } catch (error) {
+            toast.error("Failed to send assessment")
+        } finally {
+            setSendingAssessment(false)
         }
     }
 
@@ -303,7 +341,10 @@ export default function CandidateProfilePage() {
                                     <Download className="mr-2 h-4 w-4" /> Resume
                                 </Button>
                             )}
-                            <Button className="w-full">
+                            <Button className="w-full" onClick={openAssessmentDialog}>
+                                <BookOpen className="mr-2 h-4 w-4" /> Send Assessment
+                            </Button>
+                            <Button className="w-full" variant="outline">
                                 <Mail className="mr-2 h-4 w-4" /> Send Email
                             </Button>
                             <Button className="w-full" variant="secondary" onClick={() => router.push(`/employer/schedule-interview?appId=${application.id}`)}>
@@ -570,6 +611,45 @@ export default function CandidateProfilePage() {
                     </Card>
                 </div>
             </div>
+
+            {/* Assessment Dialog */}
+            <Dialog open={isAssessmentDialogOpen} onOpenChange={setIsAssessmentDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Send Assessment</DialogTitle>
+                        <DialogDescription>
+                            Select an assessment to email to {name}. They will receive a unique link to complete it securely.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <Label>Choose Assessment</Label>
+                        <Select value={selectedAssessmentId} onValueChange={setSelectedAssessmentId}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select an assessment..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {assessments.map(a => (
+                                    <SelectItem key={a.id} value={a.id}>{a.title} ({a.type})</SelectItem>
+                                ))}
+                                {assessments.length === 0 && (
+                                    <SelectItem value="none" disabled>No assessments created yet.</SelectItem>
+                                )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsAssessmentDialogOpen(false)}>Cancel</Button>
+                        <Button 
+                            onClick={handleSendAssessment} 
+                            disabled={!selectedAssessmentId || sendingAssessment || assessments.length === 0}
+                            className="gap-2"
+                        >
+                            {sendingAssessment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                            Send Link
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

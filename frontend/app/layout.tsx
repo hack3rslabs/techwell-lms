@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { ClientShell } from "@/components/layout/ClientShell";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
-import { ScrollButton } from "@/components/ui/scroll-button";
-import { FloatingCallButton } from "@/components/ui/floating-call-button";
 import { BehaviorTrackingProvider } from "@/components/BehaviorTrackingProvider";
 import { Toaster } from "@/components/ui/toaster";
+import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
+import { SystemStatusManager } from "@/components/shared/SystemStatusManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -90,7 +89,6 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -99,39 +97,26 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-  suppressHydrationWarning
-  className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col no-scrollbar`}
->
+        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col no-scrollbar`}
+      >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <BehaviorTrackingProvider>
-              {/* Header - hidden on print */}
-              <div className="print:hidden">
-                <Header />
-              </div>
-              <main className="flex-1 w-full">
+              {/*
+                ClientShell: shows public Header/Footer only on non-dashboard routes.
+                Dashboard routes (/admin, /dashboard, /franchise-admin) get no public chrome.
+              */}
+              <ClientShell>
+                <SystemStatusManager />
                 {children}
-              </main>
-              {/* Footer - hidden on print */}
-              <div className="print:hidden">
-                <Footer />
-              </div>
-              {/* Scroll button - hidden on print */}
-              <div className="print:hidden">
-                <ScrollButton />
-              </div>
-              <div className="print:hidden">
-                <FloatingCallButton />
-              </div>
-
+              </ClientShell>
             </BehaviorTrackingProvider>
           </AuthProvider>
         </ThemeProvider>
+        <WhatsAppButton />
         <Toaster />
       </body>
     </html>
   );
 }
-
-
-

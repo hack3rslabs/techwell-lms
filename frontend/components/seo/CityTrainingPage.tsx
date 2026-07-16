@@ -33,11 +33,7 @@ export function CityTrainingPage({ content }: { content: CityTrainingContent }) 
               {content.intro}
             </p>
             <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/courses">
-                <Button size="lg">
-                  Explore Courses <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+
               <Link href="/contact">
                 <Button size="lg" variant="outline">Talk to Techwell</Button>
               </Link>

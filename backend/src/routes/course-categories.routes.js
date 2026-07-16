@@ -29,7 +29,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // ── ADMIN: Get ALL categories (including inactive) ──────────────────────────
-router.get('/admin', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.get('/admin', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const categories = await prisma.courseCategory.findMany({
             orderBy: { orderIndex: 'asc' },
@@ -44,7 +44,7 @@ router.get('/admin', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req
 });
 
 // ── ADMIN: Create category ───────────────────────────────────────────────────
-router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.post('/', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const { name, slug, description, icon, color, isActive, orderIndex } = req.body;
 
@@ -83,7 +83,7 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, re
 });
 
 // ── ADMIN: Update category ───────────────────────────────────────────────────
-router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.put('/:id', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { name, slug, description, icon, color, isActive, orderIndex } = req.body;
@@ -116,7 +116,7 @@ router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, 
 });
 
 // ── ADMIN: Delete category ───────────────────────────────────────────────────
-router.delete('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
+router.delete('/:id', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         const { id } = req.params;
 

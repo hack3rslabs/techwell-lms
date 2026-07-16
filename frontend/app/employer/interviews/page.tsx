@@ -45,47 +45,11 @@ export default function EmployerInterviewsPage() {
 
     const fetchInterviews = useCallback(async () => {
         try {
-            // Mock data or API call
-            // const res = await api.get('/interviews/my') 
-            // setInterviews(res.data)
-
-            // Mocking for UI dev
-            setTimeout(() => {
-                setInterviews([
-                    {
-                        id: '1',
-                        candidateName: 'John Doe',
-                        jobTitle: 'Frontend Engineer',
-                        scheduledAt: new Date(Date.now() + 86400000).toISOString(),
-                        status: 'SCHEDULED',
-                        meetingLink: 'https://meet.google.com/abc-defg-hij',
-                        duration: 45,
-                        interviewerName: 'Alice Smith'
-                    },
-                    {
-                        id: '2',
-                        candidateName: 'Jane Smith',
-                        jobTitle: 'Product Manager',
-                        scheduledAt: new Date(Date.now() - 86400000).toISOString(),
-                        status: 'COMPLETED',
-                        feedback: 'Strong candidate, good communication.',
-                        duration: 60,
-                        interviewerName: 'Bob Jones'
-                    },
-                    {
-                        id: '3',
-                        candidateName: 'Mike Johnson',
-                        jobTitle: 'Backend Developer',
-                        scheduledAt: new Date(Date.now() + 172800000).toISOString(),
-                        status: 'SCHEDULED',
-                        meetingLink: 'https://zoom.us/j/123456789',
-                        duration: 30,
-                        interviewerName: 'Alice Smith'
-                    }
-                ])
-                setIsLoading(false)
-            }, 800)
+            const res = await _api.get('/employer/interviews')
+            setInterviews(res.data.interviews || [])
+            setIsLoading(false)
         } catch {
+            setInterviews([])
             setIsLoading(false)
         }
     }, [])

@@ -70,13 +70,7 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
                     <div className="flex items-center gap-6">
                         {/* Techwell Logo */}
                         <div className="flex items-center gap-3">
-                            <div className="w-16 h-16 bg-primary text-primary-foreground rounded-lg flex items-center justify-center font-bold text-3xl shadow-sm">
-                                TW
-                            </div>
-                            <div className="text-left">
-                                <h1 className="text-3xl font-extrabold text-slate-900 tracking-widest uppercase">Techwell</h1>
-                                <p className="text-[11px] font-bold tracking-[0.3em] text-primary uppercase">Institute of Technology</p>
-                            </div>
+                            <img src="/logo-light.png" alt="Techwell Logo" className="h-16 object-contain" />
                         </div>
 
                         {data.franchise?.logoUrl && (

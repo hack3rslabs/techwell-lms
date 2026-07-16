@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 const { authenticate, checkPermission } = require('../middleware/auth');
 
 /**
- * @route   PUT /api/leads/bulk/assign
+ * @route   PUT /api/crm/leads/bulk/assign
  * @desc    Bulk assign leads
  * @access  Private/Admin
  */
-router.put('/bulk/assign', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+router.put('/assign', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
         const { leadIds, assignedToId } = req.body;
         if (!leadIds || !leadIds.length || !assignedToId) {
@@ -28,11 +28,11 @@ router.put('/bulk/assign', authenticate, checkPermission('LEADS'), async (req, r
 });
 
 /**
- * @route   PUT /api/leads/bulk/status
+ * @route   PUT /api/crm/leads/bulk/status
  * @desc    Bulk update lead statuses
  * @access  Private/Admin
  */
-router.put('/bulk/status', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+router.put('/status', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
         const { leadIds, status } = req.body;
         if (!leadIds || !leadIds.length || !status) {
@@ -51,11 +51,11 @@ router.put('/bulk/status', authenticate, checkPermission('LEADS'), async (req, r
 });
 
 /**
- * @route   DELETE /api/leads/bulk
+ * @route   DELETE /api/crm/leads/bulk
  * @desc    Bulk delete leads
  * @access  Private/Admin
  */
-router.delete('/bulk', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+router.delete('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
         const { leadIds } = req.body;
         if (!leadIds || !leadIds.length) {
@@ -66,7 +66,6 @@ router.delete('/bulk', authenticate, checkPermission('LEADS'), async (req, res, 
             where: { id: { in: leadIds } }
         });
 
-        res.json({ success: true, count: result.count });
         res.json({ success: true, count: result.count });
     } catch (error) {
         next(error);

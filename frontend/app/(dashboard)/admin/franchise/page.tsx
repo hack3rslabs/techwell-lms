@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 export default function FranchiseDashboard() {
     const router = useRouter();
     const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, suspended: 0, totalRevenue: 0, upcomingRenewal: 0 });
     const [franchises, setFranchises] = useState<any[]>([]);
+    const { hasPermission } = useAuth();
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -39,9 +41,11 @@ export default function FranchiseDashboard() {
             </Button>
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Franchise Management</h1>
-                <Link href="/admin/franchise/registration">
-                    <Button>Register New Franchise</Button>
-                </Link>
+                {hasPermission('FRANCHISES', 'create') && (
+                    <Link href="/admin/franchise/registration">
+                        <Button>Register New Franchise</Button>
+                    </Link>
+                )}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -140,9 +144,11 @@ export default function FranchiseDashboard() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Link href={`/admin/franchise/${f.id}`}>
-                                                <Button variant="outline" size="sm">Manage</Button>
-                                            </Link>
+                                            {hasPermission('FRANCHISES', 'update') && (
+                                                <Link href={`/admin/franchise/${f.id}`}>
+                                                    <Button variant="outline" size="sm">Manage</Button>
+                                                </Link>
+                                            )}
                                         </td>
                                     </tr>
                                 ))

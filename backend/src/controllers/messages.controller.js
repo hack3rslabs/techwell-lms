@@ -64,6 +64,70 @@ exports.sendMessageToStudents = async (req, res) => {
   }
 };
 
+// Send message to all staff
+exports.sendMessageToStaff = async (req, res) => {
+  try {
+    const { title, content, priority = 'NORMAL' } = req.body;
+    const senderId = req.user.id;
+
+    if (!title || !content) {
+      return res.status(400).json({
+        success: false,
+        message: 'Title and content are required'
+      });
+    }
+
+    // Create the admin message
+    const adminMessage = await prisma.adminMessage.create({
+      data: {
+        title,
+        content: `[INTERNAL TEAM] ${content}`,
+        priority,
+        senderId,
+        isPublished: true
+      }
+    });
+
+    // Get all staff (users with role STAFF, ADMIN, SUPER_ADMIN)
+    const staffMembers = await prisma.user.findMany({
+      where: {
+        role: { in: ['STAFF', 'ADMIN', 'SUPER_ADMIN'] },
+        isActive: true,
+        id: { not: senderId }
+      },
+      select: { id: true }
+    });
+
+    // Create recipients for each staff member
+    const recipients = staffMembers.map(staff => ({
+      messageId: adminMessage.id,
+      userId: staff.id,
+      isRead: false
+    }));
+
+    if (recipients.length > 0) {
+      await prisma.adminMessageRecipient.createMany({
+        data: recipients,
+        skipDuplicates: true
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Message sent to all staff members',
+      data: adminMessage,
+      recipientsCount: recipients.length
+    });
+  } catch (error) {
+    console.error('Error sending message to staff:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send message',
+      error: error.message
+    });
+  }
+};
+
 // Send message to specific batch
 exports.sendMessageToBatch = async (req, res) => {
   try {

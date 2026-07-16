@@ -38,7 +38,16 @@ router.get('/', optionalAuth, async (req, res, next) => {
         const where = { AND: [] };
 
         // Visibility rules
-        if (!req.user || !['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
+        let canManageBlogs = false;
+        if (req.user) {
+            if (['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
+                canManageBlogs = true;
+            } else if (req.user.rolePermissions?.['BLOGS']?.canRead) {
+                canManageBlogs = true;
+            }
+        }
+
+        if (!canManageBlogs) {
             where.AND.push({
                 OR: [
                     { status: 'PUBLISHED' },
@@ -190,7 +199,16 @@ router.get('/:slugOrId', optionalAuth, async (req, res, next) => {
             (blog.status === 'SCHEDULED' && blog.scheduledPublishAt && new Date(blog.scheduledPublishAt) <= new Date());
 
         if (!isPubliclyVisible) {
-            if (!req.user || !['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
+            let canManageBlogs = false;
+            if (req.user) {
+                if (['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
+                    canManageBlogs = true;
+                } else if (req.user.rolePermissions?.['BLOGS']?.canRead) {
+                    canManageBlogs = true;
+                }
+            }
+
+            if (!canManageBlogs) {
                 return res.status(404).json({ error: 'Post not found' });
             }
         }

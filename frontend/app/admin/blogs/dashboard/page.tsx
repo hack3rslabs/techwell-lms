@@ -24,21 +24,8 @@ export default function BlogDashboardPage() {
     const [isLoading, setIsLoading] = React.useState(true)
 
     React.useEffect(() => {
-        // Mock fetch for analytics since the specific API route needs to be created
-        // In a real scenario, this would call /api/blogs/analytics
-        setTimeout(() => {
-            setStats({
-                totalViews: 12450,
-                uniqueVisitors: 8900,
-                avgReadingTime: 4.2,
-                ctr: 3.8,
-                totalShares: 450,
-                totalComments: 128,
-                leadsGenerated: 54,
-                totalPublished: 24
-            })
-            setIsLoading(false)
-        }, 1000)
+        // Removed mock data, set to zeros until API is implemented
+        setIsLoading(false)
     }, [])
 
     const STAT_CARDS = [
@@ -97,21 +84,8 @@ export default function BlogDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {[1,2,3].map((i) => (
-                                <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-lg bg-slate-100 dark:bg-slate-800" />
-                                        <div>
-                                            <h4 className="font-bold text-sm line-clamp-1">How to Land a Tech Job in 2026</h4>
-                                            <p className="text-xs text-slate-500">Published 2 days ago</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right hidden sm:block">
-                                        <p className="font-bold text-indigo-600 dark:text-indigo-400">1,240 views</p>
-                                        <p className="text-xs text-slate-500">12 leads</p>
-                                    </div>
-                                </div>
-                            ))}
+                            {/* Empty state for top performing articles */}
+                            <p className="text-sm text-slate-500">No data available.</p>
                         </div>
                     </CardContent>
                 </Card>
