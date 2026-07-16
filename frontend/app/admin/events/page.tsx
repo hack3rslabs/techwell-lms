@@ -16,6 +16,7 @@ import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { Loader2, Plus, QrCode, Edit, Trash2, Calendar, Users, GripVertical, Settings2, Link as LinkIcon, Trash, Award } from 'lucide-react'
 import api from '@/lib/api'
+import { ImageUploadInfo } from '@/components/ui/ImageUploadInfo'
 
 interface CustomField {
     id: string
@@ -296,7 +297,7 @@ export default function AdminEventsPage() {
                             <div className="space-y-2 md:col-span-2">
                                 <Label>Event Image URL</Label>
                                 <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.jpg" />
-                                <p className="text-xs text-muted-foreground">Recommended size: 1200x630px, High Quality.</p>
+                                <ImageUploadInfo />
                                 {formData.imageUrl && (
                                     <div className="mt-2 w-full max-w-sm h-40 border rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                                         { }

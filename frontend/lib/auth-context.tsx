@@ -20,6 +20,8 @@ interface User {
     college?: string;
     phone?: string;
     hasUnlimitedInterviews?: boolean;
+    xp?: number;
+    currentStreak?: number;
     twoFactorEnabled?: boolean;
     instituteId?: string;
     franchiseId?: string;

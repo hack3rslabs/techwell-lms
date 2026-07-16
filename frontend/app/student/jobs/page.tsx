@@ -43,6 +43,7 @@ interface Job {
     skills?: string;
     clientName?: string;
     qualification?: string;
+    linkedCourseId?: string;
     createdAt: string;
     employer: {
         name: string;
@@ -282,9 +283,16 @@ export default function StudentJobsPage() {
                                         </div>
 
                                         {/* Type Badge */}
-                                        <Badge className={`text-xs font-bold px-2 py-0.5 rounded-full border-0 ${TYPE_COLORS[job.type] || 'bg-gray-100 text-gray-700'}`}>
-                                            {TYPE_LABELS[job.type] || job.type}
-                                        </Badge>
+                                        <div className="flex gap-2">
+                                            <Badge className={`text-xs font-bold px-2 py-0.5 rounded-full border-0 ${TYPE_COLORS[job.type] || 'bg-gray-100 text-gray-700'}`}>
+                                                {TYPE_LABELS[job.type] || job.type}
+                                            </Badge>
+                                            {job.linkedCourseId && (
+                                                <Badge className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full border-0 flex items-center gap-1">
+                                                    <BrainCircuit className="w-3 h-3" /> AI Score Required
+                                                </Badge>
+                                            )}
+                                        </div>
 
                                         {/* Skills */}
                                         {skills.length > 0 && (
@@ -466,6 +474,16 @@ export default function StudentJobsPage() {
                         <DialogTitle className="text-xl font-black">Apply — {applyingJob?.title}</DialogTitle>
                         <p className="text-sm text-slate-500">{applyingJob && companyName(applyingJob)} · {applyingJob?.location}</p>
                     </DialogHeader>
+
+                    {applyingJob?.linkedCourseId && (
+                        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-sm text-indigo-800 flex items-start gap-2 mt-2">
+                            <BrainCircuit className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                            <div>
+                                <span className="font-bold block">AI Readiness Score will be attached</span>
+                                When you apply, the system will automatically fetch your highest AI Mock Interview score and attach it to this application for the employer to review.
+                            </div>
+                        </div>
+                    )}
 
                     <div className="space-y-4 mt-2">
                         <div className="space-y-2">

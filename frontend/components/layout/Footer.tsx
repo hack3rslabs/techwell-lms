@@ -16,6 +16,7 @@ const platformLinks = [
     { label: "Resume Builder", href: "/resume-builder" },
     { label: "Jobs & Placements", href: "/jobs" },
     { label: "Career Guide", href: "/career-guide" },
+    { label: "Final Year Projects", href: "/projects" },
     { label: "Student Verification", href: "/verify" },
 ]
 

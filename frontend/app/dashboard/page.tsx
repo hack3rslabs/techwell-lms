@@ -494,6 +494,27 @@ export default function DashboardPage() {
                         {/* OVERVIEW TAB */}
                         {activeTab === 'overview' && (
                             <div className="space-y-8">
+                                {/* Gamification Widget */}
+                                {user?.role === 'STUDENT' && (
+                                    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-8 opacity-20 transform rotate-12">
+                                            <Award className="w-32 h-32" />
+                                        </div>
+                                        <h3 className="text-xl font-bold mb-1">Your Gamification Stats</h3>
+                                        <p className="text-indigo-100 text-sm mb-6">Keep learning and applying for jobs to earn more XP!</p>
+                                        <div className="flex gap-8 relative z-10">
+                                            <div>
+                                                <div className="text-indigo-100 text-sm font-medium mb-1 uppercase tracking-wider">Total XP</div>
+                                                <div className="text-4xl font-black">{user.xp || 0} <span className="text-xl font-medium opacity-80">XP</span></div>
+                                            </div>
+                                            <div>
+                                                <div className="text-indigo-100 text-sm font-medium mb-1 uppercase tracking-wider">Current Streak</div>
+                                                <div className="text-4xl font-black">{user.currentStreak || 0} <span className="text-xl font-medium opacity-80">Days</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Stats Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                     {[

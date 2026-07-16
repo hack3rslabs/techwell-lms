@@ -3,12 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Megaphone, FileText, ExternalLink, Download } from 'lucide-react';
+import { Megaphone, FileText, ExternalLink, Download, Share2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/lib/auth-context';
 
 export default function FranchiseMarketingPage() {
     const [resources, setResources] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     const fetchResources = async () => {
         try {
@@ -36,6 +40,33 @@ export default function FranchiseMarketingPage() {
                     <p className="text-gray-500 mt-1">Download official Techwell banners, brochures, and promo videos to grow your franchise.</p>
                 </div>
             </div>
+
+            <Card className="border-blue-100 bg-blue-50/50 dark:bg-slate-900/50 dark:border-slate-800">
+                <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                        <Share2 className="w-5 h-5 text-blue-500" />
+                        Your Custom Referral Link
+                    </CardTitle>
+                    <CardDescription>
+                        Share this link on your social media or with prospective students. Any signups from this link will be automatically attributed to your franchise!
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <Input 
+                            readOnly 
+                            value={`https://techwell.co.in/register?ref=${user?.franchiseId || 'YOUR_ID'}`} 
+                            className="font-mono bg-white dark:bg-slate-950 flex-1" 
+                        />
+                        <Button variant="default" onClick={() => {
+                            navigator.clipboard.writeText(`https://techwell.co.in/register?ref=${user?.franchiseId || 'YOUR_ID'}`);
+                            alert("Copied to clipboard!");
+                        }}>
+                            Copy Link
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardHeader>

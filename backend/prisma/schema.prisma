@@ -97,6 +97,15 @@ model User {
   blogComments                BlogComment[]
   customerId                  String?
   customer                    Customer?                 @relation(fields: [customerId], references: [id])
+  
+  // Gamification
+  xp                          Int                       @default(0)
+  currentStreak               Int                       @default(0)
+  lastLoginDate               DateTime?
+  badges                      UserBadge[]
+
+  createdAssessments          Assessment[]
+  assessmentAttempts          AssessmentAttempt[]
   assignedLeads               Lead[]                    @relation("AssignedLeads")
   assignedCustomers           Customer[]                @relation("AssignedCustomers")
   consultingResources         ConsultingResource[]
@@ -248,6 +257,7 @@ model Course {
   announcements        Announcement[]
   batches              Batch[]
   certificates         Certificate[]
+  assessments          Assessment[]
   courseCategory       CourseCategory?     @relation(fields: [categoryId], references: [id])
   Coupon               Coupon?             @relation(fields: [couponId], references: [id])
   institute            Institute?          @relation(fields: [instituteId], references: [id])
@@ -518,6 +528,7 @@ model Interview {
   evaluation      InterviewEvaluation?
   questions       InterviewQuestion[]
   responses       InterviewResponse[]
+  jobApplications JobApplication[]
 }
 
 model InterviewQuestion {
@@ -1302,6 +1313,7 @@ model Job {
   expiresAt     DateTime?
   publishedAt   DateTime?
   qualification String?
+  linkedCourseId String?
   employer      User             @relation(fields: [employerId], references: [id])
   applications  JobApplication[]
 }
@@ -1328,6 +1340,8 @@ model JobApplication {
   job              Job               @relation(fields: [jobId], references: [id])
   interviews       JobInterview[]
   offers           JobOffer[]
+  linkedInterviewId String?
+  linkedInterview  Interview?        @relation(fields: [linkedInterviewId], references: [id])
 
   @@unique([jobId, applicantId])
 }
@@ -2663,6 +2677,7 @@ model CampusDrive {
   hostType               String? @default("TECHWELL")
   hostName               String?
   hostLogo               String?
+  linkedCourseId         String?
 
   employer   User                   @relation("EmployerCampusDrives", fields: [employerId], references: [id])
   institutes CampusDriveInstitute[]
@@ -3249,4 +3264,78 @@ model FranchiseResource {
   updatedAt    DateTime @updatedAt
 
   franchise Franchise? @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+}
+
+model Assessment {
+  id            String               @id @default(cuid())
+  title         String
+  description   String?
+  type          String               @default("MCQ") // MCQ, CODING, MIXED
+  duration      Int                  @default(60) // in minutes
+  passingScore  Int                  @default(50)
+  employerId    String
+  courseId      String?
+  isPublished   Boolean              @default(false)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  employer      User                 @relation(fields: [employerId], references: [id])
+  course        Course?              @relation(fields: [courseId], references: [id])
+  questions     AssessmentQuestion[]
+  attempts      AssessmentAttempt[]
+}
+
+model AssessmentQuestion {
+  id           String     @id @default(cuid())
+  assessmentId String
+  text         String
+  type         String     @default("MCQ") // MCQ, CODING
+  options      Json?      // e.g. ["A", "B", "C", "D"]
+  correctAnswer String?
+  marks        Int        @default(1)
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model AssessmentAttempt {
+  id           String     @id @default(cuid())
+  assessmentId String
+  userId       String
+  score        Float      @default(0)
+  status       String     @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, ABANDONED
+  responses    Json?      // Map of questionId -> user response
+  startedAt    DateTime   @default(now())
+  completedAt  DateTime?
+  proctorLogs  Json?      // Array of tab switches, warnings
+
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, userId])
+}
+
+// Gamification Models
+model Badge {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  iconUrl     String?     // URL or lucide icon name
+  xpRequired  Int         @default(0)
+  createdAt   DateTime    @default(now())
+
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  awardedAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
 }

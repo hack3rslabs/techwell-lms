@@ -12,6 +12,7 @@ const courseRoutes = require('./routes/course.routes');
 const interviewRoutes = require('./routes/interview.routes');
 const eventsRoutes = require('./routes/events.routes');
 const settingsRoutes = require('./routes/settings.routes');
+const assessmentRoutes = require('./routes/assessments.routes');
 
 const { twilioRouter } = require('./ai-core/providers/twilio');
 
@@ -100,7 +101,10 @@ app.use(cookieParser());
 
 // API Routes
 const { maintenanceMiddleware } = require('./middleware/maintenanceMiddleware');
+const auditMiddleware = require('./middleware/audit');
+
 app.use('/api', maintenanceMiddleware);
+app.use('/api', auditMiddleware);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
@@ -168,6 +172,7 @@ app.use('/api/coupons', require('./routes/coupons.routes'));
 app.use('/api/candidates', require('./routes/candidate.routes'));
 app.use('/api/assessments', require('./routes/assessment.routes'));
 app.use('/api/quizzes', require('./routes/quiz.routes'));
+app.use('/api/assessments', assessmentRoutes);
 app.use('/api/operations', require('./routes/operations.routes'));
 app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
 app.use('/api/success-stories', require('./routes/success-stories.routes'));

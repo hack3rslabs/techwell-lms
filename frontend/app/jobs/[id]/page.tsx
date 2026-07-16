@@ -41,6 +41,7 @@ interface JobDetail {
             location: string | null
         }
     }
+    clientName?: string | null
 }
 
 export default function JobDetailPage() {
@@ -135,6 +136,31 @@ export default function JobDetailPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-950 pb-20">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "JobPosting",
+                        "title": job.title,
+                        "description": job.description,
+                        "datePosted": job.createdAt,
+                        "employmentType": job.type,
+                        "hiringOrganization": {
+                            "@type": "Organization",
+                            "name": job.employer?.employerProfile?.companyName || job.clientName || "Techwell",
+                            "logo": job.employer?.employerProfile?.logo || ""
+                        },
+                        "jobLocation": {
+                            "@type": "Place",
+                            "address": {
+                                "@type": "PostalAddress",
+                                "addressLocality": job.location
+                            }
+                        }
+                    })
+                }}
+            />
             {/* Header / Breacrumbs would go here */}
 
             <div className="bg-white dark:bg-slate-900 border-b shadow-sm sticky top-16 z-20">
@@ -148,7 +174,7 @@ export default function JobDetailPage() {
                             <div>
                                 <h1 className="text-2xl font-bold">{job.title}</h1>
                                 <div className="flex items-center gap-2 text-muted-foreground font-medium">
-                                    <span>{job.employer.employerProfile?.companyName}</span>
+                                    <span>{job.employer?.employerProfile?.companyName || job.clientName || "Techwell Admin"}</span>
                                     <span>•</span>
                                     <span>{job.location}</span>
                                 </div>
@@ -168,7 +194,7 @@ export default function JobDetailPage() {
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                                     <DialogHeader>
-                                        <DialogTitle>Apply to {job.employer.employerProfile?.companyName}</DialogTitle>
+                                        <DialogTitle>Apply to {job.employer?.employerProfile?.companyName || job.clientName || "Techwell Admin"}</DialogTitle>
                                         <DialogDescription>
                                             Applying for <span className="font-semibold text-primary">{job.title}</span>
                                         </DialogDescription>

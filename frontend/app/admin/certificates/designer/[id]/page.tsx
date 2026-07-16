@@ -11,6 +11,7 @@ import {
 import api, { certificateApi } from '@/lib/api';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { ImageUploadInfo } from '@/components/ui/ImageUploadInfo';
 
 interface CanvasElement {
     id: string;
@@ -397,6 +398,7 @@ export default function EnterpriseDesignStudio() {
                         <div className="mb-2">
                             <label className="text-xs font-medium text-slate-500">Background Upload</label>
                             <input type="file" accept="image/*" className="w-full text-xs mt-1" onChange={handleFileUpload} disabled={isUploading}/>
+                            <ImageUploadInfo />
                         </div>
                     </div>
                     

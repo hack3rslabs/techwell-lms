@@ -1,6 +1,11 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticate, authorize } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const WhatsAppService = require('../utils/whatsapp');
+
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
@@ -66,7 +71,7 @@ router.get('/', async (req, res, next) => {
  * @desc    Admin: list all jobs
  * @access  Private (Admin, Employer)
  */
-router.get('/admin/listings', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.get('/admin/listings', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
         const where = isAdmin ? {} : { employerId: req.user.id };
@@ -95,7 +100,7 @@ router.get('/admin/listings', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPE
  * @route   GET /api/jobs/my/listings
  * @desc    Get my posted jobs (Employer)
  */
-router.get('/my/listings', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
+router.get('/my/listings', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), requireApprovedEmployer, async (req, res, next) => {
     try {
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
         const where = isAdmin ? {} : { employerId: req.user.id };
@@ -117,7 +122,7 @@ router.get('/my/listings', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_A
 /**
  * @route   GET /api/jobs/my/listings/:id
  */
-router.get('/my/listings/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
+router.get('/my/listings/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), requireApprovedEmployer, async (req, res, next) => {
     try {
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
         const job = await prisma.job.findFirst({
@@ -302,7 +307,7 @@ router.get('/:id/match', authenticate, async (req, res, next) => {
  * @route   POST /api/jobs
  * @desc    Post a new job
  */
-router.post('/', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
+router.post('/', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), requireApprovedEmployer, async (req, res, next) => {
     try {
         const { title, description, requirements, location, type, experience, salary, skills, clientName, shift, qualification, domain, expiresAt } = req.body;
         if (!title?.trim() || !description?.trim() || !location?.trim()) {
@@ -337,10 +342,33 @@ router.post('/:id/apply', authenticate, async (req, res, next) => {
             return res.status(404).json({ error: 'Job not found or not accepting applications' });
         }
 
+        // If job has a linkedCourse, verify enrollment
+        if (job.linkedCourseId) {
+            const enrollment = await prisma.enrollment.findUnique({
+                where: { userId_courseId: { userId: req.user.id, courseId: job.linkedCourseId } }
+            });
+            if (!enrollment) {
+                return res.status(403).json({ error: 'You must enroll in the prerequisite course to apply.' });
+            }
+        }
+
         const existing = await prisma.jobApplication.findUnique({
             where: { jobId_applicantId: { jobId, applicantId: req.user.id } }
         });
         if (existing) return res.status(400).json({ error: 'You have already applied to this job' });
+
+        // Find the best AI Interview Score for this student to attach to the application
+        const bestInterview = await prisma.interview.findFirst({
+            where: {
+                userId: req.user.id,
+                status: 'COMPLETED',
+                evaluation: { isNot: null }
+            },
+            orderBy: {
+                evaluation: { overallScore: 'desc' }
+            },
+            include: { evaluation: true }
+        });
 
         const application = await prisma.jobApplication.create({
             data: {
@@ -348,10 +376,35 @@ router.post('/:id/apply', authenticate, async (req, res, next) => {
                 applicantId: req.user.id,
                 resumeUrl,
                 coverLetter,
+                linkedInterviewId: bestInterview ? bestInterview.id : null,
                 status: 'APPLIED',
                 statusHistory: [{ status: 'APPLIED', timestamp: new Date().toISOString(), note: 'Application submitted' }]
             }
         });
+
+        // WhatsApp Notification & XP Gamification
+        try {
+            const [applicant, jobDetails] = await Promise.all([
+                prisma.user.findUnique({ where: { id: req.user.id }, select: { name: true, phone: true, xp: true, currentStreak: true } }),
+                prisma.job.findUnique({ where: { id: jobId }, include: { employer: { select: { employerProfile: true } } } })
+            ]);
+
+            const companyName = jobDetails.employer?.employerProfile?.companyName || 'A Techwell Employer';
+            
+            // Notify via WhatsApp
+            if (applicant.phone) {
+                WhatsAppService.notifyJobApplication(applicant.phone, applicant.name, jobDetails.title, companyName);
+            }
+
+            // Gamification: Reward 50 XP for applying
+            await prisma.user.update({
+                where: { id: req.user.id },
+                data: { xp: { increment: 50 } }
+            });
+        } catch (postError) {
+            console.error("Post-application hooks failed:", postError);
+        }
+
         res.status(201).json(application);
     } catch (error) {
         next(error);
@@ -362,7 +415,7 @@ router.post('/:id/apply', authenticate, async (req, res, next) => {
  * @route   GET /api/jobs/:id/applications
  * @desc    Get applications for a job (Employer/Admin)
  */
-router.get('/:id/applications', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.get('/:id/applications', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
         const job = await prisma.job.findUnique({ where: { id: req.params.id } });
@@ -409,7 +462,7 @@ router.get('/:id/applications', authenticate, authorize('EMPLOYER', 'ADMIN', 'SU
  * @route   PATCH /api/jobs/applications/:id/status
  * @desc    Update application status (with history tracking)
  */
-router.patch('/applications/:id/status', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.patch('/applications/:id/status', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { status, note } = req.body;
@@ -441,7 +494,7 @@ router.patch('/applications/:id/status', authenticate, authorize('EMPLOYER', 'AD
  * @route   POST /api/jobs/applications/:appId/interviews
  * @desc    Schedule an interview round
  */
-router.post('/applications/:appId/interviews', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.post('/applications/:appId/interviews', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { appId } = req.params;
         const { roundName, roundType, scheduledAt, duration, meetingLink, location: loc, interviewerId } = req.body;
@@ -495,7 +548,7 @@ router.post('/applications/:appId/interviews', authenticate, authorize('EMPLOYER
  * @route   PUT /api/jobs/interviews/:interviewId
  * @desc    Update interview (feedback, score, result)
  */
-router.put('/interviews/:interviewId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.put('/interviews/:interviewId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { interviewId } = req.params;
         const { status, feedback, score, result, roundName, roundType, scheduledAt, duration, meetingLink, location: loc } = req.body;
@@ -546,7 +599,7 @@ router.put('/interviews/:interviewId', authenticate, authorize('EMPLOYER', 'ADMI
  * @route   POST /api/jobs/applications/:appId/offers
  * @desc    Release an offer letter
  */
-router.post('/applications/:appId/offers', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.post('/applications/:appId/offers', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { appId } = req.params;
         const { ctc, salaryBreakup, location: loc, reportingManager, reportingAddress, designation, department, doj, offerLetterUrl } = req.body;
@@ -687,7 +740,7 @@ router.post('/applications/:appId/feedback', authenticate, async (req, res, next
  * @route   PUT /api/jobs/:id
  * @desc    Update a job
  */
-router.put('/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
+router.put('/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), requireApprovedEmployer, async (req, res, next) => {
     try {
         const { id } = req.params;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
@@ -716,7 +769,7 @@ router.put('/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), 
  * @route   DELETE /api/jobs/:id
  * @desc    Delete a job
  */
-router.delete('/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), requireApprovedEmployer, async (req, res, next) => {
+router.delete('/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), requireApprovedEmployer, async (req, res, next) => {
     try {
         const { id } = req.params;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);

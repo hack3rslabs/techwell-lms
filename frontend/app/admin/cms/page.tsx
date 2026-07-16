@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, Plus, Edit, Trash2 } from 'lucide-react'
 import api, { productApi, clientApi, teamApi, settingsApi } from '@/lib/api'
 import { Switch } from '@/components/ui/switch'
+import { ImageUploadInfo } from '@/components/ui/ImageUploadInfo'
 
 export default function CMSManagerPage() {
     const [activeTab, setActiveTab] = useState('products')
@@ -365,12 +366,12 @@ export default function CMSManagerPage() {
                                         <Input required value={teamForm.designation} onChange={e => setTeamForm({...teamForm, designation: e.target.value})} />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">Photo (500x500 px, max 2MB)</label>
-                                        <Input type="file" accept="image/jpeg,image/png" onChange={e => setTeamPhotoFile(e.target.files?.[0] || null)} />
+                                        <label className="text-sm font-medium">Photo</label>
+                                        <Input type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" onChange={e => setTeamPhotoFile(e.target.files?.[0] || null)} />
+                                        <ImageUploadInfo />
                                         {teamForm.photoUrl && !teamPhotoFile && (
                                             <p className="text-xs text-muted-foreground mt-1">Current photo URL: {teamForm.photoUrl}</p>
                                         )}
-                                        <p className="text-xs text-muted-foreground mt-1">JPG or PNG format for best quality.</p>
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium">LinkedIn URL</label>

@@ -65,7 +65,7 @@ router.post('/apply/external', async (req, res, next) => {
  * @desc    Get single application details (Recruiter)
  * @access  Private (Employer)
  */
-router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
@@ -92,7 +92,7 @@ router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER', 'ADMI
  * @desc    List applications with filters (Recruiter)
  * @access  Private (Employer)
  */
-router.get('/applications/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.get('/applications/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { jobId } = req.params;
         const { source, status, minScore, search } = req.query;
@@ -119,7 +119,8 @@ router.get('/applications/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 
             where,
             include: {
                 applicant: { select: { id: true, name: true, email: true, avatar: true, phone: true } }, // Internal
-                interviews: true
+                interviews: true,
+                linkedInterview: { include: { evaluation: true } }
             },
             orderBy: { atsScore: 'desc' } // Default sort by ATS Score
         });
@@ -135,7 +136,7 @@ router.get('/applications/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 
  * @desc    Update Status & Workflow (Recruiter)
  * @access  Private (Employer)
  */
-router.patch('/status/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.patch('/status/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { status, notes } = req.body;
@@ -192,7 +193,7 @@ router.patch('/status/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_
  * @desc    Calculate ATS Score (Mock Implementation)
  * @access  Private (Employer)
  */
-router.post('/score/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.post('/score/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
@@ -226,7 +227,7 @@ router.post('/score/:id', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_AD
  * @desc    Schedule Interview
  * @access  Private (Employer)
  */
-router.post('/interviews', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.post('/interviews', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { applicationId, roundName, scheduledAt, interviewerId, duration, type } = req.body;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
@@ -315,7 +316,7 @@ router.post('/interviews', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_A
  * @desc    Export Applicants to CSV
  * @access  Private (Employer)
  */
-router.get('/export/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.get('/export/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { jobId } = req.params;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
@@ -369,7 +370,7 @@ router.get('/export/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER
  * @desc    Add a note to a candidate application
  * @access  Private (Employer)
  */
-router.post('/notes/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.post('/notes/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { applicationId } = req.params;
         const { content, tags, rating } = req.body;
@@ -426,7 +427,7 @@ router.post('/notes/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN'
  * @desc    Rate a candidate and add tags
  * @access  Private (Employer)
  */
-router.patch('/rate/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.patch('/rate/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { applicationId } = req.params;
         const { rating, tags } = req.body;
@@ -472,7 +473,7 @@ router.patch('/rate/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN'
  * @desc    Submit interview feedback and result
  * @access  Private (Employer)
  */
-router.patch('/interviews/:interviewId/feedback', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.patch('/interviews/:interviewId/feedback', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { interviewId } = req.params;
         const { feedback, score, result, status } = req.body;
@@ -524,7 +525,7 @@ router.patch('/interviews/:interviewId/feedback', authenticate, authorize('EMPLO
  * @desc    Get comprehensive hiring analytics
  * @access  Private (Employer)
  */
-router.get('/analytics', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.get('/analytics', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
         const employerId = req.user.id;
@@ -660,7 +661,7 @@ router.get('/analytics', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADM
  * @desc    Get recent activity feed from audit logs
  * @access  Private (Employer)
  */
-router.get('/activity', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.get('/activity', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { limit = 15 } = req.query;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
@@ -751,7 +752,7 @@ router.get('/activity', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMI
  * @desc    Bulk update application status
  * @access  Private (Employer)
  */
-router.post('/bulk-status', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.post('/bulk-status', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { applicationIds, status, notes } = req.body;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
@@ -937,7 +938,7 @@ router.get('/job-stats/:jobId', authenticate, authorize('EMPLOYER'), async (req,
  * @desc    Generate and release a Job Offer
  * @access  Private (Employer)
  */
-router.post('/offers/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
+router.post('/offers/:applicationId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { applicationId } = req.params;
         const { ctc, salaryBreakup, location, reportingManager, reportingAddress, designation, department, doj } = req.body;

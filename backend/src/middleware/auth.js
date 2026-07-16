@@ -100,6 +100,11 @@ const authorize = (...roles) => {
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
+        // SUPER_ADMIN has god-mode access to all routes
+        if (req.user.role === 'SUPER_ADMIN') {
+            return next();
+        }
+
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({
                 error: 'You do not have permission to perform this action'

@@ -100,9 +100,11 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         // 4. Training & Courses
         { label: "Training Manager", icon: BookOpen, href: "/admin/training", permission: "COURSES", group: "Training & Courses" },
         { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES", group: "Training & Courses" },
+        { label: "Projects", icon: BookOpen, href: "/admin/projects", permission: "COURSES", group: "Training & Courses" },
         { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES", group: "Training & Courses" },
         { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES", group: "Training & Courses" },
         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS", group: "Training & Courses" },
+        { label: "Assessments", icon: PenLine, href: "/admin/assessments", permission: "TRAINING", group: "Training & Courses" },
         { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY", group: "Training & Courses" },
 
         // 5. Operations
@@ -146,9 +148,13 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         },
 
         // 6. Campus & Recruiting
+        { label: "Job Board", icon: Briefcase, href: "/admin/jobs", group: "Campus & Recruiting" },
         { label: "Master Drives", icon: Briefcase, href: "/admin/campus-drives", group: "Campus & Recruiting" },
+        { label: "CHMS Dashboard", icon: LayoutDashboard, href: "/admin/chms/dashboard", group: "Campus & Recruiting" },
         { label: "Companies", icon: Building2, href: "/admin/companies", group: "Campus & Recruiting" },
         { label: "Institutes", icon: GraduationCap, href: "/admin/institutes", group: "Campus & Recruiting" },
+        { label: "Internships", icon: Briefcase, href: "/admin/internships", group: "Campus & Recruiting" },
+        { label: "Interviews", icon: Users, href: "/admin/interviews", group: "Campus & Recruiting" },
         { label: "Employer Requests", icon: Inbox, href: "/admin/employer-requests", permission: "MANAGE_EMPLOYER_REQUESTS", group: "Campus & Recruiting" },
         { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS", group: "Campus & Recruiting" },
 
@@ -177,6 +183,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
 
         // 10. Administration & Partnerships
         { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES", group: "Administration & Partnerships" },
+        { label: "All Users", icon: Users, href: "/admin/users", permission: "ADMIN", group: "Administration & Partnerships" },
         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS", group: "Administration & Partnerships" },
         { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL", group: "Administration & Partnerships" },
         { 
