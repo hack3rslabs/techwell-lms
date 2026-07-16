@@ -45,7 +45,7 @@ async function main() {
             phone: "9898989898",
             source: "JustDial",
             leadType: "SERVICE_REQUEST",
-            notes: "Requires AMC for 50 computers and server maintenance.",
+            notes: "Requires Maintenance Support for 50 computers and server maintenance.",
             status: "NEW",
             location: "Ahmedabad"
         },

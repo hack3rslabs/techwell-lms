@@ -53,9 +53,7 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
     const [bulkStatus, setBulkStatus] = useState("");
     const [matching, setMatching] = useState(false);
 
-    useEffect(() => { fetchData(); }, [params.id]);
-
-    const fetchData = async () => {
+    async function fetchData() {
         setLoading(true);
         try {
             const [driveRes, studentsRes, institutesRes] = await Promise.allSettled([
@@ -73,7 +71,11 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
             }
         } catch { toast.error("Failed to load drive data"); }
         finally { setLoading(false); }
-    };
+    }
+
+
+    useEffect(() => { fetchData(); }, [params.id]);
+;
 
     const handleStatusChange = async (candidateId: string, newStatus: string) => {
         try {

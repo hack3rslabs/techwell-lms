@@ -1,6 +1,6 @@
 {
     "snyk.advanced.autoSelectOrganization": true,
-    "snyk.advanced.organization": "2cec6eb6-8282-46d8-a4d2-bd8d3acde52a",
+    "snyk.advanced.organization": "63aa2f6b-ced8-40d6-8047-76edf75d4472",
     "python.testing.unittestArgs": [
         "-v",
         "-s",

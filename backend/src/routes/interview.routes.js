@@ -33,7 +33,15 @@ router.get('/', authenticate, async (req, res, next) => {
     try {
         const { status, page = 1, limit = 10 } = req.query;
 
-        const where = { userId: req.user.id };
+        const where = {};
+        const role = req.user.role;
+
+        if (!['SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'].includes(role)) {
+            where.userId = req.user.id;
+        } else if (role === 'FRANCHISE_ADMIN') {
+            where.user = { franchiseId: req.user.franchiseId };
+        }
+
         if (status) where.status = status;
 
         const [interviews, total] = await Promise.all([
@@ -53,6 +61,12 @@ router.get('/', authenticate, async (req, res, next) => {
                     evaluation: {
                         select: {
                             overallScore: true
+                        }
+                    },
+                    user: {
+                        select: {
+                            name: true,
+                            email: true
                         }
                     }
                 },
@@ -213,33 +227,38 @@ router.post('/', authenticate, async (req, res, next) => {
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { plan: true }
+            select: { plan: true, role: true, hasAiInterviewAccess: true }
         });
 
-        // Limit FREE users to 2 interviews per month - BYPASSED FOR TESTING
-        /*
-        if (user.plan === 'FREE') {
-            const startOfMonth = new Date();
-            startOfMonth.setDate(1);
-            startOfMonth.setHours(0, 0, 0, 0);
+        if (user.role === 'STUDENT' && !user.hasAiInterviewAccess) {
+            return res.status(403).json({
+                error: 'Access Denied',
+                requiresPayment: true,
+                message: 'Please upgrade to unlock the AI Mock Interview platform.'
+            });
+        }
+
+        // Limit FREE users to 3 interviews per day
+        if (user.plan === 'FREE' || user.plan === 'BASIC') {
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
 
             const interviewCount = await prisma.interview.count({
                 where: {
                     userId: userId,
                     createdAt: {
-                        gte: startOfMonth
+                        gte: startOfDay
                     }
                 }
             });
 
-            if (interviewCount >= 2) {
+            if (interviewCount >= 3) {
                 return res.status(403).json({
-                    error: 'Monthly limit reached',
-                    message: 'Starter plan is limited to 2 AI interviews per month. Please upgrade to Pro for unlimited sessions.'
+                    error: 'Daily limit reached',
+                    message: 'Free plan is limited to 3 AI interviews per day. Please upgrade to Pro for unlimited sessions.'
                 });
             }
         }
-        */
 
         const interview = await prisma.interview.create({
             data: {

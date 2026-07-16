@@ -25,14 +25,7 @@ export default function EmployerCampusDrives() {
         scheduledDate: ''
     });
 
-    useEffect(() => {
-        if (user && user.role === 'EMPLOYER') {
-            fetchDrives();
-            fetchInstitutes();
-        }
-    }, [user]);
-
-    const fetchDrives = async () => {
+    async function fetchDrives() {
         try {
             const res = await fetch('/api/campus-drives/employer', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -43,9 +36,9 @@ export default function EmployerCampusDrives() {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
-    const fetchInstitutes = async () => {
+    async function fetchInstitutes() {
         try {
             const res = await fetch('/api/institutes?status=APPROVED', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -54,7 +47,18 @@ export default function EmployerCampusDrives() {
         } catch (error) {
             console.error('Error fetching institutes:', error);
         }
-    };
+    }
+
+
+
+    useEffect(() => {
+        if (user && user.role === 'EMPLOYER') {
+            fetchDrives();
+            fetchInstitutes();
+        }
+    }, [user]);
+;
+;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

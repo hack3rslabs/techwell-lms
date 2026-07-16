@@ -54,11 +54,7 @@ export default function AdminProjects() {
         techStack: "", // Comma separated string for input
     });
 
-    useEffect(() => {
-        fetchProjects();
-    }, []);
-
-    const fetchProjects = async () => {
+    async function fetchProjects() {
         try {
             const res = await api.get("/projects");
             const data = res.data;
@@ -68,7 +64,13 @@ export default function AdminProjects() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

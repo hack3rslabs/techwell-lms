@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Plus, Edit2, Trash2, Link as LinkIcon, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import api from '@/lib/api'
 
-export default function LeadGenForms() {
+export default function MarketingForms() {
     const [forms, setForms] = React.useState<any[]>([])
     const [isOpen, setIsOpen] = React.useState(false)
     const [isLoading, setIsLoading] = React.useState(false)
@@ -27,10 +28,8 @@ export default function LeadGenForms() {
     ])
 
     const fetchForms = () => {
-        fetch('/api/admin/marketing/forms', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }).then(res => res.json()).then(data => {
-            if (data.success) setForms(data.forms || [])
+        api.get('/admin/marketing/forms').then(res => {
+            if (res.data?.success) setForms(res.data.forms || [])
         }).catch(console.error)
     }
 
@@ -42,25 +41,17 @@ export default function LeadGenForms() {
         e.preventDefault()
         setIsLoading(true)
         try {
-            const res = await fetch('/api/admin/marketing/forms', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('token')}` 
-                },
-                body: JSON.stringify({ title, fields, submitMessage, redirectUrl })
-            })
-            const data = await res.json()
-            if (data.success) {
+            const res = await api.post('/admin/marketing/forms', { title, fields, submitMessage, redirectUrl })
+            if (res.data?.success) {
                 toast({ title: 'Success', description: 'Form created successfully' })
                 setIsOpen(false)
                 fetchForms()
                 setTitle('')
             } else {
-                toast({ title: 'Error', description: data.error || data.message, variant: 'destructive' })
+                toast({ title: 'Error', description: res.data?.error || res.data?.message, variant: 'destructive' })
             }
         } catch (error: any) {
-            toast({ title: 'Error', description: error.message, variant: 'destructive' })
+            toast({ title: 'Error', description: error.response?.data?.error || error.message, variant: 'destructive' })
         } finally {
             setIsLoading(false)
         }
@@ -69,11 +60,8 @@ export default function LeadGenForms() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this form?')) return
         try {
-            const res = await fetch(`/api/admin/marketing/forms/${id}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            })
-            if (res.ok) fetchForms()
+            const res = await api.delete(`/admin/marketing/forms/${id}`)
+            if (res.status === 200 || res.data?.success) fetchForms()
         } catch (error) {
             console.error(error)
         }

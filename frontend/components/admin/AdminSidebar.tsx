@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
-    LayoutDashboard,
+    LayoutDashboard, BarChart3,
     Users,
     BookOpen,
     FileText,
@@ -37,6 +37,9 @@ import {
     Search,
     ChevronLeft,
     ChevronRight,
+    UserCheck,
+    Inbox,
+    PenLine,
     type LucideIcon
 } from "lucide-react"
 
@@ -53,6 +56,7 @@ interface RouteConfig {
     showLeadCounts?: boolean
     customContent?: React.ReactNode
     group?: string
+    subRoutes?: { label: string; href: string }[]
 }
 
 type SidebarProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -74,97 +78,127 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         pathname.startsWith("/admin/leads/")
 
     const routes: RouteConfig[] = [
-         { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Overview" },
-         { label: "Global Data", icon: FileText, href: "/admin/global-data", permission: "ADMIN", group: "Overview" },
-         
-         // Requests
-         { label: "Employer Requests", icon: Briefcase, href: "/admin/employer-requests", permission: "EMPLOYER_REQUESTS", group: "Requests" },
-         
-         // Tracking
-         { label: "Lead Management", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Tracking", showLeadCounts: true },
-         { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Tracking" },
-         { label: "Customer 360", icon: Users, href: "/admin/crm/customers", permission: "CENTRAL_CRM", group: "Tracking" },
-         { label: "Sales Pipelines", icon: Briefcase, href: "/admin/crm/pipelines", permission: "CENTRAL_CRM", group: "Tracking" },
-         { label: "Client Agreements", icon: FileText, href: "/admin/crm/agreements", permission: "CENTRAL_CRM", group: "Tracking" },
-         { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Tracking" },
-         { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Tracking" },
-         { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Tracking" },
-         
-         // Approve
-         { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "REVIEWS", group: "Approve" },
-         { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES", group: "Approve" },
-         
-         // Monitoring
-         { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS", group: "Monitoring" },
-         { label: "GDPR & Compliance", icon: ShieldCheck, href: "/admin/compliance", permission: "ADMIN", group: "Monitoring" },
-         
-         // Operations
-         { label: "Operations Center", icon: ListTodo, href: "/admin/operations", permission: "ADMIN", group: "Operations" },
-         { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES", group: "Operations" },
-         { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES", group: "Operations" },
-         { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS", group: "Operations" },
-         { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES", group: "Operations" },
-         { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS", group: "Operations" },
-         { label: "Tasks", icon: ListTodo, href: "/admin/tasks", permission: "TASKS", group: "Operations" },
-         { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS", group: "Operations" },
-         { label: "Automation Studio", icon: Bot, href: "/admin/automation-studio", group: "Operations", customContent: (
-            <div className="space-y-1 mt-2">
-                <Link
-                    href="/admin/automation-studio"
-                    className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio" ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md" : "text-gray-600 hover:bg-blue-50/50 hover:text-blue-600")}
-                >
-                    <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio" ? "bg-white/20" : "bg-blue-100 text-blue-600 group-hover:bg-blue-200")}>
-                        <Workflow className="w-4 h-4" />
-                    </div>
-                    <span className="font-medium text-sm">Workflows</span>
-                </Link>
-                <Link
-                    href="/admin/automation-studio/knowledge"
-                    className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/knowledge" ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md" : "text-gray-600 hover:bg-purple-50/50 hover:text-purple-600")}
-                >
-                    <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/knowledge" ? "bg-white/20" : "bg-purple-100 text-purple-600 group-hover:bg-purple-200")}>
-                        <Database className="w-4 h-4" />
-                    </div>
-                    <span className="font-medium text-sm">AI Knowledge</span>
-                </Link>
-                <Link
-                    href="/admin/automation-studio/integrations"
-                    className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/integrations" ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md" : "text-gray-600 hover:bg-emerald-50/50 hover:text-emerald-600")}
-                >
-                    <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/integrations" ? "bg-white/20" : "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200")}>
-                        <Key className="w-4 h-4" />
-                    </div>
-                    <span className="font-medium text-sm">Integrations</span>
-                </Link>
-            </div>
-         ), permission: "AUTOMATION_STUDIO" },
-         
-         // Campus Hiring
-         { label: "Master Drives", icon: Briefcase, href: "/admin/campus-drives", group: "Campus Hiring" },
-         { label: "Companies", icon: Building2, href: "/admin/companies", group: "Campus Hiring" },
-         { label: "Institutes", icon: GraduationCap, href: "/admin/institutes", group: "Campus Hiring" },
-         { label: "Consulting Revenue", icon: CreditCard, href: "/admin/consultancy-revenue", group: "Campus Hiring" },
-         
-         // Administration
-         { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES", group: "Administration" },
-         { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS", group: "Administration" },
-         { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL", group: "Administration" },
-         { label: "Global Data", icon: Database, href: "/admin/global-data", permission: "GLOBAL_DATA", group: "Administration" },
-         { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COUPONS", group: "Administration" },
-         { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "TRANSACTIONS", group: "Administration" },
-         { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "MESSAGES", group: "Administration" },
-         { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Administration" },
-         { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY", group: "Administration" },
-         { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Administration" },
+        // 1. Overview
+        { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Overview" },
 
-         // Deployments
-         { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Deployments" },
-         { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER", group: "Deployments" },
-         { label: "Blogs", icon: FileText, href: "/admin/blogs", permission: "BLOGS", group: "Deployments" },
-         { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Deployments" },
-         { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Deployments" },
-         { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Deployments" },
-         { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY", group: "Deployments" },
+        // 2. Consulting Hub
+        { label: "Consulting Hub", icon: Briefcase, href: "/admin/consulting", permission: "CENTRAL_CRM", group: "Consulting Hub" },
+        { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY", group: "Consulting Hub" },
+        { label: "Client Agreements", icon: FileText, href: "/admin/crm/agreements", permission: "CENTRAL_CRM", group: "Consulting Hub" },
+
+        // 3. Leads & CRM
+        {
+            label: "Lead Management", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Leads & CRM", showLeadCounts: true, subRoutes: [
+                { label: "Overview", href: "/admin/leads" },
+                { label: "Newsletters", href: "/admin/leads/newsletters" }
+            ]
+        },
+        { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Leads & CRM" },
+        { label: "Sales Pipelines", icon: Briefcase, href: "/admin/crm/pipelines", permission: "CENTRAL_CRM", group: "Leads & CRM" },
+        { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Leads & CRM" },
+
+        // 4. Training & Courses
+        { label: "Training Manager", icon: BookOpen, href: "/admin/training", permission: "COURSES", group: "Training & Courses" },
+        { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES", group: "Training & Courses" },
+        { label: "Projects", icon: BookOpen, href: "/admin/projects", permission: "COURSES", group: "Training & Courses" },
+        { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES", group: "Training & Courses" },
+        { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES", group: "Training & Courses" },
+        { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS", group: "Training & Courses" },
+        { label: "Assessments", icon: PenLine, href: "/admin/assessments", permission: "TRAINING", group: "Training & Courses" },
+        { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY", group: "Training & Courses" },
+
+        // 5. Operations
+        { label: "Operations Center", icon: ListTodo, href: "/admin/operations", permission: "ADMIN", group: "Operations" },
+        { label: "Tasks", icon: ListTodo, href: "/admin/tasks", permission: "TASKS", group: "Operations" },
+        { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Operations" },
+        { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS", group: "Operations" },
+        { label: "Support Tickets", icon: Inbox, href: "/admin/support", permission: "TICKETS", group: "Operations" },
+        {
+            label: "Automation Studio", icon: Bot, href: "/admin/automation-studio", group: "Operations", customContent: (
+                <div className="space-y-1 mt-2">
+                    <Link
+                        href="/admin/automation-studio"
+                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio" ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md" : "text-gray-600 hover:bg-blue-50/50 hover:text-blue-600")}
+                    >
+                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio" ? "bg-white/20" : "bg-blue-100 text-blue-600 group-hover:bg-blue-200")}>
+                            <Workflow className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium text-sm">Workflows</span>
+                    </Link>
+                    <Link
+                        href="/admin/automation-studio/knowledge"
+                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/knowledge" ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md" : "text-gray-600 hover:bg-purple-50/50 hover:text-purple-600")}
+                    >
+                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/knowledge" ? "bg-white/20" : "bg-purple-100 text-purple-600 group-hover:bg-purple-200")}>
+                            <Database className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium text-sm">AI Knowledge</span>
+                    </Link>
+                    <Link
+                        href="/admin/automation-studio/integrations"
+                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/integrations" ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md" : "text-gray-600 hover:bg-emerald-50/50 hover:text-emerald-600")}
+                    >
+                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/integrations" ? "bg-white/20" : "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200")}>
+                            <Key className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium text-sm">Integrations</span>
+                    </Link>
+                </div>
+            ), permission: "AUTOMATION_STUDIO"
+        },
+
+        // 6. Campus & Recruiting
+        { label: "Job Board", icon: Briefcase, href: "/admin/jobs", group: "Campus & Recruiting" },
+        { label: "Master Drives", icon: Briefcase, href: "/admin/campus-drives", group: "Campus & Recruiting" },
+        { label: "CHMS Dashboard", icon: LayoutDashboard, href: "/admin/chms/dashboard", group: "Campus & Recruiting" },
+        { label: "Companies", icon: Building2, href: "/admin/companies", group: "Campus & Recruiting" },
+        { label: "Institutes", icon: GraduationCap, href: "/admin/institutes", group: "Campus & Recruiting" },
+        { label: "Internships", icon: Briefcase, href: "/admin/internships", group: "Campus & Recruiting" },
+        { label: "Interviews", icon: Users, href: "/admin/interviews", group: "Campus & Recruiting" },
+        { label: "Employer Requests", icon: Inbox, href: "/admin/employer-requests", permission: "MANAGE_EMPLOYER_REQUESTS", group: "Campus & Recruiting" },
+        { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS", group: "Campus & Recruiting" },
+
+        // 7. Approve & Manage
+        { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "REVIEWS", group: "Approve & Manage" },
+        { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES", group: "Approve & Manage" },
+        { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "MESSAGES", group: "Approve & Manage" },
+        { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COUPONS", group: "Approve & Manage" },
+        { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "TRANSACTIONS", group: "Approve & Manage" },
+
+        // 8. Reporting & Analytics
+        { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Reporting & Analytics" },
+        { label: "Consulting Revenue", icon: CreditCard, href: "/admin/consultancy-revenue", group: "Reporting & Analytics" },
+        // { label: "Global Data", icon: Database, href: "/admin/global-data", permission: "GLOBAL_DATA", group: "Reporting & Analytics" },
+
+        // 9. Deployments & Marketing
+        { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Deployments & Marketing" },
+        { label: "Blog Posts", icon: PenLine, href: "/admin/posts", permission: "ADMIN", group: "Deployments & Marketing" },
+        { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Deployments & Marketing" },
+        { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER", group: "Deployments & Marketing" },
+        { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Deployments & Marketing" },
+        { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Deployments & Marketing" },
+        { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Deployments & Marketing" },
+        { label: "Success Stories", icon: Star, href: "/admin/success-stories", permission: "ADMIN", group: "Deployments & Marketing" },
+        { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS", group: "Deployments & Marketing" },
+
+        // 10. Administration & Partnerships
+        { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES", group: "Administration & Partnerships" },
+        { label: "All Users", icon: Users, href: "/admin/users", permission: "ADMIN", group: "Administration & Partnerships" },
+        { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS", group: "Administration & Partnerships" },
+        { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL", group: "Administration & Partnerships" },
+        { 
+            label: "Franchise Management", 
+            icon: Building2, 
+            href: user?.role === 'FRANCHISE_ADMIN' && user?.instituteId 
+                ? `/admin/franchise/${user.instituteId}` 
+                : (user as any)?.franchiseId ? `/admin/franchise/${(user as any).franchiseId}` : "/admin/franchise", 
+            permission: "ADMIN", 
+            group: "Administration & Partnerships" 
+        },
+        { label: "Franchise Resources", icon: Megaphone, href: "/admin/franchise/resources", permission: "ADMIN", group: "Administration & Partnerships" },
+        { label: "GDPR & Compliance", icon: ShieldCheck, href: "/admin/compliance", permission: "ADMIN", group: "Administration & Partnerships" },
+        { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Administration & Partnerships" },
+        { label: "Documents", icon: FileText, href: "/admin/documents", permission: "ADMIN", group: "Administration & Partnerships" },
     ]
 
     const availableRoutes = routes.filter(route => {
@@ -230,7 +264,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             {/* Sidebar */}
             <div
                 className={cn(
-                    "fixed left-0 top-0 z-40 h-screen border-r bg-background overflow-y-auto transition-all duration-300 md:translate-x-0",
+                    "fixed left-0 top-0 z-40 h-screen border-r bg-background flex flex-col transition-all duration-300 md:translate-x-0",
                     isCollapsed ? "w-20" : "w-64",
                     isMobileOpen ? "translate-x-0 w-64" : "-translate-x-full",
                     className
@@ -238,7 +272,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             >
 
                 {/* Header */}
-                <div className={cn("px-4 py-4 border-b flex items-center flex-shrink-0 h-16", isCollapsed ? "justify-center" : "justify-between")}>
+                <div className={cn("px-4 py-4 border-b flex flex-shrink-0 items-center h-16", isCollapsed ? "justify-center" : "justify-between")}>
                     {!isCollapsed && (
                         <div className="overflow-hidden">
                             <h2 className="text-xl font-bold text-primary truncate">Admin Panel</h2>
@@ -248,30 +282,36 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                         </div>
                     )}
                     {onToggleCollapse && (
-                        <Button variant="outline" size="icon" onClick={onToggleCollapse} className="shrink-0 hidden md:flex">
+                        <Button 
+                            variant="outline" 
+                            size="icon" 
+                            onClick={onToggleCollapse} 
+                            className="shrink-0 hidden md:flex h-8 w-8 ml-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700" 
+                            title="Toggle Sidebar"
+                        >
                             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                         </Button>
                     )}
                 </div>
 
-                {/* Search Bar */}
+                {/* Search Bar - Frozen at Top */}
                 {!isCollapsed && (
-                    <div className="p-3 border-b">
+                    <div className="p-3 border-b flex-shrink-0 bg-muted/20">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Search menus..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="h-9 w-full rounded-md border border-input bg-transparent pl-9 pr-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             />
                         </div>
                     </div>
                 )}
 
                 {/* Scrollable Menu ✅ */}
-                <div className="p-3">
+                <div className="p-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                     <nav className="space-y-1 pb-6">
                         {Object.entries(
                             availableRoutes.reduce((acc, route) => {
@@ -323,25 +363,8 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                                 )}
                                             </Link>
 
-                                            {route.label === "Lead Management" && !isCollapsed && (
-                                                <div className="ml-8 mt-1 space-y-1 border-l pl-3 border-slate-200 dark:border-slate-800">
-                                                    {[
-                                                        { label: "Job Enquiries", type: "JOB_ENQUIRY" },
-                                                        { label: "Training", type: "TRAINING" },
-                                                        { label: "Service Requests", type: "SERVICE_REQUEST" },
-                                                        { label: "Software Requests", type: "SOFTWARE_REQUEST" }
-                                                    ].map((subRoute) => (
-                                                        <Link
-                                                            key={subRoute.type}
-                                                            href={`/admin/leads?type=${subRoute.type}`}
-                                                            className="block text-xs text-muted-foreground hover:text-primary hover:bg-primary/5 p-2 rounded-md transition"
-                                                        >
-                                                            {subRoute.label}
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            
+
+
                                             {route.customContent && isActive && !isCollapsed && (
                                                 <div className="ml-8 mt-1 space-y-1">
                                                     {route.customContent}
@@ -355,19 +378,26 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                     </nav>
                 </div>
 
-                {/* Footer */}
-                <div className={cn("border-t p-3 flex-shrink-0", isCollapsed ? "flex justify-center" : "")}>
-                    <Button
-                        variant="ghost"
-                        className={cn("text-red-500 hover:text-red-600 hover:bg-red-50", isCollapsed ? "w-10 h-10 p-0" : "w-full justify-start")}
-                        onClick={logout}
-                        title="Sign Out"
-                    >
-                        <LogOut className={cn("h-5 w-5", isCollapsed ? "" : "mr-3")} />
-                        {!isCollapsed && "Sign Out"}
-                    </Button>
-                </div>
-
+                {/* Smart Footer Toggle */}
+                {onToggleCollapse && (
+                    <div className="border-t p-3 flex-shrink-0 bg-background hidden md:block">
+                        <Button 
+                            variant="outline" 
+                            className={cn("w-full flex items-center text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all shadow-sm", isCollapsed ? "justify-center px-0" : "justify-start px-2")}
+                            onClick={onToggleCollapse} 
+                            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                        >
+                            {isCollapsed ? (
+                                <ChevronRight className="h-5 w-5" />
+                            ) : (
+                                <>
+                                    <ChevronLeft className="h-5 w-5 mr-2" />
+                                    <span className="font-medium">Collapse Menu</span>
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Mobile Overlay */}

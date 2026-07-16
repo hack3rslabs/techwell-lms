@@ -45,6 +45,12 @@ export default function ATSPipelinePage() {
         externalName?: string
         externalEmail?: string
         createdAt: string
+        linkedInterview?: {
+            id: string;
+            evaluation?: {
+                overallScore: number;
+            };
+        }
         applicant?: {
             name: string
             email: string
@@ -178,6 +184,11 @@ export default function ATSPipelinePage() {
                                                                         {app.atsScore > 0 && (
                                                                             <Badge variant="outline" className={`text-[10px] h-5 px-1 ${app.atsScore >= 80 ? 'text-green-600 border-green-200' : 'text-orange-500'}`}>
                                                                                 {app.atsScore}% Match
+                                                                            </Badge>
+                                                                        )}
+                                                                        {app.linkedInterview?.evaluation && (
+                                                                            <Badge variant="outline" className="text-[10px] h-5 px-1 bg-indigo-50 text-indigo-700 border-indigo-200">
+                                                                                AI Score: {app.linkedInterview.evaluation.overallScore}%
                                                                             </Badge>
                                                                         )}
                                                                     </div>

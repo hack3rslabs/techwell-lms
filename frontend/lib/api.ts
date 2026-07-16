@@ -10,15 +10,17 @@ const api = axios.create({
     withCredentials: true,
 });
 
-// Request interceptor to add auth token
+export const publicApi = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    }
+});
+
+// Request interceptor (Token is now handled automatically via HttpOnly cookies)
 api.interceptors.request.use(
     (config) => {
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-        }
+        // withCredentials handles the HttpOnly cookie automatically
         return config;
     },
     (error) => {
@@ -38,8 +40,10 @@ api.interceptors.response.use(
                 }
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                // Optionally redirect to login
-                window.location.href = '/login';
+                // Optionally redirect to login if not already on auth pages
+                if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+                    window.location.href = '/login';
+                }
             }
         }
         return Promise.reject(error);
@@ -62,9 +66,10 @@ export const authApi = {
         api.post('/auth/verify-otp', data),
     resendOtp: (data: { email: string }) =>
         api.post('/auth/resend-otp', data),
-    login: (data: { email: string; password: string }) =>
+    login: (data: { email: string; password: string; trustDevice?: boolean }) =>
         api.post('/auth/login', data),
     refresh: () => api.post('/auth/refresh'),
+    logout: () => api.post('/auth/logout'),
     setup2FA: () => api.post('/auth/2fa/setup'),
     enable2FA: (data: { code: string }) => api.post('/auth/2fa/enable', data),
     disable2FA: () => api.post('/auth/2fa/disable'),
@@ -75,6 +80,10 @@ export const consultancyApi = {
     // Public Endpoints
     verifyInvitation: (token: string) => api.get(`/consultancy/public/invite/${token}`),
     submitAgreement: (token: string, data: any) => api.post(`/consultancy/public/invite/${token}/submit`, data),
+    updateStatus: (token: string, status: string) => api.post(`/consultancy/public/invite/${token}/status`, { status }),
+    uploadDocument: (token: string, data: FormData) => api.post<{ url: string }>(`/consultancy/public/invite/${token}/upload`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
     
     // Admin Endpoints
     getDashboardStats: () => api.get('/consultancy/dashboard'),
@@ -194,7 +203,8 @@ export const courseApi = {
 
 // Employer Request API
 export const employerRequestApi = {
-    submit: (data: { name: string; designation: string; email: string; phone?: string }) => api.post('/employer-requests', data),
+    submit: (data: { employerName: string; companyName: string; email: string; phone: string; website: string; address: string; password?: string; confirmPassword?: string }) => api.post('/employer-requests', data),
+    verifyOtp: (data: { email: string; otp: string }) => api.post('/employer-requests/verify-otp', data),
     getAll: () => api.get('/employer-requests'),
     getById: (id: string) => api.get(`/employer-requests/${id}`),
     approve: (id: string, data?: { adminNotes?: string }) => api.put(`/employer-requests/${id}/approve`, data),
@@ -284,6 +294,9 @@ export const certificateApi = {
     updateTemplate: (id: string, data: { name?: string; description?: string; designUrl?: string; previewUrl?: string; isDefault?: boolean; isActive?: boolean }) =>
         api.put(`/certificates/admin/templates/${id}`, data),
     deleteTemplate: (id: string) => api.delete(`/certificates/admin/templates/${id}`),
+    uploadTemplateImage: (data: FormData) => api.post('/certificates/templates/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
 };
 
 // AI Settings API
@@ -446,12 +459,12 @@ export const rbacApi = {
     createRole: (data: { 
         name: string; 
         description?: string; 
-        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }> 
+        permissions: Array<{ featureId: string; canRead: boolean; canCreate: boolean; canUpdate: boolean; canDelete: boolean; isDisabled: boolean }> 
     }) => api.post('/rbac/roles', data),
     updateRole: (id: string, data: { 
         name?: string; 
         description?: string; 
-        permissions: Array<{ featureId: string; canRead: boolean; canWrite: boolean; isDisabled: boolean }> 
+        permissions: Array<{ featureId: string; canRead: boolean; canCreate: boolean; canUpdate: boolean; canDelete: boolean; isDisabled: boolean }> 
     }) => api.put(`/rbac/roles/${id}`, data),
     deleteRole: (id: string) => api.delete(`/rbac/roles/${id}`),
 };
@@ -487,6 +500,7 @@ export const couponApi = {
 };
 
 export default api;
+export { api };
 
 
 // Batches API
@@ -508,24 +522,43 @@ export const batchesApi = {
     scheduleInterviews: (id: string, data: any) => api.post(`/batches/${id}/ai-interviews`, data),
 };
 
+
 // Jobs API
 export const jobsApi = {
     getAll: (params?: any) => api.get('/jobs', { params }),
     getById: (id: string) => api.get(`/jobs/${id}`),
+    getMatchScore: (id: string) => api.get(`/jobs/${id}/match`),
     create: (data: any) => api.post('/jobs', data),
     update: (id: string, data: any) => api.put(`/jobs/${id}`, data),
     delete: (id: string) => api.delete(`/jobs/${id}`),
-    getApplications: (id: string) => api.get(`/jobs/${id}/applications`),
-    updateApplicationStatus: (jobId: string, appId: string, status: string) => api.patch(`/jobs/${jobId}/applications/${appId}/status`, { status }),
-    getAdminListings: (params?: any) => api.get('/jobs/admin/listings', { params })
+    // Applications
+    getApplications: (jobId: string) => api.get(`/jobs/${jobId}/applications`),
+    updateApplicationStatus: (_jobId: string, appId: string, status: string, note?: string) =>
+        api.patch(`/jobs/applications/${appId}/status`, { status, note }),
+    getMyApplications: () => api.get('/jobs/applications/me'),
+    getApplicationTimeline: (appId: string) => api.get(`/jobs/applications/${appId}/timeline`),
+    applyToJob: (jobId: string, data: { resumeUrl?: string; coverLetter?: string }) =>
+        api.post(`/jobs/${jobId}/apply`, data),
+    // Admin listing
+    getAdminListings: (params?: any) => api.get('/jobs/admin/listings', { params }),
+    // Interviews
+    scheduleInterview: (appId: string, data: any) => api.post(`/jobs/applications/${appId}/interviews`, data),
+    updateInterview: (interviewId: string, data: any) => api.put(`/jobs/interviews/${interviewId}`, data),
+    // Offers
+    releaseOffer: (appId: string, data: any) => api.post(`/jobs/applications/${appId}/offers`, data),
+    updateOfferStatus: (offerId: string, status: string) => api.patch(`/jobs/offers/${offerId}/status`, { status }),
+    // Placement Feedback
+    submitFeedback: (appId: string, data: any) => api.post(`/jobs/applications/${appId}/feedback`, data),
 };
+
 
 // Messages API
 export const messagesApi = {
-    sendToAll: (data: { title: string; content: string; priority?: string }) => api.post('/messages/send/all', data),
-    sendToBatch: (data: { title: string; content: string; batchId: string; priority?: string }) => api.post('/messages/send/batch', data),
-    sendToCourse: (data: { title: string; content: string; courseId: string; priority?: string }) => api.post('/messages/send/course', data),
-    sendToStudent: (data: { title: string; content: string; studentId: string; priority?: string }) => api.post('/messages/send/student', data),
+    sendToAll: (data: { title: string; content: string; priority?: string }) => api.post('/messages/send-to-all', data),
+    sendToBatch: (data: { title: string; content: string; batchId: string; priority?: string }) => api.post('/messages/send-to-batch', data),
+    sendToCourse: (data: { title: string; content: string; courseId: string; priority?: string }) => api.post('/messages/send-to-course', data),
+    sendToStudent: (data: { title: string; content: string; studentId: string; priority?: string }) => api.post('/messages/send-to-student', data),
+    sendToStaff: (data: { title: string; content: string; priority?: string }) => api.post('/messages/send-to-staff', data),
 };
 
 // Campus Drives API
@@ -568,4 +601,28 @@ export const clientApi = {
     create: (data: any) => api.post('/clients', data),
     update: (id: string, data: any) => api.put(`/clients/${id}`, data),
     delete: (id: string) => api.delete(`/clients/${id}`),
+};
+
+// Team API
+export const teamApi = {
+    getPublic: () => api.get('/team/public'),
+    getAdminAll: () => api.get('/team/admin'),
+    create: (data: any) => api.post('/team/admin', data),
+    update: (id: string, data: any) => api.put(`/team/admin/${id}`, data),
+    delete: (id: string) => api.delete(`/team/admin/${id}`),
+};
+
+// Settings API
+export const settingsApi = {
+    getPublic: () => api.get('/settings/public'),
+    getAll: () => api.get('/settings'),
+    update: (data: any) => api.put('/settings', data),
+};
+
+// CMDB API
+export const cmdbApi = {
+    getAll: (params?: any) => api.get('/cmdb', { params }),
+    create: (data: any) => api.post('/cmdb', data),
+    update: (id: string, data: any) => api.put(`/cmdb/${id}`, data),
+    delete: (id: string) => api.delete(`/cmdb/${id}`),
 };

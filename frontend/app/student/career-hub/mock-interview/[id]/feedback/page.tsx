@@ -19,11 +19,7 @@ export default function FeedbackPage({ params }: { params: { id: string } }) {
     const [reportData, setReportData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchFeedback();
-    }, [params.id]);
-
-    const fetchFeedback = async () => {
+    async function fetchFeedback() {
         try {
             const res = await api.get(`/interviews/${params.id}/report`);
             setReportData(res.data.report);
@@ -32,7 +28,13 @@ export default function FeedbackPage({ params }: { params: { id: string } }) {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchFeedback();
+    }, [params.id]);
+;
 
     if (loading) {
         return (

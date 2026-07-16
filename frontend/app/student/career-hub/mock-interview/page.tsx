@@ -28,16 +28,12 @@ export default function MockInterviewDashboard() {
         domain: '',
         technology: '',
         experience: '0',
-        interviewMode: 'FULL'
+        interviewMode: 'FULL',
+        jobDescription: ''
     })
+    const [resumeFile, setResumeFile] = useState<File | null>(null)
 
-    useEffect(() => {
-        fetchInterviews()
-        fetchStats()
-        fetchTrendData()
-    }, [])
-
-    const fetchInterviews = async () => {
+    async function fetchInterviews() {
         try {
             const res = await api.get('/interviews')
             setInterviews(res.data.interviews || [])
@@ -48,7 +44,8 @@ export default function MockInterviewDashboard() {
         }
     }
 
-    const fetchStats = async () => {
+
+    async function fetchStats() {
         try {
             const res = await api.get('/interviews/stats/summary')
             setStats(res.data.stats || { total: 0, completed: 0, averageScore: 0 })
@@ -57,7 +54,8 @@ export default function MockInterviewDashboard() {
         }
     }
 
-    const fetchTrendData = async () => {
+
+    async function fetchTrendData() {
         try {
             const res = await api.get('/interviews/stats/trend')
             setTrendData(res.data.trend || [])
@@ -66,9 +64,35 @@ export default function MockInterviewDashboard() {
         }
     }
 
+
+
+
+    useEffect(() => {
+        fetchInterviews()
+        fetchStats()
+        fetchTrendData()
+    }, [])
+
+
     const handleCreate = async (e: any) => {
         e.preventDefault()
         setIsCreating(true)
+
+        let uploadedResumeUrl = null;
+        if (resumeFile) {
+            try {
+                const formDataFile = new FormData();
+                formDataFile.append('file', resumeFile);
+                const uploadRes = await api.post('/upload', formDataFile, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                uploadedResumeUrl = uploadRes.data.url || uploadRes.data.fileUrl || uploadRes.data.filePath;
+            } catch (err) {
+                console.error("Resume upload failed", err);
+                toast.error("Failed to upload resume. Proceeding without it.");
+            }
+        }
+
         const exp = parseInt(formData.experience || '0')
         const difficulty = exp === 0 ? 'BEGINNER' : exp <= 2 ? 'INTERMEDIATE' : 'ADVANCED'
         try {
@@ -76,7 +100,8 @@ export default function MockInterviewDashboard() {
                 role: formData.role,
                 domain: formData.domain || formData.role,
                 technology: formData.technology,
-                resumeUrl: null,
+                resumeUrl: uploadedResumeUrl,
+                jobDescription: formData.jobDescription,
                 difficulty,
                 interviewMode: formData.interviewMode,
                 duration: formData.interviewMode === 'FULL' ? 30 : 10
@@ -188,6 +213,24 @@ export default function MockInterviewDashboard() {
                                     value={formData.technology}
                                     onChange={e => setFormData({...formData, technology: e.target.value})}
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold">📄 Job Description (Optional)</label>
+                                <textarea
+                                    className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
+                                    placeholder="Paste the target job description to tailor the interview..."
+                                    value={formData.jobDescription}
+                                    onChange={e => setFormData({...formData, jobDescription: e.target.value})}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold">📎 Upload Resume (Optional)</label>
+                                <Input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx"
+                                    onChange={e => setResumeFile(e.target.files?.[0] || null)}
+                                />
+                                <p className="text-xs text-muted-foreground">AI will generate questions based on your resume experience.</p>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">📅 Years of Experience</label>

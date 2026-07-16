@@ -321,15 +321,7 @@ router.get('/:id/ai-matches', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPE
         if (candidates.length === 0) return res.json({ matches: [] });
 
         if (!process.env.GEMINI_API_KEY) {
-            // Mock response if no API key
-            const mockMatches = candidates.slice(0, 3).map((c, i) => ({
-                candidateId: c.id,
-                name: c.name,
-                email: c.email,
-                matchPercentage: 90 - (i * 5),
-                rationale: `(Mock AI) Candidate has strong skills in ${c.skills[0] || 'Tech'} which matches the job requirement.`
-            }));
-            return res.json({ matches: mockMatches });
+            return res.status(503).json({ error: 'AI matching service is currently unavailable.' });
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -405,7 +397,7 @@ router.get('/:id/student-match', authenticate, authorize('STUDENT'), async (req,
         if (!candidate) return res.json({ matchScore: null, rationale: 'No ATS profile found. Please build your resume.' });
 
         if (!process.env.GEMINI_API_KEY) {
-            return res.json({ matchScore: 85, rationale: '(Mock AI) Your profile aligns well with the requirements.' });
+            return res.status(503).json({ error: 'AI matching service is currently unavailable.' });
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -455,8 +447,7 @@ router.post('/:id/generate-cover-letter', authenticate, authorize('STUDENT'), as
         }
 
         if (!process.env.GEMINI_API_KEY) {
-            const mockLetter = `Dear Hiring Manager at ${job.employer.employerProfile?.companyName || 'Company'},\n\nI am writing to express my strong interest in the ${job.title} position. With my background in ${candidate.skills[0] || 'technology'}, I am confident that I can bring immediate value to your team.\n\nThank you for considering my application.\n\nSincerely,\n${candidate.name}`;
-            return res.json({ coverLetter: mockLetter });
+            return res.status(503).json({ error: 'AI cover letter generation is currently unavailable.' });
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);

@@ -21,11 +21,7 @@ export default function GlobalDataPage() {
         dynamicValue: ''
     })
 
-    useEffect(() => {
-        fetchData(activeTab)
-    }, [activeTab])
-
-    const fetchData = async (tab: string) => {
+    async function fetchData(tab: string) {
         setLoading(true)
         try {
             if (tab === 'students') {
@@ -53,6 +49,12 @@ export default function GlobalDataPage() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchData(activeTab)
+    }, [activeTab])
+
 
     const exportToCSV = () => {
         if (data.length === 0) {

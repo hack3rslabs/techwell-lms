@@ -184,20 +184,47 @@ async function main() {
     const permissions = [
         { name: 'Dashboard Access', code: 'DASHBOARD', module: 'General' },
         { name: 'Welcome Page', code: 'WELCOME', module: 'General' },
+        { name: 'Users & Roles', code: 'USERS_ROLES', module: 'General' },
         { name: 'User Management', code: 'USERS', module: 'General' },
+        { name: 'Students', code: 'STUDENTS', module: 'General' },
+        { name: 'Staff Portal', code: 'STAFF_PORTAL', module: 'General' },
         { code: 'COURSES', name: 'Course Management', module: 'ADMIN' },
+        { code: 'BATCHES', name: 'Batches Management', module: 'ADMIN' },
+        { code: 'EVENTS', name: 'Events & Webinars', module: 'ADMIN' },
+        { code: 'LIVE_CLASSES', name: 'Live Classes', module: 'ADMIN' },
+        { code: 'SKILLCASTS', name: 'Skillcasts', module: 'ADMIN' },
+        { code: 'TASKS', name: 'Tasks', module: 'ADMIN' },
+        { code: 'AI_INTERVIEWS', name: 'AI Interviews', module: 'ADMIN' },
+        { code: 'AUTOMATION_STUDIO', name: 'Automation Studio', module: 'ADMIN' },
         { code: 'FINANCE', name: 'Financial Management', module: 'ADMIN' },
         { code: 'TICKETS', name: 'Support Tickets', module: 'ADMIN' },
         { code: 'SETTINGS', name: 'System Settings', module: 'ADMIN' },
         { code: 'LEADS', name: 'Leads & CRM', module: 'ADMIN' },
+        { code: 'CENTRAL_CRM', name: 'Central CRM', module: 'ADMIN' },
+        { code: 'MANAGE_EMPLOYER_REQUESTS', name: 'Employer Requests', module: 'ADMIN' },
+        { code: 'CONSULTANCY', name: 'Consultancy Hub', module: 'ADMIN' },
+        { code: 'REVIEWS', name: 'Reviews', module: 'ADMIN' },
         { code: 'BLOGS', name: 'Blog Management', module: 'ADMIN' },
         { code: 'CERTIFICATES', name: 'Certificates', module: 'ADMIN' },
         { code: 'REPORTS', name: 'Reports & Analytics', module: 'ADMIN' },
         { code: 'SYSTEM_LOGS', name: 'System Logs', module: 'ADMIN' },
-        { code: 'CMS', name: 'CMS Manager', module: 'Content' },
+        { code: 'CMS', name: 'CMS Management', module: 'Content' },
+        { code: 'CMS_MANAGER', name: 'CMS Manager', module: 'Content' },
+        { code: 'PAGE_BUILDER', name: 'Page Builder', module: 'Content' },
         { code: 'TEAM_MANAGEMENT', name: 'Team Management', module: 'Content' },
         { code: 'PRODUCTS', name: 'Product Catalog', module: 'Content' },
         { code: 'SERVICES', name: 'Services Catalog', module: 'Content' },
+        { code: 'GLOBAL_DATA', name: 'Global Data', module: 'ADMIN' },
+        { code: 'COUPONS', name: 'Coupons', module: 'ADMIN' },
+        { code: 'TRANSACTIONS', name: 'Transactions', module: 'ADMIN' },
+        { code: 'MESSAGES', name: 'Messages', module: 'ADMIN' },
+        { code: 'MEETINGS', name: 'Meetings', module: 'ADMIN' },
+        { code: 'MARKETING_HUB', name: 'Marketing Hub', module: 'Content' },
+        { code: 'MARKETING', name: 'Marketing Core', module: 'Content' },
+        { code: 'ADS_MANAGER', name: 'Ads Manager', module: 'Content' },
+        { code: 'GALLERY', name: 'Gallery', module: 'Content' },
+        { code: 'LIBRARY', name: 'Library', module: 'Content' },
+        { code: 'PARTNERSHIPS', name: 'Partnerships & Franchise', module: 'ADMIN' },
     ];
 
     for (const p of permissions) {
@@ -295,14 +322,18 @@ async function main() {
                 },
                 update: {
                     canRead: hasPermission,
-                    canWrite: hasPermission,
+                    canCreate: hasPermission,
+                    canUpdate: hasPermission,
+                    canDelete: hasPermission,
                     isDisabled: !hasPermission
                 },
                 create: {
                     roleId: dbRole.id,
                     featureId: feature.id,
                     canRead: hasPermission,
-                    canWrite: hasPermission,
+                    canCreate: hasPermission,
+                    canUpdate: hasPermission,
+                    canDelete: hasPermission,
                     isDisabled: !hasPermission
                 }
             });
@@ -317,6 +348,34 @@ async function main() {
             data: { systemRoleId: superAdminRole.id }
         });
         console.log('✅ Linked Super Admins to System Role');
+    }
+
+    
+    console.log('\n📜 Seeding Certificate Templates...');
+    const fs = require('fs');
+    const path = require('path');
+    let certificateTemplates = [];
+    const templatesPath = path.join(__dirname, 'templates.json');
+    if (fs.existsSync(templatesPath)) {
+        certificateTemplates = JSON.parse(fs.readFileSync(templatesPath, 'utf8'));
+        console.log(`Loaded ${certificateTemplates.length} templates from templates.json`);
+    } else {
+        console.log('templates.json not found. Skipping templates seeding.');
+    }
+
+    for (const t of certificateTemplates) {
+        const existing = await prisma.certificateTemplate.findFirst({ where: { name: t.name } });
+        if (existing) {
+            await prisma.certificateTemplate.update({
+                where: { id: existing.id },
+                data: t
+            });
+        } else {
+            await prisma.certificateTemplate.create({
+                data: t
+            });
+        }
+        console.log('  ✅ Template:', t.name);
     }
 
     console.log('\n🎉 Seed completed!\n');

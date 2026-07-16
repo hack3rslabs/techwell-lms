@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { 
   GraduationCap, Laptop, Sparkles, Briefcase, ChevronRight, 
   CheckCircle2, Star, ArrowRight, Code2, Users, Building2,
-  ShieldCheck, Server, Globe2, Rocket, Cpu, Calendar
+  ShieldCheck, Server, Globe2, Rocket, Cpu, Calendar, TrendingUp
 } from 'lucide-react'
 import { Testimonials } from "@/components/sections/Testimonials"
 import { PlacementPartners } from "@/components/sections/PlacementPartners"
@@ -16,9 +16,9 @@ import { PlacementPartners } from "@/components/sections/PlacementPartners"
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techwell.co.in"
 
 export const metadata: Metadata = {
-  title: "Techwell | Career and IT Consulting & Enterprise Solutions",
-  description: "A complete integrated Training-to-Placement and Enterprise Software ecosystem. Offering corporate IT training, placement assistance, managed IT services, and custom business ERPs.",
-  keywords: ["IT Training Institute", "Placement Assistance", "Career Hub", "Software Solutions", "IT Solutions", "SaaS Products", "MNC Assessment Prep", "AI Mock Interviews"],
+  title: "Techwell | Career & IT Consulting, Cyber Security & Franchise",
+  description: "A complete ecosystem offering IT Training, Job Consultancy, Campus Placement Drives, Cyber Security Solutions, Managed IT Services, and Business Consulting.",
+  keywords: ["IT Training Institute", "Job Consultancy", "Placement Assistance", "Campus Drives", "Cyber Security Solutions", "IT Solutions", "Business Consulting", "Franchise Opportunities"],
   alternates: {
     canonical: BASE_URL,
   }
@@ -30,54 +30,101 @@ const websiteJsonLd = {
   "@type": "Organization",
   name: "Techwell",
   url: BASE_URL,
-  description: "Career and IT Consulting Institute, Placement Assistance, Career Hub, Software Solutions, and IT Solutions."
+  description: "IT Training, Job Consultancy, Campus Placement Drives, Cyber Security Solutions, Managed IT Services, and Business Consulting.",
+  sameAs: [
+    "https://www.linkedin.com/company/techwell"
+  ]
 }
 
 export default function Home() {
   const businessPillars = [
     {
-      title: "IT Training Institute",
+      title: "IT & Corporate Training",
       icon: <GraduationCap className="h-8 w-8 text-indigo-400" />,
-      desc: "Accelerate your career with expert-led tech training, rigorous coding bootcamps, and real-world project portfolios.",
+      desc: "Accelerate your career with expert-led tech training, rigorous coding bootcamps, and corporate RTraining programs.",
       href: "/courses",
       actionText: "Explore Curriculum",
       bgColor: "bg-indigo-500/10",
       borderColor: "border-indigo-500/20",
       glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.3)]",
-      bullets: ["Industry-Curated Syllabus", "Live Coding Sessions", "Expert Mentorship", "Capstone Projects"]
+      bullets: ["Industry-Curated Syllabus", "Live Coding Sessions", "Corporate RTraining", "Capstone Projects"]
     },
     {
-      title: "Placement Assistance",
+      title: "Job Consultancy & Assistance",
       icon: <Briefcase className="h-8 w-8 text-emerald-400" />,
-      desc: "Your dedicated Career Hub. We provide 100% placement support, AI mock interviews, and direct connections to hiring partners.",
-      href: "/jobs",
-      actionText: "View Placements",
+      desc: "Comprehensive career guidance, AI resume building, and direct interview scheduling with top MNCs.",
+      href: "/consultancy",
+      actionText: "Get Job Assistance",
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/20",
       glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]",
-      bullets: ["AI Resume Builder", "MNC Assessment Simulators", "Dedicated Career Coach", "Exclusive Job Drives"]
+      bullets: ["AI Resume Builder", "Mock Interviews", "Dedicated Career Coach", "Guaranteed Referrals"]
     },
     {
-      title: "Software Solutions",
+      title: "Campus Placement Drives",
+      icon: <Users className="h-8 w-8 text-purple-400" />,
+      desc: "Bridging the gap between colleges and tech companies through organized mass hiring events and assessments.",
+      href: "/campus-to-career",
+      actionText: "Host a Drive",
+      bgColor: "bg-purple-500/10",
+      borderColor: "border-purple-500/20",
+      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]",
+      bullets: ["Bulk Candidate Screening", "On-Campus Interviews", "Skill Gap Bridging", "Corporate Tie-ups"]
+    },
+    {
+      title: "Custom Software Solutions",
       icon: <Code2 className="h-8 w-8 text-sky-400" />,
-      desc: "Custom SaaS engineering, enterprise ERPs, and high-performance digital products engineered by our world-class dev team.",
+      desc: "Bespoke SaaS engineering, enterprise ERPs, and high-performance digital products engineered for scale.",
       href: "/products",
       actionText: "Discover Products",
       bgColor: "bg-sky-500/10",
       borderColor: "border-sky-500/20",
       glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]",
-      bullets: ["Bespoke SaaS Platforms", "Scalable Architectures", "Modern UI/UX Design", "E-commerce & CRMs"]
+      bullets: ["Web & Mobile Apps", "Scalable Architectures", "Modern UI/UX Design", "E-commerce & CRMs"]
     },
     {
-      title: "IT Solutions",
+      title: "Cyber Security Solutions",
+      icon: <ShieldCheck className="h-8 w-8 text-red-400" />,
+      desc: "Robust protection for your enterprise data. We conduct audits, pentesting, and implement zero-trust architectures.",
+      href: "/services/cyber-security",
+      actionText: "Secure Your Business",
+      bgColor: "bg-red-500/10",
+      borderColor: "border-red-500/20",
+      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)]",
+      bullets: ["Vulnerability Audits", "Firewall Management", "Data Encryption", "Compliance (GDPR)"]
+    },
+    {
+      title: "Managed IT Solutions",
       icon: <Server className="h-8 w-8 text-amber-400" />,
-      desc: "Robust IT infrastructure consulting, managed cloud services, cybersecurity audits, and networking for modern enterprises.",
+      desc: "End-to-end IT infrastructure consulting, cloud managed services, and networking for modern enterprises.",
       href: "/services",
       actionText: "Request Consultation",
       bgColor: "bg-amber-500/10",
       borderColor: "border-amber-500/20",
       glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)]",
-      bullets: ["Cloud Migration (AWS/Azure)", "Cybersecurity Firewalls", "Managed IT AMC", "Network Architecture"]
+      bullets: ["Cloud Migration", "Maintenance Support", "Network Architecture", "Disaster Recovery"]
+    },
+    {
+      title: "IT & Business Consulting",
+      icon: <TrendingUp className="h-8 w-8 text-teal-400" />,
+      desc: "Strategic guidance to accelerate your digital transformation, optimize workflows, and scale operations globally.",
+      href: "/consultancy",
+      actionText: "Book Strategy Call",
+      bgColor: "bg-teal-500/10",
+      borderColor: "border-teal-500/20",
+      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(20,184,166,0.3)]",
+      bullets: ["Digital Transformation", "Operational Scaling", "Process Automation", "Market Strategy"]
+    },
+    {
+      title: "Franchise Opportunities",
+      icon: <Building2 className="h-8 w-8 text-orange-400" />,
+      desc: "Start your own successful IT training and consulting branch with our proven, high-ROI franchise model.",
+      href: "/franchise-request",
+      actionText: "Become a Partner",
+      bgColor: "bg-orange-500/10",
+      borderColor: "border-orange-500/20",
+      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(249,115,22,0.3)]",
+      bullets: ["Brand Association", "Turnkey Setup", "Marketing Support", "Curriculum Access"]
     }
   ];
 
@@ -103,8 +150,8 @@ export default function Home() {
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-white font-bold text-lg">Upcoming: Future of AI in Software Engineering</h4>
-                <p className="text-indigo-200 text-sm">Join our exclusive live webinar. Limited seats available!</p>
+                <h4 className="text-white font-bold text-lg">Upcoming: Future of Cyber Security & AI</h4>
+                <p className="text-indigo-200 text-sm">Join our exclusive live corporate webinar. Limited seats available!</p>
               </div>
             </div>
             <Button asChild variant="secondary" className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold whitespace-nowrap">
@@ -116,7 +163,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4 CORE PILLARS SECTION - BENTO GRID STYLE */}
+        {/* 8 CORE PILLARS SECTION - BENTO GRID STYLE */}
         <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto space-y-6 mb-16">
             <h2 className="text-sm font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">Our Expertise</h2>
@@ -124,7 +171,7 @@ export default function Home() {
               End-to-End <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-teal-400">IT Excellence</span>
             </h3>
             <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-              From molding the next generation of software developers to engineering mission-critical systems for enterprise clients.
+              From molding the next generation of software developers and providing top-tier job consultancy, to engineering mission-critical cyber security solutions for enterprises.
             </p>
           </div>
 
@@ -132,7 +179,7 @@ export default function Home() {
             {businessPillars.map((pillar, idx) => (
               <div 
                 key={pillar.title} 
-                className={`group relative bg-white dark:bg-[#0B1121] rounded-3xl border border-slate-200 dark:border-slate-800 p-8 hover:-translate-y-2 transition-all duration-500 ${pillar.glowColor}`}
+                className={`group relative bg-white dark:bg-[#0B1121] rounded-3xl border border-slate-200 dark:border-slate-800 p-8 hover:-translate-y-2 transition-all duration-500 ${pillar.glowColor} flex flex-col`}
               >
                 {/* Background Accent */}
                 <div className={`absolute top-0 right-0 w-32 h-32 rounded-bl-full -z-10 transition-opacity duration-500 opacity-50 group-hover:opacity-100 ${pillar.bgColor}`}></div>
@@ -142,15 +189,15 @@ export default function Home() {
                 </div>
                 
                 <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{pillar.title}</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 leading-relaxed min-h-[80px]">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 leading-relaxed flex-1">
                   {pillar.desc}
                 </p>
                 
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-3 mb-16">
                   {pillar.bullets.map((b, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="font-medium">{b}</span>
+                      <span className="font-medium leading-tight">{b}</span>
                     </li>
                   ))}
                 </ul>

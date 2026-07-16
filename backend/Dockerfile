@@ -1,8 +1,9 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Install dependencies
+RUN apk add --no-cache openssl libc6-compat
 COPY package*.json ./
 
 # Install dependencies
@@ -11,6 +12,7 @@ RUN npm install
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
 RUN npx prisma generate
+COPY start.js ./
 
 # Copy source code
 COPY src ./src/

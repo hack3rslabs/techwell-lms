@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { toast } from "sonner"
-import { Loader2, Link as LinkIcon, Copy } from "lucide-react"
+import { Loader2, Link as LinkIcon, Copy, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 export default function NewAgreementPage() {
     const router = useRouter()
@@ -87,9 +88,16 @@ export default function NewAgreementPage() {
 
     return (
         <div className="max-w-3xl mx-auto space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Generate Consultancy Agreement</h1>
-                <p className="text-muted-foreground mt-2">Create a new legally binding agreement for a registered candidate.</p>
+            <div className="flex items-center gap-4">
+                <Link href="/admin/consultancy">
+                    <Button variant="outline" size="icon">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Generate Consultancy Agreement</h1>
+                    <p className="text-muted-foreground mt-2">Create a new legally binding agreement for a registered candidate.</p>
+                </div>
             </div>
 
             <Card>

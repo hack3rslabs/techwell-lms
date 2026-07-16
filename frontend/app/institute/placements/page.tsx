@@ -7,11 +7,7 @@ export default function InstitutePlacements() {
     const [drives, setDrives] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchPlacements();
-    }, []);
-
-    const fetchPlacements = async () => {
+    async function fetchPlacements() {
         try {
             const res = await fetch('/api/campus-drives', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -23,13 +19,19 @@ export default function InstitutePlacements() {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
-    // Calculate mock stats
+
+    useEffect(() => {
+        fetchPlacements();
+    }, []);
+;
+
     const totalDrives = drives.length;
     const totalOffers = drives.reduce((sum, d) => sum + (d.students?.filter((s: any) => s.status === 'OFFERED' || s.status === 'JOINED').length || 0), 0);
-    const avgSalary = "4.5 LPA"; // Mocked
-    const topSalary = "12.0 LPA"; // Mocked
+    const totalInProcess = drives.reduce((sum, d) => sum + (d.students?.filter((s: any) => s.status === 'INTERVIEWING' || s.status === 'APPLIED').length || 0), 0);
+    const avgSalary = "0 LPA";
+    const topSalary = "0 LPA";
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
@@ -58,7 +60,7 @@ export default function InstitutePlacements() {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Students Placed</div>
-                                        <div className="text-3xl font-bold text-slate-800">24</div>
+                                        <div className="text-3xl font-bold text-slate-800">{loading ? '...' : totalOffers}</div>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-500">
                                         <CheckCircle className="w-5 h-5" />
@@ -71,7 +73,7 @@ export default function InstitutePlacements() {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">In Process</div>
-                                        <div className="text-3xl font-bold text-slate-800">45</div>
+                                        <div className="text-3xl font-bold text-slate-800">{loading ? '...' : totalInProcess}</div>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-500">
                                         <Clock className="w-5 h-5" />
@@ -83,7 +85,7 @@ export default function InstitutePlacements() {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Avg CTC</div>
-                                        <div className="text-3xl font-bold text-slate-800">4.5L</div>
+                                        <div className="text-3xl font-bold text-slate-800">{avgSalary}</div>
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500">
                                         <TrendingUp className="w-5 h-5" />

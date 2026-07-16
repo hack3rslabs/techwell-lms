@@ -61,6 +61,43 @@ router.post('/register', async (req, res, next) => {
 });
 
 /**
+ * @route   GET /api/employers/all
+ * @desc    Get all employers with optional status filtering
+ * @access  Private (Super Admin)
+ */
+router.get('/all', authenticate, authorize('SUPER_ADMIN'), async (req, res, next) => {
+    try {
+        const { status, search } = req.query;
+        let whereClause = {};
+        
+        if (status && status !== 'ALL') {
+            whereClause.status = status;
+        }
+
+        if (search) {
+            whereClause.OR = [
+                { companyName: { contains: search, mode: 'insensitive' } },
+                { user: { email: { contains: search, mode: 'insensitive' } } },
+                { user: { name: { contains: search, mode: 'insensitive' } } }
+            ];
+        }
+
+        const employers = await prisma.employerProfile.findMany({
+            where: whereClause,
+            include: { 
+                user: { 
+                    select: { id: true, email: true, name: true, phone: true, isActive: true, createdAt: true } 
+                } 
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(employers);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   GET /api/employers/pending
  * @desc    List pending employers
  * @access  Private (Super Admin)

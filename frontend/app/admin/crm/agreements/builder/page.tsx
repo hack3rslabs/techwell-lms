@@ -11,6 +11,7 @@ import { Save, ArrowLeft, Send, Plus } from 'lucide-react'
 import api from '@/lib/api'
 import { toast } from 'react-hot-toast'
 import dynamic from 'next/dynamic'
+import { useAuth } from '@/lib/auth-context'
 import {
   Dialog,
   DialogContent,
@@ -34,6 +35,7 @@ export default function AgreementBuilder() {
     const [loading, setLoading] = useState(false)
     const [customers, setCustomers] = useState<any[]>([])
     const [isAddClientOpen, setIsAddClientOpen] = useState(false)
+    const { hasPermission } = useAuth()
     
     // Quick Add Client Form
     const [newClient, setNewClient] = useState({
@@ -59,14 +61,7 @@ export default function AgreementBuilder() {
 <p>...</p>`
     })
 
-    useEffect(() => {
-        fetchCustomers()
-        if (agreementId) {
-            fetchAgreement(agreementId)
-        }
-    }, [agreementId])
-
-    const fetchCustomers = async () => {
+    async function fetchCustomers() {
         try {
             const res = await api.get('/crm/customers')
             setCustomers(res.data)
@@ -74,6 +69,33 @@ export default function AgreementBuilder() {
             console.error("Failed to fetch customers")
         }
     }
+
+    async function fetchAgreement(id: string) {
+        try {
+            const res = await api.get(`/crm/agreements/${id}`)
+            const agr = res.data
+            setFormData({
+                customerId: agr.customerId,
+                title: agr.title || '',
+                vertical: agr.vertical || 'SOFTWARE_DEVELOPMENT',
+                totalValue: agr.totalValue || 0,
+                taxPercentage: agr.taxPercentage || 18,
+                content: agr.content || ''
+            })
+        } catch (error) {
+            toast.error("Failed to load agreement")
+        }
+    }
+
+
+
+    useEffect(() => {
+        fetchCustomers()
+        if (agreementId) {
+            fetchAgreement(agreementId)
+        }
+    }, [agreementId])
+
 
     const handleCreateClient = async () => {
         if (!newClient.name || !newClient.email) {
@@ -92,22 +114,6 @@ export default function AgreementBuilder() {
         }
     }
 
-    const fetchAgreement = async (id: string) => {
-        try {
-            const res = await api.get(`/crm/agreements/${id}`)
-            const agr = res.data
-            setFormData({
-                customerId: agr.customerId,
-                title: agr.title || '',
-                vertical: agr.vertical || 'SOFTWARE_DEVELOPMENT',
-                totalValue: agr.totalValue || 0,
-                taxPercentage: agr.taxPercentage || 18,
-                content: agr.content || ''
-            })
-        } catch (error) {
-            toast.error("Failed to load agreement")
-        }
-    }
 
     const handleSave = async (status: string) => {
         if (!formData.customerId || !formData.title) {
@@ -151,10 +157,12 @@ export default function AgreementBuilder() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => handleSave('DRAFT')} disabled={loading}>
-                        <Save className="mr-2 h-4 w-4" /> Save as Draft
-                    </Button>
-                    {agreementId && (
+                    {((!agreementId && hasPermission('CENTRAL_CRM', 'create')) || (agreementId && hasPermission('CENTRAL_CRM', 'update'))) && (
+                        <Button variant="outline" onClick={() => handleSave('DRAFT')} disabled={loading}>
+                            <Save className="mr-2 h-4 w-4" /> Save as Draft
+                        </Button>
+                    )}
+                    {agreementId && hasPermission('CENTRAL_CRM', 'update') && (
                         <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => handleSave('SENT')} disabled={loading}>
                             <Send className="mr-2 h-4 w-4" /> Save & Send to Client
                         </Button>
@@ -173,7 +181,7 @@ export default function AgreementBuilder() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label>Select Client</Label>
-                                    {!agreementId && (
+                                    {!agreementId && hasPermission('CENTRAL_CRM', 'create') && (
                                         <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
                                             <DialogTrigger asChild>
                                                 <Button variant="ghost" size="sm" className="h-6 px-2 text-primary">
@@ -248,7 +256,7 @@ export default function AgreementBuilder() {
                                         <SelectItem value="AI_SOLUTIONS">AI Solutions</SelectItem>
                                         <SelectItem value="IT_CONSULTING">IT Consulting</SelectItem>
                                         <SelectItem value="CYBER_SECURITY">Cyber Security</SelectItem>
-                                        <SelectItem value="AMC_SUPPORT">AMC & IT Support</SelectItem>
+                                        <SelectItem value="AMC_SUPPORT">Maintenance & IT Support</SelectItem>
                                         <SelectItem value="OTHER">Other Custom Service</SelectItem>
                                     </SelectContent>
                                 </Select>

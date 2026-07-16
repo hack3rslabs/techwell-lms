@@ -1,10 +1,43 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Users, PhoneCall, TrendingUp } from 'lucide-react';
+import { BarChart, Users, PhoneCall, TrendingUp, Loader2 } from 'lucide-react';
+import api from '@/lib/api';
+
+interface CRMStats {
+  totalCustomers: number;
+  activeDeals: number;
+  revenuePipeline: number;
+  followUpsToday: number;
+}
 
 export default function CRMDashboard() {
+  const [stats, setStats] = useState<CRMStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get('/crm/customers/dashboard/stats');
+        setStats(response.data.data);
+      } catch (error) {
+        console.error('Failed to fetch CRM stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -18,8 +51,8 @@ export default function CRMDashboard() {
             <Users className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">45,231</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+            <div className="text-2xl font-bold">{stats?.totalCustomers?.toLocaleString() || 0}</div>
+            <p className="text-xs text-muted-foreground">Across all sources</p>
           </CardContent>
         </Card>
         <Card>
@@ -28,8 +61,8 @@ export default function CRMDashboard() {
             <TrendingUp className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,204</div>
-            <p className="text-xs text-muted-foreground">+15.5% from last month</p>
+            <div className="text-2xl font-bold">{stats?.activeDeals?.toLocaleString() || 0}</div>
+            <p className="text-xs text-muted-foreground">In pipeline</p>
           </CardContent>
         </Card>
         <Card>
@@ -38,8 +71,8 @@ export default function CRMDashboard() {
             <BarChart className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹1.2M</div>
-            <p className="text-xs text-muted-foreground">+5.4% from last month</p>
+            <div className="text-2xl font-bold">₹{(stats?.revenuePipeline || 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Potential value</p>
           </CardContent>
         </Card>
         <Card>
@@ -48,20 +81,20 @@ export default function CRMDashboard() {
             <PhoneCall className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">142</div>
-            <p className="text-xs text-muted-foreground">34 High Priority</p>
+            <div className="text-2xl font-bold">{stats?.followUpsToday?.toLocaleString() || 0}</div>
+            <p className="text-xs text-muted-foreground">Tasks due today</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Add more charts and analytics here */}
+      {/* Analytics charts placeholders (To be integrated later) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <Card className="min-h-[300px]">
           <CardHeader>
             <CardTitle>Conversion Funnel</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center text-muted-foreground">
-            Chart Placeholder
+            Chart data gathering in progress...
           </CardContent>
         </Card>
         <Card className="min-h-[300px]">
@@ -69,7 +102,7 @@ export default function CRMDashboard() {
             <CardTitle>Revenue by Vertical</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center text-muted-foreground">
-            Chart Placeholder
+             Chart data gathering in progress...
           </CardContent>
         </Card>
       </div>

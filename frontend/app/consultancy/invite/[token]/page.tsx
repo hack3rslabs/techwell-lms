@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import Webcam from "react-webcam"
 import SignatureCanvas from "react-signature-canvas"
-import { Loader2, Camera, CheckCircle, UploadCloud, ShieldCheck } from "lucide-react"
+import { Loader2, Camera, CheckCircle, UploadCloud, ArrowRight, ArrowLeft, ShieldCheck, ShieldAlert, FileText, User, FileSignature } from "lucide-react"
 
 export default function ConsultancyInvitePage() {
     const params = useParams()
@@ -18,24 +18,26 @@ export default function ConsultancyInvitePage() {
 
     const [invitation, setInvitation] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [currentStep, setCurrentStep] = useState(1)
     const [submitting, setSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
 
-    // Form State mapped to document requirements
+    // Form State
     const [formData, setFormData] = useState({
-        fullName: "", parentsName: "", dob: "", gender: "", aadhaarNumber: "",
+        fullName: "", parentsName: "", dob: "", gender: "", aadhaarNumber: "", panNumber: "",
         mobileNumber: "", alternateMobile: "", emailAddress: "",
         currentAddress: "", permanentAddress: "", city: "", state: "", pinCode: "",
-        highestQualification: "", graduationYear: "",
+        highestQualification: "", specialization: "", collegeUniversity: "", graduationYear: "", percentageCgpa: "",
         experienceLevel: "Fresher", currentCompany: "", totalExperience: "", relevantExperience: "",
-        currentCtc: "", expectedCtc: "", noticePeriod: "", preferredJobRoles: "", preferredLocations: "",
-        typedLegalName: ""
+        currentCtc: "", expectedCtc: "", noticePeriod: "", preferredJobRoles: "", preferredLocations: "", preferredIndustry: "",
+        typedLegalName: "", resumeUrl: "", passportPhotoUrl: ""
     })
 
     // Upload & Verification States
     const [livePhotoUrl, setLivePhotoUrl] = useState<string | null>(null)
     const [resumeUploaded, setResumeUploaded] = useState(false)
     const [govIdUploaded, setGovIdUploaded] = useState(false)
+    const [uploadingDoc, setUploadingDoc] = useState(false)
     const [webcamEnabled, setWebcamEnabled] = useState(false)
     const [isCameraReady, setIsCameraReady] = useState(false)
 
@@ -54,8 +56,15 @@ export default function ConsultancyInvitePage() {
     const [captcha, setCaptcha] = useState({ a: 0, b: 0 })
     const [captchaAnswer, setCaptchaAnswer] = useState("")
 
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
     const webcamRef = useRef<Webcam>(null)
     const sigCanvas = useRef<any>(null)
+    const [hasSignature, setHasSignature] = useState(false)
+
+    function generateCaptcha() {
+        setCaptcha({ a: Math.floor(Math.random() * 20) + 1, b: Math.floor(Math.random() * 20) + 1 })
+        setCaptchaAnswer("")
+    }
 
     useEffect(() => {
         const verifyToken = async () => {
@@ -72,7 +81,9 @@ export default function ConsultancyInvitePage() {
                 }))
                 generateCaptcha()
             } catch (error: any) {
-                toast.error(error.response?.data?.message || "Invalid invitation")
+                const msg = error.response?.data?.message || "Invalid invitation link."
+                setErrorMsg(msg)
+                toast.error(msg)
                 setInvitation(null)
             } finally {
                 setLoading(false)
@@ -81,9 +92,24 @@ export default function ConsultancyInvitePage() {
         if (token) verifyToken()
     }, [token])
 
-    const generateCaptcha = () => {
-        setCaptcha({ a: Math.floor(Math.random() * 20) + 1, b: Math.floor(Math.random() * 20) + 1 })
-        setCaptchaAnswer("")
+    const updateStatus = async (status: string) => {
+        try {
+            await consultancyApi.updateStatus(token, status)
+        } catch (error) {
+            console.error("Failed to update status", error)
+        }
+    }
+
+    const nextStep = () => {
+        if (currentStep === 1) updateStatus("STARTED")
+        if (currentStep === 2) updateStatus("SUBMITTED")
+        setCurrentStep(prev => prev + 1)
+        window.scrollTo(0, 0)
+    }
+    
+    const prevStep = () => {
+        setCurrentStep(prev => prev - 1)
+        window.scrollTo(0, 0)
     }
 
     const capturePhoto = React.useCallback((e: React.MouseEvent) => {
@@ -106,11 +132,28 @@ export default function ConsultancyInvitePage() {
         }
     }
 
-    const handleFileUpload = (type: 'resume' | 'govid', e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (type: 'resume' | 'govid', e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            toast.success(`File selected successfully`)
-            if (type === 'resume') setResumeUploaded(true)
-            if (type === 'govid') setGovIdUploaded(true)
+            const file = e.target.files[0];
+            const formDataPayload = new FormData();
+            formDataPayload.append('file', file);
+            
+            setUploadingDoc(true);
+            try {
+                const res = await consultancyApi.uploadDocument(token, formDataPayload);
+                if (type === 'resume') {
+                    setFormData(prev => ({ ...prev, resumeUrl: res.data.url }));
+                    setResumeUploaded(true);
+                } else if (type === 'govid') {
+                    setFormData(prev => ({ ...prev, passportPhotoUrl: res.data.url }));
+                    setGovIdUploaded(true);
+                }
+                toast.success(`${type === 'resume' ? 'Resume' : 'Government ID'} uploaded successfully`);
+            } catch (error) {
+                toast.error("Failed to upload document");
+            } finally {
+                setUploadingDoc(false);
+            }
         }
     }
 
@@ -123,7 +166,7 @@ export default function ConsultancyInvitePage() {
         if (!resumeUploaded) missing.push("Resume Upload")
         if (!govIdUploaded) missing.push("Gov ID Upload")
         if (!livePhotoUrl) missing.push("Live Photo")
-        if (sigCanvas.current?.isEmpty()) missing.push("Signature")
+        if (!hasSignature) missing.push("Signature")
 
         if (!hasScrolled) missing.push("Scroll to end of Terms")
         if (!Object.values(consents).every(v => v)) missing.push("All Consent Checkboxes")
@@ -134,19 +177,19 @@ export default function ConsultancyInvitePage() {
         return missing
     }
 
-    const isFormValid = () => getMissingRequirements().length === 0
+    const isStep2Valid = () => {
+        return formData.fullName && formData.parentsName && formData.dob && formData.gender && formData.aadhaarNumber && 
+               formData.mobileNumber && formData.emailAddress && formData.currentAddress && formData.permanentAddress && 
+               formData.city && formData.state && formData.pinCode && formData.highestQualification && formData.graduationYear && 
+               formData.experienceLevel && formData.preferredJobRoles && formData.preferredLocations && resumeUploaded && govIdUploaded && livePhotoUrl;
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         
-        if (formData.typedLegalName.toLowerCase().trim() !== formData.fullName.toLowerCase().trim()) {
-            return toast.error("Your typed legal name at the bottom must exactly match your Full Name.")
-        }
-        if (parseInt(captchaAnswer) !== (captcha.a + captcha.b)) {
-            return toast.error("Incorrect Math CAPTCHA answer.")
-        }
-        if (!isFormValid()) {
-            return toast.error("Please complete all mandatory fields, uploads, and declarations.")
+        const missing = getMissingRequirements()
+        if (missing.length > 0) {
+            return toast.error("Please complete all mandatory fields: " + missing[0])
         }
         
         setSubmitting(true)
@@ -168,8 +211,8 @@ export default function ConsultancyInvitePage() {
                 digitalSignatureUrl,
                 locationCoords,
                 agreementVersion: "1.0",
-                resumeUrl: "mock-resume-url", // Mocked URLs for now
-                passportPhotoUrl: "mock-govid-url"
+                advanceFee: invitation?.advanceFee,
+                totalFee: invitation?.totalFee
             }
             await consultancyApi.submitAgreement(token, payload)
             toast.success("Consent Form Submitted Successfully!")
@@ -182,6 +225,16 @@ export default function ConsultancyInvitePage() {
     }
 
     if (loading) return <div className="flex justify-center items-center h-screen bg-slate-50"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+    if (errorMsg) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-slate-50 p-4 text-center">
+                <ShieldAlert className="w-16 h-16 text-rose-500 mb-4" />
+                <h1 className="text-3xl font-bold text-slate-800 mb-2">Access Denied</h1>
+                <p className="text-lg text-slate-600 max-w-md">{errorMsg}</p>
+                <div className="mt-8 text-sm text-slate-400">&copy; 2015 to {new Date().getFullYear()} Techwell. All rights reserved.</div>
+            </div>
+        )
+    }
     if (!invitation) return <div className="flex flex-col items-center justify-center h-screen bg-slate-50"><h1 className="text-3xl font-bold text-slate-800">Invalid or Expired Link</h1></div>
 
     if (isSubmitted) {
@@ -204,342 +257,291 @@ export default function ConsultancyInvitePage() {
         )
     }
 
+    const steps = [
+        { id: 1, name: "Overview", icon: ShieldCheck },
+        { id: 2, name: "Details", icon: User },
+        { id: 3, name: "Review", icon: FileText },
+        { id: 4, name: "Consent", icon: FileSignature }
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-50 py-10 px-4">
-            <Card className="max-w-4xl mx-auto shadow-xl bg-white border-t-8 border-t-slate-900 rounded-lg">
-                
-                {/* Header */}
-                <CardHeader className="text-center border-b pb-8 pt-8">
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">TECHWELL PLACEMENT CONSULTANCY</h1>
-                    <h2 className="text-xl font-semibold mt-2 text-slate-700">Candidate Consent & Consultancy Agreement</h2>
-                    <div className="text-sm text-slate-500 mt-4 space-y-1">
-                        <p>Document Version: 1.0</p>
-                        <p>Agreement Type: Candidate Consent & Placement Consultancy Agreement</p>
-                        {invitation?.totalFee && (
-                            <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-lg inline-block text-left text-slate-800 shadow-sm">
-                                <h3 className="font-bold text-indigo-900 mb-2 uppercase text-xs tracking-wider">Fee Structure</h3>
-                                <p><strong>Total Consultancy Fee:</strong> ₹{invitation.totalFee.toLocaleString()}</p>
-                                {invitation.advanceFee && <p><strong>Advance Fee Payable:</strong> ₹{invitation.advanceFee.toLocaleString()}</p>}
+        <div className="min-h-screen bg-slate-50 py-10 px-4">
+            <div className="max-w-4xl mx-auto mb-8">
+                {/* Stepper */}
+                <div className="flex items-center justify-between">
+                    {steps.map((step, idx) => (
+                        <div key={step.id} className="flex flex-col items-center flex-1 relative">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 transition-colors ${currentStep >= step.id ? 'bg-primary text-primary-foreground' : 'bg-slate-200 text-slate-400'}`}>
+                                <step.icon className="w-5 h-5" />
                             </div>
-                        )}
-                    </div>
-                </CardHeader>
+                            <span className={`text-xs mt-2 font-medium ${currentStep >= step.id ? 'text-primary' : 'text-slate-400'}`}>{step.name}</span>
+                            {idx < steps.length - 1 && (
+                                <div className={`absolute top-5 left-1/2 w-full h-[2px] -z-0 ${currentStep > step.id ? 'bg-primary' : 'bg-slate-200'}`} />
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
 
+            <Card className="max-w-4xl mx-auto shadow-xl bg-white border-t-8 border-t-primary rounded-lg overflow-hidden">
                 <form onSubmit={handleSubmit}>
-                    <CardContent className="p-8 space-y-12">
-                        
-                        {/* 1. Candidate Information */}
-                        <section>
-                            <h3 className="text-xl font-bold border-b pb-2 mb-6 text-slate-800">Candidate Information (Mandatory)</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2"><label className="text-sm font-semibold">Full Name (As per Government ID)</label><Input required value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Father's / Mother's Name</label><Input required value={formData.parentsName} onChange={e => setFormData({...formData, parentsName: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Date of Birth</label><Input type="date" required value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Gender</label><Input required value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})} placeholder="Male/Female/Other" /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Aadhaar Number</label><Input required value={formData.aadhaarNumber} onChange={e => setFormData({...formData, aadhaarNumber: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Mobile Number</label><Input required value={formData.mobileNumber} onChange={e => setFormData({...formData, mobileNumber: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Alternate Mobile Number</label><Input value={formData.alternateMobile} onChange={e => setFormData({...formData, alternateMobile: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Email Address</label><Input type="email" required value={formData.emailAddress} onChange={e => setFormData({...formData, emailAddress: e.target.value})} /></div>
-                                
-                                <div className="space-y-2 md:col-span-2"><label className="text-sm font-semibold">Current Address</label><Input required value={formData.currentAddress} onChange={e => setFormData({...formData, currentAddress: e.target.value})} /></div>
-                                <div className="space-y-2 md:col-span-2"><label className="text-sm font-semibold">Permanent Address</label><Input required value={formData.permanentAddress} onChange={e => setFormData({...formData, permanentAddress: e.target.value})} /></div>
-                                
-                                <div className="space-y-2"><label className="text-sm font-semibold">City</label><Input required value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">State</label><Input required value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">PIN Code</label><Input required value={formData.pinCode} onChange={e => setFormData({...formData, pinCode: e.target.value})} /></div>
-                            </div>
-                        </section>
-
-                        {/* 2. Education */}
-                        <section>
-                            <h3 className="text-xl font-bold border-b pb-2 mb-6 text-slate-800">Education</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2"><label className="text-sm font-semibold">Highest Qualification</label><Input required value={formData.highestQualification} onChange={e => setFormData({...formData, highestQualification: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Graduation Year</label><Input type="number" required value={formData.graduationYear} onChange={e => setFormData({...formData, graduationYear: e.target.value})} /></div>
-                            </div>
-                        </section>
-
-                        {/* 3. Professional Details */}
-                        <section>
-                            <h3 className="text-xl font-bold border-b pb-2 mb-6 text-slate-800">Professional Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2"><label className="text-sm font-semibold">Fresher / Experienced</label><Input required value={formData.experienceLevel} onChange={e => setFormData({...formData, experienceLevel: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Current Company</label><Input value={formData.currentCompany} onChange={e => setFormData({...formData, currentCompany: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Total Experience</label><Input value={formData.totalExperience} onChange={e => setFormData({...formData, totalExperience: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Relevant Experience</label><Input value={formData.relevantExperience} onChange={e => setFormData({...formData, relevantExperience: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Current CTC</label><Input value={formData.currentCtc} onChange={e => setFormData({...formData, currentCtc: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Expected CTC</label><Input value={formData.expectedCtc} onChange={e => setFormData({...formData, expectedCtc: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Notice Period</label><Input value={formData.noticePeriod} onChange={e => setFormData({...formData, noticePeriod: e.target.value})} /></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold">Preferred Job Role</label><Input required value={formData.preferredJobRoles} onChange={e => setFormData({...formData, preferredJobRoles: e.target.value})} /></div>
-                                <div className="space-y-2 md:col-span-2"><label className="text-sm font-semibold">Preferred Job Location(s)</label><Input required value={formData.preferredLocations} onChange={e => setFormData({...formData, preferredLocations: e.target.value})} /></div>
-                            </div>
-                        </section>
-
-                        {/* 4. Uploads */}
-                        <section>
-                            <h3 className="text-xl font-bold border-b pb-2 mb-6 text-slate-800">Uploads (Mandatory)</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                
-                                <div className="p-4 border rounded-lg bg-slate-50 flex flex-col items-center justify-center text-center">
-                                    <UploadCloud className="h-8 w-8 text-slate-400 mb-2" />
-                                    <label className="text-sm font-semibold mb-2">Resume (PDF / DOC / DOCX)</label>
-                                    <Input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileUpload('resume', e)} className="max-w-[250px]" />
-                                    {resumeUploaded && <span className="text-xs text-green-600 mt-2 font-bold"><CheckCircle className="inline h-3 w-3 mr-1"/> Uploaded</span>}
-                                </div>
-                                
-                                <div className="p-4 border rounded-lg bg-slate-50 flex flex-col items-center justify-center text-center">
-                                    <UploadCloud className="h-8 w-8 text-slate-400 mb-2" />
-                                    <label className="text-sm font-semibold mb-2">Government ID Proof</label>
-                                    <Input type="file" accept="image/*,.pdf" onChange={(e) => handleFileUpload('govid', e)} className="max-w-[250px]" />
-                                    {govIdUploaded && <span className="text-xs text-green-600 mt-2 font-bold"><CheckCircle className="inline h-3 w-3 mr-1"/> Uploaded</span>}
-                                </div>
-                                
-                                <div className="p-4 border rounded-lg bg-slate-50 flex flex-col items-center">
-                                    <label className="text-sm font-semibold mb-2 flex items-center gap-2"><Camera className="h-4 w-4"/> Live Camera Photo</label>
-                                    {livePhotoUrl ? (
-                                        <div className="relative">
-                                            <img src={livePhotoUrl} alt="Captured" className="rounded-lg border max-w-[200px]" />
-                                            <Button type="button" size="sm" variant="secondary" className="absolute bottom-2 left-1/2 -translate-x-1/2" onClick={() => { setLivePhotoUrl(null); setWebcamEnabled(false); }}>Retake</Button>
+                    
+                    {/* Step 1: Overview */}
+                    {currentStep === 1 && (
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                            <CardHeader className="text-center border-b pb-8 pt-8 bg-slate-50/50">
+                                <ShieldCheck className="w-16 h-16 mx-auto text-primary mb-4" />
+                                <h1 className="text-3xl font-bold tracking-tight text-slate-900">Techwell Placement Consultancy</h1>
+                                <h2 className="text-xl font-semibold mt-2 text-slate-700">Candidate Onboarding & Consent</h2>
+                                <p className="text-slate-500 mt-2 max-w-xl mx-auto">Welcome! Please complete this digital onboarding process to officially register for our placement and career services.</p>
+                            </CardHeader>
+                            <CardContent className="p-8 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="p-6 border rounded-xl bg-blue-50/50">
+                                        <h3 className="font-bold text-blue-900 mb-2">What you will need:</h3>
+                                        <ul className="space-y-2 text-sm text-blue-800 list-disc list-inside">
+                                            <li>Your updated Resume (PDF/DOC)</li>
+                                            <li>A valid Government ID (Aadhaar/PAN)</li>
+                                            <li>Access to a webcam or mobile camera</li>
+                                            <li>Your educational and professional details</li>
+                                        </ul>
+                                    </div>
+                                    <div className="p-6 border rounded-xl bg-indigo-50/50">
+                                        <h3 className="font-bold text-indigo-900 mb-2">Fee Structure:</h3>
+                                        <div className="space-y-2 text-sm text-indigo-800">
+                                            <p><strong>Total Fee:</strong> {invitation?.totalFee ? `₹${invitation.totalFee.toLocaleString()}` : 'Not Applicable'}</p>
+                                            <p><strong>Advance Fee:</strong> {invitation?.advanceFee ? `₹${invitation.advanceFee.toLocaleString()}` : 'None'}</p>
+                                            <p className="text-xs opacity-80 mt-2">*Fees are subject to the terms and conditions outlined in step 4.</p>
                                         </div>
-                                    ) : (
-                                        <div className="w-full max-w-[200px] bg-slate-200 rounded-lg overflow-hidden relative border flex flex-col items-center justify-center p-4 min-h-[150px]">
-                                            {webcamEnabled ? (
-                                                <div className="w-full aspect-[4/3] relative">
-                                                    <Webcam 
-                                                        audio={false} 
-                                                        ref={webcamRef} 
-                                                        screenshotFormat="image/jpeg" 
-                                                        className="w-full h-full object-cover" 
-                                                        onUserMedia={() => setIsCameraReady(true)} 
-                                                        onUserMediaError={() => { toast.error("Live Webcam access denied or unavailable. Please use the fallback."); setWebcamEnabled(false) }} 
-                                                    />
-                                                    <Button type="button" size="sm" className="absolute bottom-2 left-1/2 -translate-x-1/2" onClick={capturePhoto} disabled={!isCameraReady}>
-                                                        {isCameraReady ? "Snap" : "Loading"}
-                                                    </Button>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end pt-6">
+                                    <Button type="button" onClick={nextStep} size="lg">Start Onboarding <ArrowRight className="ml-2 w-4 h-4" /></Button>
+                                </div>
+                            </CardContent>
+                        </div>
+                    )}
+
+                    {/* Step 2: Details */}
+                    {currentStep === 2 && (
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                            <CardHeader className="border-b bg-slate-50">
+                                <CardTitle className="text-xl flex items-center"><User className="mr-2 w-5 h-5 text-primary"/> Candidate Details & Documents</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-8 space-y-8">
+                                {/* Basic Info */}
+                                <section>
+                                    <h3 className="text-lg font-bold border-b pb-2 mb-6 text-slate-800">1. Personal Information</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Full Name *</label><Input required value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Father's / Mother's Name *</label><Input required value={formData.parentsName} onChange={e => setFormData({...formData, parentsName: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Date of Birth *</label><Input type="date" required value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Gender *</label><Input required value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})} placeholder="Male/Female/Other" /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Aadhaar Number *</label><Input required value={formData.aadhaarNumber} onChange={e => setFormData({...formData, aadhaarNumber: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Mobile Number *</label><Input required value={formData.mobileNumber} onChange={e => setFormData({...formData, mobileNumber: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Email Address *</label><Input type="email" required value={formData.emailAddress} onChange={e => setFormData({...formData, emailAddress: e.target.value})} /></div>
+                                    </div>
+                                </section>
+
+                                {/* Address */}
+                                <section>
+                                    <h3 className="text-lg font-bold border-b pb-2 mb-6 text-slate-800">2. Address Details</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2 md:col-span-2"><label className="text-sm font-semibold">Current Address *</label><Input required value={formData.currentAddress} onChange={e => setFormData({...formData, currentAddress: e.target.value})} /></div>
+                                        <div className="space-y-2 md:col-span-2"><label className="text-sm font-semibold">Permanent Address *</label><Input required value={formData.permanentAddress} onChange={e => setFormData({...formData, permanentAddress: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">City *</label><Input required value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">State *</label><Input required value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">PIN Code *</label><Input required value={formData.pinCode} onChange={e => setFormData({...formData, pinCode: e.target.value})} /></div>
+                                    </div>
+                                </section>
+
+                                {/* Education & Experience */}
+                                <section>
+                                    <h3 className="text-lg font-bold border-b pb-2 mb-6 text-slate-800">3. Professional Details</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Highest Qualification *</label><Input required value={formData.highestQualification} onChange={e => setFormData({...formData, highestQualification: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Graduation Year *</label><Input type="number" required value={formData.graduationYear} onChange={e => setFormData({...formData, graduationYear: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Experience Level *</label><Input required value={formData.experienceLevel} onChange={e => setFormData({...formData, experienceLevel: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Target Job Role *</label><Input required value={formData.preferredJobRoles} onChange={e => setFormData({...formData, preferredJobRoles: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Preferred Locations *</label><Input required value={formData.preferredLocations} onChange={e => setFormData({...formData, preferredLocations: e.target.value})} /></div>
+                                        <div className="space-y-2"><label className="text-sm font-semibold">Total Experience (Years)</label><Input value={formData.totalExperience} onChange={e => setFormData({...formData, totalExperience: e.target.value})} /></div>
+                                    </div>
+                                </section>
+
+                                {/* Documents */}
+                                <section>
+                                    <h3 className="text-lg font-bold border-b pb-2 mb-6 text-slate-800">4. Document Verification</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="p-4 border rounded-lg bg-slate-50 flex flex-col items-center justify-center text-center">
+                                            <UploadCloud className="h-8 w-8 text-slate-400 mb-2" />
+                                            <label className="text-sm font-semibold mb-2">Resume *</label>
+                                            <Input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileUpload('resume', e)} className="max-w-[200px]" disabled={uploadingDoc} />
+                                            {resumeUploaded && <span className="text-xs text-green-600 mt-2 font-bold"><CheckCircle className="inline h-3 w-3 mr-1"/> Uploaded</span>}
+                                        </div>
+                                        
+                                        <div className="p-4 border rounded-lg bg-slate-50 flex flex-col items-center justify-center text-center">
+                                            <UploadCloud className="h-8 w-8 text-slate-400 mb-2" />
+                                            <label className="text-sm font-semibold mb-2">Gov ID (Aadhaar/PAN) *</label>
+                                            <Input type="file" accept="image/*,.pdf" onChange={(e) => handleFileUpload('govid', e)} className="max-w-[200px]" disabled={uploadingDoc} />
+                                            {govIdUploaded && <span className="text-xs text-green-600 mt-2 font-bold"><CheckCircle className="inline h-3 w-3 mr-1"/> Uploaded</span>}
+                                        </div>
+                                        
+                                        <div className="p-4 border rounded-lg bg-slate-50 flex flex-col items-center">
+                                            <label className="text-sm font-semibold mb-2 flex items-center gap-2"><Camera className="h-4 w-4"/> Live Photo *</label>
+                                            {livePhotoUrl ? (
+                                                <div className="relative">
+                                                    <img src={livePhotoUrl} alt="Captured" className="rounded-lg border max-w-[150px]" />
+                                                    <Button type="button" size="sm" variant="secondary" className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] h-6" onClick={() => { setLivePhotoUrl(null); setWebcamEnabled(false); }}>Retake</Button>
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col gap-3 w-full">
-                                                    <Button type="button" variant="outline" className="w-full" onClick={() => setWebcamEnabled(true)}>Start Webcam</Button>
-                                                    <div className="text-xs text-center text-slate-500 font-bold">- OR -</div>
-                                                    <div className="relative w-full">
-                                                        <Input 
-                                                            type="file" 
-                                                            accept="image/*" 
-                                                            capture="user" 
-                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
-                                                            onChange={(e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (file) {
-                                                                    const reader = new FileReader();
-                                                                    reader.onloadend = () => setLivePhotoUrl(reader.result as string);
-                                                                    reader.readAsDataURL(file);
-                                                                }
-                                                            }}
-                                                        />
-                                                        <Button type="button" variant="secondary" className="w-full pointer-events-none bg-blue-100 text-blue-700 hover:bg-blue-200">
-                                                            Open Mobile Camera
-                                                        </Button>
-                                                    </div>
+                                                <div className="w-full bg-slate-200 rounded-lg overflow-hidden relative border flex flex-col items-center justify-center p-2 min-h-[120px]">
+                                                    {webcamEnabled ? (
+                                                        <div className="w-full aspect-[4/3] relative">
+                                                            <Webcam 
+                                                                audio={false} 
+                                                                ref={webcamRef} 
+                                                                screenshotFormat="image/jpeg" 
+                                                                className="w-full h-full object-cover" 
+                                                                onUserMedia={() => setIsCameraReady(true)} 
+                                                                onUserMediaError={() => { toast.error("Live Webcam access denied or unavailable."); setWebcamEnabled(false) }} 
+                                                            />
+                                                            <Button type="button" size="sm" className="absolute bottom-1 left-1/2 -translate-x-1/2 h-6 text-[10px]" onClick={capturePhoto} disabled={!isCameraReady}>
+                                                                Snap
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <Button type="button" variant="outline" size="sm" onClick={() => setWebcamEnabled(true)}>Start Webcam</Button>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
-                                    )}
+                                    </div>
+                                </section>
+
+                                <div className="flex justify-between pt-6 border-t">
+                                    <Button type="button" variant="outline" onClick={prevStep}><ArrowLeft className="mr-2 w-4 h-4" /> Back</Button>
+                                    <Button type="button" onClick={() => {
+                                        if (isStep2Valid()) nextStep();
+                                        else toast.error("Please fill all mandatory fields and upload required documents.");
+                                    }}>Continue <ArrowRight className="ml-2 w-4 h-4" /></Button>
                                 </div>
+                            </CardContent>
+                        </div>
+                    )}
+
+                    {/* Step 3: Review */}
+                    {currentStep === 3 && (
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                            <CardHeader className="border-b bg-slate-50">
+                                <CardTitle className="text-xl flex items-center"><FileText className="mr-2 w-5 h-5 text-primary"/> Review Details</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-8 space-y-6">
+                                <p className="text-slate-600 mb-6">Please carefully review your information before proceeding to the final agreement.</p>
                                 
-                                <div className="p-4 border rounded-lg bg-slate-50 flex flex-col items-center">
-                                    <label className="text-sm font-semibold mb-2">Digital Signature</label>
-                                    <div className="bg-white border rounded-lg overflow-hidden w-full max-w-[250px] relative">
-                                        <SignatureCanvas ref={sigCanvas} canvasProps={{className: 'w-full h-32'}} />
-                                        <Button type="button" variant="ghost" size="sm" className="absolute top-1 right-1 text-xs h-6 px-2" onClick={() => sigCanvas.current.clear()}>Clear</Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* 5. Declarations and Terms */}
-                        <section>
-                            <h3 className="text-xl font-bold border-b pb-2 mb-4 text-slate-800">Candidate Declaration</h3>
-                            <div className="p-4 bg-slate-50 border rounded-lg text-sm text-slate-700 space-y-2 mb-8">
-                                <p>I hereby voluntarily request Techwell to provide placement consultancy and career assistance services.</p>
-                                <p>I declare that all information, documents, certificates, resumes, salary details, employment history, educational qualifications, and personal information submitted by me are true, complete, and accurate to the best of my knowledge.</p>
-                                <p>I understand that providing false, incomplete, or misleading information may result in cancellation of my consultancy process.</p>
-                            </div>
-
-                            <h3 className="text-xl font-bold border-b pb-2 mb-4 text-slate-800">Consultancy Terms & Conditions</h3>
-                            
-                            <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md mb-4 text-sm font-medium">
-                                You must read and scroll to the end of the agreement to unlock the consent checkboxes.
-                            </div>
-
-                            <div 
-                                className="h-80 overflow-y-auto p-6 border rounded-lg bg-white shadow-inner text-sm text-slate-700 space-y-6"
-                                onScroll={handleScroll}
-                            >
-                                <div>
-                                    <h4 className="font-bold text-slate-900">1. Consultancy Services</h4>
-                                    <p>I understand that Techwell provides:</p>
-                                    <ul className="list-disc pl-5 mt-1 space-y-1">
-                                        <li>Placement Consultancy</li>
-                                        <li>Resume Processing</li>
-                                        <li>Resume Forwarding</li>
-                                        <li>Career Guidance</li>
-                                        <li>Interview Coordination</li>
-                                        <li>Employer Communication</li>
-                                        <li>Job Opportunity Assistance</li>
-                                    </ul>
-                                    <p className="mt-2 font-semibold">Techwell is not the employer.</p>
+                                <div className="bg-slate-50 rounded-xl p-6 border grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                                    <div><span className="text-slate-500">Full Name:</span> <span className="font-semibold">{formData.fullName}</span></div>
+                                    <div><span className="text-slate-500">Email:</span> <span className="font-semibold">{formData.emailAddress}</span></div>
+                                    <div><span className="text-slate-500">Phone:</span> <span className="font-semibold">{formData.mobileNumber}</span></div>
+                                    <div><span className="text-slate-500">DOB:</span> <span className="font-semibold">{formData.dob}</span></div>
+                                    <div><span className="text-slate-500">Aadhaar:</span> <span className="font-semibold">{formData.aadhaarNumber}</span></div>
+                                    <div><span className="text-slate-500">Location:</span> <span className="font-semibold">{formData.city}, {formData.state}</span></div>
+                                    <div><span className="text-slate-500">Target Role:</span> <span className="font-semibold">{formData.preferredJobRoles}</span></div>
+                                    <div><span className="text-slate-500">Experience:</span> <span className="font-semibold">{formData.experienceLevel} ({formData.totalExperience} Yrs)</span></div>
                                 </div>
 
-                                <div>
-                                    <h4 className="font-bold text-slate-900">2. No Employment Guarantee</h4>
-                                    <p>I clearly understand and voluntarily accept that:</p>
-                                    <ul className="list-disc pl-5 mt-1 space-y-1">
-                                        <li>Techwell does not guarantee employment.</li>
-                                        <li>Techwell does not guarantee interview selection.</li>
-                                        <li>Techwell does not guarantee offer release.</li>
-                                        <li>Techwell does not guarantee joining.</li>
-                                        <li>Techwell does not guarantee confirmation after joining.</li>
-                                        <li>Techwell does not guarantee employment continuation.</li>
-                                    </ul>
-                                    <p className="mt-2 font-semibold">Final employment decisions are made solely by the employer.</p>
+                                <div className="flex items-center gap-4 p-4 border rounded-xl bg-green-50/50 text-green-800 text-sm">
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                    <span>All mandatory documents (Resume, ID, Photo) have been securely uploaded.</span>
                                 </div>
 
-                                <div>
-                                    <h4 className="font-bold text-slate-900">3. No Salary Guarantee</h4>
-                                    <p>I understand that Techwell does not promise or guarantee: Salary (CTC), Salary Hike, Designation, Promotions, Incentives, or Bonuses.</p>
-                                    <p className="mt-1 font-semibold">Salary negotiations are solely between the candidate and the employer.</p>
+                                <div className="flex justify-between pt-6 border-t">
+                                    <Button type="button" variant="outline" onClick={prevStep}><ArrowLeft className="mr-2 w-4 h-4" /> Edit Details</Button>
+                                    <Button type="button" onClick={nextStep}>Proceed to Agreement <ArrowRight className="ml-2 w-4 h-4" /></Button>
+                                </div>
+                            </CardContent>
+                        </div>
+                    )}
+
+                    {/* Step 4: Consent */}
+                    {currentStep === 4 && (
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                            <CardHeader className="border-b bg-slate-50">
+                                <CardTitle className="text-xl flex items-center"><FileSignature className="mr-2 w-5 h-5 text-primary"/> Terms & Consent</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-8 space-y-8">
+                                
+                                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md text-sm font-medium flex items-center gap-2">
+                                    <ShieldCheck className="w-5 h-5" />
+                                    You must read and scroll to the end of the agreement to unlock the consent checkboxes.
                                 </div>
 
-                                <div>
-                                    <h4 className="font-bold text-slate-900">4. No Location Guarantee</h4>
-                                    <p>I understand that Techwell cannot guarantee: Preferred City, Preferred State, Work From Home, Hybrid Work, or Office Location.</p>
-                                    <p className="mt-1 font-semibold">Location depends entirely on employer requirements.</p>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-bold text-slate-900">5. Job Process</h4>
-                                    <p>I authorize Techwell to: Review my profile, Improve resume formatting if required, Share my resume with suitable employers, Contact employers regarding my profile, Coordinate interviews, and Follow up with employers.</p>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-bold text-slate-900">6. Candidate Responsibility</h4>
-                                    <p>I agree to: Attend scheduled interviews, Respond to employer communication promptly, Inform Techwell about interview results, Inform Techwell if I receive an offer, Inform Techwell after joining, and Maintain professional behaviour throughout the recruitment process.</p>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-bold text-slate-900">7. Consultancy Charges</h4>
-                                    <p>I understand that consultancy charges, if applicable, are communicated separately by Techwell. I acknowledge that any agreed consultancy charges are part of the consultancy arrangement and are separate from the employer's salary or compensation.</p>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-bold text-slate-900">8. Privacy & Data Usage</h4>
-                                    <p>I authorize Techwell to: Store my information, Process my personal data, Store my resume, Share my profile with prospective employers, and Maintain records of interviews, offers, and placement activities for consultancy purposes.</p>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-bold text-slate-900">9. Employer Decisions</h4>
-                                    <p>I understand that employers independently shortlist candidates, conduct interviews, and decide salary, designation, work location, joining date, probation, confirmation, and continuation of employment. These decisions are beyond Techwell's control.</p>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-bold text-slate-900">10. After Joining</h4>
-                                    <p>I understand that after joining a company, my employment relationship is directly with that employer. Day-to-day work, salary payments, HR policies, probation, confirmation, transfers, resignations, and employment decisions are handled by the employer. Techwell is not responsible for managing the employment relationship after joining.</p>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-bold text-slate-900">11. Communication Consent</h4>
-                                    <p>I authorize Techwell to communicate with me through Phone Calls, WhatsApp, SMS, and Email for placement consultancy and career-related purposes.</p>
-                                </div>
-
-                                <div className="text-center pt-6 pb-2 text-slate-400 italic">-- End of Agreement --</div>
-                            </div>
-                        </section>
-
-                        {/* 6. Candidate Confirmation (Checkboxes) */}
-                        <section className={`transition-opacity duration-300 ${hasScrolled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
-                            <h3 className="text-xl font-bold border-b pb-2 mb-4 text-slate-800">Candidate Confirmation</h3>
-                            <div className="space-y-4 bg-slate-50 p-6 border rounded-lg">
-                                <label className="flex items-start space-x-3 cursor-pointer">
-                                    <Checkbox className="mt-1" checked={consents.readAgreement} onCheckedChange={(c) => setConsents({...consents, readAgreement: !!c})} />
-                                    <span className="text-sm">I have carefully read the complete Consultancy Agreement.</span>
-                                </label>
-                                <label className="flex items-start space-x-3 cursor-pointer">
-                                    <Checkbox className="mt-1" checked={consents.understandScope} onCheckedChange={(c) => setConsents({...consents, understandScope: !!c})} />
-                                    <span className="text-sm">I understand the scope of Techwell's consultancy services.</span>
-                                </label>
-                                <label className="flex items-start space-x-3 cursor-pointer">
-                                    <Checkbox className="mt-1" checked={consents.noGuarantee} onCheckedChange={(c) => setConsents({...consents, noGuarantee: !!c})} />
-                                    <span className="text-sm">I understand that Techwell does not guarantee employment, interview selection, salary, company, designation, location, offer release, joining, or continued employment.</span>
-                                </label>
-                                <label className="flex items-start space-x-3 cursor-pointer">
-                                    <Checkbox className="mt-1" checked={consents.authorizeProcess} onCheckedChange={(c) => setConsents({...consents, authorizeProcess: !!c})} />
-                                    <span className="text-sm">I authorize Techwell to process my profile and share it with prospective employers for suitable opportunities.</span>
-                                </label>
-                                <label className="flex items-start space-x-3 cursor-pointer">
-                                    <Checkbox className="mt-1" checked={consents.infoTrue} onCheckedChange={(c) => setConsents({...consents, infoTrue: !!c})} />
-                                    <span className="text-sm">I confirm that all information submitted by me is true and accurate.</span>
-                                </label>
-                                <label className="flex items-start space-x-3 cursor-pointer">
-                                    <Checkbox className="mt-1" checked={consents.acceptTerms} onCheckedChange={(c) => setConsents({...consents, acceptTerms: !!c})} />
-                                    <span className="text-sm font-bold text-slate-900">I am accepting knowingly, aware of this process, I have read everything and accept.</span>
-                                </label>
-                            </div>
-                        </section>
-
-                        {/* 7. Final Declaration & Submission */}
-                        <section className="bg-slate-800 text-white p-8 rounded-xl space-y-6">
-                            <h3 className="text-xl font-bold border-b border-slate-600 pb-2">Final Declaration</h3>
-                            <p className="text-sm text-slate-300">
-                                I, <strong className="uppercase">{formData.fullName || "[Candidate Name]"}</strong>, hereby certify that the information provided by me is true and correct. I voluntarily request Techwell to provide placement consultancy services, and I acknowledge that I have read, understood, and accepted this Consultancy Agreement and all Terms & Conditions.
-                            </p>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                                <div>
-                                    <label className="text-xs uppercase tracking-wider text-slate-400 block mb-2">Type Full Legal Name (To Sign)</label>
-                                    <Input 
-                                        className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 h-12" 
-                                        placeholder="Exactly as per Government ID" 
-                                        value={formData.typedLegalName}
-                                        onChange={e => setFormData({...formData, typedLegalName: e.target.value})}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-xs uppercase tracking-wider text-slate-400 block mb-2">Human Verification Challenge</label>
-                                    <div className="flex items-center gap-3">
-                                        <span className="bg-slate-700 px-4 py-3 rounded-md font-mono text-lg border border-slate-600 shadow-inner">
-                                            {captcha.a} + {captcha.b} =
-                                        </span>
-                                        <Input 
-                                            className="bg-slate-700 border-slate-600 text-white text-center font-mono text-lg h-12 w-24" 
-                                            placeholder="?" 
-                                            value={captchaAnswer}
-                                            onChange={e => setCaptchaAnswer(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="pt-6 border-t border-slate-700 mt-6">
-                                <Button 
-                                    type="submit" 
-                                    size="lg" 
-                                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold text-lg h-14 disabled:opacity-50"
-                                    disabled={!isFormValid() || submitting}
+                                <div 
+                                    className="h-64 overflow-y-auto p-6 border rounded-lg bg-white shadow-inner text-sm text-slate-700 space-y-4"
+                                    onScroll={handleScroll}
                                 >
-                                    {submitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Processing Secure Document...</> : "I Accept & Submit"}
-                                </Button>
-                                {!isFormValid() && (
-                                    <div className="mt-4 p-4 bg-red-900/20 border border-red-500/50 rounded-lg">
-                                        <p className="text-red-400 text-sm font-bold mb-2">Required to Submit:</p>
-                                        <ul className="list-disc pl-5 text-xs text-red-300 space-y-1">
-                                            {getMissingRequirements().map((req, i) => <li key={i}>{req}</li>)}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        </section>
+                                    <h4 className="font-bold text-slate-900 text-lg">Placement Consultancy Terms of Service</h4>
+                                    
+                                    <div><h5 className="font-bold">1. Scope of Services</h5><p>Techwell provides career guidance, resume processing, and connects candidates with prospective employers. Techwell is a facilitator, not an employer.</p></div>
+                                    <div><h5 className="font-bold">2. Candidate Obligations</h5><p>Candidates agree to provide accurate information and attend scheduled interviews promptly. Providing false information will result in termination of services.</p></div>
+                                    <div><h5 className="font-bold">3. No Guarantee</h5><p>Techwell does not guarantee employment, salary negotiations, or final placements. Final decisions rest solely with the hiring companies.</p></div>
+                                    <div><h5 className="font-bold">4. Data Privacy</h5><p>Your data is collected purely for recruitment purposes and will be shared with prospective employers strictly to facilitate hiring.</p></div>
+                                    <div><h5 className="font-bold">5. Fees</h5><p>If applicable, the consultancy fee mentioned must be honored as per the agreed timeline.</p></div>
 
-                    </CardContent>
+                                    <div className="text-center pt-6 pb-2 text-slate-400 italic">-- End of Agreement --</div>
+                                </div>
+
+                                {/* Checkboxes */}
+                                <div className={`transition-opacity duration-300 space-y-3 bg-slate-50 p-6 border rounded-lg ${hasScrolled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
+                                    <label className="flex items-start space-x-3 cursor-pointer">
+                                        <Checkbox className="mt-1" checked={consents.readAgreement} onCheckedChange={(c) => setConsents({...consents, readAgreement: !!c})} />
+                                        <span className="text-sm">I have read and understood the Terms of Service.</span>
+                                    </label>
+                                    <label className="flex items-start space-x-3 cursor-pointer">
+                                        <Checkbox className="mt-1" checked={consents.infoTrue} onCheckedChange={(c) => setConsents({...consents, infoTrue: !!c})} />
+                                        <span className="text-sm">I certify that all information I have provided is true and correct.</span>
+                                    </label>
+                                    <label className="flex items-start space-x-3 cursor-pointer">
+                                        <Checkbox className="mt-1" checked={consents.acceptTerms} onCheckedChange={(c) => setConsents({...consents, acceptTerms: !!c})} />
+                                        <span className="text-sm font-bold text-slate-900">I voluntarily accept this consultancy agreement.</span>
+                                    </label>
+                                </div>
+
+                                {/* Final Verification block */}
+                                <div className="bg-slate-900 text-white p-6 rounded-xl space-y-6">
+                                    <h3 className="font-bold border-b border-slate-700 pb-2">Final Verification</h3>
+                                    
+                                    <div className="p-4 border border-slate-700 rounded-lg bg-slate-800 flex flex-col items-center">
+                                        <label className="text-sm font-semibold mb-2">Draw your Digital Signature *</label>
+                                        <div className="bg-white border rounded-lg overflow-hidden w-full max-w-[300px] relative">
+                                            <SignatureCanvas ref={sigCanvas} canvasProps={{className: 'w-full h-32'}} onEnd={() => setHasSignature(true)} />
+                                            <Button type="button" variant="ghost" size="sm" className="absolute top-1 right-1 text-xs h-6 px-2 text-slate-500" onClick={() => { sigCanvas.current.clear(); setHasSignature(false); }}>Clear</Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="text-xs uppercase text-slate-400 block mb-2">Type Full Legal Name *</label>
+                                            <Input className="bg-slate-800 border-slate-600 text-white" placeholder="Exactly as per Government ID" value={formData.typedLegalName} onChange={e => setFormData({...formData, typedLegalName: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs uppercase text-slate-400 block mb-2">Security Challenge *</label>
+                                            <div className="flex items-center gap-3">
+                                                <span className="bg-slate-800 px-4 py-2 rounded-md font-mono border border-slate-600">{captcha.a} + {captcha.b} =</span>
+                                                <Input className="bg-slate-800 border-slate-600 text-white w-20 text-center font-mono" value={captchaAnswer} onChange={e => setCaptchaAnswer(e.target.value)} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 flex gap-4">
+                                        <Button type="button" variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white" onClick={prevStep}>Back</Button>
+                                        <Button type="submit" className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold" disabled={submitting || !hasSignature || !formData.typedLegalName || parseInt(captchaAnswer) !== (captcha.a + captcha.b) || !consents.readAgreement || !consents.infoTrue || !consents.acceptTerms}>
+                                            {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : "I Accept & Submit Registration"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </div>
+                    )}
                 </form>
             </Card>
         </div>

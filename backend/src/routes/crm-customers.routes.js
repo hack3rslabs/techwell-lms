@@ -5,11 +5,52 @@ const prisma = new PrismaClient();
 const { authenticate, checkPermission } = require('../middleware/auth');
 
 /**
+ * @route   GET /api/crm/customers/dashboard/stats
+ * @desc    Get central CRM dashboard statistics
+ * @access  Private
+ */
+router.get('/dashboard/stats', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
+    try {
+        const totalCustomers = await prisma.customer.count();
+        const activeDeals = await prisma.pipelineDeal.count({ where: { status: 'OPEN' } });
+        
+        // Approximate revenue (sum of deal value where status is won or open)
+        const deals = await prisma.pipelineDeal.findMany({
+            where: { status: { in: ['OPEN', 'WON'] } },
+            select: { value: true }
+        });
+        const revenuePipeline = deals.reduce((sum, deal) => sum + (deal.value || 0), 0);
+        
+        const followUpsToday = await prisma.task.count({
+            where: { 
+                dueDate: {
+                    gte: new Date(new Date().setHours(0,0,0,0)),
+                    lt: new Date(new Date().setHours(23,59,59,999))
+                }
+            }
+        });
+
+        res.json({
+            success: true,
+            data: {
+                totalCustomers,
+                activeDeals,
+                revenuePipeline,
+                followUpsToday
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching CRM stats:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch dashboard stats' });
+    }
+});
+
+/**
  * @route   GET /api/crm/customers
  * @desc    Get all customers
  * @access  Private
  */
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
     try {
         const customers = await prisma.customer.findMany({
             orderBy: { createdAt: 'desc' }
@@ -26,7 +67,7 @@ router.get('/', authenticate, async (req, res) => {
  * @desc    Create a new customer
  * @access  Private
  */
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
     try {
         const { name, companyName, email, phone } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
@@ -53,7 +94,7 @@ router.post('/', authenticate, async (req, res) => {
  * @desc    Get aggregated 360-degree view of a customer
  * @access  Private (Admin/Staff)
  */
-router.get('/:id/360-view', authenticate, async (req, res) => {
+router.get('/:id/360-view', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
     try {
         const { id } = req.params;
 

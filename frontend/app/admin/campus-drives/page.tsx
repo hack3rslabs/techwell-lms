@@ -2,8 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { Building2, Users, MapPin, Calendar, ExternalLink } from "lucide-react"
+import { Building2, Users, MapPin, Calendar, ExternalLink, List, Calendar as CalendarIcon } from "lucide-react"
 import Link from 'next/link';
+import api from '@/lib/api';
+import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+const locales = {
+  'en-US': enUS,
+}
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
 
 type CampusDrive = {
     id: string;
@@ -22,24 +39,24 @@ export default function AdminCampusDrives() {
     const { user } = useAuth();
     const [drives, setDrives] = useState<CampusDrive[]>([]);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
-    useEffect(() => {
-        fetchDrives();
-    }, []);
-
-    const fetchDrives = async () => {
+    async function fetchDrives() {
         try {
-            const res = await fetch('/api/campus-drives', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            const data = await res.json();
-            if (res.ok) setDrives(data);
+            const res = await api.get('/campus-drives');
+            if (res.status === 200 || res.data) setDrives(res.data);
         } catch (error) {
             console.error('Error fetching drives:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchDrives();
+    }, []);
+;
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
@@ -56,7 +73,21 @@ export default function AdminCampusDrives() {
                             Orchestrate and manage all upcoming Job Melas, off-campus recruitment drives, and on-campus events across the platform.
                         </p>
                     </div>
-                    <div className="shrink-0">
+                    <div className="shrink-0 flex items-center gap-3">
+                        <div className="flex bg-white/10 rounded-lg p-1 border border-white/20">
+                            <button 
+                                onClick={() => setViewMode('list')}
+                                className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors ${viewMode === 'list' ? 'bg-white text-indigo-900' : 'text-white hover:bg-white/20'}`}
+                            >
+                                <List className="w-4 h-4" /> List
+                            </button>
+                            <button 
+                                onClick={() => setViewMode('calendar')}
+                                className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors ${viewMode === 'calendar' ? 'bg-white text-indigo-900' : 'text-white hover:bg-white/20'}`}
+                            >
+                                <CalendarIcon className="w-4 h-4" /> Calendar
+                            </button>
+                        </div>
                         <Link href="/admin/campus-drives/create" className="btn bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
                             + Create Job Mela / Drive
                         </Link>
@@ -66,7 +97,7 @@ export default function AdminCampusDrives() {
 
                         {loading ? (
                             <div className="p-8 text-center text-slate-500">Loading drives...</div>
-                        ) : (
+                        ) : viewMode === 'list' ? (
                             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {drives.length === 0 ? (
                                     <div className="col-span-full p-8 text-center bg-white rounded-lg border border-slate-200">
@@ -74,7 +105,7 @@ export default function AdminCampusDrives() {
                                     </div>
                                 ) : (
                                     drives.map(drive => (
-                                        <div key={drive.id} className="bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700 flex flex-col">
+                                        <div key={drive.id} className="bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-xl transition-shadow">
                                             <div className="p-5 flex-1">
                                                 <header className="flex justify-between items-start mb-2">
                                                     <div className="flex items-center space-x-2">
@@ -102,17 +133,41 @@ export default function AdminCampusDrives() {
                                                     {drive.isOffCampus && (
                                                         <a href={`/job-mela/${drive.id}`} target="_blank" className="flex-1 btn-sm border-slate-200 hover:border-slate-300 text-indigo-500 flex justify-center items-center py-2 border rounded text-sm font-medium">
                                                             <ExternalLink className="w-4 h-4 mr-2" />
-                                                            Registration Link
+                                                            Registration
                                                         </a>
                                                     )}
-                                                    <button className="flex-1 btn-sm bg-slate-800 hover:bg-slate-700 text-white rounded text-sm py-2 font-medium">
+                                                    <Link href={`/admin/campus-drives/${drive.id}/pipeline`} className="flex-1 btn-sm bg-slate-800 hover:bg-slate-700 text-white flex justify-center items-center rounded text-sm py-2 font-medium">
                                                         Manage Pipeline
-                                                    </button>
+                                                    </Link>
                                                 </div>
                                             </div>
                                         </div>
                                     ))
                                 )}
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-200 h-[700px]">
+                                <BigCalendar
+                                    localizer={localizer}
+                                    events={drives.map(d => ({
+                                        title: d.title,
+                                        start: new Date(d.scheduledDate || new Date()),
+                                        end: new Date(d.scheduledDate || new Date()),
+                                        resource: d
+                                    }))}
+                                    startAccessor="start"
+                                    endAccessor="end"
+                                    style={{ height: '100%' }}
+                                    views={['month', 'week', 'day']}
+                                    eventPropGetter={(event: any) => ({
+                                        style: {
+                                            backgroundColor: event.resource.isOffCampus ? '#f59e0b' : '#10b981',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                        }
+                                    })}
+                                />
                             </div>
                         )}
         </div>

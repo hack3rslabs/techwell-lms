@@ -14,4 +14,7 @@ router.patch('/:id/status', authenticate, authorize('SUPER_ADMIN'), instituteCon
 router.get('/my-institute', authenticate, authorize('INSTITUTE_ADMIN'), instituteController.getMyInstitute);
 router.patch('/my-institute', authenticate, authorize('INSTITUTE_ADMIN'), instituteController.updateMyInstitute);
 
+// Dashboard and Students
+router.get('/:id/dashboard', authenticate, authorize('SUPER_ADMIN', 'INSTITUTE_ADMIN'), instituteController.getInstituteDashboard);
+router.get('/:id/students', authenticate, authorize('SUPER_ADMIN', 'INSTITUTE_ADMIN'), instituteController.getInstituteStudents);
 module.exports = router;

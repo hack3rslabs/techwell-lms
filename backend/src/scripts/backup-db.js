@@ -43,7 +43,7 @@ exec(dumpCommand, (error, stdout, stderr) => {
     // Optional: Keep only last 7 days of backups
     fs.readdir(backupDir, (err, files) => {
         if (err) return;
-        
+
         const backupFiles = files
             .filter(f => f.endsWith('.sql.gz'))
             .map(f => ({ name: f, time: fs.statSync(path.join(backupDir, f)).mtime.getTime() }))
@@ -52,8 +52,9 @@ exec(dumpCommand, (error, stdout, stderr) => {
         // Remove files older than 7th backup
         if (backupFiles.length > 7) {
             for (let i = 7; i < backupFiles.length; i++) {
-                fs.unlinkSync(path.join(backupDir, backupFiles[i].name));
-                console.log(`Deleted old backup: ${backupFiles[i].name}`);
+                const safeFileName = path.basename(backupFiles[i].name);
+                fs.unlinkSync(path.join(backupDir, safeFileName));
+                console.log(`Deleted old backup: ${safeFileName}`);
             }
         }
     });

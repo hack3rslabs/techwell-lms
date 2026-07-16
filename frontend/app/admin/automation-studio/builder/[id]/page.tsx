@@ -16,13 +16,7 @@ export default function WorkflowBuilderPage() {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-  useEffect(() => {
-    // In a real scenario, fetch specific workflow by ID.
-    // For this prototype, we'll fetch all and find it, or just use a mock if new.
-    fetchWorkflow();
-  }, [params.id]);
-
-  const fetchWorkflow = async () => {
+  async function fetchWorkflow() {
     try {
       const res = await axios.get(`${API_BASE}/admin/automation-studio/workflows`, { withCredentials: true });
       const found = res.data.data.find((w: any) => w.id === params.id);
@@ -38,7 +32,14 @@ export default function WorkflowBuilderPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
+
+
+  useEffect(() => {
+    // In a real scenario, fetch specific workflow by ID.
+    fetchWorkflow();
+  }, [params.id]);
+;
 
   const handleSave = async (nodes: any[], edges: any[]) => {
     try {

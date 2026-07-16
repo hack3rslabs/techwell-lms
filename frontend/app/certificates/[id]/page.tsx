@@ -19,13 +19,7 @@ export default function CertificateViewer() {
     const [downloading, setDownloading] = useState(false)
     const [error, setError] = useState(false)
 
-    useEffect(() => {
-        if (id) {
-            fetchCertificate(id)
-        }
-    }, [id])
-
-    const fetchCertificate = async (uniqueId: string) => {
+    async function fetchCertificate(uniqueId: string) {
         try {
             setLoading(true)
             const res = await axios.get(`/api/certificates/verify/${uniqueId}`)
@@ -41,6 +35,14 @@ export default function CertificateViewer() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        if (id) {
+            fetchCertificate(id)
+        }
+    }, [id])
+
 
     const handleDownload = async () => {
         const element = document.getElementById('certificate-template')

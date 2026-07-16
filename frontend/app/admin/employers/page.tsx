@@ -29,11 +29,7 @@ export default function AdminEmployersPage() {
     const [employers, setEmployers] = useState<Employer[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        fetchEmployers()
-    }, [])
-
-    const fetchEmployers = async () => {
+    async function fetchEmployers() {
         try {
             const res = await api.get('/admin/employers')
             setEmployers(res.data.employers)
@@ -43,6 +39,12 @@ export default function AdminEmployersPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchEmployers()
+    }, [])
+
 
     if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>
 

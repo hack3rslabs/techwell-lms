@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, MessageSquare, Paperclip, Send, Lock } from 'lucide-react'
+import { Loader2, MessageSquare, Paperclip, Send, Lock, TicketIcon, Clock, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 import api, { ticketApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
@@ -62,6 +62,7 @@ export default function AdminSupportPage() {
     const [filterPriority, setFilterPriority] = React.useState('ALL')
     const [replyText, setReplyText] = React.useState('')
     const [isSending, setIsSending] = React.useState(false)
+    const [stats, setStats] = React.useState({ total: 0, pending: 0, closed: 0, slaBreached: 0 })
 
 
 
@@ -77,6 +78,17 @@ export default function AdminSupportPage() {
 
             const res = await ticketApi.getAll(params)
             setTickets(res.data)
+
+            // Update stats when no filters are applied to show global metrics
+            if (filterStatus === 'ALL' && filterPriority === 'ALL') {
+                const t = res.data;
+                setStats({
+                    total: t.length,
+                    pending: t.filter((x: any) => ['OPEN', 'IN_PROGRESS', 'WAITING_FOR_USER'].includes(x.status)).length,
+                    closed: t.filter((x: any) => ['CLOSED', 'RESOLVED'].includes(x.status)).length,
+                    slaBreached: t.filter((x: any) => ['OPEN', 'IN_PROGRESS'].includes(x.status) && (new Date().getTime() - new Date(x.createdAt).getTime() > 48 * 60 * 60 * 1000)).length
+                })
+            }
         } catch (error) {
             console.error(error)
         } finally {
@@ -98,9 +110,9 @@ export default function AdminSupportPage() {
 
     const fetchStaff = React.useCallback(async () => {
         try {
-            const res = await api.get('/users?role=STAFF,ADMIN,INSTRUCTOR')
+            const res = await api.get('/tickets/staff/list')
             if (res.data.users) {
-                setStaffList(res.data.users.filter((u: { role: string }) => ['ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTRUCTOR'].includes(u.role)))
+                setStaffList(res.data.users)
             }
         } catch (error) {
             console.error("Failed to fetch staff", error)
@@ -197,7 +209,57 @@ export default function AdminSupportPage() {
     }
 
     return (
-        <div className="flex h-[calc(100vh-6rem)] gap-6">
+        <div className="flex flex-col h-[calc(100vh-6rem)] gap-6">
+            
+            {/* Dashboard Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+                <Card>
+                    <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Total Tickets</p>
+                            <h3 className="text-2xl font-bold mt-1">{stats.total}</h3>
+                        </div>
+                        <div className="h-10 w-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                            <TicketIcon className="h-5 w-5" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                            <h3 className="text-2xl font-bold mt-1">{stats.pending}</h3>
+                        </div>
+                        <div className="h-10 w-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
+                            <Clock className="h-5 w-5" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Closed</p>
+                            <h3 className="text-2xl font-bold mt-1">{stats.closed}</h3>
+                        </div>
+                        <div className="h-10 w-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                            <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">SLA Breached</p>
+                            <h3 className="text-2xl font-bold mt-1">{stats.slaBreached}</h3>
+                        </div>
+                        <div className="h-10 w-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+                            <AlertTriangle className="h-5 w-5" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="flex flex-1 gap-6 min-h-0">
             {/* Ticket List (Left Panel) */}
             <div className="w-1/3 flex flex-col gap-4 border-r pr-6">
                 <div>
@@ -429,6 +491,7 @@ export default function AdminSupportPage() {
                         <p>Select a ticket to view conversation</p>
                     </div>
                 )}
+            </div>
             </div>
         </div>
     )

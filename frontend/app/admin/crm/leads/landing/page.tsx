@@ -14,11 +14,7 @@ export default function LeadLandingPage() {
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchIncomingLeads();
-  }, []);
-
-  const fetchIncomingLeads = async () => {
+  async function fetchIncomingLeads() {
     try {
       const res = await axios.get('/api/leads?status=NEW', { withCredentials: true });
       setLeads(res.data);
@@ -27,7 +23,13 @@ export default function LeadLandingPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+
+  useEffect(() => {
+    fetchIncomingLeads();
+  }, []);
+;
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {

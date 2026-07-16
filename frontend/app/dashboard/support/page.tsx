@@ -36,11 +36,7 @@ export default function UserSupportPage() {
     })
     const [isSubmitting, setIsSubmitting] = React.useState(false)
 
-    React.useEffect(() => {
-        fetchTickets()
-    }, [])
-
-    const fetchTickets = async () => {
+    async function fetchTickets() {
         try {
             const res = await api.get('/tickets')
             setTickets(res.data)
@@ -50,6 +46,12 @@ export default function UserSupportPage() {
             setLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchTickets()
+    }, [])
+
 
     const handleCreateTicket = async () => {
         if (!formData.subject || !formData.description) return

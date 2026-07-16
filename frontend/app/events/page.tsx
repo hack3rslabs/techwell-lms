@@ -84,7 +84,7 @@ export default function EventsPage() {
         fetchEvents()
     }, [fetchEvents])
 
-    const handleRegisterClick = (event: any) => {
+    function handleRegisterClick(event: any) {
         setSelectedEvent(event)
         setIsSuccess(false)
         setCustomFormData({}) // Reset custom form state
@@ -124,6 +124,7 @@ export default function EventsPage() {
                 ...formData,
                 leadType: 'EVENT',
                 source: `Event: ${selectedEvent?.title}`,
+                eventId: selectedEvent?.id,
                 // Pass custom form fields as stringified JSON in the notes field
                 notes: `Event ID: ${selectedEvent?.id} | Custom Responses: ${JSON.stringify(customFormData)}`
             })

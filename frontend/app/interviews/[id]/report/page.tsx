@@ -47,69 +47,7 @@ interface QuestionResult {
     feedback: string
 }
 
-// Mock data for demonstration
-const MOCK_EVALUATION: Evaluation = {
-    overallScore: 78,
-    technicalScore: 82,
-    communicationScore: 75,
-    confidenceScore: 80,
-    starMethodScore: 72,
-    strengths: [
-        'Strong technical understanding of React and JavaScript fundamentals',
-        'Good problem-solving approach with clear articulation',
-        'Excellent knowledge of modern web development practices'
-    ],
-    weaknesses: [
-        'Could improve on system design explanations',
-        'Need more specific examples using STAR method',
-        'Response time could be more concise on complex questions'
-    ],
-    recommendations: [
-        'Practice more system design questions focusing on scalability',
-        'Prepare 3-5 strong STAR stories for behavioral questions',
-        'Work on providing concise answers within 2-3 minute timeframe',
-        'Review database optimization and indexing concepts'
-    ],
-    aiInsights: 'Based on your performance, you show strong potential as a frontend developer with solid React skills. Your technical answers were well-structured, but you could benefit from practicing more complex system design scenarios. Consider focusing on real-world project examples that demonstrate leadership and impact.'
-}
-
-const MOCK_QUESTIONS: QuestionResult[] = [
-    {
-        question: 'Explain the difference between useState and useReducer in React.',
-        type: 'TECHNICAL',
-        answer: 'useState is for simple state management, while useReducer is better for complex state logic with multiple sub-values...',
-        score: 85,
-        feedback: 'Good explanation of the core differences. Could have mentioned when to prefer one over the other in production applications.'
-    },
-    {
-        question: 'Tell me about a time you resolved a conflict in your team.',
-        type: 'BEHAVIORAL',
-        answer: 'In my previous project, there was a disagreement about the architecture approach...',
-        score: 70,
-        feedback: 'Good story but could use more specific details about the outcome and metrics. Try to quantify the impact of your resolution.'
-    },
-    {
-        question: 'How would you implement a caching layer for a high-traffic API?',
-        type: 'TECHNICAL',
-        answer: 'I would use Redis for in-memory caching with appropriate TTL settings...',
-        score: 88,
-        feedback: 'Excellent answer covering multiple caching strategies. Good mention of cache invalidation patterns.'
-    },
-    {
-        question: 'What are your salary expectations for this role?',
-        type: 'HR',
-        answer: 'Based on my research and experience level, I am looking for a competitive package...',
-        score: 75,
-        feedback: 'Good approach to negotiation. Could be more specific about market research findings.'
-    },
-    {
-        question: 'Design a notification system for a social media platform.',
-        type: 'TECHNICAL',
-        answer: 'I would design a pub/sub architecture using message queues...',
-        score: 72,
-        feedback: 'Good high-level understanding. Consider discussing scalability, priority queues, and delivery guarantees in more depth.'
-    }
-]
+// Removed mock data
 
 export default function InterviewReportPage() {
     const router = useRouter()
@@ -145,28 +83,26 @@ export default function InterviewReportPage() {
                         communicationScore: evalData.communicationScore || 75,
                         confidenceScore: evalData.problemSolvingScore || 72,
                         starMethodScore: evalData.starMethodScore || 68,
-                        strengths: evalData.strengths || MOCK_EVALUATION.strengths,
-                        weaknesses: evalData.weaknesses || MOCK_EVALUATION.weaknesses,
-                        recommendations: evalData.recommendations || MOCK_EVALUATION.recommendations,
-                        aiInsights: evalData.aiInsights || MOCK_EVALUATION.aiInsights
+                        strengths: evalData.strengths || [],
+                        weaknesses: evalData.weaknesses || [],
+                        recommendations: evalData.recommendations || [],
+                        aiInsights: evalData.aiInsights || ""
                     })
 
                     // Use question breakdown from API or fallback
                     if (report.questionBreakdown && report.questionBreakdown.length > 0) {
                         setQuestions(report.questionBreakdown)
                     } else {
-                        setQuestions(MOCK_QUESTIONS)
+                        setQuestions([])
                     }
                 } else {
-                    // Fallback to mock data
-                    setEvaluation(MOCK_EVALUATION)
-                    setQuestions(MOCK_QUESTIONS)
+                    setEvaluation(null)
+                    setQuestions([])
                 }
             } catch (error) {
                 console.error('Failed to fetch report:', error)
-                // Fallback to mock data for demo
-                setEvaluation(MOCK_EVALUATION)
-                setQuestions(MOCK_QUESTIONS)
+                setEvaluation(null)
+                setQuestions([])
             } finally {
                 setIsLoading(false)
             }

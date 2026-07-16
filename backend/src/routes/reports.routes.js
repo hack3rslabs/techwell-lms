@@ -93,8 +93,7 @@ router.get('/business-summary', authenticate, checkPermission('REPORTS'), async 
  */
 router.get('/sales-performance', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN'), async (req, res, next) => {
     try {
-        // Mock targets (In a real app, these would be in a DB table)
-        const MONTHLY_TARGET = 500000;
+        const MONTHLY_TARGET = Number(process.env.MONTHLY_SALES_TARGET || 500000);
 
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

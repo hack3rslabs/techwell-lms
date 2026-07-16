@@ -69,6 +69,7 @@ export default function ChatWidget() {
 
     // Stored lead details for guest context
     const leadRef = React.useRef<LeadForm>({ name: '', phone: '', message: '' })
+    const [leadDisplayName, setLeadDisplayName] = React.useState('')
 
     // Ticket
     const [mode,               setMode]               = React.useState<'chat' | 'ticket'>('chat')
@@ -126,6 +127,7 @@ export default function ChatWidget() {
 
         // Store details for subsequent API calls
         leadRef.current = { ...leadForm }
+        setLeadDisplayName(leadForm.name)
 
         try {
             // Create lead immediately
@@ -540,10 +542,10 @@ export default function ChatWidget() {
                         style={{ background: 'rgba(10,10,20,0.85)', minHeight: '320px', maxHeight: '420px' }}
                     >
                         {/* Lead context badge (guests only) */}
-                        {isGuest && leadRef.current.name && (
+                        {isGuest && leadDisplayName && (
                             <div className="flex justify-center mb-1">
                                 <span className="text-[10px] px-3 py-1 rounded-full border border-violet-500/30 text-violet-300 bg-violet-900/20">
-                                    🎫 Lead created · {leadRef.current.name}
+                                    🎫 Lead created · {leadDisplayName}
                                 </span>
                             </div>
                         )}

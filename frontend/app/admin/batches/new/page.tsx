@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -67,7 +69,14 @@ export default function CreateBatchPage() {
 
     return (
         <div className="p-8 max-w-2xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold">Create New Batch</h1>
+            <div className="flex items-center gap-4">
+                <Link href="/admin/batches">
+                    <Button variant="outline" size="icon">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <h1 className="text-3xl font-bold">Create New Batch</h1>
+            </div>
             <p className="text-muted-foreground">Fill in the details to create a new batch. A unique Batch ID will be automatically generated.</p>
 
             <form onSubmit={handleSubmit} className="space-y-6 bg-card p-6 border rounded-lg">

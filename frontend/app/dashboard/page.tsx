@@ -31,7 +31,8 @@ import {
     CreditCard,
     Activity,
     Target,
-    Users
+    Users,
+    Lock
 } from 'lucide-react'
 import { NewInterviewDialog } from '@/components/interviews/NewInterviewDialog'
 import { StudentMessages } from '@/components/messages/StudentMessages'
@@ -131,8 +132,8 @@ export default function DashboardPage() {
     const searchParams = useSearchParams()
     const tabParam = searchParams.get('tab')
 
-    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume' | 'payments' | 'logs' | 'referrals'
-    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume', 'payments', 'logs', 'referrals']
+    type TabType = 'overview' | 'learning' | 'interviews' | 'applications' | 'certificates' | 'resume' | 'payments' | 'logs' | 'referrals' | 'consulting'
+    const validTabs: TabType[] = ['overview', 'learning', 'interviews', 'applications', 'certificates', 'resume', 'payments', 'logs', 'referrals', 'consulting']
 
     const [activeTab, setActiveTab] = React.useState<TabType>('overview')
 
@@ -148,6 +149,10 @@ export default function DashboardPage() {
     const handleTabChange = (newTab: TabType | 'jobs') => {
         if (newTab === 'jobs') {
             router.push('/jobs')
+            return
+        }
+        if (newTab === 'consulting') {
+            router.push('/dashboard/consulting')
             return
         }
         setActiveTab(newTab as TabType)
@@ -354,6 +359,7 @@ export default function DashboardPage() {
                         { id: 'applications', label: 'Applications', icon: Briefcase, count: applications.length },
                         { id: 'jobs', label: 'Find Jobs', icon: Target },
                         { id: 'certificates', label: 'Certificates', icon: Award, count: certificates.length },
+                        { id: 'consulting', label: 'Consulting', icon: Briefcase },
                         { id: 'resume', label: 'AI Resume', icon: FileText },
                         { id: 'payments', label: 'Payment History', icon: CreditCard },
                         { id: 'logs', label: 'Activity Logs', icon: Activity },
@@ -400,9 +406,9 @@ export default function DashboardPage() {
                             {jobInterviews.slice(0, 3).map((interview) => {
                                 const interviewDate = new Date(interview.scheduledAt);
                                 const isToday = interviewDate.toDateString() === new Date().toDateString();
-                                const isTomorrow = interviewDate.toDateString() === new Date(Date.now() + 86400000).toDateString();
+                                const isTomorrow = interviewDate.toDateString() === new Date(new Date().getTime() + 86400000).toDateString();
                                 const isPast = interviewDate < new Date();
-                                const isWithinHour = !isPast && (interviewDate.getTime() - Date.now()) < 3600000;
+                                const isWithinHour = !isPast && (interviewDate.getTime() - new Date().getTime()) < 3600000;
                                 let borderClass = 'border-border';
                                 if (isWithinHour) {
                                     borderClass = 'border-green-500 shadow-lg shadow-green-500/10';
@@ -488,6 +494,27 @@ export default function DashboardPage() {
                         {/* OVERVIEW TAB */}
                         {activeTab === 'overview' && (
                             <div className="space-y-8">
+                                {/* Gamification Widget */}
+                                {user?.role === 'STUDENT' && (
+                                    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-8 opacity-20 transform rotate-12">
+                                            <Award className="w-32 h-32" />
+                                        </div>
+                                        <h3 className="text-xl font-bold mb-1">Your Gamification Stats</h3>
+                                        <p className="text-indigo-100 text-sm mb-6">Keep learning and applying for jobs to earn more XP!</p>
+                                        <div className="flex gap-8 relative z-10">
+                                            <div>
+                                                <div className="text-indigo-100 text-sm font-medium mb-1 uppercase tracking-wider">Total XP</div>
+                                                <div className="text-4xl font-black">{user.xp || 0} <span className="text-xl font-medium opacity-80">XP</span></div>
+                                            </div>
+                                            <div>
+                                                <div className="text-indigo-100 text-sm font-medium mb-1 uppercase tracking-wider">Current Streak</div>
+                                                <div className="text-4xl font-black">{user.currentStreak || 0} <span className="text-xl font-medium opacity-80">Days</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Stats Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                     {[
@@ -693,7 +720,13 @@ export default function DashboardPage() {
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-2xl font-bold text-foreground">Interview History</h2>
-                                    <NewInterviewDialog />
+                                    {user?.hasAiInterviewAccess ? (
+                                        <NewInterviewDialog />
+                                    ) : (
+                                        <Button variant="outline" className="border-yellow-500/50 text-yellow-600 hover:bg-yellow-50" onClick={() => router.push('/upgrade?module=interview')}>
+                                            <Lock className="mr-2 h-4 w-4" /> Unlock AI Mock Interviews
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {/* Scheduled Job Interviews Section */}
@@ -933,15 +966,29 @@ export default function DashboardPage() {
                         {/* RESUME TAB */}
                         {activeTab === 'resume' && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
-                                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-50 pointer-events-none"></div>
-                                     <FileText className="h-16 w-16 text-primary mx-auto mb-6 relative z-10" />
-                                     <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">AI Resume Expert</h2>
-                                     <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Create a professional, ATS-optimized resume. Our AI expert will analyze your content for clarity, use industry-relevant keywords, and transform your responsibilities into impactful bullet points.</p>
-                                     <Button size="lg" className="relative z-10" onClick={() => router.push('/resume-builder')}>
-                                        <FileText className="mr-2 h-4 w-4" /> Edit & Enhance Resume
-                                     </Button>
-                                </div>
+                                {user?.hasResumeAccess ? (
+                                    <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
+                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-50 pointer-events-none"></div>
+                                         <FileText className="h-16 w-16 text-primary mx-auto mb-6 relative z-10" />
+                                         <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">AI Resume Expert</h2>
+                                         <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Create a professional, ATS-optimized resume. Our AI expert will analyze your content for clarity, use industry-relevant keywords, and transform your responsibilities into impactful bullet points.</p>
+                                         <Button size="lg" className="relative z-10" onClick={() => router.push('/resume-builder')}>
+                                            <FileText className="mr-2 h-4 w-4" /> Edit & Enhance Resume
+                                         </Button>
+                                    </div>
+                                ) : (
+                                    <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 opacity-50 pointer-events-none"></div>
+                                        <div className="mx-auto w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6 relative z-10">
+                                            <Lock className="h-8 w-8 text-yellow-600" />
+                                        </div>
+                                        <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">Unlock AI Resume Builder</h2>
+                                        <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Get access to our AI-powered ATS resume builder. Craft perfect resumes that pass ATS screenings and land you more interviews.</p>
+                                        <Button size="lg" className="relative z-10 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0" onClick={() => router.push('/upgrade?module=resume')}>
+                                            <Lock className="mr-2 h-4 w-4" /> Upgrade Now
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )}
 

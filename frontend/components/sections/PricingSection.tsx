@@ -136,7 +136,7 @@ export function PricingSection() {
                                 </li>
                                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Check className="h-4 w-4 text-green-500" />
-                                    <span>SSO & LMS integration</span>
+                                    <span>SSO & Platform integration</span>
                                 </li>
                                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Check className="h-4 w-4 text-green-500" />

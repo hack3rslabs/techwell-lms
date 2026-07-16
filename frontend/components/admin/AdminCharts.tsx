@@ -9,6 +9,9 @@ interface AdminChartsProps {
         courses: number
         enrollments: number
         interviews: number
+        leads?: number
+        campusDrives?: number
+        activeProjects?: number
     }
 }
 
@@ -17,10 +20,13 @@ export function AdminCharts({ stats }: AdminChartsProps) {
     // For V1 analytics, we will visualize the distribution of counts
 
     const data = [
-        { name: "Users", total: stats.users || 0 }, // Ensure fallback
+        { name: "Users", total: stats.users || 0 },
         { name: "Courses", total: stats.courses || 0 },
         { name: "Enrollments", total: stats.enrollments || 0 },
         { name: "Interviews", total: stats.interviews || 0 },
+        { name: "Leads", total: stats.leads || 0 },
+        { name: "Campus Drives", total: stats.campusDrives || 0 },
+        { name: "Consulting", total: stats.activeProjects || 0 },
     ]
 
 
@@ -33,31 +39,31 @@ export function AdminCharts({ stats }: AdminChartsProps) {
                 <CardContent className="pl-2">
                     <div className="h-[240px] min-h-[240px] min-w-0">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={data}>
+                            <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <XAxis
                                     dataKey="name"
                                     stroke="#888888"
-                                    fontSize={12}
+                                    fontSize={11}
                                     tickLine={false}
                                     axisLine={false}
+                                    tickMargin={10}
                                 />
                                 <YAxis
                                     stroke="#888888"
-                                    fontSize={12}
+                                    fontSize={11}
                                     tickLine={false}
                                     axisLine={false}
                                     tickFormatter={(value: number) => `${value}`}
                                 />
                                 <Tooltip
-                                    cursor={{ fill: 'transparent' }}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                                    contentStyle={{ borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}
                                 />
                                 <Bar
                                     dataKey="total"
-                                    fill="currentColor"
-                                    radius={[4, 4, 0, 0]}
-                                    className="fill-primary"
-                                    barSize={40}
+                                    radius={[6, 6, 0, 0]}
+                                    className="fill-indigo-500"
+                                    barSize={32}
                                 />
                             </BarChart>
                         </ResponsiveContainer>

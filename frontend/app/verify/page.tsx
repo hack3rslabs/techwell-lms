@@ -6,7 +6,7 @@ import { Search, ShieldCheck, ShieldAlert, Award, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import axios from 'axios'
+import api from '@/lib/api'
 import { format } from 'date-fns'
 
 export default function VerificationPortal() {
@@ -25,7 +25,7 @@ export default function VerificationPortal() {
             setError(null)
             setResult(null)
 
-            const res = await axios.get(`/api/certificates/verify/${searchId.trim()}`)
+            const res = await api.get(`/certificates/verify/${searchId.trim()}`)
             setResult(res.data)
         } catch (err: any) {
             console.error(err)
@@ -145,7 +145,7 @@ export default function VerificationPortal() {
             </Card>
 
             <p className="text-center text-sm text-slate-400 mt-12">
-                &copy; {new Date().getFullYear()} Techwell Consulting. All rights reserved.
+                &copy; 2015 to {new Date().getFullYear()} Techwell Consulting. All rights reserved.
             </p>
         </div>
     )

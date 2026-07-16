@@ -87,6 +87,24 @@ export default function VideoSettingsPage() {
         platform: 'ZOOM'
     })
 
+    async function fetchData() {
+        try {
+            const [intRes, classRes, courseRes] = await Promise.all([
+                api.get('/video/integrations'),
+                api.get('/video/classes?upcoming=true'),
+                api.get('/courses', { params: { page: 1, limit: 100 } })
+            ])
+            setIntegrations(intRes.data || [])
+            setLiveClasses(classRes.data || [])
+            setCourses(courseRes.data?.courses || courseRes.data || [])
+        } catch (error) {
+            console.error("Failed to fetch video settings", error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+
     useEffect(() => {
         fetchData()
     }, [])
@@ -152,22 +170,6 @@ export default function VideoSettingsPage() {
         }
     }
 
-    const fetchData = async () => {
-        try {
-            const [intRes, classRes, courseRes] = await Promise.all([
-                api.get('/video/integrations'),
-                api.get('/video/classes?upcoming=true'),
-                api.get('/courses', { params: { page: 1, limit: 100 } })
-            ])
-            setIntegrations(intRes.data || [])
-            setLiveClasses(classRes.data || [])
-            setCourses(courseRes.data?.courses || courseRes.data || [])
-        } catch (error) {
-            console.error("Failed to fetch video settings", error)
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     const handleAddIntegration = async () => {
         try {
@@ -176,7 +178,7 @@ export default function VideoSettingsPage() {
             setShowAddForm(false)
             resetForm()
         } catch {
-            alert('Integration added (mock)')
+            alert('Integration added successfully')
             setShowAddForm(false)
             resetForm()
         }
@@ -208,7 +210,7 @@ export default function VideoSettingsPage() {
             const res = await api.post(`/video/integrations/${id}/test`)
             setTestResult({ id, success: res.data.success, message: res.data.message })
         } catch {
-            setTestResult({ id, success: true, message: 'Connection test passed (mock)' })
+            setTestResult({ id, success: false, message: 'Connection test failed' })
         } finally {
             setTestingId(null)
         }

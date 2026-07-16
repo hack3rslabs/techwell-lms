@@ -98,7 +98,7 @@ export default function TalentPoolCandidatePage() {
                     <Tabs defaultValue="skills">
                         <TabsList className="w-full grid grid-cols-3">
                             <TabsTrigger value="skills">Skills & Education</TabsTrigger>
-                            <TabsTrigger value="lms">LMS Progress</TabsTrigger>
+                            <TabsTrigger value="lms">Training Progress</TabsTrigger>
                             <TabsTrigger value="ai">AI Interviews ({student.interviews?.length || 0})</TabsTrigger>
                         </TabsList>
 

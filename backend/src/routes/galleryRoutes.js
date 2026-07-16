@@ -8,7 +8,7 @@ const { authenticate, authorize, checkPermission, optionalAuth } = require('../m
 router.get('/', galleryController.getGalleryImages);
 
 // Admin access for management
-router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), galleryController.addGalleryImage);
-router.delete('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), galleryController.deleteGalleryImage);
+router.post('/', authenticate, checkPermission('GALLERY', 'write'), galleryController.addGalleryImage);
+router.delete('/', authenticate, checkPermission('GALLERY', 'write'), galleryController.deleteGalleryImage);
 
 module.exports = router;

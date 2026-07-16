@@ -68,31 +68,23 @@ export default function AIQATrainingPage() {
         'Security'
     ]
 
-    useEffect(() => {
-        fetchItems()
-    }, [])
-
-    const fetchItems = async () => {
+    async function fetchItems() {
         try {
             const res = await api.get('/knowledge-base')
             setItems(res.data.entries || [])
-        } catch {
-            // Mock data
-            setItems([{
-                id: '1',
-                question: 'What is React and why is it popular?',
-                domain: 'Frontend Development',
-                role: 'React Developer',
-                beginnerAnswer: 'React is a JavaScript library for building user interfaces...',
-                mediumAnswer: 'React uses a virtual DOM and component-based architecture...',
-                hardAnswer: 'React implements a fiber reconciliation algorithm...',
-                status: 'PUBLISHED',
-                createdAt: new Date().toISOString()
-            }])
+        } catch (error) {
+            console.error('Failed to fetch QA items:', error)
+            setItems([])
         } finally {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchItems()
+    }, [])
+
 
     const handleGenerateAnswers = async () => {
         if (!newQuestion.trim()) {
@@ -111,14 +103,10 @@ export default function AIQATrainingPage() {
             })
             setGeneratedAnswers(res.data.answers)
             setActiveTab('beginner')
-        } catch {
-            // Mock response
-            setGeneratedAnswers({
-                beginner: `**Simple Answer:**\n\n${newQuestion}\n\nIn simple terms, this concept is about understanding the basics. Think of it like learning to ride a bicycle - you start with training wheels.\n\n**Key Points:**\n• Start with the fundamentals\n• Practice with simple examples\n• Build confidence gradually`,
-                medium: `**Technical Answer:**\n\n${newQuestion}\n\nThis involves understanding both the theory and practical implementation.\n\n**Technical Details:**\n1. Core concepts and how they work together\n2. Common implementation patterns\n3. Real-world code examples\n4. Testing and debugging approaches\n\n**Example:**\n\`\`\`javascript\n// Sample implementation\nfunction example() {\n  return "Hello World";\n}\n\`\`\``,
-                hard: `**Expert Answer:**\n\n${newQuestion}\n\n**Deep Dive:**\nAt the advanced level, we need to consider:\n\n1. **Architecture Patterns**\n   - Scalability considerations\n   - Performance optimization\n   - Memory management\n\n2. **Edge Cases**\n   - Error handling strategies\n   - Boundary conditions\n   - Race conditions\n\n3. **Production Best Practices**\n   - Monitoring and logging\n   - Security considerations\n   - CI/CD integration`
-            })
-            setActiveTab('beginner')
+        } catch (error: any) {
+            console.error('Failed to generate answers:', error)
+            alert(error.response?.data?.error || 'Failed to generate answers from AI')
+            setGeneratedAnswers(null)
         } finally {
             setIsGenerating(false)
         }
@@ -155,10 +143,10 @@ export default function AIQATrainingPage() {
             setNewQuestion('')
             setGeneratedAnswers(null)
             alert('Q&A saved successfully!')
-        } catch {
-            alert('Q&A saved (mock)')
-            setNewQuestion('')
-            setGeneratedAnswers(null)
+        } catch (error: any) {
+            console.error('Failed to save QA:', error)
+            alert(error.response?.data?.error || 'Failed to save Q&A')
+            // Remove the optimistic update rollback or mock fallback
         } finally {
             setIsSaving(false)
         }

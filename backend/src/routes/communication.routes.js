@@ -1,16 +1,15 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { sendEmail } = require('../services/email.service');
 
 const router = express.Router();
 
 // POST /api/crm/communicate/whatsapp
+// Note: Currently functions as a manual logger for WhatsApp interactions. API integration pending.
 router.post('/whatsapp', async (req, res) => {
   try {
     const { leadId, customerId, templateId, message } = req.body;
-    
-    // Mocking WhatsApp API call
-    console.log(`Sending WhatsApp to ${leadId || customerId}: ${message}`);
     
     const log = await prisma.communicationLog.create({
       data: {
@@ -25,7 +24,7 @@ router.post('/whatsapp', async (req, res) => {
 
     res.json({ success: true, data: log });
   } catch (error) {
-    console.error('Error sending WhatsApp:', error);
+    console.error('Error logging WhatsApp:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -35,8 +34,25 @@ router.post('/email', async (req, res) => {
   try {
     const { leadId, customerId, subject, body } = req.body;
     
-    // Mocking Email API call
-    console.log(`Sending Email to ${leadId || customerId}: ${subject}`);
+    let targetEmail = null;
+    if (leadId) {
+      const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+      targetEmail = lead?.email;
+    } else if (customerId) {
+      const customer = await prisma.customer.findUnique({ where: { id: customerId } });
+      targetEmail = customer?.email;
+    }
+
+    if (!targetEmail) {
+      return res.status(400).json({ success: false, message: 'Target email not found for the provided Lead/Customer.' });
+    }
+
+    // Send real email via service
+    const emailSent = await sendEmail(targetEmail, subject, body);
+    
+    if (!emailSent) {
+       return res.status(500).json({ success: false, message: 'Failed to dispatch email via service.' });
+    }
     
     const log = await prisma.communicationLog.create({
       data: {
@@ -57,12 +73,10 @@ router.post('/email', async (req, res) => {
 });
 
 // POST /api/crm/communicate/call
+// Note: Currently functions as a manual logger for Call interactions. Click-to-call API integration pending.
 router.post('/call', async (req, res) => {
   try {
     const { leadId, customerId, agentId } = req.body;
-    
-    // Mocking Click-to-Call API
-    console.log(`Initiating Call to ${leadId || customerId} by agent ${agentId}`);
     
     const log = await prisma.communicationLog.create({
       data: {
@@ -71,13 +85,13 @@ router.post('/call', async (req, res) => {
         type: 'CALL',
         direction: 'OUTBOUND',
         status: 'INITIATED',
-        content: `Call initiated by agent ${agentId}`,
+        content: `Call logged by agent ${agentId}`,
       }
     });
 
     res.json({ success: true, data: log });
   } catch (error) {
-    console.error('Error initiating Call:', error);
+    console.error('Error logging Call:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

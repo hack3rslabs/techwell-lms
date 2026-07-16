@@ -1,5 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const { execSync } = require('child_process');
+
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
@@ -14,6 +16,16 @@ const authLimiter = rateLimit({
 });
 
 const router = express.Router();
+
+// TEMPORARY DEBUG ROUTE
+router.get('/debug-db', (req, res) => {
+    try {
+        const output = execSync('npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss', { encoding: 'utf-8' });
+        res.send(`<pre>SUCCESS:\n${output}</pre>`);
+    } catch (error) {
+        res.send(`<pre>ERROR:\n${error.message}\n\nSTDOUT:\n${error.stdout}\n\nSTDERR:\n${error.stderr}</pre>`);
+    }
+});
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 const { authenticate } = require('../middleware/auth');
 const twoFactorService = require('../services/twoFactor.service');
@@ -27,14 +39,16 @@ const registerSchema = z.object({
         .min(8, 'Password must be at least 8 characters')
         .regex(passwordComplexityRegex, 'Password must contain at least one uppercase, lowercase, number and special character'),
     name: z.string().min(2, 'Name must be at least 2 characters'),
-    phone: z.string().regex(/^[6-9]\d{9}$/, 'Must be a valid 10-digit Indian mobile number').optional(),
+    phone: z.string().refine(val => !val || /^[6-9]\d{9}$/.test(val), 'Must be a valid 10-digit Indian mobile number').optional(),
     referredByCode: z.string().optional(),
-    role: z.enum(['STUDENT', 'EMPLOYER', 'INSTITUTE_ADMIN']).default('STUDENT')
+    role: z.enum(['STUDENT', 'EMPLOYER', 'INSTITUTE_ADMIN']).default('STUDENT'),
+    intent: z.enum(['COURSE', 'RESUME', 'INTERVIEW', 'ALL']).optional().default('COURSE')
 });
 
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
-    password: z.string().min(1, 'Password is required')
+    password: z.string().min(1, 'Password is required'),
+    trustDevice: z.boolean().optional()
 });
 
 // In-memory store for pending registrations (OTP verification)
@@ -104,6 +118,7 @@ router.post('/register', async (req, res, next) => {
             college: req.body.college,
             referredByCode: validatedData.referredByCode,
             role: validatedData.role,
+            intent: validatedData.intent,
             otp,
             createdAt: Date.now()
         });
@@ -181,7 +196,9 @@ router.post('/verify-otp', authLimiter, async (req, res, next) => {
             emailVerified: true,
             referralCode: generatedReferralCode,
             referredById: referredById,
-            role: pending.role
+            role: pending.role,
+            hasResumeAccess: pending.intent === 'RESUME' || pending.intent === 'ALL',
+            hasAiInterviewAccess: pending.intent === 'INTERVIEW' || pending.intent === 'ALL'
         };
 
         if (pending.dob) {
@@ -244,6 +261,13 @@ router.post('/verify-otp', authLimiter, async (req, res, next) => {
         // Send Welcome Email
         const { sendWelcomeEmail } = require('../services/email.service');
         sendWelcomeEmail(user).catch(err => console.error('Email error:', err));
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
         res.status(201).json({
             message: 'Account created successfully',
@@ -369,7 +393,9 @@ router.post('/login', authLimiter, async (req, res, next) => {
             user.systemRole.rolePermissions.forEach(rp => {
                 rolePermissions[rp.feature.code] = {
                     canRead: rp.canRead,
-                    canWrite: rp.canWrite,
+                    canCreate: rp.canCreate,
+                    canUpdate: rp.canUpdate,
+                    canDelete: rp.canDelete,
                     isDisabled: rp.isDisabled
                 };
             });
@@ -416,11 +442,21 @@ router.post('/login', authLimiter, async (req, res, next) => {
         });
 
         // Generate token
+        const expiresIn = validatedData.trustDevice ? '30d' : (process.env.JWT_EXPIRES_IN || '7d');
+        const cookieMaxAge = validatedData.trustDevice ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+
         const token = jwt.sign(
             { userId: user.id, sessionToken },
             process.env.JWT_SECRET,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            { algorithm: 'HS256', expiresIn }
         );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: cookieMaxAge
+        });
 
         res.json({
             message: 'Login successful',
@@ -458,7 +494,7 @@ router.post('/refresh', async (req, res, next) => {
         const token = authHeader.split(' ')[1];
 
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             // Check if user still exists
             const user = await prisma.user.findUnique({
@@ -477,6 +513,13 @@ router.post('/refresh', async (req, res, next) => {
                 { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
             );
 
+            res.cookie('token', newToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
+
             res.json({ token: newToken });
         } catch (error) {
             return res.status(401).json({ error: 'Invalid token' });
@@ -484,6 +527,20 @@ router.post('/refresh', async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+});
+
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout user by clearing HttpOnly cookie
+ * @access  Public
+ */
+router.post('/logout', (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
+    res.json({ message: 'Logout successful' });
 });
 
 /**
@@ -639,10 +696,12 @@ router.post('/2fa/setup', authenticate, async (req, res, next) => {
         const otpauthUri = twoFactorService.generateOtpauthUri(req.user.email, secret);
         const qrCodeUrl = await twoFactorService.generateQrCodeUrl(otpauthUri);
 
+        const { encrypt } = require('../utils/encryption');
+
         // Store secret temporarily
         await prisma.user.update({
             where: { id: userId },
-            data: { twoFactorTempSecret: secret }
+            data: { twoFactorTempSecret: encrypt(secret) }
         });
 
         res.json({
@@ -803,10 +862,13 @@ router.post('/2fa/verify', async (req, res, next) => {
         });
 
         // Generate final access token
+        const expiresIn = trustDevice ? '30d' : (process.env.JWT_EXPIRES_IN || '7d');
+        const cookieMaxAge = trustDevice ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+
         const token = jwt.sign(
             { userId: user.id, sessionToken },
             process.env.JWT_SECRET,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            { algorithm: 'HS256', expiresIn }
         );
 
         // Format role permissions
@@ -815,7 +877,9 @@ router.post('/2fa/verify', async (req, res, next) => {
             user.systemRole.rolePermissions.forEach(rp => {
                 rolePermissions[rp.feature.code] = {
                     canRead: rp.canRead,
-                    canWrite: rp.canWrite,
+                    canCreate: rp.canCreate,
+                    canUpdate: rp.canUpdate,
+                    canDelete: rp.canDelete,
                     isDisabled: rp.isDisabled
                 };
             });

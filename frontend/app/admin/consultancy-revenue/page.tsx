@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import api from '@/lib/api';
 
 export default function ConsultancyRevenueDashboard() {
     const { user } = useAuth();
@@ -9,29 +10,29 @@ export default function ConsultancyRevenueDashboard() {
     const [records, setRecords] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (user && user.role === 'SUPER_ADMIN') {
-            fetchData();
-        }
-    }, [user]);
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
-            const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
-            
             const [analyticsRes, recordsRes] = await Promise.all([
-                fetch('/api/consultancy-analytics/analytics', { headers }),
-                fetch('/api/consultancy-analytics/coordination', { headers })
+                api.get('/consultancy-analytics/analytics'),
+                api.get('/consultancy-analytics/coordination')
             ]);
 
-            if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
-            if (recordsRes.ok) setRecords(await recordsRes.json());
+            if (analyticsRes.status === 200 || analyticsRes.data) setAnalytics(analyticsRes.data);
+            if (recordsRes.status === 200 || recordsRes.data) setRecords(recordsRes.data);
         } catch (error) {
             console.error('Error fetching consultancy data:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        if (user && user.role === 'SUPER_ADMIN') {
+            fetchData();
+        }
+    }, [user]);
+;
 
     if (loading) return <div className="p-8">Loading analytics...</div>;
 

@@ -36,28 +36,8 @@ class PaymentService {
         };
 
         try {
-            // Mock response if using dummy mode (no keys provided)
             if (!instance) {
-                const mockOrder = {
-                    id: `order_${Date.now()}`,
-                    amount: options.amount,
-                    currency: options.currency,
-                    status: 'created',
-                    notes: options.notes
-                };
-
-                // Save Pending Payment
-                await prisma.payment.create({
-                    data: {
-                        orderId: mockOrder.id,
-                        amount: amount,
-                        status: 'PENDING',
-                        userId,
-                        courseId
-                    }
-                });
-
-                return mockOrder;
+                throw new Error("Payment gateway is not configured on the server.");
             }
 
             const order = await instance.orders.create(options);
@@ -85,9 +65,7 @@ class PaymentService {
      */
     async verifyPayment(orderId, paymentId, signature) {
         if (!instance) {
-            // Mock verification
-            await this._handleSuccess(orderId, paymentId);
-            return { verified: true };
+            throw new Error("Payment gateway is not configured on the server.");
         }
 
         const body = orderId + "|" + paymentId;

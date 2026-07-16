@@ -7,11 +7,7 @@ export default function InstituteCampusDrives() {
     const [drives, setDrives] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchDrives();
-    }, []);
-
-    const fetchDrives = async () => {
+    async function fetchDrives() {
         try {
             const res = await fetch('/api/campus-drives', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -23,7 +19,13 @@ export default function InstituteCampusDrives() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+    useEffect(() => {
+        fetchDrives();
+    }, []);
+;
 
     const handleAccept = async (driveId: string) => {
         // In a real app, hit an endpoint to change CampusDriveInstitute status to ACCEPTED

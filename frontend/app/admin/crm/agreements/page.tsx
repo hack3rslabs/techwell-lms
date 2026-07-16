@@ -6,22 +6,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { FileText, Plus, Search, Eye, Edit, Trash2 } from 'lucide-react'
+import { FileText, Plus, Search, Eye, Edit, Trash2, Link as LinkIcon } from 'lucide-react'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { useAuth } from '@/lib/auth-context'
 
 export default function AgreementsDashboard() {
     const [agreements, setAgreements] = useState<any[]>([])
     const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(true)
+    const { hasPermission } = useAuth()
 
-    useEffect(() => {
-        fetchAgreements()
-    }, [])
-
-    const fetchAgreements = async () => {
+    async function fetchAgreements() {
         try {
             setLoading(true)
             const res = await axios.get('/api/crm/agreements')
@@ -33,6 +31,12 @@ export default function AgreementsDashboard() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchAgreements()
+    }, [])
+
 
     const filteredAgreements = agreements.filter(a => 
         a.title?.toLowerCase().includes(search.toLowerCase()) || 
@@ -58,9 +62,13 @@ export default function AgreementsDashboard() {
                     <h1 className="text-2xl font-bold tracking-tight">Client Agreements</h1>
                     <p className="text-muted-foreground">Manage contracts, NDAs, and SLAs</p>
                 </div>
-                <Button onClick={() => window.location.href = '/admin/crm/agreements/builder'}>
-                    <Plus className="mr-2 h-4 w-4" /> New Agreement
-                </Button>
+                {hasPermission('CENTRAL_CRM', 'create') && (
+                    <Link href="/admin/crm/agreements/builder">
+                        <Button>
+                            <Plus className="mr-2 h-4 w-4" /> New Agreement
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
@@ -118,11 +126,11 @@ export default function AgreementsDashboard() {
                                             <TableCell>{format(new Date(agreement.createdAt), 'dd MMM yyyy')}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex items-center justify-end gap-1">
-                                                    <Button variant="ghost" size="icon" title="View/Sign Link" onClick={() => {
+                                                    <Button variant="ghost" size="icon" title="Copy Share Link" onClick={() => {
                                                         navigator.clipboard.writeText(`${window.location.origin}/agreements/${agreement.id}`)
-                                                        toast.success("Client link copied to clipboard")
+                                                        toast.success("Share link copied to clipboard!")
                                                     }}>
-                                                        <Eye className="h-4 w-4 text-blue-500" />
+                                                        <LinkIcon className="h-4 w-4 text-blue-600" />
                                                     </Button>
                                                     <Button variant="ghost" size="icon" title="Download PDF" onClick={async () => {
                                                         toast.loading("Generating PDF...", { id: 'pdf' })
@@ -142,14 +150,13 @@ export default function AgreementsDashboard() {
                                                     }}>
                                                         <FileText className="h-4 w-4 text-green-500" />
                                                     </Button>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
-                                                        title="Edit"
-                                                        onClick={() => window.location.href = `/admin/crm/agreements/builder?id=${agreement.id}`}
-                                                    >
-                                                        <Edit className="h-4 w-4 text-gray-500" />
-                                                    </Button>
+                                                    {hasPermission('CENTRAL_CRM', 'update') && (
+                                                        <Link href={`/admin/crm/agreements/builder?id=${agreement.id}`}>
+                                                            <Button variant="ghost" size="icon" title="Edit">
+                                                                <Edit className="h-4 w-4 text-gray-500" />
+                                                            </Button>
+                                                        </Link>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>

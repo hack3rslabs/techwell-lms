@@ -2,8 +2,12 @@ const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { authenticate, authorize, checkPermission } = require('../middleware/auth');
 const { PrismaClient } = require('@prisma/client');
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -258,6 +262,58 @@ router.post('/generate-from-jd', authenticate, authorize(['ADMIN', 'SUPER_ADMIN'
         const questions = await aiService.generateQuestionsFromContext({ context, domain, role, difficulty, count });
         res.json({ questions });
     } catch (error) { res.status(500).json({ error: 'Failed' }); }
+});
+
+/**
+ * @route   POST /api/ai/parse-resume
+ * @desc    Extracts structured data from a PDF resume using Gemini AI
+ */
+router.post('/parse-resume', authenticate, upload.single('resume'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: "No resume file provided" });
+        
+        // Parse PDF
+        const data = await pdfParse(req.file.buffer);
+        const resumeText = data.text;
+        
+        if (!resumeText || resumeText.length < 50) {
+            return res.status(400).json({ error: "Could not extract sufficient text from the PDF" });
+        }
+        
+        const prompt = `You are an expert AI Resume Parser. Extract the following information from the provided resume text and return it STRICTLY as a valid JSON object. 
+If a field is not found, leave it as an empty string or empty array.
+Do NOT wrap the output in markdown blocks like \`\`\`json. Return only the raw JSON.
+
+{
+    "skills": ["skill1", "skill2"],
+    "experience": [{"company": "Name", "role": "Title", "duration": "e.g. 2020-2022"}],
+    "education": [{"degree": "B.Tech", "institution": "College Name", "year": "2024"}],
+    "github": "URL if any",
+    "linkedin": "URL if any"
+}
+
+Resume Text:
+${resumeText.substring(0, 8000)} // limit to avoid massive context
+`;
+
+        if (!process.env.GEMINI_API_KEY) {
+            return res.status(500).json({ error: "AI service is currently unavailable" });
+        }
+        
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        let text = response.text().trim();
+        
+        // Clean up markdown if the AI hallucinates it despite instructions
+        text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        
+        const parsedData = JSON.parse(text);
+        res.json(parsedData);
+        
+    } catch (error) {
+        console.error("AI Resume Parse Error:", error);
+        res.status(500).json({ error: "Failed to parse resume with AI" });
+    }
 });
 
 module.exports = router;

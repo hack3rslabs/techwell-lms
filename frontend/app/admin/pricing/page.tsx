@@ -24,11 +24,7 @@ export default function PricingPage() {
         currency: 'INR'
     })
 
-    React.useEffect(() => {
-        fetchConfig()
-    }, [])
-
-    const fetchConfig = async () => {
+    async function fetchConfig() {
         try {
             const res = await api.get('/payments/config')
             setConfig(res.data)
@@ -39,6 +35,12 @@ export default function PricingPage() {
             setIsLoading(false)
         }
     }
+
+
+    React.useEffect(() => {
+        fetchConfig()
+    }, [])
+
 
     const handleSave = async () => {
         setIsSaving(true)

@@ -15,7 +15,7 @@ export function FloatingCallButton() {
         <a
             href="tel:+917997473473"
             className={cn(
-                "fixed z-50 bottom-24 right-6 md:bottom-24 md:right-8 transition-all duration-300 hover:scale-110 shadow-lg",
+                "fixed z-50 bottom-[9.5rem] right-6 md:right-8 transition-all duration-300 hover:scale-110 shadow-lg",
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
             )}
             aria-label="Call Us"

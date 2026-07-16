@@ -77,11 +77,7 @@ export default function EmployerDashboard() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        fetchData()
-    }, [])
-
-    const fetchData = async () => {
+    async function fetchData() {
         try {
             const [jobsRes, activityRes, analyticsRes] = await Promise.allSettled([
                 api.get('/jobs/my/listings'),
@@ -98,6 +94,12 @@ export default function EmployerDashboard() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const stats = useMemo(() => {
         if (analytics) return analytics.summary
@@ -146,7 +148,7 @@ export default function EmployerDashboard() {
     }
 
     const timeAgo = (dateStr: string) => {
-        const diff = Date.now() - new Date(dateStr).getTime()
+        const diff = new Date().getTime() - new Date(dateStr).getTime()
         const mins = Math.floor(diff / 60000)
         if (mins < 60) return `${mins}m ago`
         const hrs = Math.floor(mins / 60)
@@ -164,14 +166,14 @@ export default function EmployerDashboard() {
     }
 
     return (
-        <div className="container space-y-8 animate-in fade-in duration-500 pb-10">
+        <div className="container space-y-8 animate-in fade-in duration-700 pb-10 pt-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground tracking-tight">
+                    <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent tracking-tight">
                         Hiring Overview
                     </h1>
-                    <p className="text-muted-foreground mt-1 text-sm font-medium">Welcome back! Here&apos;s what&apos;s happening with your jobs today.</p>
+                    <p className="text-indigo-900/60 mt-2 text-sm font-medium">Welcome back! Here&apos;s what&apos;s happening with your jobs today.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" onClick={() => router.push('/employer/reports')} className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm">
@@ -185,7 +187,7 @@ export default function EmployerDashboard() {
 
             {/* Primary Stats Grid */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
+                <Card className="bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
                             <div className="p-3 bg-blue-50 rounded-xl">
@@ -206,7 +208,7 @@ export default function EmployerDashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
+                <Card className="bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
                             <div className="p-3 bg-purple-50 rounded-xl">
@@ -227,7 +229,7 @@ export default function EmployerDashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
+                <Card className="bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
                             <div className="p-3 bg-green-50 rounded-xl">
@@ -248,7 +250,7 @@ export default function EmployerDashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
+                <Card className="bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
                             <div className="p-3 bg-amber-50 rounded-xl">
@@ -271,7 +273,7 @@ export default function EmployerDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Job Listings Table */}
-                <Card className="lg:col-span-2 bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+                <Card className="lg:col-span-2 bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden">
                     <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4">
                         <div className="flex items-center justify-between">
                             <div>
@@ -394,7 +396,7 @@ export default function EmployerDashboard() {
                         </Card>
                     )}
 
-                    <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+                    <Card className="bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden">
                         <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4">
                             <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
                                 <Activity className="h-4 w-4 text-amber-500" /> Activity Feed

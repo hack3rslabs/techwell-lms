@@ -12,7 +12,7 @@ interface User {
     name: string;
     role: string;
     regId?: string;
-    rolePermissions?: Record<string, { canRead: boolean; canWrite: boolean; isDisabled: boolean }>;
+    rolePermissions?: Record<string, { canRead: boolean; canCreate: boolean; canUpdate: boolean; canDelete: boolean; isDisabled: boolean }>;
     systemRole?: { name: string };
     avatar?: string;
     dob?: string;
@@ -20,21 +20,24 @@ interface User {
     college?: string;
     phone?: string;
     hasUnlimitedInterviews?: boolean;
+    xp?: number;
+    currentStreak?: number;
     twoFactorEnabled?: boolean;
     instituteId?: string;
+    franchiseId?: string;
 }
 
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (email: string, password: string) => Promise<{ require2FA?: boolean; tempToken?: string } | void>;
-    register: (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string) => Promise<{ user: User, devOtp?: string }>;
+    login: (email: string, password: string, trustDevice?: boolean) => Promise<{ require2FA?: boolean; tempToken?: string } | void>;
+    register: (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string, intent?: string) => Promise<{ user: User, devOtp?: string }>;
     verifyOtp: (email: string, otp: string) => Promise<void>;
     resendOtp: (email: string) => Promise<{success: boolean, devOtp?: string}>;
     logout: () => void;
     refreshUser: () => Promise<void>;
-    hasPermission: (permission: string) => boolean;
+    hasPermission: (permission: string, action?: 'create' | 'read' | 'update' | 'delete') => boolean;
     canWrite: (permission: string) => boolean;
     verify2FA: (code: string, tempToken: string, trustDevice?: boolean) => Promise<void>;
 }
@@ -51,14 +54,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     React.useEffect(() => {
         const loadUser = async () => {
             try {
-                const token = localStorage.getItem('token');
-                if (token) {
-                    const response = await userApi.getMe();
-                    setUser(response.data.user);
-                }
+                const response = await userApi.getMe();
+                setUser(response.data.user);
             } catch {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+                setUser(null);
             } finally {
                 setIsLoading(false);
             }
@@ -67,18 +66,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loadUser();
     }, []);
 
-    const login = async (email: string, password: string): Promise<{ require2FA?: boolean; tempToken?: string } | void> => {
-        const response = await authApi.login({ email, password });
+    const login = async (email: string, password: string, trustDevice?: boolean): Promise<{ require2FA?: boolean; tempToken?: string } | void> => {
+        const response = await authApi.login({ email, password, trustDevice });
         if (response.data.require2FA) {
             return {
                 require2FA: true,
                 tempToken: response.data.tempToken
             };
         }
-        const { token, user } = response.data;
-
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
     };
 
@@ -90,13 +85,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             document.cookie = `trustToken=${trustToken}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
         }
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
     };
 
-    const register = async (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string): Promise<{ user: User, devOtp?: string }> => {
-        const response = await authApi.register({ email, password, name, phone, dob, qualification, college, referredByCode });
+    const register = async (email: string, password: string, name: string, phone?: string, dob?: string, qualification?: string, college?: string, referredByCode?: string, intent?: string): Promise<{ user: User, devOtp?: string }> => {
+        const response = await authApi.register({ email, password, name, phone, dob, qualification, college, referredByCode, intent });
         // Return a partial User object for type compatibility along with devOtp
         return {
             user: {
@@ -114,10 +107,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const verifyOtp = async (email: string, otp: string) => {
         const response = await authApi.verifyOtp({ email, otp });
-        const { token, user } = response.data;
-
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
     };
 
@@ -128,9 +117,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
 
-    const logout = React.useCallback(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    const logout = React.useCallback(async () => {
+        try {
+            await authApi.logout();
+        } catch (e) {}
         setUser(null);
     }, []);
 
@@ -155,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const hasPermission = (featureCode: string) => {
+    const hasPermission = (featureCode: string, action: 'create' | 'read' | 'update' | 'delete' = 'read') => {
         if (!user) return false;
         
         // Only Super Admins have all permissions
@@ -164,7 +154,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const perms = user.rolePermissions?.[featureCode];
         if (!perms || perms.isDisabled) return false;
         
-        return perms.canRead || perms.canWrite;
+        if (action === 'create') return !!perms.canCreate;
+        if (action === 'update') return !!perms.canUpdate;
+        if (action === 'delete') return !!perms.canDelete;
+        
+        // action === 'read'
+        return perms.canRead || perms.canCreate || perms.canUpdate || perms.canDelete;
     };
 
     const canWrite = (featureCode: string) => {
@@ -174,7 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (user.role === 'SUPER_ADMIN') return true;
         
         const perms = user.rolePermissions?.[featureCode];
-        return !!(perms?.canWrite && !perms.isDisabled);
+        return !!(!perms?.isDisabled && (perms?.canCreate || perms?.canUpdate || perms?.canDelete));
     };
 
     return (

@@ -8,7 +8,9 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, User, FileText, CheckCircle2, IndianRupee } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Loader2, User, FileText, CheckCircle2, IndianRupee, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 // Define Pipeline Stages
 const PIPELINE_STAGES = [
@@ -45,36 +47,28 @@ export default function PipelineKanbanPage() {
     const [candidates, setCandidates] = useState<Candidate[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        if (params.id) {
-            fetchPipeline()
-        }
-    }, [params.id])
-
-    const fetchPipeline = async () => {
+    async function fetchPipeline() {
         try {
             // Ideally an endpoint that gets students in this drive
             // For now, let's mock it if the endpoint isn't fully ready or we use a custom one
             // We'd hit GET /campus-drives/:id/students 
             const res = await api.get(`/campus-drives/${params.id}/students`)
             setCandidates(res.data)
-        } catch {
-            // Error handling
-            // Temporary mock data if API fails to load
-            setCandidates([
-                {
-                    id: '1', userId: 'u1', status: 'APPLIED', atsScore: 85, resumeUrl: '#', offerLetterUrl: null, ctc: null,
-                    user: { name: 'John Doe', email: 'john@example.com', phone: '1234567890', college: 'Tech Institute' }
-                },
-                {
-                    id: '2', userId: 'u2', status: 'SHORTLISTED', atsScore: 92, resumeUrl: '#', offerLetterUrl: null, ctc: null,
-                    user: { name: 'Jane Smith', email: 'jane@example.com', phone: '0987654321', college: 'Engineering College' }
-                }
-            ])
+        } catch (error) {
+            console.error('Failed to fetch campus drive pipeline:', error)
+            setCandidates([])
         } finally {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        if (params.id) {
+            fetchPipeline()
+        }
+    }, [params.id])
+
 
     const onDragEnd = async (result: DropResult) => {
         const { destination, source, draggableId } = result
@@ -107,9 +101,16 @@ export default function PipelineKanbanPage() {
 
     return (
         <div className="space-y-6 h-full flex flex-col p-4">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Recruitment Pipeline</h1>
-                <p className="text-muted-foreground">Drag and drop candidates across hiring stages.</p>
+            <div className="flex items-center gap-4">
+                <Link href={`/admin/campus-drives/${params.id}`}>
+                    <Button variant="outline" size="icon">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Recruitment Pipeline</h1>
+                    <p className="text-muted-foreground">Drag and drop candidates across hiring stages.</p>
+                </div>
             </div>
 
             <DragDropContext onDragEnd={onDragEnd}>

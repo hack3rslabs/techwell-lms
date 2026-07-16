@@ -42,46 +42,40 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
         bodyHtml = (page.content as any).html
     }
 
-    // If it's a full HTML document, render it directly in an iframe-like full page
-    const isFullDoc = bodyHtml.trim().toLowerCase().startsWith('<!doctype') || bodyHtml.trim().toLowerCase().startsWith('<html')
+    // Strip out html/body/doctype tags if present so we can render cleanly inside Next.js layout
+    const cleanBodyHtml = bodyHtml
+        .replace(/^<!DOCTYPE[^>]*>/i, '')
+        .replace(/<\/?html[^>]*>/gi, '')
+        .replace(/<\/?head[^>]*>/gi, '')
+        .replace(/<\/?body[^>]*>/gi, '')
 
-    if (isFullDoc) {
-        // Inject custom CSS and JS into the full HTML document
-        let finalHtml = bodyHtml
-        if (page.customCss) {
-            finalHtml = finalHtml.replace('</head>', `<style>${page.customCss}</style></head>`)
-        }
-        if (page.customJs) {
-            finalHtml = finalHtml.replace('</body>', `<script>${page.customJs}</script></body>`)
-        }
-        if (page.headerCode) {
-            finalHtml = finalHtml.replace('</head>', `${page.headerCode}</head>`)
-        }
-
-        return (
-            <html lang="en">
-                <body
-                    style={{ margin: 0, padding: 0 }}
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(finalHtml.replace(/^<!DOCTYPE[^>]*>/i, '').replace(/<\/?html[^>]*>/gi, '').replace(/<\/?body[^>]*>/gi, '')) }}
-                />
-            </html>
-        )
-    }
-
-    // Partial HTML snippet — wrap it
     return (
-        <html lang="en">
-            <head>
-                {page.seoTitle && <title>{page.seoTitle}</title>}
-                {page.seoDesc && <meta name="description" content={page.seoDesc} />}
-                {page.ogImage && <meta property="og:image" content={page.ogImage} />}
-                {page.headerCode && <>{page.headerCode}</>}
-                {page.customCss && <style dangerouslySetInnerHTML={{ __html: page.customCss }} />}
-            </head>
-            <body>
-                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bodyHtml) }} />
-                {page.customJs && <script dangerouslySetInnerHTML={{ __html: page.customJs }} />}
-            </body>
-        </html>
+        <div className="w-full min-h-screen">
+            {/* Inject Custom Header Code (Analytics, Meta, etc) */}
+            {page.headerCode && (
+                <div dangerouslySetInnerHTML={{ __html: page.headerCode }} suppressHydrationWarning />
+            )}
+
+            {/* Inject Custom CSS */}
+            {page.customCss && (
+                <style dangerouslySetInnerHTML={{ __html: page.customCss }} suppressHydrationWarning />
+            )}
+
+            {/* Render Body */}
+            <div 
+                className="cms-content-wrapper"
+                dangerouslySetInnerHTML={{ 
+                    __html: DOMPurify.sanitize(cleanBodyHtml, {
+                        ADD_TAGS: ['style', 'iframe'],
+                        FORCE_BODY: true
+                    }) 
+                }} 
+            />
+
+            {/* Inject Custom JS */}
+            {page.customJs && (
+                <script dangerouslySetInnerHTML={{ __html: page.customJs }} suppressHydrationWarning />
+            )}
+        </div>
     )
 }

@@ -21,8 +21,7 @@ const getSecret = () => {
 function getDerivedKey(secret) {
     const salt = process.env.ENCRYPTION_SALT;
     if (!salt) {
-        // Fallback to avoid breaking dev, but Snyk won't flag process.env.
-        throw new Error('FATAL: ENCRYPTION_SALT environment variable is not set.');
+        throw new Error('FATAL: ENCRYPTION_SALT environment variable is not set. Cryptographic operations aborted.');
     }
     return crypto.scryptSync(secret, salt, 32);
 }

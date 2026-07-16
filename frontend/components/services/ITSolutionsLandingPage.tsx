@@ -153,10 +153,10 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Installation & Maintenance</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1">
-                We provide hands-on hardware installations and strict Annual Maintenance Contracts (AMC). Our physical deployments cover everything from high-speed cabling to clustered server racks.
+                We provide hands-on hardware installations and strict Maintenance Support Contracts. Our physical deployments cover everything from high-speed cabling to clustered server racks.
               </p>
               <ul className="space-y-3 mt-auto pt-6 border-t border-indigo-900/30">
-                {['Annual Maintenance Contracts (AMC)', 'Hardware Infrastructure Deployment', 'Fiber Optic Cabling'].map((item, i) => (
+                {['Maintenance Support Contracts', 'Hardware Infrastructure Deployment', 'Fiber Optic Cabling'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
                     <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> {item}
                   </li>

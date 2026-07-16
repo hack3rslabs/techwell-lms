@@ -35,15 +35,7 @@ export default function AdminTeamPage() {
         return { headers: { Authorization: `Bearer ${token}` } }
     }
 
-    React.useEffect(() => {
-        if (hasPermission('TEAM_MANAGEMENT')) {
-            fetchData()
-        } else {
-            setLoadingData(false)
-        }
-    }, [hasPermission])
-
-    const fetchData = async () => {
+    async function fetchData() {
         setLoadingData(true)
         try {
             const res = await axios.get(`${apiBase}/team/admin`, getHeaders())
@@ -55,6 +47,16 @@ export default function AdminTeamPage() {
             setLoadingData(false)
         }
     }
+
+
+    React.useEffect(() => {
+        if (hasPermission('TEAM_MANAGEMENT')) {
+            fetchData()
+        } else {
+            setLoadingData(false)
+        }
+    }, [hasPermission])
+
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()

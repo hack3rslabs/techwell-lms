@@ -79,6 +79,8 @@ export default function CandidatesPage() {
     const [advEducation, setAdvEducation] = React.useState('')
     const [advYear, setAdvYear] = React.useState('')
     const [advIndustry, setAdvIndustry] = React.useState('')
+    const [advCgpa, setAdvCgpa] = React.useState('')
+    const [advAiScore, setAdvAiScore] = React.useState('')
 
     // Upload & Parse Dialog
     const [isUploadOpen, setIsUploadOpen] = React.useState(false)
@@ -106,6 +108,8 @@ export default function CandidatesPage() {
             if (advEducation) params.append('education', advEducation)
             if (advYear) params.append('passedOutYear', advYear)
             if (advIndustry) params.append('industry', advIndustry)
+            if (advCgpa) params.append('cgpa', advCgpa)
+            if (advAiScore) params.append('minAiScore', advAiScore)
 
             const res = await api.get(`/candidates?${params.toString()}`)
             setCandidates(res.data.candidates || [])
@@ -116,7 +120,7 @@ export default function CandidatesPage() {
         } finally {
             setIsLoading(false)
         }
-    }, [page, searchQuery, categoryFilter, statusFilter, advExp, advSkills, advPinCode, advState, advDistrict, advEducation, advYear, advIndustry])
+    }, [page, searchQuery, categoryFilter, statusFilter, advExp, advSkills, advPinCode, advState, advDistrict, advEducation, advYear, advIndustry, advCgpa, advAiScore])
 
     React.useEffect(() => {
         fetchCandidates()
@@ -377,6 +381,10 @@ export default function CandidatesPage() {
                                             <label className="text-xs text-slate-400 font-medium">Pass Out Year</label>
                                             <Input value={advYear} onChange={e => setAdvYear(e.target.value)} placeholder="e.g. 2024" className="bg-slate-900 border-slate-800 text-sm h-10" />
                                         </div>
+                                        <div className="space-y-2 col-span-2">
+                                            <label className="text-xs text-slate-400 font-medium">Minimum CGPA</label>
+                                            <Input value={advCgpa} onChange={e => setAdvCgpa(e.target.value)} placeholder="e.g. 7.5" type="number" step="0.1" className="bg-slate-900 border-slate-800 text-sm h-10" />
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -404,6 +412,10 @@ export default function CandidatesPage() {
                                             <label className="text-xs text-slate-400 font-medium">Top Skills (Comma Separated)</label>
                                             <Input value={advSkills} onChange={e => setAdvSkills(e.target.value)} placeholder="React, Node, Python" className="bg-slate-900 border-slate-800 text-sm h-10" />
                                         </div>
+                                        <div className="space-y-2 col-span-2">
+                                            <label className="text-xs text-slate-400 font-medium">Minimum AI Score</label>
+                                            <Input value={advAiScore} onChange={e => setAdvAiScore(e.target.value)} placeholder="e.g. 80" type="number" className="bg-slate-900 border-slate-800 text-sm h-10" />
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -426,6 +438,8 @@ export default function CandidatesPage() {
                                             setAdvEducation('')
                                             setAdvYear('')
                                             setAdvIndustry('')
+                                            setAdvCgpa('')
+                                            setAdvAiScore('')
                                             setCategoryFilter('ALL')
                                             setStatusFilter('ALL')
                                             setSearchQuery('')

@@ -50,6 +50,31 @@ export function StudentMessages() {
     const [replyContent, setReplyContent] = useState('')
     const [sendingReply, setSendingReply] = useState(false)
 
+    async function fetchMessages() {
+        try {
+            setError(null)
+            const response = await api.get('/messages/my-messages?skip=0&take=20')
+            setMessages(response.data.data || [])
+        } catch (err) {
+            setError('Failed to load messages. Please try again later.')
+            setMessages([])
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    async function fetchUnreadCount() {
+        try {
+            const response = await api.get('/messages/unread-count')
+            setUnreadCount(response.data.unreadCount || 0)
+        } catch (error) {
+            console.error('Error fetching unread count:', error)
+        }
+    }
+
+
+
     useEffect(() => {
         fetchMessages()
         fetchUnreadCount()
@@ -63,27 +88,6 @@ export function StudentMessages() {
         return () => clearInterval(interval)
     }, [])
 
-    const fetchMessages = async () => {
-        try {
-            setError(null)
-            const response = await api.get('/messages/my-messages?skip=0&take=20')
-            setMessages(response.data.data || [])
-        } catch (err) {
-            setError('Failed to load messages. Please try again later.')
-            setMessages([])
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const fetchUnreadCount = async () => {
-        try {
-            const response = await api.get('/messages/unread-count')
-            setUnreadCount(response.data.unreadCount || 0)
-        } catch (error) {
-            console.error('Error fetching unread count:', error)
-        }
-    }
 
     const handleMarkAsRead = async (messageId: string) => {
         try {

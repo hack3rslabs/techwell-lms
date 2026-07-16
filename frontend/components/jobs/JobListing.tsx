@@ -63,12 +63,6 @@ export default function JobListing() {
     })
     const [showFilters, setShowFilters] = useState(false)
 
-    useEffect(() => {
-        fetchJobs()
-        if (isAuthenticated) fetchResume()
-        loadRecentSearches()
-    }, [isAuthenticated])
-
     const fetchResume = async () => {
         try {
             const res = await api.get('/resume')
@@ -103,6 +97,12 @@ export default function JobListing() {
             setIsLoading(false)
         }
     }
+
+    useEffect(() => {
+        fetchJobs()
+        if (isAuthenticated) fetchResume()
+        loadRecentSearches()
+    }, [isAuthenticated])
 
     const calculateMatchScore = (job: Job) => {
         if (!resumeData) return 0

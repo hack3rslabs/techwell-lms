@@ -45,7 +45,8 @@ const initialLeadForm = {
     qualification: '',
     dob: '',
     notes: '',
-    assignedTo: ''
+    assignedTo: '',
+    franchiseId: ''
 }
 
 export default function LeadsPage() {
@@ -67,10 +68,36 @@ export default function LeadsPage() {
         aiSummary?: string
         aiNextBestAction?: string
         aiPriority?: string
+        franchiseId?: string
     }
     const [leads, setLeads] = React.useState<Lead[]>([])
     const [staffUsers, setStaffUsers] = React.useState<{id: string, name: string}[]>([])
+    const [franchises, setFranchises] = React.useState<{id: string, name: string}[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
+
+    const [leadCounts, setLeadCounts] = React.useState<any>({ totalCount: 0, statusCounts: {} })
+
+    const fetchLeadCounts = React.useCallback(async () => {
+        try {
+            const res = await leadApi.getCounts()
+            if (res.data) {
+                setLeadCounts(res.data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch lead counts', error)
+        }
+    }, [])
+
+    React.useEffect(() => {
+        fetchLeadCounts()
+        
+        const handleRefresh = () => fetchLeadCounts()
+        if (typeof window !== 'undefined') {
+            window.addEventListener('lead-counts:refresh', handleRefresh)
+            return () => window.removeEventListener('lead-counts:refresh', handleRefresh)
+        }
+    }, [fetchLeadCounts])
+
     const [searchQuery, setSearchQuery] = React.useState('')
     const [selectedLeads, setSelectedLeads] = React.useState<string[]>([])
 
@@ -84,7 +111,8 @@ export default function LeadsPage() {
         pinCode: '',
         dob: '',
         name: '',
-        phone: ''
+        phone: '',
+        franchiseId: 'ALL'
     })
 
     // History Modal State
@@ -134,6 +162,7 @@ export default function LeadsPage() {
             if (filters.pinCode) params.append('pinCode', filters.pinCode)
             if (filters.name) params.append('name', filters.name)
             if (filters.phone) params.append('phone', filters.phone)
+            if (filters.franchiseId !== 'ALL') params.append('franchiseId', filters.franchiseId)
 
             const res = await api.get(`/leads?${params.toString()}`)
             setLeads(res.data || [])
@@ -151,16 +180,20 @@ export default function LeadsPage() {
     }, [fetchLeads])
     
     React.useEffect(() => {
-        const fetchStaff = async () => {
+        const fetchStaffAndFranchises = async () => {
             try {
-                const res = await api.get('/users?role=STAFF,ADMIN,SUPER_ADMIN')
-                setStaffUsers(res.data.users || res.data || [])
+                const [resStaff, resFranchises] = await Promise.all([
+                    api.get('/users?role=STAFF,ADMIN,SUPER_ADMIN'),
+                    api.get('/franchise')
+                ]);
+                setStaffUsers(resStaff.data.users || resStaff.data || []);
+                setFranchises(resFranchises.data.data || []);
             } catch (e) {
-                console.error('Failed to fetch staff', e)
+                console.error('Failed to fetch staff or franchises', e);
             }
-        }
-        fetchStaff()
-    }, [])
+        };
+        fetchStaffAndFranchises();
+    }, []);
 
     React.useEffect(() => {
         const markLeadsAsSeen = async () => {
@@ -215,7 +248,8 @@ export default function LeadsPage() {
             qualification: lead.qualification || '',
             dob: lead.dob ? format(new Date(lead.dob), 'yyyy-MM-dd') : '',
             notes: lead.notes || '',
-            assignedTo: lead.assignedTo || ''
+            assignedTo: lead.assignedTo || '',
+            franchiseId: lead.franchiseId || ''
         })
         setIsAddOpen(true)
     }
@@ -516,6 +550,18 @@ export default function LeadsPage() {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
+                                    <label className="text-sm font-medium">Assigned Franchise</label>
+                                    <Select value={newLead.franchiseId || 'UNASSIGNED'} onValueChange={v => setNewLead({ ...newLead, franchiseId: v === 'UNASSIGNED' ? '' : v })}>
+                                        <SelectTrigger><SelectValue placeholder="Select Franchise" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="UNASSIGNED">Unassigned</SelectItem>
+                                            {franchises.map(franchise => (
+                                                <SelectItem key={franchise.id} value={franchise.id}>{franchise.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
                                     <label className="text-sm font-medium">College/University</label>
                                     <Input value={newLead.college} onChange={e => setNewLead({ ...newLead, college: e.target.value })} placeholder="XYZ University" />
                                 </div>
@@ -547,6 +593,30 @@ export default function LeadsPage() {
                 </div>
             </div>
 
+            {/* Quick Status Filters */}
+            <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar">
+                {[
+                    { label: 'Total Leads', value: 'ALL', count: leadCounts.totalCount || 0 },
+                    { label: 'New', value: 'NEW', count: leadCounts.statusCounts?.NEW || 0 },
+                    { label: 'Contacted', value: 'CONTACTED', count: leadCounts.statusCounts?.CONTACTED || 0 },
+                    { label: 'Pending / Interested', value: 'INTERESTED', count: leadCounts.statusCounts?.INTERESTED || 0 },
+                    { label: 'Qualified', value: 'QUALIFIED', count: leadCounts.statusCounts?.QUALIFIED || 0 },
+                    { label: 'Converted', value: 'CONVERTED', count: leadCounts.statusCounts?.CONVERTED || 0 },
+                    { label: 'Follow Up', value: 'FOLLOW_UP', count: leadCounts.statusCounts?.FOLLOW_UP || 0 },
+                    { label: 'Not Interested', value: 'LOST', count: leadCounts.statusCounts?.LOST || 0 },
+                ].map((status) => (
+                    <Button
+                        key={status.value}
+                        variant={statusFilter === status.value ? "default" : "outline"}
+                        size="sm"
+                        className={`whitespace-nowrap h-8 px-4 rounded-md font-medium text-xs shadow-sm ${statusFilter === status.value ? 'bg-primary text-primary-foreground' : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                        onClick={() => setStatusFilter(status.value)}
+                    >
+                        {status.label} {status.count > 0 && `(${status.count})`}
+                    </Button>
+                ))}
+            </div>
+
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -575,6 +645,7 @@ export default function LeadsPage() {
                                     <SelectItem value="INTERESTED">Interested</SelectItem>
                                     <SelectItem value="QUALIFIED">Qualified</SelectItem>
                                     <SelectItem value="CONVERTED">Converted</SelectItem>
+                                    <SelectItem value="FOLLOW_UP">Follow Up</SelectItem>
                                     <SelectItem value="LOST">Lost</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -625,6 +696,16 @@ export default function LeadsPage() {
                                     <SelectItem value="Fresher">Fresher</SelectItem>
                                     <SelectItem value="1-3 Years">1-3 Years</SelectItem>
                                     <SelectItem value="3+ Years">3+ Years</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select value={filters.franchiseId} onValueChange={v => setFilters({...filters, franchiseId: v})}>
+                                <SelectTrigger><SelectValue placeholder="Franchise" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Franchises</SelectItem>
+                                    <SelectItem value="UNASSIGNED">Unassigned</SelectItem>
+                                    {franchises.map(franchise => (
+                                        <SelectItem key={franchise.id} value={franchise.id}>{franchise.name}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>

@@ -25,19 +25,6 @@ export function GlobalSearch() {
     const [isOpen, setIsOpen] = React.useState(false)
     const searchRef = React.useRef<HTMLDivElement>(null)
 
-    // Quick debounce implementation if hook missing
-    React.useEffect(() => {
-        const timer = setTimeout(() => {
-            if (query.length >= 2) {
-                performSearch(query)
-            } else {
-                setResults(null)
-                setIsOpen(false)
-            }
-        }, 400)
-        return () => clearTimeout(timer)
-    }, [query])
-
     const performSearch = async (q: string) => {
         setIsLoading(true)
         try {
@@ -50,6 +37,19 @@ export function GlobalSearch() {
             setIsLoading(false)
         }
     }
+
+    // Quick debounce implementation if hook missing
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            if (query.length >= 2) {
+                performSearch(query)
+            } else {
+                setResults(null)
+                setIsOpen(false)
+            }
+        }, 400)
+        return () => clearTimeout(timer)
+    }, [query])
 
     // Close on click outside
     React.useEffect(() => {
@@ -69,13 +69,13 @@ export function GlobalSearch() {
     }
 
     return (
-        <div className="relative w-full max-w-sm ml-4 hidden md:block" ref={searchRef}>
-            <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="relative ml-2 lg:ml-4 hidden md:block" ref={searchRef}>
+            <div className="relative group">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 <Input
                     type="search"
-                    placeholder="Search courses, mentors..."
-                    className="pl-8 w-[250px] lg:w-[320px] bg-background"
+                    placeholder="Search..."
+                    className="pl-8 w-[140px] lg:w-[160px] xl:w-[240px] focus:w-[180px] lg:focus:w-[220px] xl:focus:w-[320px] transition-all duration-300 bg-background/50 hover:bg-background border-border/70"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => { if (results) setIsOpen(true) }}

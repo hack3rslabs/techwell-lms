@@ -23,11 +23,7 @@ export default function ConsultancyProcessing() {
     const [candidates, setCandidates] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        fetchCandidates()
-    }, [])
-
-    const fetchCandidates = async () => {
+    async function fetchCandidates() {
         try {
             const res = await consultancyApi.getInvitations()
             // Filter to only those with agreements and in relevant processing stages
@@ -41,6 +37,12 @@ export default function ConsultancyProcessing() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchCandidates()
+    }, [])
+
 
     const handleStatusChange = async (id: string, newStatus: string) => {
         try {

@@ -56,6 +56,37 @@ const createUserSchema = z.object({
 });
 
 /**
+ * @route   POST /api/users/upgrade-test
+ * @desc    Simulate an upgrade for a module (Resume or Interview)
+ * @access  Private
+ */
+router.post('/upgrade-test', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { module } = req.body;
+
+        const updateData = {};
+        if (module === 'resume') {
+            updateData.hasResumeAccess = true;
+        } else if (module === 'interview') {
+            updateData.hasAiInterviewAccess = true;
+        } else {
+            return res.status(400).json({ error: 'Invalid module specified' });
+        }
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            select: { id: true, hasResumeAccess: true, hasAiInterviewAccess: true }
+        });
+
+        res.status(200).json({ message: 'Upgrade successful', user });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route   POST /api/users/profile-image
  * @desc    Upload profile picture
  * @access  Private
@@ -156,15 +187,34 @@ router.put('/me', authenticate, async (req, res, next) => {
  */
 router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, role, search } = req.query;
+        const { page = 1, limit = 20, role, excludeRole, search } = req.query;
         const where = {};
+        
+        // Scope to franchise if FRANCHISE_ADMIN
+        if (req.user.role === 'FRANCHISE_ADMIN') {
+            where.franchiseId = req.user.franchiseId;
+            // Franchise Admins shouldn't see Super Admins or other Franchise Admins generally, just their students and staff
+            where.role = { in: ['STUDENT', 'STAFF', 'INSTRUCTOR'] };
+        }
         if (role) {
             if (role.includes(',')) {
                 where.role = { in: role.split(',') };
             } else {
                 where.role = role;
             }
+        } else if (req.user.role === 'FRANCHISE_ADMIN') {
+             // Keep the restricted roles if no specific role is requested
+             where.role = { in: ['STUDENT', 'STAFF', 'INSTRUCTOR'] };
         }
+        
+        if (excludeRole) {
+            if (excludeRole.includes(',')) {
+                where.role = { notIn: excludeRole.split(',') };
+            } else {
+                where.role = { not: excludeRole };
+            }
+        }
+        
         if (search) {
             where.OR = [
                 { name: { contains: search, mode: 'insensitive' } },
@@ -394,9 +444,9 @@ router.get('/fix-live-permissions', async (req, res) => {
  */
 router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
-        // Strictly protect user creation: Only SUPER_ADMIN and ADMIN are authorized
-        if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Access Denied: Only Admins and Super Admins are authorized to directly create users.' });
+        // Strictly protect user creation: Only SUPER_ADMIN, ADMIN, and FRANCHISE_ADMIN are authorized
+        if (!['SUPER_ADMIN', 'ADMIN', 'FRANCHISE_ADMIN'].includes(req.user.role)) {
+            return res.status(403).json({ error: 'Access Denied: Only Admins and Franchise Admins are authorized to directly create users.' });
         }
 
         const validatedData = createUserSchema.parse(req.body);
@@ -442,6 +492,13 @@ router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) 
                 enumRole = nameMap[systemRole.name];
             }
         }
+        
+        // Franchise Admins can ONLY create STUDENT or STAFF roles
+        if (req.user.role === 'FRANCHISE_ADMIN') {
+            if (!['STUDENT', 'STAFF'].includes(enumRole)) {
+                return res.status(403).json({ error: 'Franchise Admins can only create Students and Staff.' });
+            }
+        }
 
         const user = await prisma.user.create({
             data: {
@@ -452,7 +509,8 @@ router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) 
                 role: enumRole,
                 systemRoleId: systemRoleId,
                 emailVerified: true,
-                isActive: true
+                isActive: true,
+                franchiseId: req.user.role === 'FRANCHISE_ADMIN' ? req.user.franchiseId : null
             },
             select: {
                 id: true,

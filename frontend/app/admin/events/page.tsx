@@ -14,8 +14,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { QRCodeCanvas } from 'qrcode.react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { Loader2, Plus, QrCode, Edit, Trash2, Calendar, Users, GripVertical, Settings2, Link as LinkIcon, Trash } from 'lucide-react'
+import { Loader2, Plus, QrCode, Edit, Trash2, Calendar, Users, GripVertical, Settings2, Link as LinkIcon, Trash, Award } from 'lucide-react'
 import api from '@/lib/api'
+import { ImageUploadInfo } from '@/components/ui/ImageUploadInfo'
 
 interface CustomField {
     id: string
@@ -27,6 +28,7 @@ interface CustomField {
 
 export default function AdminEventsPage() {
     const [events, setEvents] = React.useState<any[]>([])
+    const [templates, setTemplates] = React.useState<any[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
 
     // Modals
@@ -46,20 +48,26 @@ export default function AdminEventsPage() {
         date: '',
         time: '',
         location: '',
-        status: 'Upcoming',
+        status: 'Pending Approval',
         seatsTotal: '100',
-        iconName: ''
+        iconName: '',
+        generateCertificate: false,
+        certificateTemplateId: ''
     })
     const [customFields, setCustomFields] = React.useState<CustomField[]>([])
 
     const fetchEvents = React.useCallback(async () => {
         setIsLoading(true)
         try {
-            const res = await api.get('/events')
+            const [res, templatesRes] = await Promise.all([
+                api.get('/events'),
+                api.get('/certificates/admin/templates')
+            ])
             setEvents(res.data || [])
+            setTemplates(templatesRes.data?.templates || (Array.isArray(templatesRes.data) ? templatesRes.data : []))
         } catch (error) {
-            console.error('Failed to fetch events:', error)
-            toast.error('Failed to load events')
+            console.error('Failed to fetch events or templates:', error)
+            toast.error('Failed to load data')
         } finally {
             setIsLoading(false)
         }
@@ -78,9 +86,11 @@ export default function AdminEventsPage() {
             date: '',
             time: '',
             location: '',
-            status: 'Upcoming',
+            status: 'Pending Approval',
             seatsTotal: '100',
-            iconName: ''
+            iconName: '',
+            generateCertificate: false,
+            certificateTemplateId: ''
         })
         setCustomFields([])
         setEditingEventId(null)
@@ -95,9 +105,11 @@ export default function AdminEventsPage() {
             date: event.date ? format(new Date(event.date), 'yyyy-MM-dd') : '',
             time: event.time || '',
             location: event.location || '',
-            status: event.status || 'Upcoming',
+            status: event.status || 'Pending Approval',
             seatsTotal: event.seatsTotal?.toString() || '100',
-            iconName: event.iconName || ''
+            iconName: event.iconName || '',
+            generateCertificate: event.generateCertificate || false,
+            certificateTemplateId: event.certificateTemplateId || ''
         })
         setCustomFields(event.customFormFields || [])
         setEditingEventId(event.id)
@@ -139,6 +151,17 @@ export default function AdminEventsPage() {
             toast.error('Failed to save event')
         } finally {
             setIsSaving(false)
+        }
+    }
+
+    const handleGenerateCertificates = async (eventId: string) => {
+        if (!confirm('Are you sure you want to generate certificates for all attendees? This will skip any attendees who already have a certificate.')) return
+        try {
+            const res = await api.post(`/events/${eventId}/generate-certificates`)
+            toast.success(res.data.message || 'Certificates generated successfully')
+        } catch (error: any) {
+            console.error('Generate error', error)
+            toast.error(error.response?.data?.error || 'Failed to generate certificates')
         }
     }
 
@@ -222,7 +245,7 @@ export default function AdminEventsPage() {
                                             <div className="text-sm text-muted-foreground mt-1">{event.time}</div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={event.status === 'Completed' ? 'secondary' : (event.status === 'Upcoming' ? 'default' : 'outline')} className={event.status === 'Registration Open' ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : ''}>
+                                            <Badge variant={event.status === 'Completed' ? 'secondary' : (event.status === 'Upcoming' ? 'default' : (event.status === 'Pending Approval' ? 'destructive' : 'outline'))} className={event.status === 'Registration Open' ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : ''}>
                                                 {event.status}
                                             </Badge>
                                         </TableCell>
@@ -234,6 +257,11 @@ export default function AdminEventsPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
+                                                {event.generateCertificate && (
+                                                    <Button variant="outline" size="sm" onClick={() => handleGenerateCertificates(event.id)} className="border-amber-200 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20">
+                                                        <Award className="w-4 h-4 mr-1" /> Issue
+                                                    </Button>
+                                                )}
                                                 <Button variant="outline" size="sm" onClick={() => showQRCode(event)} className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
                                                     <QrCode className="w-4 h-4 mr-1" /> QR
                                                 </Button>
@@ -269,7 +297,7 @@ export default function AdminEventsPage() {
                             <div className="space-y-2 md:col-span-2">
                                 <Label>Event Image URL</Label>
                                 <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.jpg" />
-                                <p className="text-xs text-muted-foreground">Recommended size: 1200x630px, High Quality.</p>
+                                <ImageUploadInfo />
                                 {formData.imageUrl && (
                                     <div className="mt-2 w-full max-w-sm h-40 border rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                                         { }
@@ -306,7 +334,8 @@ export default function AdminEventsPage() {
                                 <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v})}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Upcoming">Upcoming</SelectItem>
+                                        <SelectItem value="Pending Approval">Pending Approval</SelectItem>
+                                        <SelectItem value="Upcoming">Upcoming (Approved)</SelectItem>
                                         <SelectItem value="Registration Open">Registration Open</SelectItem>
                                         <SelectItem value="Completed">Completed</SelectItem>
                                     </SelectContent>
@@ -325,13 +354,41 @@ export default function AdminEventsPage() {
                                 <Input required value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="e.g. Zoom or Hyderabad Hub" />
                             </div>
                             <div className="space-y-2">
-                                <Label>Total Seats</Label>
-                                <Input type="number" required value={formData.seatsTotal} onChange={e => setFormData({...formData, seatsTotal: e.target.value})} />
-                            </div>
-                        </div>
+                                                <Label>Total Seats</Label>
+                                                <Input type="number" required value={formData.seatsTotal} onChange={e => setFormData({...formData, seatsTotal: e.target.value})} />
+                                            </div>
+                                        </div>
 
-                        {/* Custom Form Builder */}
-                        <div className="mt-8 border rounded-xl p-6 bg-slate-50 dark:bg-slate-900/50">
+                                        {/* Certificate Settings */}
+                                        <div className="mt-8 border rounded-xl p-6 bg-amber-50/50 dark:bg-amber-900/10">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <Checkbox 
+                                                        id="gen-cert"
+                                                        checked={formData.generateCertificate}
+                                                        onCheckedChange={c => setFormData({...formData, generateCertificate: !!c})}
+                                                    />
+                                                    <label htmlFor="gen-cert" className="text-base font-semibold cursor-pointer">Enable Certificate Generation for Attendees</label>
+                                                </div>
+                                            </div>
+                                            {formData.generateCertificate && (
+                                                <div className="space-y-2 max-w-md ml-6 border-l-2 border-amber-200 pl-4 py-2">
+                                                    <Label>Select Certificate Template</Label>
+                                                    <Select value={formData.certificateTemplateId} onValueChange={v => setFormData({...formData, certificateTemplateId: v})}>
+                                                        <SelectTrigger><SelectValue placeholder="Choose a template..." /></SelectTrigger>
+                                                        <SelectContent>
+                                                            {templates.map(template => (
+                                                                <SelectItem key={template.id} value={template.id}>{template.name} ({template.purpose})</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <p className="text-xs text-muted-foreground mt-1">Attendees will receive this certificate based on their registration details.</p>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Custom Form Builder */}
+                                        <div className="mt-8 border rounded-xl p-6 bg-slate-50 dark:bg-slate-900/50">
                             <div className="flex items-center justify-between mb-4">
                                 <div>
                                     <h3 className="font-semibold flex items-center gap-2"><Settings2 className="w-5 h-5 text-indigo-500" /> Custom Registration Form</h3>

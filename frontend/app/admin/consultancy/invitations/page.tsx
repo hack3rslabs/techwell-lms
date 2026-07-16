@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { consultancyApi, studentsApi } from "@/lib/api"
+import api, { consultancyApi, studentsApi } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -96,12 +96,16 @@ export default function ConsultancyInvitations() {
     const [searchTerm, setSearchTerm] = useState("")
     const [showDropdown, setShowDropdown] = useState(false)
 
-    useEffect(() => {
-        fetchInvitations()
-        fetchStudents()
-    }, [])
+    async function fetchInvitations() {
+        try {
+            const res = await consultancyApi.getInvitations()
+            setInvitations(res.data.invitations)
+        } catch (error) {
+            console.error("Failed to fetch invitations", error)
+        }
+    }
 
-    const fetchStudents = async () => {
+    async function fetchStudents() {
         try {
             const res = await studentsApi.getAll()
             setStudents(res.data.students || [])
@@ -110,14 +114,14 @@ export default function ConsultancyInvitations() {
         }
     }
 
-    const fetchInvitations = async () => {
-        try {
-            const res = await consultancyApi.getInvitations()
-            setInvitations(res.data.invitations)
-        } catch (error) {
-            console.error("Failed to fetch invitations", error)
-        }
-    }
+
+
+    useEffect(() => {
+        fetchInvitations()
+        fetchStudents()
+    }, [])
+
+
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -189,12 +193,8 @@ export default function ConsultancyInvitations() {
         setIsMatching(true)
         setMatches([])
         try {
-            const res = await fetch(`/api/consultancy/invitations/${invitationId}/auto-match`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }
-            })
-            const data = await res.json()
-            setMatches(data.matches || [])
+            const res = await api.post(`/consultancy/invitations/${invitationId}/auto-match`);
+            setMatches(res.data?.matches || []);
         } catch (error) {
             toast.error("Failed to auto-match jobs")
         } finally {
@@ -459,9 +459,13 @@ export default function ConsultancyInvitations() {
                                 <TableCell>
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         ${inv.status === 'INVITED' ? 'bg-gray-100 text-gray-800' :
+                                        inv.status === 'OPENED' ? 'bg-blue-100 text-blue-800' :
+                                        inv.status === 'STARTED' ? 'bg-indigo-100 text-indigo-800' :
+                                        inv.status === 'SUBMITTED' ? 'bg-purple-100 text-purple-800' :
                                         inv.status === 'PENDING_ACCEPTANCE' ? 'bg-yellow-100 text-yellow-800' :
                                         inv.status === 'AGREEMENT_ACCEPTED' ? 'bg-green-100 text-green-800' :
-                                        'bg-blue-100 text-blue-800'}`}>
+                                        inv.status === 'EXPIRED' ? 'bg-red-100 text-red-800' :
+                                        'bg-slate-100 text-slate-800'}`}>
                                         {inv.status}
                                     </span>
                                 </TableCell>

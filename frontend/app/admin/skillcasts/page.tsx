@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
+import api from "@/lib/api"
 
 interface Skillcast {
     id: string
@@ -53,16 +54,11 @@ export default function AdminSkillcastPage() {
         thumbnail: ""
     })
 
-    useEffect(() => {
-        fetchSkillcasts()
-    }, [])
-
-    const fetchSkillcasts = async () => {
+    async function fetchSkillcasts() {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/skillcasts`)
-            if (res.ok) {
-                const data = await res.json()
-                setSkillcasts(Array.isArray(data) ? data : [])
+            const res = await api.get('/skillcasts')
+            if (res.status === 200 || res.data) {
+                setSkillcasts(Array.isArray(res.data) ? res.data : [])
             }
         } catch (error) {
             console.error(error)
@@ -72,27 +68,22 @@ export default function AdminSkillcastPage() {
         }
     }
 
+
+    useEffect(() => {
+        fetchSkillcasts()
+    }, [])
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const url = editingItem
-                ? `${process.env.NEXT_PUBLIC_API_URL}/skillcasts/${editingItem.id}`
-                : `${process.env.NEXT_PUBLIC_API_URL}/skillcasts`
+            const url = editingItem ? `/skillcasts/${editingItem.id}` : `/skillcasts`
+            
+            const res = editingItem 
+                ? await api.put(url, formData)
+                : await api.post(url, formData)
 
-            const method = editingItem ? "PUT" : "POST"
-
-            const token = localStorage.getItem("token") // Assuming auth token is stored here
-
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            })
-
-            if (res.ok) {
+            if (res.status === 200 || res.status === 201 || res.data) {
                 toast.success(editingItem ? "Skillcast updated" : "Skillcast created")
                 fetchSkillcasts()
                 setIsDialogOpen(false)
@@ -110,15 +101,9 @@ export default function AdminSkillcastPage() {
         if (!confirm("Are you sure you want to delete this skillcast?")) return
 
         try {
-            const token = localStorage.getItem("token")
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/skillcasts/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            })
+            const res = await api.delete(`/skillcasts/${id}`)
 
-            if (res.ok) {
+            if (res.status === 200 || res.data) {
                 toast.success("Skillcast deleted")
                 fetchSkillcasts()
             } else {

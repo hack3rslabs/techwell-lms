@@ -50,11 +50,7 @@ export default function EmployerCandidatesPage() {
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const router = useRouter()
 
-    useEffect(() => {
-        fetchCandidates()
-    }, [])
-
-    const fetchCandidates = async () => {
+    async function fetchCandidates() {
         try {
             const jobsRes = await api.get('/jobs/my/listings')
             const jobs = jobsRes.data || []
@@ -90,6 +86,12 @@ export default function EmployerCandidatesPage() {
             setIsLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        fetchCandidates()
+    }, [])
+
 
     const filteredCandidates = candidates.filter(c => {
         const matchesSearch =

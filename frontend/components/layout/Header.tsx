@@ -110,7 +110,7 @@ export function Header() {
 
                     </div>
                     {/* Desktop Navigation */}
-                    <nav className="hidden lg:flex items-center gap-5 xl:gap-6 text-sm font-medium">
+                    <nav className="hidden lg:flex items-center gap-5 xl:gap-6 text-sm font-medium shrink-0">
 
                         {navigationConfig.map((menu) => (
                             menu.items && menu.items.length > 0 ? (
@@ -246,7 +246,7 @@ export function Header() {
                     </div>
 
                     {/* Mobile Menu */}
-                    <div className="md:hidden">
+                    <div className="lg:hidden">
 
                         <Sheet open={isOpen} onOpenChange={setIsOpen}>
 
