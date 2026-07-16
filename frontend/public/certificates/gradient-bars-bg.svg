@@ -1,0 +1,16 @@
+<svg width="1122" height="794" viewBox="0 0 1122 794" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blue-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1469E2" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1122" height="794" fill="#ffffff" />
+
+  <!-- Top Bar -->
+  <rect x="0" y="0" width="1122" height="40" fill="url(#blue-gradient)" />
+  
+  <!-- Bottom Bar -->
+  <rect x="0" y="754" width="1122" height="40" fill="url(#blue-gradient)" />
+</svg>

@@ -1,7 +1,7 @@
 import PostsDashboard from '@/components/admin/posts/PostsDashboard';
 
 export const metadata = {
-    title: 'Blog Management - TechWell Admin',
+    title: 'Blog Management - Techwell Admin',
     description: 'Manage all blog posts, articles, and content.',
 };
 

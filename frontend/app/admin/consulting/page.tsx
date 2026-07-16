@@ -1,7 +1,7 @@
 import ConsultingDashboard from '@/components/admin/consulting/ConsultingDashboard';
 
 export const metadata = {
-    title: 'Consulting Hub - TechWell Admin',
+    title: 'Consulting Hub - Techwell Admin',
     description: 'Manage Business and IT Consulting engagements',
 };
 

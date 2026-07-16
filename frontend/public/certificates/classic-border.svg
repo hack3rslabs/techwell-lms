@@ -1,0 +1,42 @@
+<svg width="1122" height="794" viewBox="0 0 1122 794" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .outer-border { stroke: #1469E2; stroke-width: 6; fill: none; }
+      .inner-border { stroke: #1469E2; stroke-width: 1.5; fill: none; }
+      .swirl { stroke: #1469E2; stroke-width: 1.5; fill: none; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1122" height="794" fill="#ffffff" />
+
+  <!-- Outer Border -->
+  <rect x="24" y="24" width="1074" height="746" class="outer-border" />
+  
+  <!-- Inner Border -->
+  <rect x="36" y="36" width="1050" height="722" class="inner-border" />
+
+  <!-- Corner Flourish Top Left -->
+  <path d="M 28 60 Q 55 55 60 28" class="swirl" />
+  <path d="M 32 70 Q 65 65 70 32" class="swirl" />
+  <circle cx="45" cy="45" r="3" fill="#1469E2" />
+  <circle cx="34" cy="34" r="1.5" fill="#1469E2" />
+
+  <!-- Corner Flourish Top Right -->
+  <path d="M 1094 60 Q 1067 55 1062 28" class="swirl" />
+  <path d="M 1090 70 Q 1057 65 1052 32" class="swirl" />
+  <circle cx="1077" cy="45" r="3" fill="#1469E2" />
+  <circle cx="1088" cy="34" r="1.5" fill="#1469E2" />
+
+  <!-- Corner Flourish Bottom Left -->
+  <path d="M 28 734 Q 55 739 60 766" class="swirl" />
+  <path d="M 32 724 Q 65 729 70 762" class="swirl" />
+  <circle cx="45" cy="749" r="3" fill="#1469E2" />
+  <circle cx="34" cy="760" r="1.5" fill="#1469E2" />
+
+  <!-- Corner Flourish Bottom Right -->
+  <path d="M 1094 734 Q 1067 739 1062 766" class="swirl" />
+  <path d="M 1090 724 Q 1057 729 1052 762" class="swirl" />
+  <circle cx="1077" cy="749" r="3" fill="#1469E2" />
+  <circle cx="1088" cy="760" r="1.5" fill="#1469E2" />
+
+</svg>
