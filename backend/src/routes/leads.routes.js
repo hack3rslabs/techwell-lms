@@ -108,6 +108,91 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
     }
 });
 
+/**
+ * @route   POST /api/leads
+ * @desc    Create a new lead
+ * @access  Private
+ */
+router.post('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const {
+            name, email, phone, source, status, college, location,
+            qualification, dob, notes, assignedTo, franchiseId
+        } = req.body;
+
+        const data = {
+            name,
+            email,
+            phone,
+            source: source || 'Website',
+            status: status || 'NEW',
+            college,
+            location,
+            qualification,
+            notes,
+        };
+
+        if (dob) {
+            data.dob = new Date(dob);
+        }
+        if (assignedTo && assignedTo !== '') {
+            data.assignedToId = assignedTo;
+        }
+        if (franchiseId && franchiseId !== '') {
+            data.franchiseId = franchiseId;
+        }
+
+        const newLead = await prisma.lead.create({ data });
+        res.status(201).json(newLead);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   PUT /api/leads/:id
+ * @desc    Update a lead
+ * @access  Private
+ */
+router.put('/:id', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        const {
+            name, email, phone, source, status, college, location,
+            qualification, dob, notes, assignedTo, franchiseId
+        } = req.body;
+
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (email !== undefined) updateData.email = email;
+        if (phone !== undefined) updateData.phone = phone;
+        if (source !== undefined) updateData.source = source;
+        if (status !== undefined) updateData.status = status;
+        if (college !== undefined) updateData.college = college;
+        if (location !== undefined) updateData.location = location;
+        if (qualification !== undefined) updateData.qualification = qualification;
+        if (notes !== undefined) updateData.notes = notes;
+        
+        if (dob !== undefined) {
+            updateData.dob = dob ? new Date(dob) : null;
+        }
+        if (assignedTo !== undefined) {
+            updateData.assignedToId = assignedTo === '' ? null : assignedTo;
+        }
+        if (franchiseId !== undefined) {
+            updateData.franchiseId = franchiseId === '' ? null : franchiseId;
+        }
+
+        const updatedLead = await prisma.lead.update({
+            where: { id: req.params.id },
+            data: updateData
+        });
+
+        res.json(updatedLead);
+    } catch (error) {
+        next(error);
+    }
+});
+
 
 /**
  * @route   GET /api/leads/counts

@@ -33,6 +33,7 @@ import {
 import { exportToCSV } from '@/lib/export-utils'
 import api, { leadApi } from '@/lib/api'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 
 const initialLeadForm = {
     name: '',
@@ -221,15 +222,17 @@ export default function LeadsPage() {
                     ...newLead,
                     dob: newLead.dob || null
                 })
+                toast.success('Lead updated successfully')
             } else {
                 await api.post('/leads', newLead)
+                toast.success('Lead added successfully')
             }
             setIsAddOpen(false)
             resetLeadForm()
             await fetchLeads()
             refreshLeadCounts()
         } catch {
-            alert(editingLeadId ? 'Failed to update lead' : 'Failed to add lead')
+            toast.error(editingLeadId ? 'Failed to update lead' : 'Failed to add lead')
         } finally {
             setIsSavingLead(false)
         }
@@ -491,7 +494,7 @@ export default function LeadsPage() {
                                 Add Lead
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>{editingLeadId ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
                                 <DialogDescription>
