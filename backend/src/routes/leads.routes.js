@@ -309,10 +309,8 @@ router.get('/webhook/meta', async (req, res) => {
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
 
-    // In a real app, verify 'token' against stored 'webhookSecret' in DB
-    // For now, we accept any token matching 'techwell_meta_secret'
     if (mode && token) {
-        if (token === 'techwell_meta_secret') {
+        if (token === process.env.META_WEBHOOK_SECRET) {
             console.log('WEBHOOK_VERIFIED');
             // Prevent Reflected XSS by sanitizing challenge
             const sanitize = (str) => (str ? String(str).replace(/[<>"'&]/g, '') : '');

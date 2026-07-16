@@ -129,7 +129,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
         toast.success("Link copied to clipboard!")
     }
 
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
+    const shareUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.href) : ''
     const shareText = encodeURIComponent(post?.title || 'Techwell Blog')
 
     if (isLoading) {
