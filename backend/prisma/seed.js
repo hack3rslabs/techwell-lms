@@ -61,6 +61,23 @@ async function main() {
         console.log('⏭️  Student exists');
     }
 
+    let employer = await prisma.user.findUnique({ where: { email: 'employer@techwell.co.in' } });
+    if (!employer) {
+        employer = await prisma.user.create({
+            data: {
+                email: 'employer@techwell.co.in',
+                password: hashedPassword,
+                name: 'Tech Employer',
+                role: 'EMPLOYER',
+                isActive: true,
+                emailVerified: true,
+            },
+        });
+        console.log('✅ Created Employer');
+    } else {
+        console.log('⏭️  Employer exists');
+    }
+
     // Give Jane Pro access (interview access)
     const existingProEnrollment = await prisma.enrollment.findFirst({
         where: { userId: student.id, hasInterviewAccess: true }
