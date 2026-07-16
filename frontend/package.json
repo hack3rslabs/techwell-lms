@@ -11,6 +11,7 @@
     "clean": "powershell -NoProfile -Command \"if (Test-Path .next) { Remove-Item -Recurse -Force .next }; if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }; npm.cmd install\""
   },
   "dependencies": {
+    "@e965/xlsx": "^0.20.3",
     "@grapesjs/react": "^2.0.0",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.4.0",
@@ -67,7 +68,6 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -97,7 +97,7 @@
   },
   "overrides": {
     "postcss": "^8.5.10",
-    "quill": "^2.0.3",
-    "uuid": "11.1.1"
+    "uuid": "11.1.1",
+    "serialize-javascript": "^7.0.5"
   }
 }
