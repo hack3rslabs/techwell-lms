@@ -15,8 +15,6 @@ export default function ConsultancyRevenueDashboard() {
             const [analyticsRes, recordsRes] = await Promise.all([
                 api.get('/consultancy-analytics/analytics'),
                 api.get('/consultancy-analytics/coordination')
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultancy-analytics/analytics`, { headers }),
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/consultancy-analytics/coordination`, { headers })
             ]);
 
             if (analyticsRes.status === 200 || analyticsRes.data) setAnalytics(analyticsRes.data);

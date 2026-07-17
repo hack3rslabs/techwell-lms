@@ -20,6 +20,8 @@ interface User {
     college?: string;
     phone?: string;
     hasUnlimitedInterviews?: boolean;
+    hasAiInterviewAccess?: boolean;
+    hasResumeAccess?: boolean;
     xp?: number;
     currentStreak?: number;
     twoFactorEnabled?: boolean;

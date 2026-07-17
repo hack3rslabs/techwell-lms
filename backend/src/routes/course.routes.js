@@ -129,7 +129,24 @@ const createCourseSchema = z.object({
     // Interview Integration
     hasInterviewPrep: z.boolean().default(false),
     interviewPrice: z.number().min(0).default(0),
-    bundlePrice: z.number().min(0).default(0)
+    bundlePrice: z.number().min(0).default(0),
+    // New Marketing / Details fields
+    jobPrep: z.boolean().optional(),
+    fakeEnrolledCount: z.number().optional(),
+    fakeRating: z.number().optional(),
+    requireAdmissionFee: z.boolean().optional(),
+    admissionFee: z.number().optional(),
+    slug: z.string().optional(),
+    seoTitle: z.string().optional(),
+    metaDescription: z.string().optional(),
+    targetKeywords: z.array(z.string()).optional(),
+    faqs: z.any().optional(),
+    careerOpportunities: z.any().optional(),
+    salaryInsights: z.any().optional(),
+    projects: z.any().optional(),
+    prerequisites: z.any().optional(),
+    learningOutcomes: z.any().optional(),
+    toolsCovered: z.array(z.string()).optional()
 });
 
 /**

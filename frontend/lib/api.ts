@@ -61,6 +61,7 @@ export const authApi = {
         qualification?: string;
         college?: string;
         referredByCode?: string;
+        intent?: string;
     }) => api.post('/auth/register', data),
     verifyOtp: (data: { email: string; otp: string }) =>
         api.post('/auth/verify-otp', data),
