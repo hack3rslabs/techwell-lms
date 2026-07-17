@@ -264,7 +264,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             {/* Sidebar */}
             <div
                 className={cn(
-                    "fixed left-0 top-0 z-40 h-screen border-r bg-background flex flex-col transition-all duration-300 md:translate-x-0",
+                    "fixed left-0 top-0 z-40 h-screen border-r bg-background/95 backdrop-blur-xl flex flex-col transition-all duration-300 md:translate-x-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.2)]",
                     isCollapsed ? "w-20" : "w-64",
                     isMobileOpen ? "translate-x-0 w-64" : "-translate-x-full",
                     className
@@ -272,7 +272,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             >
 
                 {/* Header */}
-                <div className={cn("px-4 py-4 border-b flex flex-shrink-0 items-center h-16", isCollapsed ? "justify-center" : "justify-between")}>
+                <div className={cn("px-4 py-4 border-b flex flex-shrink-0 items-center h-16 bg-gradient-to-b from-muted/30 to-transparent", isCollapsed ? "justify-center" : "justify-between")}>
                     {!isCollapsed && (
                         <div className="overflow-hidden">
                             <h2 className="text-xl font-bold text-primary truncate">Admin Panel</h2>
@@ -304,8 +304,16 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                 placeholder="Search menus..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-8 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             />
+                            {searchQuery && (
+                                <button 
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted p-0.5 transition-colors"
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -337,28 +345,22 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                             <Link
                                                 href={route.href}
                                                 className={cn(
-                                                    "text-sm flex items-center justify-between gap-3 p-3 rounded-lg transition",
+                                                    "text-sm flex items-center justify-between gap-3 p-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
                                                     isActive && !route.customContent
-                                                        ? "text-primary bg-primary/10"
-                                                        : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                        ? "text-primary shadow-sm bg-gradient-to-r from-primary/15 to-transparent font-medium border border-primary/10"
+                                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                                                 )}
                                             >
-                                                <span className="flex min-w-0 items-center">
-                                                    {route.icon && <route.icon className={cn("h-5 w-5 flex-shrink-0", isCollapsed ? "mx-auto" : "mr-3")} />}
+                                                <span className="flex min-w-0 items-center relative z-10">
+                                                    {route.icon && <route.icon className={cn("h-5 w-5 flex-shrink-0 transition-colors duration-200", isCollapsed ? "mx-auto" : "mr-3", isActive && !route.customContent ? "text-primary" : "group-hover:text-primary")} />}
                                                     {!isCollapsed && <span className="truncate">{route.label}</span>}
                                                 </span>
 
-                                                {route.showLeadCounts && canViewLeads && !isCollapsed && (
+                                                {route.showLeadCounts && canViewLeads && !isCollapsed && leadCounts.unreadCount > 0 && (
                                                     <span className="ml-auto flex items-center gap-2">
-                                                        <span className="inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold bg-muted">
-                                                            {leadCounts.totalCount}
+                                                        <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                                                            {leadCounts.unreadCount > 99 ? "99+" : leadCounts.unreadCount}
                                                         </span>
-
-                                                        {leadCounts.unreadCount > 0 && (
-                                                            <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-                                                                {leadCounts.unreadCount > 99 ? "99+" : leadCounts.unreadCount}
-                                                            </span>
-                                                        )}
                                                     </span>
                                                 )}
                                             </Link>

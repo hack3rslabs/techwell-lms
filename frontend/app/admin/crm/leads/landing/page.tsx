@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { Phone, MessageCircle, Mail, Eye } from 'lucide-react';
 
 export default function LeadLandingPage() {
@@ -16,7 +15,7 @@ export default function LeadLandingPage() {
 
   async function fetchIncomingLeads() {
     try {
-      const res = await axios.get('/api/leads?status=NEW', { withCredentials: true });
+      const res = await api.get('/leads?status=NEW&assignedTo=UNASSIGNED');
       setLeads(res.data);
     } catch (error) {
       toast.error('Failed to fetch leads');
@@ -25,11 +24,9 @@ export default function LeadLandingPage() {
     }
   }
 
-
   useEffect(() => {
     fetchIncomingLeads();
   }, []);
-;
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -51,10 +48,10 @@ export default function LeadLandingPage() {
     if (!assignedToId) return;
 
     try {
-      await axios.put('/api/crm/leads/bulk/assign', {
+      await api.put('/crm/leads/bulk/assign', {
         leadIds: selectedLeads,
         assignedToId
-      }, { withCredentials: true });
+      });
       toast.success('Leads assigned successfully');
       fetchIncomingLeads();
       setSelectedLeads([]);
@@ -148,16 +145,21 @@ export default function LeadLandingPage() {
                     >
                         <Mail className="h-4 w-4" />
                     </a>
-                    <Link href={`/admin/crm/customers/${lead.id}`}>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
-                            title="View 360 Profile"
-                        >
-                            <Eye className="h-4 w-4" />
-                        </Button>
-                    </Link>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                        title="View Profile"
+                        onClick={() => {
+                            if (lead.customer?.customerNo || lead.customerId) {
+                                window.location.href = `/admin/crm/customers/${lead.customer?.customerNo || lead.customerId}`;
+                            } else {
+                                router.push(`/admin/leads`);
+                            }
+                        }}
+                    >
+                        <Eye className="h-4 w-4" />
+                    </Button>
                   </td>
                 </tr>
               ))}

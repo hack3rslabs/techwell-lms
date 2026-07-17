@@ -52,7 +52,11 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
         if (req.user.role === 'FRANCHISE_ADMIN') {
             where.franchiseId = req.user.franchiseId;
             if (assignedTo && assignedTo !== 'ALL') {
-                where.assignedTo = assignedTo;
+                if (assignedTo === 'UNASSIGNED') {
+                    where.assignedToId = null;
+                } else {
+                    where.assignedToId = assignedTo;
+                }
             }
         } else {
             const canViewAll = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('VIEW_ALL_LEADS') || req.user.permissions.includes('ALL');
@@ -65,7 +69,11 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
                     where.assignedTo = req.user.email || req.user.name;
                 }
             } else if (assignedTo && assignedTo !== 'ALL') {
-                where.assignedTo = assignedTo;
+                if (assignedTo === 'UNASSIGNED') {
+                    where.assignedToId = null;
+                } else {
+                    where.assignedToId = assignedTo;
+                }
             }
             if (franchiseId && franchiseId !== 'ALL') {
                 where.franchiseId = franchiseId === 'UNASSIGNED' ? null : franchiseId;
@@ -88,7 +96,8 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
                 },
                 demoSchedules: {
                     orderBy: { scheduledAt: 'desc' }
-                }
+                },
+                customer: true
             }
         });
 
@@ -193,6 +202,20 @@ router.put('/:id', authenticate, checkPermission('LEADS'), async (req, res, next
     }
 });
 
+
+/**
+ * @route   POST /api/leads/mark-seen
+ * @desc    Mark leads as seen (dummy route for frontend to avoid 404)
+ * @access  Private/Admin
+ */
+router.post('/mark-seen', authenticate, checkPermission('LEADS'), async (req, res, next) => {
+    try {
+        // Implement logic if a seen tracking system is added later
+        res.json({ success: true, message: 'Leads marked as seen' });
+    } catch (error) {
+        next(error);
+    }
+});
 
 /**
  * @route   GET /api/leads/counts
@@ -489,8 +512,6 @@ router.post('/webhook/generic', async (req, res) => {
                 notes: `Interest: ${category || 'General'}. JSON: ${JSON.stringify(req.body)}`
             }
         });
-        notifyNewLead(lead);
-        notifyNewLead(lead);
 
         res.status(201).json({ success: true, leadId: lead.id });
     } catch (error) {
@@ -499,15 +520,44 @@ router.post('/webhook/generic', async (req, res) => {
     }
 });
 
+/**
+ * @route   POST /api/leads/capture
+ * @desc    Public endpoint for contact/enquiry forms
+ * @access  Public
+ */
+router.post('/capture', async (req, res) => {
+    try {
+        const { name, email, phone, inquiryType, subject, message } = req.body;
+        
+        const lead = await prisma.lead.create({
+            data: {
+                name: name || 'Unknown',
+                email: email || null,
+                phone: phone || null,
+                source: 'WEBSITE',
+                platform: 'DIRECT',
+                status: 'NEW',
+                notes: `Inquiry Type: ${inquiryType || 'General'}\nSubject: ${subject || 'None'}\nMessage: ${message || 'None'}`
+            }
+        });
+
+        res.status(201).json({ success: true, leadId: lead.id });
+    } catch (error) {
+        console.error('Lead Capture Error:', error);
+        res.status(500).json({ error: 'Failed to capture lead' });
+    }
+});
 
 /**
  * @route   POST /api/leads/:id/convert
- * @desc    Convert Lead to Student (Create User Account)
+ * @desc    Convert Lead to Student (Create User Account) & Optionally Enroll
  * @access  Private/Admin
  */
 router.post('/:id/convert', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
         const { id } = req.params;
+        const { courseId, enrollmentMode, totalFee, paidAmount, installments, location } = req.body;
+        
         const lead = await prisma.lead.findUnique({ where: { id } });
 
         if (!lead) {
@@ -518,63 +568,125 @@ router.post('/:id/convert', authenticate, checkPermission('LEADS'), async (req, 
             return res.status(400).json({ error: 'Lead is already converted' });
         }
 
-        // Check if user already exists
-        const existingUser = await prisma.user.findUnique({ where: { email: lead.email } });
-        if (existingUser) {
-            // Just link user? or Error?
-            // For now, let's link and update status
+        const tempPassword = `Techwell@${Math.floor(1000 + Math.random() * 9000)}`;
+        const hashedPassword = await bcrypt.hash(tempPassword, 12);
+
+        // Transaction for safety
+        const result = await prisma.$transaction(async (prisma) => {
+            let user = await prisma.user.findUnique({ where: { email: lead.email } });
+            let isNewUser = false;
+            
+            if (!user) {
+                user = await prisma.user.create({
+                    data: {
+                        name: lead.name,
+                        email: lead.email,
+                        phone: lead.phone,
+                        password: hashedPassword,
+                        role: 'STUDENT',
+                        emailVerified: true,
+                        isActive: true,
+                        location: location || lead.city || 'Vijayawada'
+                    }
+                });
+                isNewUser = true;
+            }
+
+            // Update Lead
             await prisma.lead.update({
                 where: { id },
-                data: { status: 'CONVERTED', notes: 'Linked to existing user account.' }
+                data: { 
+                    status: 'CONVERTED', 
+                    notes: `Converted to Student User (ID: ${user.id}) on ${new Date().toLocaleDateString()}` 
+                }
             });
-            return res.status(200).json({ message: 'Lead linked to existing user successfully' });
+
+            // Optional: Create Enrollment
+            let enrollment = null;
+            if (courseId) {
+                enrollment = await prisma.enrollment.create({
+                    data: {
+                        userId: user.id,
+                        courseId: courseId,
+                        status: 'ACTIVE',
+                        enrollmentMode: enrollmentMode || 'ONLINE',
+                        validUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) // 1 year default
+                    }
+                });
+
+                // Handle Payments
+                if (totalFee !== undefined) {
+                    const payment = await prisma.payment.create({
+                        data: {
+                            userId: user.id,
+                            enrollmentId: enrollment.id,
+                            amount: Number(totalFee),
+                            status: Number(paidAmount) >= Number(totalFee) ? 'COMPLETED' : 'PENDING',
+                            transactionId: `TXN-SYS-${Date.now()}`
+                        }
+                    });
+
+                    // Initial Paid Amount as Installment
+                    if (Number(paidAmount) > 0) {
+                        await prisma.installment.create({
+                            data: {
+                                paymentId: payment.id,
+                                amount: Number(paidAmount),
+                                dueDate: new Date(),
+                                status: 'PAID',
+                                paidDate: new Date()
+                            }
+                        });
+                    }
+
+                    // Remaining Installments
+                    if (installments && installments.length > 0) {
+                        for (const inst of installments) {
+                            await prisma.installment.create({
+                                data: {
+                                    paymentId: payment.id,
+                                    amount: Number(inst.amount),
+                                    dueDate: new Date(inst.dueDate),
+                                    status: 'PENDING'
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+            return { user, isNewUser, enrollment };
+        });
+
+        if (result.isNewUser) {
+            // Send Email non-blocking
+            sendEmail({
+                to: result.user.email,
+                subject: 'Welcome to Techwell - Your Student Account is Ready',
+                text: `Hello ${result.user.name},\n\nYour student account has been created. Use the following credentials to login:\n\nEmail: ${result.user.email}\nPassword: ${tempPassword}\n\nPlease change your password after logging in.\n\nLogin URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/login\n\nBest Regards,\nTechwell Team`,
+                html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                        <h2 style="color: #1469E2;">Welcome to Techwell, ${result.user.name}!</h2>
+                        <p>Your student account has been successfully created.</p>
+                        <div style="background: #f4f6f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <p><strong>Login Credentials:</strong></p>
+                            <p>Email: <strong>${result.user.email}</strong></p>
+                            <p>Temporary Password: <strong>${tempPassword}</strong></p>
+                        </div>
+                        <p>Please <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login">Login Here</a> and change your password immediately.</p>
+                        <br/>
+                        <p>Best Regards,<br/><strong>The Techwell Team</strong></p>
+                       </div>`
+            }).catch(err => console.error('Credential Email Failed:', err.message));
         }
 
-        // Create new student user
-        const tempPassword = `Techwell@${Math.floor(1000 + Math.random() * 9000)}`;
-        const hashedPassword = await bcrypt.hash(tempPassword, 10);
-
-        const newUser = await prisma.user.create({
-            data: {
-                name: lead.name,
-                email: lead.email,
-                phone: lead.phone,
-                password: hashedPassword,
-                role: 'STUDENT',
-                emailVerified: true, // Auto-verify since admin created it
-                isActive: true
-            }
+        res.status(200).json({ 
+            message: result.enrollment ? 'Lead converted and enrolled successfully' : 'Lead converted successfully', 
+            user: result.user,
+            enrollment: result.enrollment
         });
-
-        // Update Lead status
-        await prisma.lead.update({
-            where: { id },
-            data: { status: 'CONVERTED', notes: `Converted to Student User (ID: ${newUser.id}) on ${new Date().toLocaleDateString()}` }
-        });
-
-        // Send Email with credentials
-        // Non-blocking
-        sendEmail({
-            to: newUser.email,
-            subject: 'Welcome to Techwell - Your Student Account is Ready',
-            text: `Hello ${newUser.name},\n\nYour student account has been created. Use the following credentials to login:\n\nEmail: ${newUser.email}\nPassword: ${tempPassword}\n\nPlease change your password after logging in.\n\nLogin URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/login\n\nBest Regards,\nTechwell Team`,
-            html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                    <h2 style="color: #1469E2;">Welcome to Techwell, ${newUser.name}!</h2>
-                    <p>Your student account has been successfully created.</p>
-                    <div style="background: #f4f6f8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                        <p><strong>Login Credentials:</strong></p>
-                        <p>Email: <strong>${newUser.email}</strong></p>
-                        <p>Temporary Password: <strong>${tempPassword}</strong></p>
-                    </div>
-                    <p>Please <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login">Login Here</a> and change your password immediately.</p>
-                    <br/>
-                    <p>Best Regards,<br/><strong>The Techwell Team</strong></p>
-                   </div>`
-        }).catch(err => console.error('Credential Email Failed:', err.message));
-
-        res.status(200).json({ message: 'Lead converted to Student successfully', user: newUser });
 
     } catch (error) {
+        console.error('Lead convert error:', error);
         next(error);
     }
 });

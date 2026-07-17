@@ -72,11 +72,22 @@ router.post('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) 
         const { name, companyName, email, phone } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
 
-        // Concatenate company name if provided, or store as plain name
+        const lastCustomer = await prisma.customer.findFirst({
+            orderBy: { createdAt: 'desc' },
+            select: { customerNo: true }
+        });
+        
+        let nextNo = 1000;
+        if (lastCustomer && lastCustomer.customerNo && lastCustomer.customerNo.startsWith('CUST-')) {
+            const num = parseInt(lastCustomer.customerNo.split('-')[1]);
+            if (!isNaN(num)) nextNo = num + 1;
+        }
+
         const finalName = companyName ? `${name} (${companyName})` : name;
 
         const customer = await prisma.customer.create({
             data: {
+                customerNo: `CUST-${nextNo}`,
                 name: finalName,
                 email: email || undefined,
                 phone: phone || undefined
@@ -98,8 +109,16 @@ router.get('/:id/360-view', authenticate, checkPermission('CENTRAL_CRM'), async 
     try {
         const { id } = req.params;
 
-        const customer = await prisma.customer.findUnique({
-            where: { id },
+        // Try to find by customerNo first, otherwise fallback to cuid
+        const isShortId = id.startsWith('CUST-') || id.length < 25;
+        
+        const customer = await prisma.customer.findFirst({
+            where: {
+                OR: [
+                    { customerNo: id },
+                    { id: id }
+                ]
+            },
             include: {
                 // Fetch associated users (Academic profile, Support tickets)
                 users: {
@@ -140,7 +159,7 @@ router.get('/:id/360-view', authenticate, checkPermission('CENTRAL_CRM'), async 
                     orderBy: { timestamp: 'desc' }
                 },
                 callLogs: {
-                    orderBy: { createdAt: 'desc' }
+                    orderBy: { timestamp: 'desc' }
                 }
             }
         });

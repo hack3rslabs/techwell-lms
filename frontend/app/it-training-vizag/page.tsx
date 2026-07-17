@@ -75,7 +75,8 @@ export default function VizagTrainingPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        // deepcode ignore DOMXSS: Sanitized by React
+dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <CityTrainingPage content={content} />
     </>

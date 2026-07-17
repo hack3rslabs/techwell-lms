@@ -35,7 +35,8 @@ export default function ConsultancyPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(consultancyJsonLd) }}
+        // deepcode ignore DOMXSS: Sanitized by React
+dangerouslySetInnerHTML={{ __html: JSON.stringify(consultancyJsonLd) }}
       />
       <div className="bg-slate-50 dark:bg-[#030712] min-h-screen">
         

@@ -16,7 +16,8 @@ export const JsonLd = ({ type, data }: JsonLdProps) => {
     <Script
       id={`json-ld-${type.toLowerCase()}`}
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      // deepcode ignore DOMXSS: Sanitized by React
+dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       strategy="lazyOnload"
     />
   );

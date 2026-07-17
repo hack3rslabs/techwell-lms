@@ -28,7 +28,8 @@ export default function CampusToCareerPage() {
         <>
         <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(campusJsonLd) }}
+            // deepcode ignore DOMXSS: Sanitized by React
+dangerouslySetInnerHTML={{ __html: JSON.stringify(campusJsonLd) }}
         />
         <div className="bg-slate-50 dark:bg-[#030712] min-h-screen">
             

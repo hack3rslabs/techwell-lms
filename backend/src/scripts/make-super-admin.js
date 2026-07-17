@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   const email = 'venukoyyana908@gmail.com';
   const plainPassword = process.env.ADMIN_PASSWORD || Buffer.from('VmVudUA5NTAyMA==', 'base64').toString('utf8');
-  const hashedPassword = await bcrypt.hash(plainPassword, 10);
+  const hashedPassword = await bcrypt.hash(plainPassword, 12);
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   

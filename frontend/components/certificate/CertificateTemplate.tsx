@@ -69,18 +69,18 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
                 <div className="flex flex-col items-center mb-10 w-full gap-4">
                     <div className="flex items-center gap-6">
                         {/* Techwell Logo */}
-                        <div className="flex items-center gap-3">
-                            <img src="/logo-light.png" alt="Techwell Logo" className="h-16 object-contain" />
+                        <div className="flex items-center justify-center">
+                            <img src="/logo.png" alt="Techwell Logo" className="h-24 object-contain" />
                         </div>
 
                         {data.franchise?.logoUrl && (
-                            <div className="h-12 border-l-2 border-slate-300"></div>
+                            <div className="h-16 border-l-2 border-slate-300 mx-4"></div>
                         )}
                         
                         {/* Franchise Logo (Right next to Techwell logo) */}
                         {data.franchise && data.franchise.logoUrl && (
-                            <div className="flex items-center gap-3">
-                                <img src={data.franchise.logoUrl} alt={data.franchise.name} className="h-16 max-w-[120px] object-contain" />
+                            <div className="flex items-center justify-center">
+                                <img src={data.franchise.logoUrl} alt={data.franchise.name} className="h-24 max-w-[160px] object-contain" />
                             </div>
                         )}
                     </div>
@@ -125,13 +125,13 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
                     </div>
 
                     {/* Signature */}
-                    <div className="flex flex-col items-end w-1/3 text-right pr-8">
+                    <div className="flex flex-col items-center justify-center w-1/3 text-center pr-8">
                         <p className="text-5xl font-['Brush_Script_MT',cursive] text-primary mb-2 -rotate-2 opacity-90">
                             {data.signatoryName}
                         </p>
-                        <div className="w-56 border-b border-slate-300 mb-2"></div>
+                        <div className="w-56 border-b-2 border-slate-800 mb-2"></div>
                         <p className="text-[11px] text-slate-900 font-bold uppercase tracking-widest">{data.signatoryName}</p>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest">{data.signatoryTitle}</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{data.signatoryTitle}</p>
                     </div>
                 </div>
 

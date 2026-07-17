@@ -481,8 +481,12 @@ router.get('/students/available-for-batch', authenticate, checkPermission('STUDE
                         name: true,
                         email: true,
                         phone: true,
+                        location: true
                     }
                 }
+            },
+            orderBy: {
+                createdAt: 'asc' // FIFO
             }
         });
 
@@ -492,8 +496,11 @@ router.get('/students/available-for-batch', authenticate, checkPermission('STUDE
             name: e.user.name,
             email: e.user.email,
             phone: e.user.phone,
+            location: e.user.location,
             progress: e.progress,
-            enrollmentStatus: e.status
+            enrollmentStatus: e.status,
+            enrollmentMode: e.enrollmentMode,
+            enrollmentDate: e.createdAt
         }));
 
         res.json({ students });
@@ -540,9 +547,11 @@ router.get('/students', authenticate, checkPermission('STUDENTS'), async (req, r
                 include: {
                     enrollments: {
                         include: {
-                            course: { select: { id: true, title: true, category: true, price: true, thumbnail: true } }
+                            course: { select: { id: true, title: true, category: true, price: true, thumbnail: true } },
+                            installments: true
                         }
-                    }
+                    },
+                    payments: true
                 },
                 orderBy: { createdAt: 'desc' },
                 skip,
@@ -561,6 +570,7 @@ router.get('/students', authenticate, checkPermission('STUDENTS'), async (req, r
                 name: u.name,
                 email: u.email,
                 phone: u.phone,
+                location: u.location,
                 qualification: u.qualification,
                 status: u.isActive ? 'ACTIVE' : 'INACTIVE',
                 createdAt: u.createdAt,

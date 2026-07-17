@@ -895,6 +895,32 @@ router.post('/:courseId/lessons/:lessonId/complete', authenticate, async (req, r
         const result = await lmsService.updateLessonProgress(userId, lessonId, { timeSpent, score });
 
         if (result.courseCompleted) {
+            // Find Enrollment
+            const enrollment = await prisma.enrollment.findFirst({
+                where: { userId, courseId, status: 'ACTIVE' }
+            });
+
+            if (enrollment) {
+                // Check for pending installments for this enrollment
+                const pendingInstallments = await prisma.installment.count({
+                    where: {
+                        payment: {
+                            enrollmentId: enrollment.id
+                        },
+                        status: 'PENDING'
+                    }
+                });
+
+                if (pendingInstallments === 0) {
+                    // Unlock AI Interview Access
+                    await prisma.user.update({
+                        where: { id: userId },
+                        data: { hasAiInterviewAccess: true }
+                    });
+                    result.aiInterviewUnlocked = true;
+                }
+            }
+
             // Trigger Certificate Generation if not exists
             const existingCert = await prisma.certificate.findFirst({
                 where: { userId, courseId }
@@ -902,11 +928,63 @@ router.post('/:courseId/lessons/:lessonId/complete', authenticate, async (req, r
 
             if (!existingCert) {
                 // Return flag to frontend to show "Claim Certificate" button
-                // Or call internal certificate generation logic here
+                result.certificateAvailable = true;
             }
         }
 
         res.json(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   POST /api/courses/:courseId/heartbeat
+ * @desc    Record student heartbeat (minutes spent connected)
+ * @access  Private
+ */
+router.post('/:courseId/heartbeat', authenticate, async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
+        const userId = req.user.id;
+        
+        // Find enrollment and batch
+        const enrollment = await prisma.enrollment.findFirst({
+            where: { userId, courseId, status: 'ACTIVE' }
+        });
+
+        if (!enrollment || !enrollment.batchId) {
+            return res.status(200).json({ message: 'Heartbeat ignored (no active batch)' });
+        }
+
+        // Use current date (start of day) for unique constraint
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Upsert attendance record for today
+        await prisma.attendance.upsert({
+            where: {
+                batchId_userId_date: {
+                    batchId: enrollment.batchId,
+                    userId: userId,
+                    date: today
+                }
+            },
+            update: {
+                minutesSpent: { increment: 1 },
+                status: 'PRESENT'
+            },
+            create: {
+                batchId: enrollment.batchId,
+                userId: userId,
+                date: today,
+                status: 'PRESENT',
+                minutesSpent: 1,
+                notes: 'Auto-recorded via student portal heartbeat'
+            }
+        });
+
+        res.status(200).json({ success: true });
     } catch (error) {
         next(error);
     }

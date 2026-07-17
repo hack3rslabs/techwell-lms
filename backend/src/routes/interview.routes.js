@@ -171,7 +171,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
 
         res.json({ interview });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });
@@ -210,7 +210,7 @@ router.get('/:id/report', authenticate, async (req, res, next) => {
 
         res.json({ report });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });
@@ -271,7 +271,7 @@ router.post('/', authenticate, async (req, res, next) => {
 
         res.status(201).json({ message: 'Interview scheduled', interview });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });
@@ -312,7 +312,7 @@ router.patch('/:id/start', authenticate, async (req, res, next) => {
         console.log(`[Interview Start] Success for interview: ${updated.id}`);
         res.json({ message: 'Interview started', interview: updated });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });
@@ -349,7 +349,7 @@ router.patch('/:id/complete', authenticate, async (req, res, next) => {
 
         res.json({ message: 'Interview completed', interview: updated });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });
@@ -378,7 +378,7 @@ router.get('/stats/summary', authenticate, async (req, res, next) => {
             }
         });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });
@@ -457,7 +457,7 @@ router.get('/job-interviews', authenticate, async (req, res, next) => {
         });
         res.json({ interviews });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });
@@ -531,7 +531,7 @@ router.post('/:id/next-question', authenticate, async (req, res, next) => {
         console.log(`[Interview API] Success: next question generated: ${question.id}`);
         res.json({ question });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });
@@ -570,7 +570,7 @@ router.post('/:id/response', authenticate, async (req, res, next) => {
             evaluation
         });
     } catch (error) {
-        console.error(`[Interview API Error] at ${req.originalUrl}:`, error);
+        console.error('[Interview API Error] at', req.originalUrl, ':', error);
         next(error);
     }
 });

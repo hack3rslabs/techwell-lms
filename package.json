@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "bulk-rbac-update.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hack3rslabs/techwell-lms.git"

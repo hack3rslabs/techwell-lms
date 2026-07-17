@@ -3,6 +3,49 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { authenticate, checkPermission } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Configure Multer for event image uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = path.join(__dirname, '../../uploads/events');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, 'event-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|webp/;
+        if (allowed.test(file.mimetype) && allowed.test(path.extname(file.originalname).toLowerCase())) {
+            return cb(null, true);
+        }
+        cb(new Error('Only image files are allowed (jpg, png, gif, webp)'));
+    }
+});
+
+/**
+ * @route   POST /api/events/upload-image
+ * @desc    Upload an event banner image
+ * @access  Private/Admin
+ */
+router.post('/upload-image', authenticate, checkPermission('LEADS'), upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No image file provided' });
+    }
+    const imageUrl = `/uploads/events/${req.file.filename}`;
+    res.json({ imageUrl });
+});
 
 /**
  * @route   GET /api/events

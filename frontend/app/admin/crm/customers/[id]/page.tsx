@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -24,10 +24,7 @@ export default function Customer360Profile({ params }: { params: { id: string } 
   useEffect(() => {
     const fetch360View = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:5000/api/crm/customers/${params.id}/360-view`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get(`/crm/customers/${params.id}/360-view`);
         
         if (response.data.success) {
           setCustomer(response.data.data.customer);
@@ -50,11 +47,7 @@ export default function Customer360Profile({ params }: { params: { id: string } 
     const content = prompt(`Enter ${type} content:`);
     if (!content) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/crm/communication', 
-        { customerId: params.id, type, content, direction: 'OUTBOUND' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/crm/communication', { customerId: params.id, type, content, direction: 'OUTBOUND' });
       setCommLogs(prev => [response.data.data, ...prev]);
       toast.success(`${type} logged successfully!`);
     } catch {
@@ -66,11 +59,7 @@ export default function Customer360Profile({ params }: { params: { id: string } 
     const title = prompt('Enter task title:');
     if (!title) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/crm/tasks', 
-        { customerId: params.id, title, description: '', dueDate: new Date(Date.now() + 86400000).toISOString() },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/crm/tasks', { customerId: params.id, title, description: '', dueDate: new Date(Date.now() + 86400000).toISOString() });
       setTasks(prev => [...prev, response.data.data]);
       toast.success('Task added!');
     } catch {
@@ -106,7 +95,7 @@ export default function Customer360Profile({ params }: { params: { id: string } 
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold">LTV: ₹{customer.lifetimeValue}</div>
-          <div className="text-sm text-muted-foreground">Lead Score: {customer.globalLeadScore}</div>
+          <div className="text-sm text-muted-foreground">Customer Score: {customer.globalLeadScore}</div>
         </div>
       </div>
 
@@ -125,7 +114,7 @@ export default function Customer360Profile({ params }: { params: { id: string } 
 
       {/* 360 View Tabs */}
       <Tabs defaultValue="timeline" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 mb-4">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 mb-4 h-auto min-h-10">
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="pipelines">Deals & Pipelines</TabsTrigger>
           <TabsTrigger value="academic">Academic (Courses)</TabsTrigger>
@@ -134,6 +123,23 @@ export default function Customer360Profile({ params }: { params: { id: string } 
           <TabsTrigger value="communication">Comm Log</TabsTrigger>
           <TabsTrigger value="agreements">Agreements</TabsTrigger>
         </TabsList>
+        <TabsContent value="support" className="mt-4">
+          <Card>
+            <CardHeader><CardTitle>Support Tickets</CardTitle></CardHeader>
+            <CardContent>
+              {customer.users && customer.users.some((u: any) => u.tickets && u.tickets.length > 0) ? (
+                <ul className="space-y-2">
+                  {customer.users.map((u: any) => u.tickets?.map((t: any) => (
+                    <li key={t.id} className="p-3 border rounded">
+                      <div className="font-bold">{t.title}</div>
+                      <div className="text-sm text-muted-foreground">Status: {t.status} | Priority: {t.priority}</div>
+                    </li>
+                  )))}
+                </ul>
+              ) : <p className="text-sm text-muted-foreground">No support tickets found.</p>}
+            </CardContent>
+          </Card>
+        </TabsContent>
         <TabsContent value="timeline" className="mt-4">
           <Card>
             <CardHeader className="flex flex-row justify-between items-center">

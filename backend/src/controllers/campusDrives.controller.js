@@ -18,33 +18,53 @@ exports.getAdminDrives = async (req, res) => {
     }
 };
 
-// Employer: Request a new Campus Drive
+// Employer or Institute Admin: Request/Create a new Campus Drive
 exports.createCampusDrive = async (req, res) => {
     try {
-        const { instituteIds, isOffCampus, eligibilityCriteria, title, description, skills, jobRole, salary, openings, hiringMode, targetYear, departments, location, scheduledDate } = req.body;
+        const { instituteIds, isOffCampus, eligibilityCriteria, title, description, skills, jobRole, salary, openings, hiringMode, targetYear, departments, location, scheduledDate, hostType } = req.body;
         
-        const drive = await prisma.campusDrive.create({
-            data: {
-                employerId: req.user.id,
-                isOffCampus: isOffCampus || false,
-                eligibilityCriteria: eligibilityCriteria || null,
-                title,
-                description,
-                skills,
-                jobRole,
-                salary,
-                openings,
-                hiringMode,
-                targetYear,
-                departments,
-                location,
-                scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
-                status: 'REQUESTED'
+        const isEmployer = req.user.role === 'EMPLOYER';
+        const isInstituteRole = ['INSTITUTE_ADMIN', 'INSTITUTE_OWNER', 'COLLEGE_ADMIN'].includes(req.user.role);
+        
+        let driveData = {
+            isOffCampus: isOffCampus || false,
+            eligibilityCriteria: eligibilityCriteria || null,
+            title,
+            description,
+            skills,
+            jobRole,
+            salary,
+            openings: openings ? parseInt(openings) : null,
+            hiringMode,
+            targetYear,
+            departments,
+            location,
+            scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
+        };
+
+        if (isEmployer) {
+            driveData.employerId = req.user.id;
+            driveData.hostType = 'TECHWELL';
+            driveData.status = 'REQUESTED';
+        } else if (isInstituteRole) {
+            if (!req.user.instituteId) {
+                return res.status(400).json({ error: 'You are not assigned to an institute.' });
             }
+            driveData.hostType = 'INSTITUTE';
+            // Instantly approve since the institute itself is creating it
+            driveData.status = 'APPROVED'; 
+        } else {
+            // Super Admin or Staff
+            driveData.hostType = hostType || 'TECHWELL';
+            driveData.status = 'APPROVED';
+        }
+
+        const drive = await prisma.campusDrive.create({
+            data: driveData
         });
 
-        // Link the drive to multiple institutes if it's an on-campus drive
-        if (!isOffCampus && instituteIds && instituteIds.length > 0) {
+        // Link the drive to institutes
+        if (isEmployer && !isOffCampus && instituteIds && instituteIds.length > 0) {
             const instituteLinks = instituteIds.map(id => ({
                 driveId: drive.id,
                 instituteId: id,
@@ -54,12 +74,21 @@ exports.createCampusDrive = async (req, res) => {
                 data: instituteLinks,
                 skipDuplicates: true
             });
+        } else if (isInstituteRole) {
+            // Self-link the institute
+            await prisma.campusDriveInstitute.create({
+                data: {
+                    driveId: drive.id,
+                    instituteId: req.user.instituteId,
+                    status: 'ACCEPTED' // Institute created it, so they already accept it
+                }
+            });
         }
 
-        res.status(201).json({ message: 'Campus drive requested successfully', drive });
+        res.status(201).json({ message: 'Campus drive created successfully', drive });
     } catch (error) {
         console.error('Create Campus Drive Error:', error);
-        res.status(500).json({ error: 'Failed to request campus drive' });
+        res.status(500).json({ error: 'Failed to create campus drive' });
     }
 };
 

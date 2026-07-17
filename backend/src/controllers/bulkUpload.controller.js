@@ -32,7 +32,7 @@ exports.bulkUploadStudents = async (req, res) => {
                 }
 
                 // Create user
-                const hashedPassword = await bcrypt.hash(student.password || generatePassword(), 10);
+                const hashedPassword = await bcrypt.hash(student.password || generatePassword(), 12);
                 await prisma.user.create({
                     data: {
                         name: student.name || 'Unknown',

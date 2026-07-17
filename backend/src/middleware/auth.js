@@ -67,8 +67,44 @@ const authenticate = async (req, res, next) => {
 
         // Format permissions for easier lookup
         const rolePermissions = {};
-        if (user.systemRole && user.systemRole.rolePermissions) {
-            user.systemRole.rolePermissions.forEach(rp => {
+        
+        let systemRoleData = user.systemRole;
+        if (!systemRoleData && user.role) {
+            // Fallback for users missing systemRoleId
+            const roleNameMap = {
+                'EMPLOYER': 'Employer',
+                'FRANCHISE_ADMIN': 'Franchise Admin',
+                'INSTITUTE_ADMIN': 'Institute Admin',
+                'STAFF': 'Staff',
+                'SUPER_ADMIN': 'Super Admin'
+            };
+            const expectedName = roleNameMap[user.role];
+            if (expectedName) {
+                systemRoleData = await prisma.systemRole.findFirst({
+                    where: { name: expectedName },
+                    select: {
+                        name: true,
+                        rolePermissions: {
+                            include: { feature: { select: { code: true } } }
+                        }
+                    }
+                });
+                
+                // Also update the user record for future logins
+                if (systemRoleData) {
+                    const fallbackRole = await prisma.systemRole.findFirst({ where: { name: expectedName } });
+                    if (fallbackRole) {
+                        await prisma.user.update({
+                            where: { id: user.id },
+                            data: { systemRoleId: fallbackRole.id }
+                        });
+                    }
+                }
+            }
+        }
+
+        if (systemRoleData && systemRoleData.rolePermissions) {
+            systemRoleData.rolePermissions.forEach(rp => {
                 rolePermissions[rp.feature.code] = {
                     canRead: rp.canRead,
                     canCreate: rp.canCreate,
@@ -203,8 +239,31 @@ const optionalAuth = async (req, res, next) => {
 
         if (user) {
             const rolePermissions = {};
-            if (user.systemRole && user.systemRole.rolePermissions) {
-                user.systemRole.rolePermissions.forEach(rp => {
+            let systemRoleData = user.systemRole;
+            if (!systemRoleData && user.role) {
+                const roleNameMap = {
+                    'EMPLOYER': 'Employer',
+                    'FRANCHISE_ADMIN': 'Franchise Admin',
+                    'INSTITUTE_ADMIN': 'Institute Admin',
+                    'STAFF': 'Staff',
+                    'SUPER_ADMIN': 'Super Admin'
+                };
+                const expectedName = roleNameMap[user.role];
+                if (expectedName) {
+                    systemRoleData = await prisma.systemRole.findFirst({
+                        where: { name: expectedName },
+                        select: {
+                            name: true,
+                            rolePermissions: {
+                                include: { feature: { select: { code: true } } }
+                            }
+                        }
+                    });
+                }
+            }
+
+            if (systemRoleData && systemRoleData.rolePermissions) {
+                systemRoleData.rolePermissions.forEach(rp => {
                     rolePermissions[rp.feature.code] = {
                         canRead: rp.canRead,
                         canCreate: rp.canCreate,

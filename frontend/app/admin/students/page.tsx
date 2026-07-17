@@ -56,6 +56,12 @@ interface StudentEnrollment {
     status: string
     enrolledAt: string
     completedAt: string | null
+    enrollmentMode?: string
+    installments?: {
+        id: string
+        amount: number
+        status: string
+    }[]
 }
 
 interface StudentUser {
@@ -69,6 +75,12 @@ interface StudentUser {
     plan: string
     createdAt: string
     enrollments: StudentEnrollment[]
+    payments?: {
+        id: string
+        amount: number
+        paymentMethod: string
+        status: string
+    }[]
 }
 
 interface StudentRecord {
@@ -622,9 +634,10 @@ export default function StudentsPage() {
                                             <TableHead className="font-semibold">Course</TableHead>
                                             <TableHead className="font-semibold">Qualification</TableHead>
                                           {/* <TableHead className="font-semibold">Progress</TableHead> */}
-                                            {/* <TableHead className="font-semibold">Enrolled On</TableHead> */}
                                             <TableHead className="font-semibold">Enrolled On</TableHead>
-                                            <TableHead className="font-semibold text-right">Payment</TableHead>
+                                            <TableHead className="font-semibold text-center">Payment Status</TableHead>
+                                            <TableHead className="font-semibold text-center">Mode</TableHead>
+                                            <TableHead className="font-semibold text-right">Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -697,7 +710,7 @@ export default function StudentsPage() {
                                                                 : '—'}
                                                         </div>
                                                     </TableCell> */}
-                                                    <TableCell>
+                                                     <TableCell>
                                                         <div className="text-sm text-muted-foreground">
                                                             {enrollment?.enrolledAt
                                                                 ? new Date(enrollment.enrolledAt).toLocaleDateString('en-IN', {
@@ -707,6 +720,44 @@ export default function StudentsPage() {
                                                                 })
                                                                 : '—'}
                                                         </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        {(() => {
+                                                            const coursePrice = student.course?.price || 0;
+                                                            const payments = student.user?.payments || [];
+                                                            const installments = enrollment?.installments || [];
+                                                            const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+                                                            
+                                                            if (totalPaid >= coursePrice && coursePrice > 0) {
+                                                                return <Badge className="bg-emerald-500 hover:bg-emerald-600">Done</Badge>;
+                                                            }
+                                                            const paidInstallments = installments.filter(i => i.status === 'PAID').length;
+                                                            if (installments.length > 0) {
+                                                                return <Badge className="bg-orange-500 hover:bg-orange-600">{paidInstallments} EMIs Paid</Badge>;
+                                                            }
+                                                            if (totalPaid > 0 && totalPaid < coursePrice) {
+                                                                return <Badge className="bg-orange-500 hover:bg-orange-600">Partial</Badge>;
+                                                            }
+                                                            return <Badge className="bg-red-500 hover:bg-red-600">Pending</Badge>;
+                                                        })()}
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        {(() => {
+                                                            const payments = student.user?.payments || [];
+                                                            const baseMode = enrollment?.enrollmentMode || 'ONLINE';
+                                                            const paymentMethods = Array.from(new Set(payments.map(p => p.paymentMethod)));
+                                                            
+                                                            const isCash = paymentMethods.includes('CASH') || paymentMethods.includes('CASH_FRANCHISE') || baseMode === 'OFFLINE';
+                                                            const isOnline = paymentMethods.includes('ONLINE') || baseMode === 'ONLINE';
+
+                                                            return (
+                                                                <div className="flex flex-col gap-1 items-center justify-center">
+                                                                    {isCash && <Badge className="bg-blue-500 hover:bg-blue-600 w-full justify-center">Offline/Cash</Badge>}
+                                                                    {isOnline && <Badge className="bg-purple-500 hover:bg-purple-600 w-full justify-center">Online</Badge>}
+                                                                    {!isCash && !isOnline && <Badge variant="outline">Unknown</Badge>}
+                                                                </div>
+                                                            )
+                                                        })()}
                                                     </TableCell>
                                                      <TableCell>
                                                         <div className="flex justify-end">
@@ -729,7 +780,7 @@ export default function StudentsPage() {
                                                                 ) : (
                                                                     <Banknote className="h-4 w-4" />
                                                                 )}
-                                                                {student.paymentDone ? 'Paid' : 'Payment Done'}
+                                                                {student.paymentDone ? 'Paid' : 'Payment'}
                                                             </Button>
 
                                                         </div>
@@ -988,7 +1039,7 @@ export default function StudentsPage() {
                         {batchForm.courseId && (
                             <div className="grid gap-3">
                                 <div className="flex items-center justify-between">
-                                    <Label>Select Students ({batchForm.studentIds.length} selected)</Label>
+                                    <Label>Select Students <span className={batchForm.studentIds.length > 20 ? 'text-red-500 font-bold' : ''}>({batchForm.studentIds.length} selected)</span></Label>
                                     <div className="relative w-64">
                                         <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                                         <Input
@@ -999,6 +1050,11 @@ export default function StudentsPage() {
                                         />
                                     </div>
                                 </div>
+                                {batchForm.studentIds.length > 20 && (
+                                    <div className="text-xs text-amber-600 font-medium flex items-center bg-amber-50 p-2 rounded border border-amber-200">
+                                        Warning: Batch capacity exceeded (Max 20 recommended).
+                                    </div>
+                                )}
                                 
                                 <div className="border rounded-md max-h-[300px] overflow-y-auto">
                                     {batchStudents.length > 0 ? (
@@ -1025,11 +1081,30 @@ export default function StudentsPage() {
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-medium leading-none truncate">{student.name}</p>
                                                         <p className="text-xs text-muted-foreground truncate mt-1">{student.email}</p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Badge variant="outline" className="text-[10px]">
+                                                            {student.phone || 'No Phone'}
+                                                        </Badge>
+                                                        {/* @ts-expect-error - Location property might be missing on Student type */}
+                                                        {student.location && (
+                                                            <Badge variant="secondary" className="text-[10px] bg-slate-100">
+                                                                {/* @ts-expect-error - Location property might be missing on Student type */}
+                                                                {student.location}
+                                                            </Badge>
+                                                        )}
+                                                        {/* @ts-expect-error - enrollmentMode property might be missing on Student type */}
+                                                        <Badge className={`text-[10px] ${student.enrollmentMode === 'OFFLINE' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-purple-500 hover:bg-purple-600'}`}>
+                                                            {/* @ts-expect-error - enrollmentMode property might be missing on Student type */}
+                                                            {student.enrollmentMode || 'ONLINE'}
+                                                        </Badge>
+                                                        {(student as any).enrollmentDate && (
+                                                            <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-200 bg-emerald-50">
+                                                                Waiting: {Math.floor((new Date().getTime() - new Date((student as any).enrollmentDate as string).getTime()) / (1000 * 3600 * 24))} days
+                                                            </Badge>
+                                                        )}
                                                     </div>
-                                                    <Badge variant="outline" className="text-[10px]">
-                                                        {student.phone || 'No Phone'}
-                                                    </Badge>
                                                 </div>
+                                            </div>
                                             ))}
                                             {filteredBatchStudents.length === 0 && (
                                                 <div className="p-8 text-center text-sm text-muted-foreground">

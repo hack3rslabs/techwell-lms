@@ -265,8 +265,8 @@ export default function CertificatePublicPage() {
                                                     <div>{certificate.uniqueId}</div>
                                                 </div>
                                             ) : el.type === 'image' ? (
-                                                <div className="flex items-center justify-center bg-white rounded-md p-2 shadow-sm" style={{ width: el.fontSize * 6, height: el.fontSize * 6 }}>
-                                                    <Image src="/logo-dark.png" alt="Logo" width={160} height={160} className="object-contain" />
+                                                <div className="flex items-center justify-center bg-transparent" style={{ width: el.fontSize * 10, height: el.fontSize * 10 }}>
+                                                    <Image src="/logo.png" alt="Logo" width={240} height={240} className="object-contain" />
                                                 </div>
                                             ) : (
                                                 renderText(el.value || el.label)
@@ -304,8 +304,8 @@ export default function CertificatePublicPage() {
                                                     <div>{certificate.uniqueId}</div>
                                                 </div>
                                             ) : el.type === 'image' ? (
-                                                <div className="flex items-center justify-center bg-white rounded-md p-1 shadow-sm" style={{ width: `calc(${el.fontSize} * 0.5cqw)`, height: `calc(${el.fontSize} * 0.5cqw)` }}>
-                                                    <Image src="/logo-dark.png" alt="Logo" width={80} height={80} className="object-contain" />
+                                                <div className="flex items-center justify-center bg-transparent" style={{ width: `calc(${el.fontSize} * 0.8cqw)`, height: `calc(${el.fontSize} * 0.8cqw)` }}>
+                                                    <Image src="/logo.png" alt="Logo" width={120} height={120} className="object-contain" />
                                                 </div>
                                             ) : (
                                                 renderText(el.value || el.label)

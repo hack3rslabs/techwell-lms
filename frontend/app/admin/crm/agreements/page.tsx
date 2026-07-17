@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { FileText, Plus, Search, Eye, Edit, Trash2, Link as LinkIcon } from 'lucide-react'
-import axios from 'axios'
+import api from '@/lib/api'
 import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -22,7 +22,7 @@ export default function AgreementsDashboard() {
     async function fetchAgreements() {
         try {
             setLoading(true)
-            const res = await axios.get('/api/crm/agreements')
+            const res = await api.get('/crm/agreements')
             setAgreements(res.data)
         } catch (error) {
             console.error("Failed to fetch agreements:", error)
@@ -135,7 +135,7 @@ export default function AgreementsDashboard() {
                                                     <Button variant="ghost" size="icon" title="Download PDF" onClick={async () => {
                                                         toast.loading("Generating PDF...", { id: 'pdf' })
                                                         try {
-                                                            const res = await axios.get(`/api/crm/agreements/${agreement.id}/pdf`, { responseType: 'blob' })
+                                                            const res = await api.get(`/crm/agreements/${agreement.id}/pdf`, { responseType: 'blob' })
                                                             const url = window.URL.createObjectURL(new Blob([res.data]))
                                                             const link = document.createElement('a')
                                                             link.href = url
