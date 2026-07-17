@@ -14,9 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { QRCodeCanvas } from 'qrcode.react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { Loader2, Plus, QrCode, Edit, Trash2, Calendar, Users, GripVertical, Settings2, Link as LinkIcon, Trash, Award } from 'lucide-react'
+import { Loader2, Plus, QrCode, Edit, Trash2, Calendar, Users, GripVertical, Settings2, Link as LinkIcon, Trash, Award, Upload, ImageIcon, X } from 'lucide-react'
 import api from '@/lib/api'
-import { ImageUploadInfo } from '@/components/ui/ImageUploadInfo'
 
 interface CustomField {
     id: string
@@ -56,6 +55,12 @@ export default function AdminEventsPage() {
     })
     const [customFields, setCustomFields] = React.useState<CustomField[]>([])
 
+    // Image upload state
+    const [imageInputMode, setImageInputMode] = React.useState<'url' | 'upload'>('url')
+    const [imageFile, setImageFile] = React.useState<File | null>(null)
+    const [imageUploading, setImageUploading] = React.useState(false)
+    const [imageUploadError, setImageUploadError] = React.useState('')
+
     const fetchEvents = React.useCallback(async () => {
         setIsLoading(true)
         try {
@@ -94,6 +99,9 @@ export default function AdminEventsPage() {
         })
         setCustomFields([])
         setEditingEventId(null)
+        setImageFile(null)
+        setImageInputMode('url')
+        setImageUploadError('')
     }
 
     const handleEdit = (event: any) => {
@@ -113,7 +121,32 @@ export default function AdminEventsPage() {
         })
         setCustomFields(event.customFormFields || [])
         setEditingEventId(event.id)
+        setImageFile(null)
+        // If event has an image, show URL tab with the existing image URL
+        setImageInputMode('url')
+        setImageUploadError('')
         setIsAddOpen(true)
+    }
+
+    const handleImageFileChange = async (file: File | null) => {
+        if (!file) return
+        setImageFile(file)
+        setImageUploadError('')
+        setImageUploading(true)
+        try {
+            const fd = new FormData()
+            fd.append('image', file)
+            const res = await api.post('/events/upload-image', fd, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
+            const fullUrl = `${process.env.NEXT_PUBLIC_API_URL}${res.data.imageUrl}`
+            setFormData(prev => ({ ...prev, imageUrl: fullUrl }))
+        } catch (err: any) {
+            setImageUploadError(err?.response?.data?.error || 'Upload failed. Try again.')
+            setImageFile(null)
+        } finally {
+            setImageUploading(false)
+        }
     }
 
     const handleDelete = async (id: string) => {
@@ -231,10 +264,23 @@ export default function AdminEventsPage() {
                                 events.map((event) => (
                                     <TableRow key={event.id}>
                                         <TableCell>
-                                            <div className="font-semibold text-base">{event.title}</div>
-                                            <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-                                                <Badge variant="outline" className="text-xs">{event.type}</Badge>
-                                                {event.location}
+                                            <div className="flex items-center gap-3">
+                                                {event.imageUrl ? (
+                                                    <div className="w-14 h-10 rounded-md overflow-hidden border border-border flex-shrink-0 bg-muted">
+                                                        <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-14 h-10 rounded-md border border-dashed border-border flex-shrink-0 bg-muted/40 flex items-center justify-center">
+                                                        <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <div className="font-semibold text-base">{event.title}</div>
+                                                    <div className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
+                                                        <Badge variant="outline" className="text-xs">{event.type}</Badge>
+                                                        {event.location}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -295,21 +341,119 @@ export default function AdminEventsPage() {
                                 <Input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="e.g. Masterclass: Cloud Architecture" />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <Label>Event Image URL</Label>
-                                <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.jpg" />
-                                <ImageUploadInfo />
-                                {formData.imageUrl && (
-                                    <div className="mt-2 w-full max-w-sm h-40 border rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                        { }
-                                        <img 
-                                            src={formData.imageUrl} 
-                                            alt="Preview" 
+                                <Label>Event Image</Label>
+
+                                {/* Mode toggle tabs */}
+                                <div className="flex rounded-lg border border-border overflow-hidden w-fit">
+                                    <button
+                                        type="button"
+                                        onClick={() => setImageInputMode('url')}
+                                        className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
+                                            imageInputMode === 'url'
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                        }`}
+                                    >
+                                        <LinkIcon className="w-3.5 h-3.5" /> Image URL
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setImageInputMode('upload')}
+                                        className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
+                                            imageInputMode === 'upload'
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                        }`}
+                                    >
+                                        <Upload className="w-3.5 h-3.5" /> Upload File
+                                    </button>
+                                </div>
+
+                                {/* URL mode */}
+                                {imageInputMode === 'url' && (
+                                    <Input
+                                        value={formData.imageUrl}
+                                        onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
+                                        placeholder="https://example.com/banner.jpg"
+                                    />
+                                )}
+
+                                {/* Upload mode */}
+                                {imageInputMode === 'upload' && (
+                                    <div
+                                        className="relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors group"
+                                        onClick={() => document.getElementById('event-img-input')?.click()}
+                                        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-indigo-400') }}
+                                        onDragLeave={e => e.currentTarget.classList.remove('border-indigo-400')}
+                                        onDrop={e => {
+                                            e.preventDefault()
+                                            e.currentTarget.classList.remove('border-indigo-400')
+                                            const f = e.dataTransfer.files[0]
+                                            if (f) handleImageFileChange(f)
+                                        }}
+                                    >
+                                        <input
+                                            id="event-img-input"
+                                            type="file"
+                                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                            className="hidden"
+                                            onChange={e => handleImageFileChange(e.target.files?.[0] || null)}
+                                        />
+                                        {imageUploading ? (
+                                            <div className="flex flex-col items-center gap-2 text-indigo-600">
+                                                <Loader2 className="w-8 h-8 animate-spin" />
+                                                <span className="text-sm font-medium">Uploading...</span>
+                                            </div>
+                                        ) : imageFile && formData.imageUrl ? (
+                                            <div className="flex flex-col items-center gap-2 text-emerald-600">
+                                                <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">✓</div>
+                                                <span className="text-sm font-medium">{imageFile.name}</span>
+                                                <span className="text-xs text-muted-foreground">Uploaded successfully</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                                <Upload className="w-8 h-8 group-hover:text-indigo-500 transition-colors" />
+                                                <div>
+                                                    <p className="text-sm font-medium">Click or drag & drop an image</p>
+                                                    <p className="text-xs mt-1">JPG, PNG, GIF, WEBP · Max 5 MB</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {imageUploadError && (
+                                    <p className="text-sm text-red-500 flex items-center gap-1">
+                                        <X className="w-3.5 h-3.5" /> {imageUploadError}
+                                    </p>
+                                )}
+
+                                {/* Live preview */}
+                                {formData.imageUrl && !imageUploading && (
+                                    <div className="relative mt-2 w-full h-44 border rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 group">
+                                        <img
+                                            src={formData.imageUrl}
+                                            alt="Preview"
                                             className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                e.currentTarget.style.display = 'none';
-                                                e.currentTarget.parentElement!.innerHTML = '<span class="text-sm text-slate-500">Invalid Image URL</span>';
+                                            onError={e => {
+                                                e.currentTarget.style.display = 'none'
+                                                if (e.currentTarget.parentElement) {
+                                                    e.currentTarget.parentElement.innerHTML = '<div class="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground"><span class="text-sm">⚠️ Cannot load image preview</span></div>'
+                                                }
                                             }}
                                         />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-start justify-end p-2 opacity-0 group-hover:opacity-100">
+                                            <button
+                                                type="button"
+                                                onClick={() => { setFormData(prev => ({ ...prev, imageUrl: '' })); setImageFile(null) }}
+                                                className="bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm">
+                                            <ImageIcon className="w-3 h-3 inline mr-1" />Preview
+                                        </div>
                                     </div>
                                 )}
                             </div>

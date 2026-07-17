@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 tempToken: response.data.tempToken
             };
         }
-        setUser(user);
+        setUser(response.data.user);
     };
 
     const verify2FA = async (code: string, tempToken: string, trustDevice?: boolean) => {
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const verifyOtp = async (email: string, otp: string) => {
         const response = await authApi.verifyOtp({ email, otp });
-        setUser(user);
+        setUser(response.data.user);
     };
 
     const resendOtp = async (email: string): Promise<{success: boolean}> => {

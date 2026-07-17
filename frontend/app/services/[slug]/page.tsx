@@ -12,6 +12,7 @@ import CyberSecurityLandingPage from '@/components/services/CyberSecurityLanding
 import ITSolutionsLandingPage from '@/components/services/ITSolutionsLandingPage'
 import SoftwareSolutionsLandingPage from '@/components/services/SoftwareSolutionsLandingPage'
 import DigitalMarketingLandingPage from '@/components/services/DigitalMarketingLandingPage'
+import AIAutomationLandingPage from '@/components/services/AIAutomationLandingPage'
 
 // --- CONTENT DATABASE ---
 // We write extensive, 700+ word SEO-oriented copy for each service to demonstrate authority.
@@ -184,8 +185,13 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   }
 
   // Dedicated single-page website for Software Solutions
-  if (resolvedParams.slug === 'software-solutions') {
+  if (resolvedParams.slug === 'software-development') {
     return <SoftwareSolutionsLandingPage data={data} />
+  }
+
+  // Dedicated single-page website for AI Automation
+  if (resolvedParams.slug === 'ai-automation') {
+    return <AIAutomationLandingPage data={data} />
   }
 
   // Dedicated single-page website for Digital Marketing

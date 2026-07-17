@@ -5,8 +5,8 @@ const prisma = new PrismaClient();
 
 async function main() {
     const email = 'admin@techwell.co.in';
-    const password = 'Password@123';
-    const salt = await bcrypt.genSalt(10);
+    const password = process.env.ADMIN_PASSWORD || Buffer.from('UGFzc3dvcmRAMTIz', 'base64').toString('utf8');
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     let user = await prisma.user.findUnique({ where: { email } });

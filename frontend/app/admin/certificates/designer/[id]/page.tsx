@@ -180,6 +180,7 @@ export default function EnterpriseDesignStudio() {
             const payload = {
                 ...template,
                 name: isDuplicate ? `${template.name} (Copy)` : template.name,
+                orientation: templateStyle.orientation,
                 canvasData: JSON.stringify({ elements, style: templateStyle })
             };
             

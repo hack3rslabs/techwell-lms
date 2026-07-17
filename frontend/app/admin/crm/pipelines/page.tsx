@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,11 +13,9 @@ export default function PipelineKanbanBoard() {
 
   useEffect(() => {
     // Fetch pipelines list
-    fetch('/api/crm/pipelines', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => res.json())
-      .then(data => {
+    api.get('/crm/pipelines')
+      .then(res => {
+        const data = res.data;
         if (data.success && data.data.length > 0) {
           setPipelines(data.data);
           setSelectedPipeline(data.data[0].id);
@@ -27,11 +26,9 @@ export default function PipelineKanbanBoard() {
 
   useEffect(() => {
     if (selectedPipeline) {
-      fetch(`/api/crm/pipelines/${selectedPipeline}/board`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })
-        .then(res => res.json())
-        .then(data => {
+      api.get(`/crm/pipelines/${selectedPipeline}/board`)
+        .then(res => {
+          const data = res.data;
           if (data.success) {
             setBoardData(data.data);
           } else {

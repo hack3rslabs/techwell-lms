@@ -23,6 +23,7 @@ model User {
   plan                        Plan                      @default(FREE)
   hasResumeAccess             Boolean                   @default(false)
   hasAiInterviewAccess        Boolean                   @default(false)
+  location                    String?
   instituteId                 String?
   systemRoleId                String?
   college                     String?
@@ -324,6 +325,7 @@ model Attendance {
   date      DateTime
   status    String
   notes     String?
+  minutesSpent Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   batch     Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
@@ -449,6 +451,7 @@ model Enrollment {
   enrolledAt         DateTime         @default(now())
   completedAt        DateTime?
   hasInterviewAccess Boolean          @default(false)
+  enrollmentMode     String           @default("ONLINE") // ONLINE, OFFLINE
   batchId            String?
   batch              Batch?           @relation(fields: [batchId], references: [id])
   course             Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -2648,7 +2651,7 @@ enum HiringMode {
 
 model CampusDrive {
   id                  String            @id @default(cuid())
-  employerId          String
+  employerId          String?
   isOffCampus         Boolean           @default(false)
   eligibilityCriteria Json?
   title               String
@@ -2679,7 +2682,7 @@ model CampusDrive {
   hostLogo               String?
   linkedCourseId         String?
 
-  employer   User                   @relation("EmployerCampusDrives", fields: [employerId], references: [id])
+  employer   User?                  @relation("EmployerCampusDrives", fields: [employerId], references: [id])
   institutes CampusDriveInstitute[]
   students   CampusDriveStudent[]
 }
@@ -2751,6 +2754,7 @@ model ConsultancyCoordination {
 
 model Customer {
   id               String    @id @default(cuid())
+  customerNo       String?   @unique
   email            String?   @unique
   phone            String?   @unique
   name             String

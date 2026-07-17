@@ -47,7 +47,8 @@ const initialLeadForm = {
     dob: '',
     notes: '',
     assignedTo: '',
-    franchiseId: ''
+    franchiseId: '',
+    referralName: ''
 }
 
 export default function LeadsPage() {
@@ -70,6 +71,7 @@ export default function LeadsPage() {
         aiNextBestAction?: string
         aiPriority?: string
         franchiseId?: string
+        referralName?: string
     }
     const [leads, setLeads] = React.useState<Lead[]>([])
     const [staffUsers, setStaffUsers] = React.useState<{id: string, name: string}[]>([])
@@ -252,7 +254,8 @@ export default function LeadsPage() {
             dob: lead.dob ? format(new Date(lead.dob), 'yyyy-MM-dd') : '',
             notes: lead.notes || '',
             assignedTo: lead.assignedTo || '',
-            franchiseId: lead.franchiseId || ''
+            franchiseId: lead.franchiseId || '',
+            referralName: lead.referralName || ''
         })
         setIsAddOpen(true)
     }
@@ -519,11 +522,20 @@ export default function LeadsPage() {
                                     <Select value={newLead.source} onValueChange={v => setNewLead({ ...newLead, source: v })}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="Website">Website</SelectItem>
-                                            <SelectItem value="Referral">Referral</SelectItem>
-                                            <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                                            <SelectItem value="Google Ads">Google Ads</SelectItem>
-                                            <SelectItem value="Walk-in">Walk-in</SelectItem>
+                                            <SelectItem value="Website">🌐 Website</SelectItem>
+                                            <SelectItem value="Referral">🤝 Referral</SelectItem>
+                                            <SelectItem value="Walk-in">🚶 Walk-in</SelectItem>
+                                            <SelectItem value="LinkedIn">💼 LinkedIn</SelectItem>
+                                            <SelectItem value="Google Ads">🔍 Google Ads</SelectItem>
+                                            <SelectItem value="Facebook">📘 Facebook</SelectItem>
+                                            <SelectItem value="Instagram">📸 Instagram</SelectItem>
+                                            <SelectItem value="YouTube">▶️ YouTube</SelectItem>
+                                            <SelectItem value="JustDial">📞 JustDial</SelectItem>
+                                            <SelectItem value="WhatsApp">💬 WhatsApp</SelectItem>
+                                            <SelectItem value="Campus">🎓 Campus Drive</SelectItem>
+                                            <SelectItem value="Cold Call">📲 Cold Call</SelectItem>
+                                            <SelectItem value="Email Campaign">📧 Email Campaign</SelectItem>
+                                            <SelectItem value="Other">➕ Other</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -583,6 +595,19 @@ export default function LeadsPage() {
                                 <div className="col-span-2 space-y-2">
                                     <label className="text-sm font-medium">Notes</label>
                                     <Input value={newLead.notes} onChange={e => setNewLead({ ...newLead, notes: e.target.value })} placeholder="Additional details..." />
+                                </div>
+                                <div className={`col-span-2 space-y-2 p-3 rounded-lg border ${newLead.source === 'Referral' ? 'border-orange-300 bg-orange-50/50 dark:bg-orange-950/20' : 'border-border'}`}>
+                                    <label className="text-sm font-medium flex items-center gap-1.5">
+                                        {newLead.source === 'Referral' ? '🤝' : '👤'} Reference / Referred By
+                                        {newLead.source === 'Referral' && <span className="text-xs font-semibold text-orange-600 ml-1">Required for Referral</span>}
+                                        {newLead.source !== 'Referral' && <span className="text-xs text-muted-foreground font-normal ml-1">(optional)</span>}
+                                    </label>
+                                    <Input
+                                        value={(newLead as any).referralName || ''}
+                                        onChange={e => setNewLead({ ...newLead, referralName: e.target.value } as any)}
+                                        placeholder={newLead.source === 'Referral' ? 'Name of person who referred this lead (required)' : 'Who referred this lead? (optional)'}
+                                        className={newLead.source === 'Referral' ? 'border-orange-300 focus-visible:ring-orange-400' : ''}
+                                    />
                                 </div>
                             </div>
                             <DialogFooter>

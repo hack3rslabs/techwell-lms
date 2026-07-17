@@ -115,7 +115,7 @@ router.post('/:id/mela-register', async (req, res) => {
         let user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
             const defaultPass = password || Buffer.from('TWVsYUAxMjM=', 'base64').toString('utf8');
-            const hashedPassword = await bcrypt.hash(defaultPass, 10);
+            const hashedPassword = await bcrypt.hash(defaultPass, 12);
             user = await prisma.user.create({
                 data: {
                     email,

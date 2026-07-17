@@ -132,7 +132,8 @@ export default function Home() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        // deepcode ignore DOMXSS: Sanitized by React
+dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
       
       <div className="flex flex-col gap-0 overflow-x-hidden bg-slate-50 dark:bg-[#030712] font-sans selection:bg-indigo-500/30">

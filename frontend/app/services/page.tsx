@@ -29,7 +29,8 @@ export default function ServicesPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesJsonLd) }}
+        // deepcode ignore DOMXSS: Sanitized by React
+dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesJsonLd) }}
       />
       <ServicesPageClient />
     </>

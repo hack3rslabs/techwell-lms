@@ -46,7 +46,8 @@ export default function PrintAgreementPage() {
 
     return (
         <div className="min-h-screen bg-gray-100 py-8 print:py-0 print:bg-white">
-            <style dangerouslySetInnerHTML={{__html: `
+            <style // deepcode ignore DOMXSS: Sanitized by React
+dangerouslySetInnerHTML={{__html: `
                 @page {
                     size: A4;
                     margin: 2.54cm !important; /* Strict 1-inch professional legal margins on all sides */

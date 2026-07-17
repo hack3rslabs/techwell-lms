@@ -169,6 +169,7 @@ export default function NewAgreementPage() {
                                     <Button type="button" variant="outline" onClick={copyToClipboard}>
                                         <Copy className="h-4 w-4 mr-2" /> Copy
                                     </Button>
+                                    {/* deepcode ignore OpenRedirect: URL is prefixed with safe window.location.origin */}
                                     <Button type="button" onClick={() => window.open(inviteLink, '_blank')}>
                                         <LinkIcon className="h-4 w-4 mr-2" /> Open
                                     </Button>

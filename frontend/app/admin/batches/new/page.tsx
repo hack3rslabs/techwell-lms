@@ -37,8 +37,8 @@ export default function CreateBatchPage() {
         const fetchData = async () => {
             try {
                 const [coursesRes, usersRes] = await Promise.all([
-                    api.get('/courses'),
-                    api.get('/users')
+                    api.get('/courses?limit=1000'),
+                    api.get('/users?limit=1000')
                 ])
                 const coursesData = Array.isArray(coursesRes.data) ? coursesRes.data : (coursesRes.data.courses || [])
                 setCourses(coursesData)

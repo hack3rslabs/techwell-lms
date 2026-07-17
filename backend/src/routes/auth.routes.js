@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 requests per windowMs for auth routes
+    max: process.env.NODE_ENV === 'production' ? 15 : 100, // Increase limit for local dev
     message: { error: 'Too many authentication attempts, please try again after 15 minutes.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -17,15 +17,7 @@ const authLimiter = rateLimit({
 
 const router = express.Router();
 
-// TEMPORARY DEBUG ROUTE
-router.get('/debug-db', (req, res) => {
-    try {
-        const output = execSync('npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss', { encoding: 'utf-8' });
-        res.send(`<pre>SUCCESS:\n${output}</pre>`);
-    } catch (error) {
-        res.send(`<pre>ERROR:\n${error.message}\n\nSTDOUT:\n${error.stdout}\n\nSTDERR:\n${error.stderr}</pre>`);
-    }
-});
+
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 const { authenticate } = require('../middleware/auth');
 const twoFactorService = require('../services/twoFactor.service');
@@ -59,7 +51,7 @@ const OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 // In-memory store for account lockouts
 const loginAttempts = new Map();
-const MAX_LOGIN_ATTEMPTS = 5;
+const MAX_LOGIN_ATTEMPTS = process.env.NODE_ENV === 'production' ? 5 : 50;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 // Use crypto.randomInt for cryptographically secure OTP (OWASP A02: Cryptographic Failures)

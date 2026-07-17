@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { BehaviorTrackingProvider } from "@/components/BehaviorTrackingProvider";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as HotToaster } from 'react-hot-toast';
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 import { SystemStatusManager } from "@/components/shared/SystemStatusManager";
 
@@ -116,6 +117,7 @@ export default function RootLayout({
         </ThemeProvider>
         <WhatsAppButton />
         <Toaster />
+        <HotToaster position="top-right" />
       </body>
     </html>
   );
