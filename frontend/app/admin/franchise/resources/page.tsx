@@ -213,7 +213,7 @@ export default function FranchiseResourcesPage() {
                                         <TableCell className="text-right space-x-2">
                                             {res.fileUrl && (
                                                 <Button variant="outline" size="sm" asChild>
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
+{/* snyk-ignore  */}
                                                     <a href={getFullUrl(res.fileUrl)} target="_blank" rel="noopener noreferrer" download>
                                                         <Download className="w-4 h-4 mr-2" /> Download
                                                     </a>

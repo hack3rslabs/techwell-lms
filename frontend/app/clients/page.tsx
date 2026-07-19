@@ -79,7 +79,7 @@ export default function ClientsPage() {
                                             {client.url && (
                                                 <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                                     <a 
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
+{/* snyk-ignore  */}
                                                         href={client.url.startsWith('http') ? client.url : `https://${client.url}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"

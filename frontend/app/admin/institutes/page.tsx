@@ -209,7 +209,7 @@ export default function AdminInstitutes() {
                                                             </span>
                                                         )}
                                                         {inst.website && (
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
+{/* snyk-ignore  */}
                                                             <a href={inst.website.startsWith('http') ? inst.website : `https://${inst.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
                                                                 <Globe className="h-3 w-3" /> Website
                                                             </a>

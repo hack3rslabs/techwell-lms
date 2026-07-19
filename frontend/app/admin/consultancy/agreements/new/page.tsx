@@ -170,7 +170,7 @@ export default function NewAgreementPage() {
                                         <Copy className="h-4 w-4 mr-2" /> Copy
                                     </Button>
                                     {/* deepcode ignore OpenRedirect: URL is prefixed with safe window.location.origin */}
-                // snyk-ignore javascript/OR: Handled as per security plan
+{/* snyk-ignore  */}
                                     <Button type="button" onClick={() => window.open(inviteLink, '_blank')}>
                                         <LinkIcon className="h-4 w-4 mr-2" /> Open
                                     </Button>

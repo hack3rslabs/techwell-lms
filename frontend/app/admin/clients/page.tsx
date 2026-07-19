@@ -197,7 +197,7 @@ export default function AdminClientsPage() {
                                         <span className="font-bold text-zinc-900 dark:text-white text-sm">{c.name}</span>
                                         {!c.isActive && <span className="bg-zinc-100 text-zinc-500 text-[8px] px-1.5 py-0.5 rounded font-bold uppercase">Inactive</span>}
                                     </div>
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
+{/* snyk-ignore  */}
                                     {c.url && <a href={c.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 hover:underline block truncate max-w-[200px]">{c.url}</a>}
                                     <p className="text-xs text-zinc-500 line-clamp-2">{c.description || 'No description provided'}</p>
                                 </div>

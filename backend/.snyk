@@ -1,0 +1,12 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-JS-EXTRACTZIP-17660777:
+    - '*':
+        reason: >-
+          Puppeteer transitive dependency used only during installation of
+          browser binaries; not exposed to malicious user archives.
+        expires: 2026-08-18T17:43:23.877Z
+        created: 2026-07-19T17:43:23.880Z
+patch: {}
