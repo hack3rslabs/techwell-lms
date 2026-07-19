@@ -35,6 +35,15 @@ jest.mock('jsonwebtoken', () => ({
     verify: jest.fn().mockReturnValue({ userId: 'mock-id' })
 }));
 
+jest.mock('otplib', () => ({
+    generateSecret: jest.fn(),
+    verify: jest.fn(),
+    generateURI: jest.fn()
+}));
+jest.mock('qrcode', () => ({
+    toDataURL: jest.fn()
+}));
+
 const authRoutes = require('../src/routes/auth.routes');
 app.use('/api/auth', authRoutes);
 

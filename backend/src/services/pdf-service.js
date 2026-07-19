@@ -1,4 +1,3 @@
-const puppeteer = require('puppeteer');
 
 async function generateAgreementPdf(agreement) {
     const htmlContent = `
@@ -90,6 +89,7 @@ async function generateAgreementPdf(agreement) {
         </html>
     `;
 
+    const puppeteer = require('puppeteer');
     const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
