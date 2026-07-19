@@ -202,7 +202,7 @@ function FooterLinkGroup({
             <h4 className="mb-4 text-sm font-semibold tracking-wide text-foreground">{title}</h4>
             <ul className="space-y-3 text-sm">
                 {links.map((link) => (
-                    <li key={link.href}>
+                    <li key={link.label}>
                         <Link href={link.href} className="text-muted-foreground transition-colors hover:text-foreground">
                             {link.label}
                         </Link>

@@ -138,7 +138,7 @@ export default function LoginPage() {
 
             {/* Mobile Home Button */}
             <div className="lg:hidden absolute top-4 left-4 z-50">
-                <Link href="/home">
+                <Link href="/">
                     <Button variant="outline" size="sm" className="rounded-full bg-white/10 backdrop-blur-xl border-white/20 hover:bg-white/20 text-white">
                         <Home className="w-4 h-4 mr-2" />
                         Home

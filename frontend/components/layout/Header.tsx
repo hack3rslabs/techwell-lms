@@ -38,11 +38,6 @@ export function Header() {
 
     const navigationConfig = [
         {
-            name: "Home",
-            href: "/home",
-            icon: <Home className="h-4 w-4 text-primary" />
-        },
-        {
             name: "Training",
             href: "/courses",
             icon: <GraduationCap className="h-4 w-4 text-indigo-500" />
@@ -98,7 +93,7 @@ export function Header() {
                     {/* Logo + Search */}
                     <div className="flex min-w-0 items-center gap-2 lg:gap-3">
 
-                        <Link href="/home" className="relative flex h-10 w-[150px] lg:w-[180px] items-center shrink-0">
+                        <Link href="/" className="relative flex h-10 w-[150px] lg:w-[180px] items-center shrink-0">
                             <Image
                                 src="/logo-light.png"
                                 alt="Techwell"
@@ -395,8 +390,8 @@ export function Header() {
                 </div>
             </header>
 
-            {/* NAVBAR SPACING */}
-            <div className="h-16"></div>
+            {/* NAVBAR SPACING (Omitted on home page for full-bleed hero) */}
+            {pathname !== '/' && <div className="h-16"></div>}
         </>
     )
 }
