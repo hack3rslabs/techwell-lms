@@ -20,7 +20,7 @@ router.get('/drive/:driveId', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN'
             where: { driveId },
             include: {
                 user: {
-                    select: { id: true, name: true, email: true, phone: true, college: true, qualification: true, avatar: true }
+                    select: { id: true, name: true, email: true, phone: true, college: true, qualification: true, avatar: true, institute: { select: { name: true } } }
                 }
             },
             orderBy: { createdAt: 'desc' }

@@ -18,6 +18,7 @@ const interviewRoutes = require('./routes/interview.routes');
 const eventsRoutes = require('./routes/events.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const assessmentRoutes = require('./routes/assessments.routes');
+const approvalsRoutes = require('./routes/approvals.routes');
 
 const { twilioRouter } = require('./ai-core/providers/twilio');
 
@@ -119,6 +120,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/events', require('./routes/events.routes'));
 app.use('/api/staff', require('./routes/staff.routes'));
+app.use('/api/approvals', approvalsRoutes);
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/consultancy', require('./routes/consultancy.routes'));
 app.use('/api/consulting-projects', require('./routes/consultingProjects.routes'));

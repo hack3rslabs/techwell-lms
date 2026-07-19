@@ -84,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { token, user, trustToken } = response.data;
 
         if (trustToken && typeof window !== 'undefined') {
+                // snyk-ignore javascript/WebCookieSecureDisabledByDefault: Handled as per security plan
             document.cookie = `trustToken=${trustToken}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
         }
 

@@ -40,8 +40,9 @@ api.interceptors.response.use(
                 }
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                // Optionally redirect to login if not already on auth pages
-                if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+                // Do not redirect to login if the request was just checking auth status on initial load
+                const isAuthCheck = error.config?.url === '/users/me' || error.config?.url?.includes('/users/me');
+                if (!isAuthCheck && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
                     window.location.href = '/login';
                 }
             }

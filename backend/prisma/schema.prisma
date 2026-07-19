@@ -116,6 +116,8 @@ model User {
   franchise                   Franchise?                @relation(fields: [franchiseId], references: [id])
   approvedFranchises          Franchise[]               @relation("FranchiseApprover")
   department                  String?
+  projectRequests             ProjectRequest[]
+  communicationLogs           CommunicationLog[]
 }
 
 model SystemRole {
@@ -1450,6 +1452,21 @@ model Project {
   reportLink    String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  isPublished   Boolean  @default(true)
+  requests      ProjectRequest[]
+}
+
+model ProjectRequest {
+  id            String   @id @default(cuid())
+  userId        String
+  projectId     String
+  status        String   @default("PENDING") // PENDING, APPROVED, CONTACTED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
 }
 
 model Skillcast {
@@ -2884,6 +2901,7 @@ model CommunicationLog {
   id         String    @id @default(cuid())
   leadId     String?
   customerId String?
+  userId     String?
   type       String
   direction  String
   status     String
@@ -2892,6 +2910,7 @@ model CommunicationLog {
   timestamp  DateTime  @default(now())
   lead       Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 model AgreementTemplate {
@@ -3342,4 +3361,38 @@ model UserBadge {
   badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
+}
+
+// -----------------------------------------------------------------------------
+// UNIVERSAL APPROVALS & REVENUE SYSTEM
+// -----------------------------------------------------------------------------
+
+model SystemApprovalRequest {
+  id                String   @id @default(cuid())
+  entityType        String   // 'EMPLOYER', 'COMPANY', 'COLLEGE', 'INSTITUTE', 'FRANCHISE', 'STAFF'
+  entityId          String?  // Links to the specific table if already created
+  requesterName     String
+  requesterEmail    String
+  requesterPhone    String
+  payload           Json     // Stores all specific form data submitted by the user
+  status            String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  adminNotes        String?
+  rejectionReason   String?
+  approvedByAdminId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SystemRevenueLog {
+  id              String   @id @default(cuid())
+  sourceType      String   // 'COURSE', 'CONSULTANCY', 'CAMPUS', 'PROJECT', 'JOB_POSTING', 'RESUME_BUILDER', 'AI_INTERVIEW', 'FRANCHISE_FEE'
+  sourceId        String?  // ID of the specific item bought
+  userId          String?  // Who paid (if applicable)
+  amount          Float
+  currency        String   @default("INR")
+  paymentMethod   String   @default("ONLINE") // 'ONLINE', 'OFFLINE', 'BANK_TRANSFER'
+  transactionId   String?  // Razorpay/Stripe ID if online
+  status          String   @default("COMPLETED")
+  description     String?
+  createdAt       DateTime @default(now())
 }
