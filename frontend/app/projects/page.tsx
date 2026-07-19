@@ -34,7 +34,7 @@ export default function ProjectsPage() {
     useEffect(() => {
         // Fetch projects from backend
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        fetch(`${API_URL}/projects`)
+        fetch(`${API_URL}/projects/public`)
             .then((res) => res.json())
             .then((data) => {
                 setProjects(Array.isArray(data) ? data : []);

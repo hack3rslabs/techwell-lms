@@ -11,7 +11,12 @@ import { toast } from "react-hot-toast"
 import api from "@/lib/api"
 
 const platformLinks = [
-    { label: "Browse Courses", href: "/courses" },
+    { label: 'Browse Courses', href: '/courses' },
+    { label: 'Live Classes', href: '/live-classes' },
+    { label: 'Assessments', href: '/assessments' },
+    { label: 'Projects', href: '/projects' },
+    { label: 'Student Dashboard', href: '/student/dashboard' },
+    { label: 'Community Forum', href: '/forum' },
     { label: "AI Interview Prep", href: "/interviews" },
     { label: "Resume Builder", href: "/resume-builder" },
     { label: "Jobs & Placements", href: "/jobs" },

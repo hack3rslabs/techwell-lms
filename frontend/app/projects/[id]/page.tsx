@@ -10,12 +10,18 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import _Link from "next/link"
+import { useAuth } from "@/lib/auth-context"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function ProjectDetailsPage() {
     const params = useParams()
     const router = useRouter()
     const [project, setProject] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [isRequesting, setIsRequesting] = useState(false)
+    const [requestStatus, setRequestStatus] = useState<string | null>(null)
+    const { user } = useAuth()
+    const { toast } = useToast()
 
     useEffect(() => {
         if (params.id) {
@@ -32,6 +38,37 @@ export default function ProjectDetailsPage() {
                 })
         }
     }, [params.id])
+
+    const handleRequestToBuy = async () => {
+        if (!user) {
+            toast({ title: 'Authentication Required', description: 'Please login to request a project', variant: 'destructive' })
+            router.push('/login')
+            return
+        }
+
+        setIsRequesting(true)
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+            const token = localStorage.getItem('token')
+            const res = await fetch(`${API_URL}/projects/${params.id}/request`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            if (res.ok) {
+                setRequestStatus('PENDING')
+                toast({ title: 'Request Sent', description: 'Your request has been sent successfully. Our team will contact you soon.' })
+            } else {
+                toast({ title: 'Request Failed', description: 'Failed to send request. Please try again.', variant: 'destructive' })
+            }
+        } catch (error) {
+            console.error(error)
+            toast({ title: 'Error', description: 'An error occurred while sending the request.', variant: 'destructive' })
+        } finally {
+            setIsRequesting(false)
+        }
+    }
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div></div>
     if (!project) return <div className="min-h-screen flex items-center justify-center">Project not found</div>
@@ -151,8 +188,13 @@ export default function ProjectDetailsPage() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <Button className="w-full h-12 text-lg font-semibold shadow-lg shadow-primary/25" size="lg">
-                                            Buy Project Now
+                                        <Button 
+                                            onClick={handleRequestToBuy} 
+                                            disabled={isRequesting || requestStatus === 'PENDING'}
+                                            className="w-full h-12 text-lg font-semibold shadow-lg shadow-primary/25" 
+                                            size="lg"
+                                        >
+                                            {isRequesting ? 'Requesting...' : requestStatus === 'PENDING' ? 'Request Sent' : 'Request to Buy'}
                                         </Button>
                                         {project.demoLink && (
                                             <Button variant="outline" className="w-full h-12" asChild>

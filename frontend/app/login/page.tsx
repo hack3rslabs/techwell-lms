@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Eye, EyeOff, Loader2, AlertTriangle, X, ArrowRight, ShieldCheck, Zap, Sparkles, Lock, CheckCircle2, GraduationCap, Briefcase, Building2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, AlertTriangle, X, ArrowRight, ShieldCheck, Zap, Sparkles, Lock, CheckCircle2, GraduationCap, Briefcase, Building2, Home } from 'lucide-react'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
 
 export default function LoginPage() {
@@ -60,7 +60,11 @@ export default function LoginPage() {
                 setShow2FA(true)
             }
         } catch (err: any) {
-            setError(err.response?.data?.message || err.message || 'An error occurred during login')
+            if (err.response?.status === 401) {
+                setError('Invalid User ID or Password')
+            } else {
+                setError(err.response?.data?.message || err.message || 'An error occurred during login')
+            }
         } finally {
             setIsLoading(false)
         }
@@ -131,6 +135,16 @@ export default function LoginPage() {
 
             {/* Grid overlay for tech feel */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
+
+            {/* Mobile Home Button */}
+            <div className="lg:hidden absolute top-4 left-4 z-50">
+                <Link href="/home">
+                    <Button variant="outline" size="sm" className="rounded-full bg-white/10 backdrop-blur-xl border-white/20 hover:bg-white/20 text-white">
+                        <Home className="w-4 h-4 mr-2" />
+                        Home
+                    </Button>
+                </Link>
+            </div>
 
             <div className="w-full max-w-7xl z-10 flex flex-col lg:flex-row items-center justify-between gap-12 p-6 lg:p-12 h-full min-h-screen">
                 

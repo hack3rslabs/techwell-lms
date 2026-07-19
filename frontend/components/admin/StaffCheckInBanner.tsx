@@ -129,8 +129,8 @@ export function StaffCheckInBanner() {
                         </div>
                     )}
                     <div>
-                        <h3 className={`font-bold text-lg ${!isCheckedIn ? 'text-red-700' : isCheckedOut ? 'text-green-700' : 'text-indigo-700'}`}>
-                            {!isCheckedIn ? 'Attendance Required' : isCheckedOut ? 'Shift Completed' : 'Currently Checked In'}
+                        <h3 className={`font-bold text-lg ${!isCheckedIn ? 'text-red-700' : isCheckedOut ? 'text-orange-700' : 'text-indigo-700'}`}>
+                            {!isCheckedIn ? 'Attendance Required' : isCheckedOut ? 'On Break / Checked Out' : 'Currently Checked In'}
                         </h3>
                         <p className="text-sm text-slate-600">
                             {isCheckedIn ? `Checked in at ${format(new Date(attendance.checkInTime), 'hh:mm a')}` : 'Please check in to start your shift and access your tasks.'}
@@ -157,15 +157,15 @@ export function StaffCheckInBanner() {
                     )}
 
                     {/* Actions */}
-                    {!isCheckedIn ? (
-                        <Button onClick={handleCheckIn} className="bg-red-600 hover:bg-red-700 text-white shadow-lg shrink-0">
-                            <MapPin className="mr-2 h-4 w-4" /> Check In Now
+                    {!isCheckedIn || isCheckedOut ? (
+                        <Button onClick={handleCheckIn} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shrink-0">
+                            <MapPin className="mr-2 h-4 w-4" /> {isCheckedOut ? 'Resume Shift (End Break)' : 'Check In Now'}
                         </Button>
-                    ) : !isCheckedOut ? (
+                    ) : (
                         <Button onClick={handleCheckOut} variant="outline" className="border-indigo-600 text-indigo-600 hover:bg-indigo-50 shrink-0">
-                            <LogOut className="mr-2 h-4 w-4" /> Check Out
+                            <LogOut className="mr-2 h-4 w-4" /> Take Break / Check Out
                         </Button>
-                    ) : null}
+                    )}
                 </div>
             </CardContent>
         </Card>

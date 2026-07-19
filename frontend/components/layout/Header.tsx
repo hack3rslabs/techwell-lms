@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
-import { Menu, User, LogOut, ChevronDown, ArrowUpRight, GraduationCap, Laptop, Sparkles, Building2, Briefcase } from "lucide-react"
+import { Menu, User, LogOut, ChevronDown, ArrowUpRight, GraduationCap, Laptop, Sparkles, Building2, Briefcase, Home } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
 import { GlobalSearch } from "@/components/shared/GlobalSearch"
 
 export function Header() {
@@ -31,6 +37,11 @@ export function Header() {
 
 
     const navigationConfig = [
+        {
+            name: "Home",
+            href: "/home",
+            icon: <Home className="h-4 w-4 text-primary" />
+        },
         {
             name: "Training",
             href: "/courses",
@@ -165,7 +176,7 @@ export function Header() {
                             ) : (
                                 <Link 
                                     key={menu.name}
-                                    href={menu.href}
+                                    href={menu.href || "#"}
                                     className="transition-colors hover:text-primary text-foreground/80 cursor-pointer font-semibold py-1"
                                 >
                                     {menu.name}
@@ -260,52 +271,59 @@ export function Header() {
 
                                 <div className="flex flex-col gap-4 mt-8">
 
-                                    {navigationConfig.map((menu) => (
-                                        menu.items && menu.items.length > 0 ? (
-                                            <div key={menu.name} className="grid gap-2 border-b border-zinc-100 dark:border-zinc-900 pb-3">
-                                                <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
-                                                    {menu.icon}
-                                                    <span>{menu.name}</span>
+                                    <Accordion type="single" collapsible className="w-full">
+                                        {navigationConfig.map((menu) => (
+                                            menu.items && menu.items.length > 0 ? (
+                                                <AccordionItem value={menu.name} key={menu.name} className="border-b border-zinc-100 dark:border-zinc-900 border-none">
+                                                    <AccordionTrigger className="flex items-center gap-1.5 font-bold text-sm text-foreground py-3 hover:no-underline border-b border-zinc-100 dark:border-zinc-900">
+                                                        <div className="flex items-center gap-1.5">
+                                                            {menu.icon}
+                                                            <span>{menu.name}</span>
+                                                        </div>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent>
+                                                        <div className="grid gap-1.5 pl-6 pt-2 pb-2">
+                                                            {menu.items.map((subItem) => (
+                                                                subItem.external ? (
+                                                                    <a 
+                                                                        key={subItem.name}
+                                                                        href={subItem.href}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        onClick={() => setIsOpen(false)}
+                                                                        className="text-xs text-muted-foreground hover:text-primary flex items-center gap-0.5 py-1.5"
+                                                                    >
+                                                                        {subItem.name}
+                                                                        <ArrowUpRight className="h-3 w-3" />
+                                                                    </a>
+                                                                ) : (
+                                                                    <Link
+                                                                        key={subItem.name}
+                                                                        href={subItem.href}
+                                                                        onClick={() => setIsOpen(false)}
+                                                                        className="text-xs text-muted-foreground hover:text-primary py-1.5"
+                                                                    >
+                                                                        {subItem.name}
+                                                                    </Link>
+                                                                )
+                                                            ))}
+                                                        </div>
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            ) : (
+                                                <div key={menu.name} className="border-b border-zinc-100 dark:border-zinc-900">
+                                                    <Link
+                                                        href={menu.href || "#"}
+                                                        onClick={() => setIsOpen(false)}
+                                                        className="flex items-center gap-1.5 font-bold text-sm text-foreground py-3"
+                                                    >
+                                                        {menu.icon}
+                                                        <span>{menu.name}</span>
+                                                    </Link>
                                                 </div>
-                                                <div className="grid gap-1.5 pl-6">
-                                                    {menu.items.map((subItem) => (
-                                                        subItem.external ? (
-                                                            <a 
-                                                                key={subItem.name}
-                                                                href={subItem.href}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                onClick={() => setIsOpen(false)}
-                                                                className="text-xs text-muted-foreground hover:text-primary flex items-center gap-0.5 py-0.5"
-                                                            >
-                                                                {subItem.name}
-                                                                <ArrowUpRight className="h-3 w-3" />
-                                                            </a>
-                                                        ) : (
-                                                            <Link
-                                                                key={subItem.name}
-                                                                href={subItem.href}
-                                                                onClick={() => setIsOpen(false)}
-                                                                className="text-xs text-muted-foreground hover:text-primary py-0.5"
-                                                            >
-                                                                {subItem.name}
-                                                            </Link>
-                                                        )
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <Link
-                                                key={menu.name}
-                                                href={menu.href}
-                                                onClick={() => setIsOpen(false)}
-                                                className="flex items-center gap-1.5 font-bold text-sm text-foreground border-b border-zinc-100 dark:border-zinc-900 pb-3 py-1"
-                                            >
-                                                {menu.icon}
-                                                <span>{menu.name}</span>
-                                            </Link>
-                                        )
-                                    ))}
+                                            )
+                                        ))}
+                                    </Accordion>
 
                                     <div className="flex flex-col gap-2 mt-4">
 

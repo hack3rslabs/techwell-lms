@@ -109,4 +109,77 @@ router.get('/benchmark', authenticate, async (req, res) => {
     }
 });
 
+// GET /api/analytics/master-dashboard
+// Aggregates total revenue, leads, active resources for Master Dashboard
+router.get('/master-dashboard', authenticate, async (req, res) => {
+    try {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(req.user.role)) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        // 1. Unified Revenue (Legacy + New SystemRevenueLog)
+        const payments = await prisma.payment.aggregate({ _sum: { amount: true }, where: { status: 'COMPLETED' } });
+        const consultingRev = await prisma.consultancyCoordination.aggregate({ _sum: { revenue: true } });
+        const franchiseRev = await prisma.franchiseRevenue.aggregate({ _sum: { amount: true } });
+        const leadRev = await prisma.lead.aggregate({ _sum: { revenueGenerated: true } });
+        
+        const systemRevenue = await prisma.systemRevenueLog.aggregate({ _sum: { amount: true }, where: { status: 'COMPLETED' } });
+        
+        const totalRevenue = (payments._sum.amount || 0) + 
+                             (consultingRev._sum.revenue || 0) + 
+                             (franchiseRev._sum.amount || 0) + 
+                             (leadRev._sum.revenueGenerated || 0) +
+                             (systemRevenue._sum.amount || 0);
+
+        // 2. Global Leads
+        const totalLeads = await prisma.lead.count();
+        const convertedLeads = await prisma.lead.count({ where: { status: 'CONVERTED' } });
+
+        // 3. Resources Overview
+        const totalStudents = await prisma.user.count({ where: { role: 'STUDENT' } });
+        const totalStaff = await prisma.user.count({ where: { role: { in: ['ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTRUCTOR', 'COUNSELLOR', 'TELE_SALES'] } } });
+        const activeFranchises = await prisma.franchise.count({ where: { status: 'ACTIVE' } }); // Changed to ACTIVE as per model
+        const activeProjects = await prisma.project.count({ where: { isPublished: true } });
+        const activeCourses = await prisma.course.count({ where: { isPublished: true } });
+
+        // 4. Recent Cashflow (Last 5 payments)
+        const recentPayments = await prisma.payment.findMany({
+            where: { status: 'COMPLETED' },
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            include: { user: { select: { name: true } }, course: { select: { title: true } } }
+        });
+
+        res.json({
+            revenue: {
+                total: totalRevenue,
+                breakdown: {
+                    payments: payments._sum.amount || 0,
+                    consulting: consultingRev._sum.revenue || 0,
+                    franchise: franchiseRev._sum.amount || 0,
+                    leads: leadRev._sum.revenueGenerated || 0,
+                    universalLog: systemRevenue._sum.amount || 0
+                }
+            },
+            pipeline: {
+                totalLeads,
+                convertedLeads,
+                conversionRate: totalLeads > 0 ? ((convertedLeads / totalLeads) * 100).toFixed(1) : 0
+            },
+            resources: {
+                totalStudents,
+                totalStaff,
+                activeFranchises,
+                activeProjects,
+                activeCourses
+            },
+            recentTransactions: recentPayments
+        });
+
+    } catch (error) {
+        console.error('Master Dashboard Error:', error);
+        res.status(500).json({ error: 'Failed to fetch master analytics' });
+    }
+});
+
 module.exports = router;
