@@ -20,8 +20,7 @@ async function getTeamMembers() {
     const res = await fetch(`${apiBase}/team/public`, { next: { revalidate: 60 } })
     if (!res.ok) return []
     return res.json()
-  } catch (error) {
-    console.error('Failed to fetch team members:', error)
+  catch (error) {
     return []
   }
 }

@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   output: "standalone",
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   turbopack: {
     root: path.resolve(__dirname),
