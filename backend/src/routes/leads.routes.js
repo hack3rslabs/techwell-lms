@@ -227,12 +227,15 @@ router.put('/:id', authenticate, checkPermission('LEADS'), async (req, res, next
 
 /**
  * @route   POST /api/leads/mark-seen
- * @desc    Mark leads as seen (dummy route for frontend to avoid 404)
+ * @desc    Mark leads as seen
  * @access  Private/Admin
  */
 router.post('/mark-seen', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        // Implement logic if a seen tracking system is added later
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: { leadLastSeenAt: new Date() }
+        });
         res.json({ success: true, message: 'Leads marked as seen' });
     } catch (error) {
         next(error);
