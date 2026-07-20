@@ -176,7 +176,7 @@ export default function AIAutomationLandingPage({ data }: { data: any }) {
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
-                src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800" // Circuitry/Workflow
+                src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800" // Global/Digital Network Connections
                 alt="Workflow Automation"
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-110"

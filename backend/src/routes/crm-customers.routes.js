@@ -79,7 +79,7 @@ router.post('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) 
         
         let nextNo = 1000;
         if (lastCustomer && lastCustomer.customerNo && lastCustomer.customerNo.startsWith('CUST-')) {
-            const num = parseInt(lastCustomer.customerNo.split('-')[1]);
+            const num = parseInt(lastCustomer.String(customerNo || '').split('-')[1]);
             if (!isNaN(num)) nextNo = num + 1;
         }
 
@@ -223,7 +223,7 @@ router.get('/:id/360-view', authenticate, checkPermission('CENTRAL_CRM'), async 
                 customer,
                 timeline,
                 summary: {
-                    totalLeads: customer.leads.length,
+                    totalLeads: customer.Array.isArray(leads) ? leads.length : 0,
                     totalEnrollments: customer.users.reduce((acc, u) => acc + u.enrollments.length, 0),
                     activePipelines: customer.pipelines.filter(p => p.status === 'OPEN').length
                 }

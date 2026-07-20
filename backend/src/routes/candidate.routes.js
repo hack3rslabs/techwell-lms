@@ -22,11 +22,25 @@ const genAI = new GoogleGenerativeAI(GEMINI_KEY || 'MISSING_KEY');
  */
 router.get('/', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'STAFF', 'EMPLOYER', 'RECRUITER'), async (req, res, next) => {
     try {
-        const { 
+        let { 
             search, category, status, page = 1, limit = 10,
             experienceLevel, skills, pinCode, state, district,
             education, passedOutYear, currentCTC, expectedCTC, industry
         } = req.query;
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+    if (category !== undefined) category = Array.isArray(category) ? category[0] : String(category);
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (experienceLevel !== undefined) experienceLevel = Array.isArray(experienceLevel) ? experienceLevel[0] : String(experienceLevel);
+    if (skills !== undefined) skills = Array.isArray(skills) ? skills[0] : String(skills);
+    if (pinCode !== undefined) pinCode = Array.isArray(pinCode) ? pinCode[0] : String(pinCode);
+    if (state !== undefined) state = Array.isArray(state) ? state[0] : String(state);
+    if (district !== undefined) district = Array.isArray(district) ? district[0] : String(district);
+    if (education !== undefined) education = Array.isArray(education) ? education[0] : String(education);
+    if (passedOutYear !== undefined) passedOutYear = Array.isArray(passedOutYear) ? passedOutYear[0] : String(passedOutYear);
+    if (currentCTC !== undefined) currentCTC = Array.isArray(currentCTC) ? currentCTC[0] : String(currentCTC);
+    if (expectedCTC !== undefined) expectedCTC = Array.isArray(expectedCTC) ? expectedCTC[0] : String(expectedCTC);
+    if (industry !== undefined) industry = Array.isArray(industry) ? industry[0] : String(industry);
+
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
 
@@ -46,7 +60,7 @@ router.get('/', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'STAFF', 'EMPLOY
 
         if (skills) {
             // skills comes as comma-separated string: "React,Node"
-            const skillsArray = skills.split(',').map(s => s.trim());
+            const skillsArray = String(skills || '').split(',').map(s => String(s || '').trim());
             where.skills = { hasSome: skillsArray };
         }
 
@@ -303,7 +317,7 @@ router.post('/parse-upload', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'ST
             return res.status(400).json({ error: 'Failed to extract text from uploaded PDF resume' });
         }
 
-        if (!extractedText.trim()) {
+        if (!String(extractedText || '').trim()) {
             return res.status(400).json({ error: 'Resume PDF contains no readable text content' });
         }
 
@@ -585,7 +599,7 @@ router.get('/admin/placement-readiness', authenticate, authorize('ADMIN', 'SUPER
                 hot: hotCandidates,
                 warm: warmCandidates,
                 atRisk: atRiskCandidates,
-                total: candidates.length
+                total: Array.isArray(candidates) ? candidates.length : 0
             },
             topReadyCandidates: detailedList.sort((a, b) => b.probabilityScore - a.probabilityScore).slice(0, 5)
         });

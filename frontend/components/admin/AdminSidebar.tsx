@@ -78,43 +78,60 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         pathname.startsWith("/admin/leads/")
 
     const routes: RouteConfig[] = [
-        // 1. Overview
-        { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Overview" },
-
-        // 2. Consulting Hub
-        { label: "Consulting Hub", icon: Briefcase, href: "/admin/consulting", permission: "CENTRAL_CRM", group: "Consulting Hub" },
-        { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY", group: "Consulting Hub" },
-        { label: "Client Agreements", icon: FileText, href: "/admin/crm/agreements", permission: "CENTRAL_CRM", group: "Consulting Hub" },
-
-        // 3. Leads & CRM
+        // --- 1. Sales & Revenue (CRM) ---
+        { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Sales & Revenue (CRM)" },
+        { label: "Consulting Hub", icon: Briefcase, href: "/admin/consulting", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)" },
+        { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY", group: "Sales & Revenue (CRM)" },
+        { label: "Client Agreements", icon: FileText, href: "/admin/crm/agreements", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)" },
         {
-            label: "Lead Management", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Leads & CRM", showLeadCounts: true, subRoutes: [
+            label: "Lead Management", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)", showLeadCounts: true, subRoutes: [
                 { label: "Overview", href: "/admin/leads" },
                 { label: "Newsletters", href: "/admin/leads/newsletters" }
             ]
         },
-        { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Leads & CRM" },
-        { label: "Sales Pipelines", icon: Briefcase, href: "/admin/crm/pipelines", permission: "CENTRAL_CRM", group: "Leads & CRM" },
-        { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Leads & CRM" },
+        { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)" },
+        { label: "Sales Pipelines", icon: Briefcase, href: "/admin/crm/pipelines", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)" },
+        { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Sales & Revenue (CRM)" },
+        { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Sales & Revenue (CRM)" },
+        { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER", group: "Sales & Revenue (CRM)" },
+        { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Sales & Revenue (CRM)" },
 
-        // 4. Training & Courses
-        { label: "Training Manager", icon: BookOpen, href: "/admin/training", permission: "COURSES", group: "Training & Courses" },
-        { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES", group: "Training & Courses" },
-        { label: "Projects", icon: BookOpen, href: "/admin/projects", permission: "COURSES", group: "Training & Courses" },
-        { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES", group: "Training & Courses" },
-        { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES", group: "Training & Courses" },
-        { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS", group: "Training & Courses" },
-        { label: "Assessments", icon: PenLine, href: "/admin/assessments", permission: "TRAINING", group: "Training & Courses" },
-        { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY", group: "Training & Courses" },
+        // --- 2. Academics & Training (LMS) ---
+        { label: "Training Manager", icon: BookOpen, href: "/admin/training", permission: "COURSES", group: "Academics & Training (LMS)" },
+        { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES", group: "Academics & Training (LMS)" },
+        { 
+            label: "Projects Manager", icon: BookOpen, href: "/admin/projects", permission: "COURSES", group: "Academics & Training (LMS)", subRoutes: [
+                { label: "All Projects", href: "/admin/projects" },
+                { label: "Project Requests", href: "/admin/projects/requests" }
+            ] 
+        },
+        { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES", group: "Academics & Training (LMS)" },
+        { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES", group: "Academics & Training (LMS)" },
+        { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS", group: "Academics & Training (LMS)" },
+        { label: "Assessments", icon: PenLine, href: "/admin/assessments", permission: "TRAINING", group: "Academics & Training (LMS)" },
+        { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY", group: "Academics & Training (LMS)" },
+        { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES", group: "Academics & Training (LMS)" },
+        { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "REVIEWS", group: "Academics & Training (LMS)" },
 
-        // 5. Operations
-        { label: "Operations Center", icon: ListTodo, href: "/admin/operations", permission: "ADMIN", group: "Operations" },
-        { label: "Tasks", icon: ListTodo, href: "/admin/tasks", permission: "TASKS", group: "Operations" },
-        { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Operations" },
-        { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS", group: "Operations" },
-        { label: "Support Tickets", icon: Inbox, href: "/admin/support", permission: "TICKETS", group: "Operations" },
+        { label: "Jobs & Internships", icon: Briefcase, href: "/admin/jobs", group: "Campus & Careers (Placements)" },
+        { label: "Master Drives", icon: Briefcase, href: "/admin/campus-drives", group: "Campus & Careers (Placements)" },
+        { label: "CHMS Dashboard", icon: LayoutDashboard, href: "/admin/chms/dashboard", group: "Campus & Careers (Placements)" },
+        { label: "Companies", icon: Building2, href: "/admin/companies", group: "Campus & Careers (Placements)" },
+        { label: "Institutes", icon: GraduationCap, href: "/admin/institutes", group: "Campus & Careers (Placements)" },
+        { label: "Interviews", icon: Users, href: "/admin/interviews", group: "Campus & Careers (Placements)" },
+        { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS", group: "Campus & Careers (Placements)" },
+
+        // --- 4. Operations & Automations ---
+        { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL", group: "Operations & Automations" },
+        { label: "Approval Center", icon: Inbox, href: "/admin/approvals", permission: "ADMIN", group: "Operations & Automations" },
+        { label: "Operations Center", icon: ListTodo, href: "/admin/operations", permission: "ADMIN", group: "Operations & Automations" },
+        { label: "Tasks", icon: ListTodo, href: "/admin/tasks", permission: "TASKS", group: "Operations & Automations" },
+        { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Operations & Automations" },
+        { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS", group: "Operations & Automations" },
+        { label: "Support Tickets", icon: Inbox, href: "/admin/support", permission: "TICKETS", group: "Operations & Automations" },
+        { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "MESSAGES", group: "Operations & Automations" },
         {
-            label: "Automation Studio", icon: Bot, href: "/admin/automation-studio", group: "Operations", customContent: (
+            label: "Automation Studio", icon: Bot, href: "/admin/automation-studio", group: "Operations & Automations", customContent: (
                 <div className="space-y-1 mt-2">
                     <Link
                         href="/admin/automation-studio"
@@ -147,45 +164,14 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             ), permission: "AUTOMATION_STUDIO"
         },
 
-        // 6. Campus & Recruiting
-        { label: "Job Board", icon: Briefcase, href: "/admin/jobs", group: "Campus & Recruiting" },
-        { label: "Master Drives", icon: Briefcase, href: "/admin/campus-drives", group: "Campus & Recruiting" },
-        { label: "CHMS Dashboard", icon: LayoutDashboard, href: "/admin/chms/dashboard", group: "Campus & Recruiting" },
-        { label: "Companies", icon: Building2, href: "/admin/companies", group: "Campus & Recruiting" },
-        { label: "Institutes", icon: GraduationCap, href: "/admin/institutes", group: "Campus & Recruiting" },
-        { label: "Internships", icon: Briefcase, href: "/admin/internships", group: "Campus & Recruiting" },
-        { label: "Interviews", icon: Users, href: "/admin/interviews", group: "Campus & Recruiting" },
-        { label: "Employer Requests", icon: Inbox, href: "/admin/employer-requests", permission: "MANAGE_EMPLOYER_REQUESTS", group: "Campus & Recruiting" },
-        { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS", group: "Campus & Recruiting" },
-
-        // 7. Approve & Manage
-        { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "REVIEWS", group: "Approve & Manage" },
-        { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES", group: "Approve & Manage" },
-        { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "MESSAGES", group: "Approve & Manage" },
-        { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COUPONS", group: "Approve & Manage" },
-        { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "TRANSACTIONS", group: "Approve & Manage" },
-
-        // 8. Reporting & Analytics
-        { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Reporting & Analytics" },
-        { label: "Consulting Revenue", icon: CreditCard, href: "/admin/consultancy-revenue", group: "Reporting & Analytics" },
-        // { label: "Global Data", icon: Database, href: "/admin/global-data", permission: "GLOBAL_DATA", group: "Reporting & Analytics" },
-
-        // 9. Deployments & Marketing
-        { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Deployments & Marketing" },
-        { label: "Blog Posts", icon: PenLine, href: "/admin/posts", permission: "ADMIN", group: "Deployments & Marketing" },
-        { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Deployments & Marketing" },
-        { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER", group: "Deployments & Marketing" },
-        { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Deployments & Marketing" },
-        { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Deployments & Marketing" },
-        { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Deployments & Marketing" },
-        { label: "Success Stories", icon: Star, href: "/admin/success-stories", permission: "ADMIN", group: "Deployments & Marketing" },
-        { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS", group: "Deployments & Marketing" },
-
-        // 10. Administration & Partnerships
-        { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES", group: "Administration & Partnerships" },
-        { label: "All Users", icon: Users, href: "/admin/users", permission: "ADMIN", group: "Administration & Partnerships" },
-        { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS", group: "Administration & Partnerships" },
-        { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL", group: "Administration & Partnerships" },
+        // --- 5. Finance & Administration ---
+        { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Finance & Administration" },
+        { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "TRANSACTIONS", group: "Finance & Administration" },
+        { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COUPONS", group: "Finance & Administration" },
+        { label: "Revenue Center", icon: CreditCard, href: "/admin/revenue", permission: "FINANCE", group: "Finance & Administration" },
+        { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES", group: "Finance & Administration" },
+        { label: "All Users", icon: Users, href: "/admin/users", permission: "ADMIN", group: "Finance & Administration" },
+        { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS", group: "Finance & Administration" },
         { 
             label: "Franchise Management", 
             icon: Building2, 
@@ -193,12 +179,17 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                 ? `/admin/franchise/${user.instituteId}` 
                 : (user as any)?.franchiseId ? `/admin/franchise/${(user as any).franchiseId}` : "/admin/franchise", 
             permission: "ADMIN", 
-            group: "Administration & Partnerships" 
+            group: "Finance & Administration" 
         },
-        { label: "Franchise Resources", icon: Megaphone, href: "/admin/franchise/resources", permission: "ADMIN", group: "Administration & Partnerships" },
-        { label: "GDPR & Compliance", icon: ShieldCheck, href: "/admin/compliance", permission: "ADMIN", group: "Administration & Partnerships" },
-        { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Administration & Partnerships" },
-        { label: "Documents", icon: FileText, href: "/admin/documents", permission: "ADMIN", group: "Administration & Partnerships" },
+        { label: "Franchise Resources", icon: Megaphone, href: "/admin/franchise/resources", permission: "ADMIN", group: "Finance & Administration" },
+        { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Finance & Administration" },
+        { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Finance & Administration" },
+        { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Finance & Administration" },
+        { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS", group: "Finance & Administration" },
+        { label: "Success Stories", icon: Star, href: "/admin/success-stories", permission: "ADMIN", group: "Finance & Administration" },
+        { label: "GDPR & Compliance", icon: ShieldCheck, href: "/admin/compliance", permission: "ADMIN", group: "Finance & Administration" },
+        { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Finance & Administration" },
+        { label: "Documents", icon: FileText, href: "/admin/documents", permission: "ADMIN", group: "Finance & Administration" },
     ]
 
     const availableRoutes = routes.filter(route => {
@@ -347,7 +338,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                                 className={cn(
                                                     "text-sm flex items-center justify-between gap-3 p-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
                                                     isActive && !route.customContent
-                                                        ? "text-primary shadow-sm bg-gradient-to-r from-primary/15 to-transparent font-medium border border-primary/10"
+                                                        ? "text-primary shadow-sm bg-primary/10 font-medium border-l-4 border-l-primary"
                                                         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                                                 )}
                                             >

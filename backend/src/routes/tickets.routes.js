@@ -73,7 +73,11 @@ router.post('/', authenticate, upload.single('attachment'), async (req, res, nex
  */
 router.get('/', authenticate, checkPermission('TICKETS'), async (req, res, next) => {
     try {
-        const { status, priority, category } = req.query;
+        let { status, priority, category } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (priority !== undefined) priority = Array.isArray(priority) ? priority[0] : String(priority);
+    if (category !== undefined) category = Array.isArray(category) ? category[0] : String(category);
+
         let where = {};
 
         // If not admin or support staff, restrict to own tickets

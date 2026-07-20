@@ -34,6 +34,7 @@ import { exportToCSV } from '@/lib/export-utils'
 import api, { leadApi } from '@/lib/api'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+import { sanitizeUrl } from '@/lib/sanitizeUrl'
 
 const initialLeadForm = {
     name: '',
@@ -166,6 +167,9 @@ export default function LeadsPage() {
             if (filters.name) params.append('name', filters.name)
             if (filters.phone) params.append('phone', filters.phone)
             if (filters.franchiseId !== 'ALL') params.append('franchiseId', filters.franchiseId)
+            
+            // Prevent browser caching
+            params.append('_t', Date.now().toString())
 
             const res = await api.get(`/leads?${params.toString()}`)
             setLeads(res.data || [])
@@ -432,6 +436,21 @@ export default function LeadsPage() {
         }
     }
 
+    const getTabColor = (statusValue: string, isActive: boolean) => {
+        const base = 'whitespace-nowrap h-8 px-4 rounded-md font-medium text-xs shadow-sm transition-colors border ';
+        switch (statusValue) {
+            case 'NEW': return base + (isActive ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600' : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800');
+            case 'CONTACTED': return base + (isActive ? 'bg-yellow-500 text-white border-yellow-600 hover:bg-yellow-600' : 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800');
+            case 'INTERESTED': return base + (isActive ? 'bg-purple-500 text-white border-purple-600 hover:bg-purple-600' : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800');
+            case 'QUALIFIED': return base + (isActive ? 'bg-indigo-500 text-white border-indigo-600 hover:bg-indigo-600' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800');
+            case 'CONVERTED': return base + (isActive ? 'bg-green-500 text-white border-green-600 hover:bg-green-600' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800');
+            case 'FOLLOW_UP': return base + (isActive ? 'bg-orange-500 text-white border-orange-600 hover:bg-orange-600' : 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800');
+            case 'LOST': return base + (isActive ? 'bg-red-500 text-white border-red-600 hover:bg-red-600' : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800');
+            case 'ALL': return base + (isActive ? 'bg-slate-800 text-white border-slate-900 hover:bg-slate-900 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-100' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700');
+            default: return base + (isActive ? 'bg-primary text-primary-foreground' : 'bg-white hover:bg-slate-50');
+        }
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -633,15 +652,13 @@ export default function LeadsPage() {
                     { label: 'Follow Up', value: 'FOLLOW_UP', count: leadCounts.statusCounts?.FOLLOW_UP || 0 },
                     { label: 'Not Interested', value: 'LOST', count: leadCounts.statusCounts?.LOST || 0 },
                 ].map((status) => (
-                    <Button
+                    <button
                         key={status.value}
-                        variant={statusFilter === status.value ? "default" : "outline"}
-                        size="sm"
-                        className={`whitespace-nowrap h-8 px-4 rounded-md font-medium text-xs shadow-sm ${statusFilter === status.value ? 'bg-primary text-primary-foreground' : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                        className={getTabColor(status.value, statusFilter === status.value)}
                         onClick={() => setStatusFilter(status.value)}
                     >
                         {status.label} {status.count > 0 && `(${status.count})`}
-                    </Button>
+                    </button>
                 ))}
             </div>
 
@@ -778,7 +795,7 @@ export default function LeadsPage() {
                                                 <div className="text-xs text-muted-foreground flex items-center gap-1">
                                                     {lead.phone}
                                                     {lead.phone && (
-                                                        <a href={`tel:${lead.phone}`} className="text-blue-500 hover:text-blue-700 ml-1" title="Call Lead">
+                                                        <a href={sanitizeUrl(`tel:${lead.phone}`)} className="text-blue-500 hover:text-blue-700 ml-1" title="Call Lead">
                                                             <Phone className="w-3 h-3" />
                                                         </a>
                                                     )}
@@ -831,14 +848,14 @@ export default function LeadsPage() {
                                                     {lead.phone && (
                                                         <>
                                                             <a
-                                                                href={`tel:${lead.phone}`}
+                                                                href={sanitizeUrl(`tel:${lead.phone}`)}
                                                                 className="inline-flex items-center justify-center h-8 w-8 rounded-md text-green-600 hover:text-green-700 hover:bg-green-50"
                                                                 title="Call Lead"
                                                             >
                                                                 <Phone className="h-4 w-4" />
                                                             </a>
                                                             <a
-                                                                href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                                                                href={sanitizeUrl(`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="inline-flex items-center justify-center h-8 w-8 rounded-md text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"

@@ -26,7 +26,7 @@ async function generateBatchCode() {
         return `${prefix}001`;
     }
 
-    const lastSeqStr = lastBatch.batchCode.split('-').pop();
+    const lastSeqStr = lastBatch.String(batchCode || '').split('-').pop();
     const nextSeq = parseInt(lastSeqStr, 10) + 1;
     return `${prefix}${String(nextSeq).padStart(3, '0')}`;
 }
@@ -280,7 +280,9 @@ router.post('/:id/students', authenticate, checkPermission('USERS'), async (req,
  */
 router.get('/:id/attendance', authenticate, async (req, res, next) => {
     try {
-        const { date } = req.query; // YYYY-MM-DD
+        let { date } = req.query;
+    if (date !== undefined) date = Array.isArray(date) ? date[0] : String(date);
+ // YYYY-MM-DD
         if (!date) return res.status(400).json({ error: 'Date is required' });
 
         const searchDate = new Date(date);

@@ -95,7 +95,12 @@ router.get('/applications/detail/:id', authenticate, authorize('EMPLOYER', 'ADMI
 router.get('/applications/:jobId', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
         const { jobId } = req.params;
-        const { source, status, minScore, search } = req.query;
+        let { source, status, minScore, search } = req.query;
+    if (source !== undefined) source = Array.isArray(source) ? source[0] : String(source);
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (minScore !== undefined) minScore = Array.isArray(minScore) ? minScore[0] : String(minScore);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         const job = await prisma.job.findUnique({ where: { id: jobId } });
@@ -663,7 +668,8 @@ router.get('/analytics', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADM
  */
 router.get('/activity', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), async (req, res, next) => {
     try {
-        const { limit = 15 } = req.query;
+        let { limit = 15 } = req.query;
+
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
         // Get recent audit logs for this employer's jobs OR all if admin
@@ -861,7 +867,7 @@ router.get('/job-stats/:jobId', authenticate, authorize('EMPLOYER'), async (req,
         }
 
         // Build skill match data
-        const jobSkills = (job.skills || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        const jobSkills = (job.skills || '').split(',').map(s => String(s || '').trim().toLowerCase()).filter(Boolean);
 
         const candidates = job.applications.map(app => {
             const name = app.source === 'INTERNAL' ? app.applicant?.name : app.externalName;
@@ -877,8 +883,8 @@ router.get('/job-stats/:jobId', authenticate, authorize('EMPLOYER'), async (req,
             const candidateSkills = [];
             app.applicant?.enrollments?.forEach(e => {
                 if (e.course.skills) {
-                    const s = typeof e.course.skills === 'string' ? e.course.skills.split(',') : [];
-                    candidateSkills.push(...s.map(sk => sk.trim().toLowerCase()));
+                    const s = typeof e.course.skills === 'string' ? e.course.String(skills || '').split(',') : [];
+                    candidateSkills.push(...s.map(sk => String(sk || '').trim().toLowerCase()));
                 }
             });
 

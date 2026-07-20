@@ -21,7 +21,6 @@ async function getTeamMembers() {
     if (!res.ok) return []
     return res.json()
   } catch (error) {
-    console.error('Failed to fetch team members:', error)
     return []
   }
 }

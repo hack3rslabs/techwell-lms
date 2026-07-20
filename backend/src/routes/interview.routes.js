@@ -31,7 +31,9 @@ const createInterviewSchema = z.object({
  */
 router.get('/', authenticate, async (req, res, next) => {
     try {
-        const { status, page = 1, limit = 10 } = req.query;
+        let { status, page = 1, limit = 10 } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+
 
         const where = {};
         const role = req.user.role;
@@ -99,7 +101,8 @@ router.get('/', authenticate, async (req, res, next) => {
 router.get('/user/:userId', authenticate, authorize('EMPLOYER', 'RECRUITER', 'ADMIN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const { userId } = req.params;
-        const { page = 1, limit = 10 } = req.query;
+        let { page = 1, limit = 10 } = req.query;
+
 
         const [interviews, total] = await Promise.all([
             prisma.interview.findMany({

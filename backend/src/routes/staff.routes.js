@@ -37,7 +37,8 @@ router.post('/attendance/check-in', authenticate, async (req, res, next) => {
                 where: { id: existing.id },
                 data: {
                     sessions,
-                    status: 'PRESENT'
+                    status: 'PRESENT',
+                    checkOutTime: null
                 }
             });
 
@@ -289,6 +290,87 @@ router.get('/scripts', authenticate, async (req, res, next) => {
         });
         res.json(scripts);
     } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route   GET /api/staff/monitoring
+ * @desc    Get aggregated metrics for all staff members
+ * @access  Private (Admin/Manager)
+ */
+router.get('/monitoring', authenticate, async (req, res, next) => {
+    try {
+        let { dateRange } = req.query;
+    if (dateRange !== undefined) dateRange = Array.isArray(dateRange) ? dateRange[0] : String(dateRange);
+ // 'today', 'week', 'month', 'all'
+        
+        let startDate = new Date(0);
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+
+        if (dateRange === 'today') {
+            startDate = startOfToday;
+        } else if (dateRange === 'week') {
+            startDate = new Date(startOfToday);
+            startDate.setDate(startDate.getDate() - startDate.getDay()); // Start of week (Sunday)
+        } else if (dateRange === 'month') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+
+        // Fetch all staff members (users with roles other than STUDENT, or specifically STAFF/ADMIN)
+        const staffMembers = await prisma.user.findMany({
+            where: { role: { in: ['ADMIN', 'MANAGER', 'STAFF', 'SUPER_ADMIN', 'INSTRUCTOR'] } },
+            select: { id: true, name: true, role: true, email: true }
+        });
+
+        const metrics = await Promise.all(staffMembers.map(async (staff) => {
+            // 1. Attendance/Work Hours
+            const attendances = await prisma.staffAttendance.findMany({
+                where: { userId: staff.id, date: { gte: startDate } }
+            });
+            const totalWorkHours = attendances.reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
+
+            // 2. Calls Made
+            const totalCalls = await prisma.communicationLog.count({
+                where: { userId: staff.id, type: 'CALL', timestamp: { gte: startDate } }
+            });
+
+            // 3. Leads assigned in this period (or just currently assigned)
+            const leadsHandled = await prisma.lead.count({
+                where: { assignedToId: staff.id }
+            });
+
+            // 4. Leads Converted
+            const leadsConverted = await prisma.lead.count({
+                where: { assignedToId: staff.id, status: 'ENROLLED' } // Assuming ENROLLED is converted
+            });
+
+            // 5. Leads Lost
+            const leadsLost = await prisma.lead.count({
+                where: { assignedToId: staff.id, status: { in: ['LOST', 'DROPPED'] } }
+            });
+
+            // 6. Demo Schedules
+            const demoSchedules = await prisma.demoSchedule.count({
+                where: { assignedTo: staff.id, scheduledAt: { gte: startDate } }
+            });
+
+            return {
+                ...staff,
+                totalWorkHours: parseFloat(totalWorkHours.toFixed(2)),
+                totalCalls,
+                leadsHandled,
+                leadsConverted,
+                leadsLost,
+                leadsPending: leadsHandled - (leadsConverted + leadsLost),
+                demoSchedules
+            };
+        }));
+
+        res.json(metrics);
+    } catch (error) {
+        console.error("Monitoring error:", error);
         next(error);
     }
 });

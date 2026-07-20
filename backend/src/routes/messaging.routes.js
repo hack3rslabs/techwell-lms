@@ -36,7 +36,7 @@ router.post('/bulk', authenticate, checkPermission('USERS'), async (req, res, ne
 
         for (const user of users) {
             // Replace simple placeholder
-            const personalizedMessage = message.replace(/{{name}}/g, user.name);
+            const personalizedMessage = String(message || "").replace(/{{name}}/g, user.name);
 
             if (channels.includes('EMAIL') && user.email) {
                 sendEmail({

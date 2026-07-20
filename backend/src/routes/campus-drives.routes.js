@@ -131,7 +131,7 @@ router.post('/:id/mela-register', async (req, res) => {
         }
 
         // 3. Register for Drive(s) based on selected companies
-        if (selectedCompanies && selectedCompanies.length > 0) {
+        if (Array.isArray(selectedCompanies) && selectedCompanies.length > 0) {
             for (const companyName of selectedCompanies) {
                 // Check if they already applied to this specific company
                 const existingApp = await prisma.campusDriveStudent.findFirst({

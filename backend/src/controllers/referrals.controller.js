@@ -59,7 +59,7 @@ exports.applyReferral = async (req, res) => {
         if (!code) return res.status(400).json({ success: false, message: 'Referral code is required' });
 
         const referrer = await prisma.user.findUnique({
-            where: { referralCode: code.toUpperCase() }
+            where: { referralCode: String(code || "").toUpperCase() }
         });
 
         if (!referrer) {

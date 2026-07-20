@@ -7,11 +7,11 @@ let retries = 5;
 
 while (retries > 0 && !success) {
     try {
-        console.log(`Pushing database schema... (Retries left: ${retries})`);
-        execSync("npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss", { stdio: 'inherit' });
+        console.log(`Running database migrations... (Retries left: ${retries})`);
+        execSync("npx prisma migrate deploy", { stdio: 'inherit' });
         success = true;
     } catch (error) {
-        console.error("Prisma DB Push failed. The database might not be ready yet.");
+        console.error("Prisma Migrate failed. The database might not be ready yet.");
         retries -= 1;
         if (retries > 0) {
             console.log("Waiting 3 seconds before retrying...");

@@ -101,7 +101,11 @@ router.get('/analytics', authenticate, checkPermission('CERTIFICATES'), async (r
 router.get('/', authenticate, async (req, res, next) => {
     try {
         const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role);
-        const { status, courseId, search } = req.query;
+        let { status, courseId, search } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (courseId !== undefined) courseId = Array.isArray(courseId) ? courseId[0] : String(courseId);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+
 
         const where = {};
         if (!isAdmin && req.user.role !== 'FRANCHISE_ADMIN') {
@@ -490,7 +494,7 @@ router.put('/:id/status', authenticate, checkPermission('CERTIFICATES'), async (
             data: updateData
         });
 
-        res.json({ message: `Certificate ${status.toLowerCase()} successfully`, certificate });
+        res.json({ message: `Certificate ${String(status || '').toLowerCase()} successfully`, certificate });
     } catch (error) {
         next(error);
     }

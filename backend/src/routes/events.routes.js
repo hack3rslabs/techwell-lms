@@ -209,7 +209,7 @@ router.post('/:id/generate-certificates', authenticate, checkPermission('LEADS')
             where: { eventId: id }
         });
 
-        if (!leads.length) return res.status(400).json({ error: 'No attendees found for this event' });
+        if (!Array.isArray(leads) ? leads.length : 0) return res.status(400).json({ error: 'No attendees found for this event' });
 
         const template = await prisma.certificateTemplate.findUnique({
             where: { id: event.certificateTemplateId }

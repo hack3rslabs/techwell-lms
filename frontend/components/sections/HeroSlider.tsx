@@ -229,10 +229,16 @@ export function HeroSlider() {
               key={s.id} 
               className={`absolute inset-0 transition-all duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 translate-y-0 z-20 relative' : 'opacity-0 translate-y-8 absolute pointer-events-none z-0'}`}
             >
-              <div className="inline-flex">
+              <div className="flex flex-wrap items-center gap-3">
                 <Badge className="bg-white/10 hover:bg-white/20 text-white border-white/20 px-4 py-2 rounded-full backdrop-blur-md transition-all shadow-lg">
                   {s.badgeIcon}
                   <span className="text-xs sm:text-sm font-semibold tracking-wide uppercase drop-shadow-md">{s.badgeText}</span>
+                </Badge>
+
+                {/* 10 Years of Trust Badge */}
+                <Badge className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/30 px-4 py-2 rounded-full backdrop-blur-md transition-all shadow-[0_0_20px_-5px_rgba(245,158,11,0.4)] flex items-center cursor-default">
+                  <ShieldCheck className="w-4 h-4 mr-2 text-amber-400" />
+                  <span className="text-xs sm:text-sm font-bold tracking-wide uppercase drop-shadow-md">10 Years of Trust</span>
                 </Badge>
               </div>
               

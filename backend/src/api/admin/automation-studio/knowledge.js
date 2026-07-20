@@ -58,15 +58,15 @@ function chunkText(text, maxChars = 2000) {
   
   for (const sentence of sentences) {
     if ((currentChunk.length + sentence.length) > maxChars) {
-      if (currentChunk.trim().length > 0) chunks.push(currentChunk.trim());
+      if (String(currentChunk || '').trim().length > 0) chunks.push(String(currentChunk || '').trim());
       currentChunk = sentence;
     } else {
       currentChunk += sentence;
     }
   }
   
-  if (currentChunk.trim().length > 0) {
-    chunks.push(currentChunk.trim());
+  if (String(currentChunk || '').trim().length > 0) {
+    chunks.push(String(currentChunk || '').trim());
   }
   
   return chunks;
@@ -156,7 +156,7 @@ router.post('/train/url', async (req, res) => {
     res.json({ success: true, message: `Successfully indexed ${savedChunks} chunks from ${title}` });
 
   } catch (error) {
-    console.error('[Knowledge API] Training failed for URL:', url ? url.replace(/[\r\n]/g, '') : 'unknown', ':', error.message);
+    console.error('[Knowledge API] Training failed for URL:', typeof url === "string" ? url.replace(/[\r\n]/g, '') : 'unknown', ':', error.message);
     if (url) {
       await prisma.aiKnowledgeDocument.updateMany({
         where: { url },

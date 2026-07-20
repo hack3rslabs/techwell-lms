@@ -62,7 +62,9 @@ router.post('/batches', authenticate, authorize('INSTRUCTOR', 'ADMIN', 'INSTITUT
  */
 router.get('/students', authenticate, authorize('INSTRUCTOR', 'ADMIN', 'INSTITUTE_ADMIN'), async (req, res, next) => {
     try {
-        const { batchId } = req.query;
+        let { batchId } = req.query;
+    if (batchId !== undefined) batchId = Array.isArray(batchId) ? batchId[0] : String(batchId);
+
         const students = await trainerService.getTrainerStudents(req.user, batchId);
         res.json(students);
     } catch (error) {
@@ -77,7 +79,9 @@ router.get('/students', authenticate, authorize('INSTRUCTOR', 'ADMIN', 'INSTITUT
 router.get('/students/:studentId/progress', authenticate, authorize('INSTRUCTOR', 'ADMIN', 'INSTITUTE_ADMIN'), async (req, res, next) => {
     try {
         const { studentId } = req.params;
-        const { courseId } = req.query;
+        let { courseId } = req.query;
+    if (courseId !== undefined) courseId = Array.isArray(courseId) ? courseId[0] : String(courseId);
+
 
         if (!courseId) return res.status(400).json({ error: 'Course ID is required' });
 

@@ -96,7 +96,7 @@ const mockGenerate = (topic, difficulty) => {
             },
             {
                 title: `Setting up your environment`,
-                content: `### Installation\n\n1. Download the installer...\n2. Run the setup wizard...\n\n\`\`\`bash\nnpm install ${topic.toLowerCase()}\n\`\`\``,
+                content: `### Installation\n\n1. Download the installer...\n2. Run the setup wizard...\n\n\`\`\`bash\nnpm install ${String(topic || '').toLowerCase()}\n\`\`\``,
                 videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                 duration: 600,
                 order: 1

@@ -34,7 +34,7 @@ async function isSafeWebhookUrl(inputUrl) {
 
         for (const ip of addresses) {
             // Very basic IPv4 private block checking
-            const parts = ip.split('.').map(Number);
+            const parts = String(ip || '').split('.').map(Number);
             if (parts.length === 4) {
                 if (
                     parts[0] === 127 || // Loopback
@@ -47,7 +47,7 @@ async function isSafeWebhookUrl(inputUrl) {
                 }
             }
             // Add basic IPv6 checks if necessary
-            if (ip === '::1' || ip.toLowerCase().startsWith('fc00:') || ip.toLowerCase().startsWith('fd00:') || ip.toLowerCase().startsWith('fe80:')) {
+            if (ip === '::1' || String(ip || '').toLowerCase().startsWith('fc00:') || String(ip || '').toLowerCase().startsWith('fd00:') || String(ip || '').toLowerCase().startsWith('fe80:')) {
                 return false;
             }
         }

@@ -229,7 +229,10 @@ router.get('/manage/all', authenticate, async (req, res, next) => {
             return res.status(403).json({ error: 'Access denied.' });
         }
 
-        const { search, status = 'ALL', page = 1, limit = 24 } = req.query;
+        let { search, status = 'ALL', page = 1, limit = 24 } = req.query;
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+
         const pageNum = Math.max(parseInt(page, 10) || 1, 1);
         const limitNum = Math.min(Math.max(parseInt(limit, 10) || 24, 1), 100);
         const where = {};
@@ -237,8 +240,8 @@ router.get('/manage/all', authenticate, async (req, res, next) => {
         if (status === 'PUBLISHED') where.isPublished = true;
         if (status === 'DRAFT') where.isPublished = false;
 
-        if (typeof search === 'string' && search.trim()) {
-            const query = search.trim();
+        if (typeof search === 'string' && String(search || '').trim()) {
+            const query = String(search || '').trim();
             where.OR = [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
@@ -287,7 +290,11 @@ router.get('/manage/all', authenticate, async (req, res, next) => {
 router.get('/', optionalAuth, async (req, res, next) => {
     try {
         console.log('[COURSES GET] Fetching courses...');
-        const { category, difficulty, search, page = 1, limit = 12 } = req.query;
+        let { category, difficulty, search, page = 1, limit = 12 } = req.query;
+    if (category !== undefined) category = Array.isArray(category) ? category[0] : String(category);
+    if (difficulty !== undefined) difficulty = Array.isArray(difficulty) ? difficulty[0] : String(difficulty);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+
 
         const where = {};
 
@@ -304,16 +311,16 @@ router.get('/', optionalAuth, async (req, res, next) => {
         }
 
         // Clean query parameters to avoid Prisma database errors
-        if (category && category !== 'ALL' && category !== 'undefined' && category !== 'null' && category.trim() !== '') {
+        if (category && category !== 'ALL' && category !== 'undefined' && category !== 'null' && String(category || '').trim() !== '') {
             where.category = category;
         }
 
         const validDifficulties = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
-        if (difficulty && validDifficulties.includes(difficulty.toUpperCase())) {
-            where.difficulty = difficulty.toUpperCase();
+        if (difficulty && validDifficulties.includes(String(difficulty || "").toUpperCase())) {
+            where.difficulty = String(difficulty || "").toUpperCase();
         }
 
-        if (search && search.trim() !== '') {
+        if (search && String(search || '').trim() !== '') {
             where.OR = [
                 { title: { contains: search, mode: 'insensitive' } },
                 { description: { contains: search, mode: 'insensitive' } }
@@ -425,7 +432,7 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
         }
 
         const loadRelatedCourses = async (ids) => {
-            if (!Array.isArray(ids) || ids.length === 0) {
+            if (!Array.isArray(ids) || Array.isArray(ids) ? ids.length : 0 === 0) {
                 return [];
             }
             return await prisma.course.findMany({

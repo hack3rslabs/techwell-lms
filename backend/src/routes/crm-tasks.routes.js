@@ -8,7 +8,9 @@ const router = express.Router();
 // GET /api/crm/tasks
 router.get('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
   try {
-    const { assignedToId } = req.query;
+    let { assignedToId } = req.query;
+    if (assignedToId !== undefined) assignedToId = Array.isArray(assignedToId) ? assignedToId[0] : String(assignedToId);
+
     let where = {};
     if (assignedToId) {
       where.assignedTo = assignedToId;

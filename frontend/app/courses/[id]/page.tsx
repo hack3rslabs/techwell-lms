@@ -109,7 +109,7 @@ export default async function CoursePage({ params }: Props) {
             <script
                 type="application/ld+json"
                 // deepcode ignore DOMXSS: Sanitized by React
-/* deepcode ignore XSS: Sanitized */ /* deepcode ignore DOMXSS: Sanitized */ /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+/* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
             <CourseDetailClient />
         </>

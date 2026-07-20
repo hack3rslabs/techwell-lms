@@ -39,7 +39,10 @@ exports.registerInstitute = async (req, res) => {
 // Super Admin: List all institutes
 exports.getInstitutes = async (req, res) => {
     try {
-        const { status, type } = req.query;
+        let { status, type } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (type !== undefined) type = Array.isArray(type) ? type[0] : String(type);
+
         let where = {};
         if (status) where.status = status;
         if (type) where.type = type;

@@ -52,7 +52,7 @@ class ModemBridge {
             });
 
             this.parser.on('data', (data) => {
-                const line = data.trim();
+                const line = String(data || '').trim();
                 if (!line) return;
 
                 console.log(`[Modem AT Response]: ${line}`);

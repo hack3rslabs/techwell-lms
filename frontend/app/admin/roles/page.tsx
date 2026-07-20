@@ -458,29 +458,29 @@ export default function AdminUsersPage() {
             <CreateUserModal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} onSuccess={fetchUsers} />
 
             <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
-                <DialogContent className="max-w-4xl bg-background border-border max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto text-slate-900 dark:text-slate-100">
                     <DialogHeader><DialogTitle className="text-2xl font-black italic uppercase text-primary">{isEditingRole ? 'Update Role' : 'New System Role'}</DialogTitle></DialogHeader>
                     <div className="space-y-6 py-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Internal Name</Label><Input className="bg-background h-11 border-border rounded-xl" value={newRoleData.name} onChange={e => setNewRoleData(prev => ({ ...prev, name: e.target.value }))} /></div>
-                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Description</Label><Input className="bg-background h-11 border-border rounded-xl" value={newRoleData.description} onChange={e => setNewRoleData(prev => ({ ...prev, description: e.target.value }))} /></div>
+                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">Internal Name</Label><Input className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-11 border-slate-200 dark:border-slate-800 rounded-xl" value={newRoleData.name} onChange={e => setNewRoleData(prev => ({ ...prev, name: e.target.value }))} /></div>
+                            <div className="space-y-2"><Label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">Description</Label><Input className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-11 border-slate-200 dark:border-slate-800 rounded-xl" value={newRoleData.description} onChange={e => setNewRoleData(prev => ({ ...prev, description: e.target.value }))} /></div>
                         </div>
-                        <div className="border rounded-xl border-border overflow-hidden">
-                            <table className="w-full text-xs text-left text-foreground">
-                                <thead className="bg-muted/50 border-b border-border"><tr><th className="p-3 font-bold uppercase text-muted-foreground">Module</th><th className="p-3 font-bold uppercase text-center text-muted-foreground">Read</th><th className="p-3 font-bold uppercase text-center text-muted-foreground">Create</th><th className="p-3 font-bold uppercase text-center text-muted-foreground">Update</th><th className="p-3 font-bold uppercase text-center text-muted-foreground">Delete</th><th className="p-3 font-bold uppercase text-center text-muted-foreground">Disable</th></tr></thead>
-                                <tbody>
+                        <div className="border rounded-xl border-slate-200 dark:border-slate-800 overflow-hidden">
+                            <table className="w-full text-xs text-left text-slate-900 dark:text-slate-100">
+                                <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800"><tr><th className="p-3 font-bold uppercase text-slate-500 dark:text-slate-400">Module</th><th className="p-3 font-bold uppercase text-center text-slate-500 dark:text-slate-400">Read</th><th className="p-3 font-bold uppercase text-center text-slate-500 dark:text-slate-400">Create</th><th className="p-3 font-bold uppercase text-center text-slate-500 dark:text-slate-400">Update</th><th className="p-3 font-bold uppercase text-center text-slate-500 dark:text-slate-400">Delete</th><th className="p-3 font-bold uppercase text-center text-slate-500 dark:text-slate-400">Disable</th></tr></thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {Array.from(new Set(permissions.map(p => p.module || 'General'))).map(moduleName => (
                                         <React.Fragment key={moduleName}>
-                                            <tr className="bg-muted/50"><td colSpan={4} className="p-2 px-3 font-black text-[9px] uppercase text-primary/70">{moduleName}</td></tr>
+                                            <tr className="bg-indigo-50/50 dark:bg-indigo-900/10"><td colSpan={6} className="p-2 px-3 font-black text-[10px] tracking-wider uppercase text-indigo-600 dark:text-indigo-400">{moduleName}</td></tr>
                                             {permissions.filter(p => (p.module || 'General') === moduleName).map(perm => {
                                                 const p = newRoleData.permissions.find(pr => pr.featureId === perm.id) || { canRead: false, canCreate: false, canUpdate: false, canDelete: false, isDisabled: false };
                                                 return (
-                                                    <tr key={perm.id} className="border-b border-white/5 last:border-0"><td className="p-3 font-medium">{perm.name}</td>
-                                                        <td className="p-3 text-center"><Checkbox checked={p.canRead} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canRead', !!v)} /></td>
-                                                        <td className="p-3 text-center"><Checkbox checked={p.canCreate} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canCreate', !!v)} /></td>
-                                                        <td className="p-3 text-center"><Checkbox checked={p.canUpdate} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canUpdate', !!v)} /></td>
-                                                        <td className="p-3 text-center"><Checkbox checked={p.canDelete} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canDelete', !!v)} /></td>
-                                                        <td className="p-3 text-center"><Checkbox checked={p.isDisabled} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'isDisabled', !!v)} /></td>
+                                                    <tr key={perm.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td className="p-3 font-medium text-slate-700 dark:text-slate-300">{perm.name}</td>
+                                                        <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary" checked={p.canRead} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canRead', !!v)} /></td>
+                                                        <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary" checked={p.canCreate} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canCreate', !!v)} /></td>
+                                                        <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary" checked={p.canUpdate} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canUpdate', !!v)} /></td>
+                                                        <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary" checked={p.canDelete} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canDelete', !!v)} /></td>
+                                                        <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-rose-500" checked={p.isDisabled} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'isDisabled', !!v)} /></td>
                                                     </tr>
                                                 )
                                             })}
@@ -490,7 +490,10 @@ export default function AdminUsersPage() {
                             </table>
                         </div>
                     </div>
-                    <DialogFooter><Button variant="outline" className=" border-border rounded-xl" onClick={() => setIsCreateFormOpen(false)}>Cancel</Button><Button className="bg-primary hover:bg-primary/90 rounded-xl" onClick={handleSaveRole}>Save Configuration</Button></DialogFooter>
+                    <DialogFooter className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-4 -mx-6 -mb-4 sm:rounded-b-lg">
+                        <Button variant="outline" className="border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl" onClick={() => setIsCreateFormOpen(false)}>Cancel</Button>
+                        <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md" onClick={handleSaveRole}>Save Configuration</Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 

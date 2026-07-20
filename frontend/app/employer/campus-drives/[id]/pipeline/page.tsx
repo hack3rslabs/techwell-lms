@@ -95,8 +95,8 @@ export default function EmployerPipeline() {
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
                                                                     <h4 className="font-semibold text-slate-800 truncate" title={app.user.name}>{app.user.name}</h4>
-                                                                    <p className="text-xs text-slate-500 flex items-center gap-1 truncate" title={app.user.college}>
-                                                                        <GraduationCap className="w-3 h-3" /> {app.user.college || 'Unknown College'}
+                                                                    <p className="text-xs text-slate-500 flex items-center gap-1 truncate" title={app.user.institute?.name || app.user.college}>
+                                                                        <GraduationCap className="w-3 h-3" /> {app.user.institute?.name || app.user.college || 'Unknown College'}
                                                                     </p>
                                                                 </div>
                                                             </div>

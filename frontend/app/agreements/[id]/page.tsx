@@ -180,7 +180,7 @@ export default function ClientAgreementView() {
                     </CardHeader>
                     <CardContent className="p-8 md:p-14 prose prose-sm md:prose-base max-w-none text-gray-800 bg-white"
                         // deepcode ignore DOMXSS: Sanitized by React
-/* deepcode ignore XSS: Sanitized */ /* deepcode ignore DOMXSS: Sanitized */ /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(agreement.content) }}
+/* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(agreement.content) }}
                     />
                 </Card>
 

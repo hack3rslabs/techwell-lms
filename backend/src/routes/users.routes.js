@@ -187,7 +187,11 @@ router.put('/me', authenticate, async (req, res, next) => {
  */
 router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, role, excludeRole, search } = req.query;
+        let { page = 1, limit = 20, role, excludeRole, search } = req.query;
+    if (role !== undefined) role = Array.isArray(role) ? role[0] : String(role);
+    if (excludeRole !== undefined) excludeRole = Array.isArray(excludeRole) ? excludeRole[0] : String(excludeRole);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+
         const where = {};
         
         // Scope to franchise if FRANCHISE_ADMIN
@@ -197,8 +201,8 @@ router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) =
             where.role = { in: ['STUDENT', 'STAFF', 'INSTRUCTOR'] };
         }
         if (role) {
-            if (role.includes(',')) {
-                where.role = { in: role.split(',') };
+            if (String(role || "").includes(',')) {
+                where.role = { in: String(role || '').split(',') };
             } else {
                 where.role = role;
             }
@@ -208,8 +212,8 @@ router.get('/', authenticate, checkPermission('USERS'), async (req, res, next) =
         }
         
         if (excludeRole) {
-            if (excludeRole.includes(',')) {
-                where.role = { notIn: excludeRole.split(',') };
+            if (String(excludeRole || "").includes(',')) {
+                where.role = { notIn: String(excludeRole || '').split(',') };
             } else {
                 where.role = { not: excludeRole };
             }
@@ -468,7 +472,7 @@ router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) 
         let enumRole = validatedData.role;
         let systemRoleId = null;
         
-        if (validatedData.roleId && validatedData.roleId.trim() !== "") {
+        if (validatedData.roleId && validatedData.String(roleId || '').trim() !== "") {
             const systemRole = await prisma.systemRole.findUnique({
                 where: { id: validatedData.roleId }
             });

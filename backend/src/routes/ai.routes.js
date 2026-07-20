@@ -172,7 +172,7 @@ CURRENT CONTEXT:
 - Student Name: ${user.name}
 - Course: ${courseTitle || 'Unknown Course'}
 - Current Lesson: ${lessonTitle || 'Unknown Lesson'}
-- Lesson Content Snippet: ${lessonContent ? lessonContent.substring(0, 500) : 'N/A'}
+- Lesson Content Snippet: ${typeof lessonContent === "string" ? lessonContent.substring(0, 500) : 'N/A'}
 
 GUIDELINES:
 1. Be encouraging, concise, and highly educational.

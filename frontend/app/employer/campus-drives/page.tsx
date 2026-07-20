@@ -11,7 +11,7 @@ export default function EmployerCampusDrives() {
     const [showForm, setShowForm] = useState(false);
     
     const [formData, setFormData] = useState({
-        instituteId: '',
+        instituteIds: [] as string[],
         title: '',
         description: '',
         skills: '',
@@ -57,12 +57,17 @@ export default function EmployerCampusDrives() {
             fetchInstitutes();
         }
     }, [user]);
-;
-;
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            // Validate before sending
+            if (formData.instituteIds.length === 0) {
+                alert('Please select at least one institute');
+                return;
+            }
+
             const res = await fetch('/api/campus-drives/request', {
                 method: 'POST',
                 headers: {
@@ -117,19 +122,29 @@ export default function EmployerCampusDrives() {
                     <h2 className="text-lg font-medium mb-4">Request a Campus Drive</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium">Select Institute</label>
-                                <select 
-                                    required 
-                                    className="mt-1 block w-full p-2 border rounded-md"
-                                    value={formData.instituteId}
-                                    onChange={e => setFormData({...formData, instituteId: e.target.value})}
-                                >
-                                    <option value="">-- Choose an Institute --</option>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium mb-2">Select Institutes <span className="text-red-500">*</span></label>
+                                <div className="max-h-48 overflow-y-auto border rounded-md p-3 bg-slate-50 space-y-2">
+                                    {institutes.length === 0 ? <p className="text-sm text-slate-500">No approved institutes found.</p> : null}
                                     {institutes.map(inst => (
-                                        <option key={inst.id} value={inst.id}>{inst.name} ({inst.city})</option>
+                                        <label key={inst.id} className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-200 rounded transition-colors">
+                                            <input 
+                                                type="checkbox" 
+                                                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                checked={formData.instituteIds.includes(inst.id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setFormData(prev => ({ ...prev, instituteIds: [...prev.instituteIds, inst.id] }))
+                                                    } else {
+                                                        setFormData(prev => ({ ...prev, instituteIds: prev.instituteIds.filter(id => id !== inst.id) }))
+                                                    }
+                                                }}
+                                            />
+                                            <span className="text-sm font-medium text-slate-700">{inst.name} <span className="text-slate-500 font-normal">({inst.city || 'N/A'})</span></span>
+                                        </label>
                                     ))}
-                                </select>
+                                </div>
+                                {formData.instituteIds.length === 0 && <p className="text-xs text-red-500 mt-1">Please select at least one institute.</p>}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium">Drive Title</label>
@@ -187,7 +202,11 @@ export default function EmployerCampusDrives() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="text-lg font-medium text-indigo-600">{drive.title}</h3>
-                                        <p className="text-sm text-gray-500">Institute: {drive.institute?.name}</p>
+                                        <p className="text-sm text-gray-500">
+                                            Institutes: {drive.institutes?.length > 0 
+                                                ? drive.institutes.map((link: any) => link.institute?.name).join(', ') 
+                                                : 'None'}
+                                        </p>
                                         <div className="mt-2 flex space-x-4 text-sm text-gray-500">
                                             <span>Role: {drive.jobRole}</span>
                                             <span>Target: {drive.targetYear}</span>

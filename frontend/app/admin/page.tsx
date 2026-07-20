@@ -31,7 +31,8 @@ import {
     Briefcase,
     Zap,
     CheckSquare,
-    LifeBuoy
+    LifeBuoy,
+    ChevronRight
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { AdminReportModal } from '@/components/admin/report-modal'
@@ -87,13 +88,14 @@ export default function AdminDashboard() {
         recentActivity: [] as any[]
     })
 
+    const [masterStats, setMasterStats] = React.useState<any>(null)
+
     const [isLoading, setIsLoading] = React.useState(true)
 
 
     const [isMounted, setIsMounted] = React.useState(false)
     const [layout, setLayout] = React.useState<WidgetId[]>(DEFAULT_LAYOUT)
-    const [visibleWidgets, setVisibleWidgets] = React.useState<Record<WidgetId, boolean>>({
-        revenue: true,
+    const [visibleWidgets, setVisibleWidgets] = React.useState<Record<WidgetId | string, boolean>>({
         upcomingFees: true,
         users: true,
         franchises: true,
@@ -158,10 +160,11 @@ export default function AdminDashboard() {
         const fetchData = async () => {
             try {
                 // Fetch basic lists AND real stats
-                const [usersRes, coursesRes, statsRes] = await Promise.allSettled([
+                const [usersRes, coursesRes, statsRes, masterRes] = await Promise.allSettled([
                     hasPermission('USERS') ? api.get('/users') : Promise.resolve({ data: { users: [] } }),
                     hasPermission('COURSES') ? api.get('/courses') : Promise.resolve({ data: { courses: [] } }),
-                    userApi.getAdminStats() // This endpoint uses authorize() so it's safer
+                    userApi.getAdminStats(), // This endpoint uses authorize() so it's safer
+                    ['SUPER_ADMIN', 'ADMIN'].includes(user?.role || '') ? api.get('/analytics/master-dashboard') : Promise.resolve({ data: null })
                 ])
 
                 if (usersRes.status === 'fulfilled') {
@@ -172,6 +175,9 @@ export default function AdminDashboard() {
                 }
                 if (statsRes.status === 'fulfilled') {
                     setStats(statsRes.value.data)
+                }
+                if (masterRes.status === 'fulfilled' && masterRes.value.data) {
+                    setMasterStats(masterRes.value.data)
                 }
 
             } catch (error) {
@@ -199,7 +205,7 @@ export default function AdminDashboard() {
             {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-teal-500">
                         Dashboard Overview
                     </h1>
                     <p className="text-muted-foreground mt-2">
@@ -257,6 +263,61 @@ export default function AdminDashboard() {
                 </div>
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    {/* Master Dashboard Overview (Super Admin / Admin Only) */}
+                    {masterStats && (
+                        <div className="grid gap-6 md:grid-cols-3 mb-8">
+                            <Card 
+                                className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg border-0 relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
+                                onClick={() => router.push('/admin/revenue')}
+                            >
+                                <div className="absolute top-0 right-0 p-4 opacity-20"><BarChart3 className="w-16 h-16" /></div>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-emerald-50 text-sm font-medium uppercase tracking-wider flex items-center justify-between">
+                                        Total Unified Revenue
+                                        <ChevronRight className="w-4 h-4 opacity-70" />
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-4xl font-bold">₹{masterStats.revenue?.total?.toLocaleString('en-IN') || 0}</div>
+                                    <div className="mt-4 flex gap-4 text-xs font-medium text-emerald-100">
+                                        <div>Courses: ₹{masterStats.revenue?.breakdown?.payments?.toLocaleString('en-IN') || 0}</div>
+                                        <div>Consulting: ₹{masterStats.revenue?.breakdown?.consulting?.toLocaleString('en-IN') || 0}</div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg border-0 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-20"><Users className="w-16 h-16" /></div>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-blue-50 text-sm font-medium uppercase tracking-wider">Global Lead Pipeline</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-4xl font-bold">{masterStats.pipeline?.totalLeads?.toLocaleString() || 0}</div>
+                                    <div className="mt-4 flex justify-between items-center text-sm font-medium text-blue-100">
+                                        <span>Converted: {masterStats.pipeline?.convertedLeads?.toLocaleString() || 0}</span>
+                                        <span className="bg-white/20 px-2 py-1 rounded-md">{masterStats.pipeline?.conversionRate || 0}% Rate</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg border-0 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-20"><Activity className="w-16 h-16" /></div>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-purple-50 text-sm font-medium uppercase tracking-wider">Active Resources</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-4xl font-bold">{masterStats.resources?.totalStudents?.toLocaleString() || 0}</div>
+                                    <p className="text-purple-100 text-xs mt-1">Total Students Enrolled</p>
+                                    <div className="mt-3 flex gap-4 text-xs font-medium text-purple-100">
+                                        <div>Staff: {masterStats.resources?.totalStaff || 0}</div>
+                                        <div>Franchises: {masterStats.resources?.activeFranchises || 0}</div>
+                                        <div>Projects: {masterStats.resources?.activeProjects || 0}</div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
                     {/* Advanced Stats Grid */}
                     {isMounted && (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -264,11 +325,10 @@ export default function AdminDashboard() {
                                 if (!visibleWidgets[widgetId]) return null
                                 
                                 // Handle permissions for specific widgets
-                                if (widgetId === 'revenue' && !hasPermission('FINANCE')) return null
                                 if (widgetId === 'upcomingFees' && !hasPermission('FINANCE')) return null
                                 
-                                // Determine column span for specific widgets (like revenue taking 2 cols)
-                                const colSpanClass = widgetId === 'revenue' ? 'col-span-1 xl:col-span-2' : 'col-span-1'
+                                // Determine column span for specific widgets
+                                const colSpanClass = 'col-span-1'
                                 
                                 return (
                                     <div key={widgetId} className={colSpanClass}>

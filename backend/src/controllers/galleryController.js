@@ -39,7 +39,9 @@ exports.addGalleryImage = async (req, res) => {
 // Delete gallery image
 exports.deleteGalleryImage = async (req, res) => {
     try {
-        const { id } = req.query; // Following front-end pattern: /api/admin/gallery?id=${id}
+        let { id } = req.query;
+    if (id !== undefined) id = Array.isArray(id) ? id[0] : String(id);
+ // Following front-end pattern: /api/admin/gallery?id=${id}
         if (!id) return res.status(400).json({ error: 'ID is required' });
 
         await prisma.galleryImage.delete({

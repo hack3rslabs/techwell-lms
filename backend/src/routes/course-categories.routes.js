@@ -54,19 +54,19 @@ router.post('/', authenticate, checkPermission('COURSES'), async (req, res, next
         const iconStr = typeof icon === 'string' ? icon : '';
         const colorStr = typeof color === 'string' ? color : '#6366f1';
 
-        if (!nameStr || nameStr.trim().length < 2) {
+        if (!nameStr || String(nameStr || '').trim().length < 2) {
             return res.status(400).json({ error: 'Category name must be at least 2 characters' });
         }
-        if (!slugStr || slugStr.trim().length < 2) {
+        if (!slugStr || String(slugStr || '').trim().length < 2) {
             return res.status(400).json({ error: 'Slug is required' });
         }
 
         const category = await prisma.courseCategory.create({
             data: {
-                name: nameStr.trim(),
-                slug: slugStr.trim().toLowerCase().replace(/\s+/g, '-'),
-                description: descStr.trim() || null,
-                icon: iconStr.trim() || null,
+                name: String(nameStr || '').trim(),
+                slug: String(slugStr || '').trim().toLowerCase().replace(/\s+/g, '-'),
+                description: String(descStr || '').trim() || null,
+                icon: String(iconStr || '').trim() || null,
                 color: colorStr || '#6366f1',
                 isActive: isActive !== undefined ? Boolean(isActive) : true,
                 orderIndex: orderIndex !== undefined ? Number(orderIndex) : 0,
@@ -96,10 +96,10 @@ router.put('/:id', authenticate, checkPermission('COURSES'), async (req, res, ne
         const category = await prisma.courseCategory.update({
             where: { id },
             data: {
-                ...(name !== undefined && typeof name === 'string' && { name: name.trim() }),
-                ...(slug !== undefined && typeof slug === 'string' && { slug: slug.trim().toLowerCase().replace(/\s+/g, '-') }),
-                ...(description !== undefined && { description: typeof description === 'string' ? description.trim() || null : null }),
-                ...(icon !== undefined && { icon: typeof icon === 'string' ? icon.trim() || null : null }),
+                ...(name !== undefined && typeof name === 'string' && { name: String(name || '').trim() }),
+                ...(slug !== undefined && typeof slug === 'string' && { slug: String(slug || '').trim().toLowerCase().replace(/\s+/g, '-') }),
+                ...(description !== undefined && { description: typeof description === 'string' ? String(description || '').trim() || null : null }),
+                ...(icon !== undefined && { icon: typeof icon === 'string' ? String(icon || '').trim() || null : null }),
                 ...(color !== undefined && typeof color === 'string' && { color }),
                 ...(isActive !== undefined && { isActive: Boolean(isActive) }),
                 ...(orderIndex !== undefined && { orderIndex: Number(orderIndex) }),

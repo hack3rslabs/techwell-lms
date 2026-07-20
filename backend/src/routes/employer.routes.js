@@ -67,7 +67,10 @@ router.post('/register', async (req, res, next) => {
  */
 router.get('/all', authenticate, authorize('SUPER_ADMIN'), async (req, res, next) => {
     try {
-        const { status, search } = req.query;
+        let { status, search } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+
         let whereClause = {};
         
         if (status && status !== 'ALL') {
