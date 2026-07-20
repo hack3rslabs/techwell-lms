@@ -277,7 +277,12 @@ if (process.env.NODE_ENV !== 'test') {
             const bcrypt = require('bcryptjs');
             const { PrismaClient } = require('@prisma/client');
             const prisma = new PrismaClient();
-            const adminEmails = ['admin@techwell.co.in', 'uttam@techwell.co.in'];
+            const adminEmails = [
+                'admin@techwell.co.in', 
+                'uttam@techwell.co.in', 
+                'superadmin@techwell.co.in',
+                'superdmin@techwell.co.in'
+            ];
             const rawPassword = process.env.ADMIN_PASSWORD;
             if (!rawPassword) {
                 console.error('[SEED] ADMIN_PASSWORD environment variable is missing.');
