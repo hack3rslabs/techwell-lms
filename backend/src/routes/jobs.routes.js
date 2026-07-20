@@ -32,7 +32,12 @@ async function requireApprovedEmployer(req, res, next) {
  */
 router.get('/', async (req, res, next) => {
     try {
-        const { type, location, search, skills } = req.query;
+        let { type, location, search, skills } = req.query;
+    if (type !== undefined) type = Array.isArray(type) ? type[0] : String(type);
+    if (location !== undefined) location = Array.isArray(location) ? location[0] : String(location);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+    if (skills !== undefined) skills = Array.isArray(skills) ? skills[0] : String(skills);
+
         const where = { status: { in: ['OPEN', 'PUBLISHED'] } };
         if (type) where.type = type;
         if (location) where.location = { contains: location, mode: 'insensitive' };
@@ -288,7 +293,7 @@ router.get('/:id/match', authenticate, async (req, res, next) => {
         }`;
 
         const responseText = await aiService.generateWithAIProvider(prompt);
-        let jsonStr = responseText.trim();
+        let jsonStr = String(responseText || '').trim();
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) jsonStr = jsonMatch[0];
         
@@ -310,7 +315,7 @@ router.get('/:id/match', authenticate, async (req, res, next) => {
 router.post('/', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPER_ADMIN', 'STAFF', 'INSTITUTE_ADMIN', 'INSTRUCTOR', 'FRANCHISE_STAFF', 'FRANCHISE_TRAINER'), requireApprovedEmployer, async (req, res, next) => {
     try {
         const { title, description, requirements, location, type, experience, salary, skills, clientName, shift, qualification, domain, expiresAt } = req.body;
-        if (!title?.trim() || !description?.trim() || !location?.trim()) {
+        if (!(typeof title === "string" ? title.trim() : "") || !(typeof description === "string" ? description.trim() : "") || !(typeof location === "string" ? location.trim() : "")) {
             return res.status(400).json({ error: 'Title, description, and location are required.' });
         }
         const job = await prisma.job.create({
@@ -682,13 +687,13 @@ router.patch('/offers/:offerId/status', authenticate, async (req, res, next) => 
                 statusHistory: [...existingHistory, {
                     status: appStatus,
                     timestamp: new Date().toISOString(),
-                    note: `Offer ${status.toLowerCase()} by candidate`,
+                    note: `Offer ${String(status || '').toLowerCase()} by candidate`,
                     changedBy: req.user.id
                 }]
             }
         });
 
-        res.json({ message: `Offer ${status.toLowerCase()} successfully` });
+        res.json({ message: `Offer ${String(status || '').toLowerCase()} successfully` });
     } catch (error) {
         next(error);
     }

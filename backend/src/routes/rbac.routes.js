@@ -85,7 +85,7 @@ router.put('/roles/:id', authenticate, checkPermission('SETTINGS'), async (req, 
                 });
 
                 await tx.rolePermission.createMany({
-                    data: permissions.map(p => ({
+                    data: (Array.isArray(permissions) ? permissions : []).map(p => ({
                         roleId: id,
                         featureId: p.featureId,
                         canRead: p.canRead || false,
@@ -134,7 +134,7 @@ router.post('/roles', authenticate, checkPermission('USERS_ROLES'), async (req, 
 
             if (permissions && Array.isArray(permissions)) {
                 await tx.rolePermission.createMany({
-                    data: permissions.map(p => ({
+                    data: (Array.isArray(permissions) ? permissions : []).map(p => ({
                         roleId: newRole.id,
                         featureId: p.featureId,
                         canRead: p.canRead || false,

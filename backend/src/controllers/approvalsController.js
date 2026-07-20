@@ -4,7 +4,10 @@ const prisma = new PrismaClient();
 // Get all approval requests
 exports.getApprovalRequests = async (req, res) => {
     try {
-        const { status, type } = req.query;
+        let { status, type } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (type !== undefined) type = Array.isArray(type) ? type[0] : String(type);
+
         
         const whereClause = {};
         if (status) whereClause.status = status;
@@ -81,7 +84,7 @@ exports.updateApprovalStatus = async (req, res) => {
 
         res.json({
             success: true,
-            message: `Request ${status.toLowerCase()} successfully`,
+            message: `Request ${String(status || '').toLowerCase()} successfully`,
             request: updatedRequest
         });
 

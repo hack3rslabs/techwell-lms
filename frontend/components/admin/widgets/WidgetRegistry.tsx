@@ -15,7 +15,6 @@ import {
 import { useRouter } from 'next/navigation'
 
 export type WidgetId = 
-    | 'revenue'
     | 'upcomingFees'
     | 'users'
     | 'franchises'
@@ -28,7 +27,6 @@ export type WidgetId =
     | 'supportTickets'
 
 export const DEFAULT_LAYOUT: WidgetId[] = [
-    'revenue',
     'upcomingFees',
     'users',
     'franchises',
@@ -42,7 +40,7 @@ export const DEFAULT_LAYOUT: WidgetId[] = [
 ]
 
 interface WidgetRegistryProps {
-    id: WidgetId
+    id: WidgetId | string // Allow string for legacy localStorage compatibility
     stats: any
 }
 
@@ -50,18 +48,6 @@ export function WidgetRenderer({ id, stats }: WidgetRegistryProps) {
     const router = useRouter()
 
     switch (id) {
-        case 'revenue':
-            return (
-                <MetricWidget 
-                    id="revenue"
-                    title="Total Revenue"
-                    value={`₹${(stats.revenue || 0).toLocaleString()}`}
-                    icon={IndianRupee}
-                    colorScheme="emerald"
-                    trend={{ value: "+20.1% from last month", icon: TrendingUp }}
-                    onClick={() => router.push('/admin/finance')}
-                />
-            )
         case 'upcomingFees':
             return (
                 <MetricWidget 

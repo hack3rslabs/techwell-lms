@@ -64,8 +64,8 @@ exports.createCampusDrive = async (req, res) => {
         });
 
         // Link the drive to institutes
-        if (isEmployer && !isOffCampus && instituteIds && instituteIds.length > 0) {
-            const instituteLinks = instituteIds.map(id => ({
+        if (isEmployer && !isOffCampus && Array.isArray(instituteIds) && instituteIds.length > 0) {
+            const instituteLinks = (Array.isArray(instituteIds) ? instituteIds : []).map(id => ({
                 driveId: drive.id,
                 instituteId: id,
                 status: 'INVITED'
@@ -180,7 +180,7 @@ exports.inviteStudents = async (req, res) => {
             return res.status(404).json({ error: 'Drive not found, or your institute has not accepted it yet.' });
         }
 
-        const participations = studentIds.map(userId => ({
+        const participations = (Array.isArray(studentIds) ? studentIds : []).map(userId => ({
             driveId,
             userId,
             status: 'INVITED'

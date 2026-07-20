@@ -211,7 +211,7 @@ const optionalAuth = async (req, res, next) => {
             return next();
         }
 
-        const token = authHeader.split(' ')[1];
+        const token = String(authHeader || '').split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
         const user = await prisma.user.findUnique({

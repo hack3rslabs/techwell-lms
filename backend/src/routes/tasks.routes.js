@@ -16,7 +16,11 @@ router.get('/', authenticate, async (req, res, next) => {
         if (!canManage && req.query.assignedTo !== 'ME') {
             return res.status(403).json({ error: 'Access denied: Requires permission to manage tasks or view all tasks.' });
         }
-        const { status, priority, assignedTo } = req.query;
+        let { status, priority, assignedTo } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (priority !== undefined) priority = Array.isArray(priority) ? priority[0] : String(priority);
+    if (assignedTo !== undefined) assignedTo = Array.isArray(assignedTo) ? assignedTo[0] : String(assignedTo);
+
 
         const where = {};
         if (status) where.status = status;

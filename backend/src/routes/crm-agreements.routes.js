@@ -8,7 +8,10 @@ const { generateAgreementPdf } = require('../services/pdf-service');
 // 1. Get all Agreements
 router.get('/', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
     try {
-        const { status, customerId } = req.query;
+        let { status, customerId } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (customerId !== undefined) customerId = Array.isArray(customerId) ? customerId[0] : String(customerId);
+
         let where = {};
         if (status) where.status = status;
         if (customerId) where.customerId = customerId;

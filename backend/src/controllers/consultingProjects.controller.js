@@ -4,7 +4,9 @@ const prisma = new PrismaClient();
 // Get all consulting projects
 exports.getProjects = async (req, res) => {
     try {
-        const { type } = req.query; // BUSINESS or IT
+        let { type } = req.query;
+    if (type !== undefined) type = Array.isArray(type) ? type[0] : String(type);
+ // BUSINESS or IT
         const where = type ? { type } : {};
         
         const projects = await prisma.consultingProject.findMany({

@@ -4,6 +4,7 @@ import * as React from 'react'
 import axios from 'axios'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Globe, Building2, ExternalLink } from 'lucide-react'
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 
 interface Client {
     id: string
@@ -79,8 +80,8 @@ export default function ClientsPage() {
                                             {client.url && (
                                                 <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                                     <a 
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
-                                                        href={client.url.startsWith('http') ? client.url : `https://${client.url}`} 
+
+                                                        href={ sanitizeUrl(client.url.startsWith('http') ? client.url : `https://${client.url}`)} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="inline-flex items-center text-sm font-semibold text-primary hover:text-indigo-700 dark:hover:text-indigo-400 transition-colors"

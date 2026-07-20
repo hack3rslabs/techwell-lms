@@ -13,7 +13,7 @@ async function diagnose() {
 
     // 2. Check Roles
     const roles = await prisma.systemRole.findMany();
-    console.log(`- System Roles in DB: ${roles.length} (${roles.map(r => r.name).join(', ')})`);
+    console.log(`- System Roles in DB: ${roles.length} (${(Array.isArray(roles) ? roles : []).map(r => r.name).join(', ')})`);
     if (roles.length === 0) {
         console.log('❌ ERROR: No roles found. You must run "npx prisma db seed"');
     }

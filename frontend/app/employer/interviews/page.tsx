@@ -207,7 +207,7 @@ export default function EmployerInterviewsPage() {
                                                     {interview.meetingLink && (
                                                         <Button variant="outline" size="sm" className="h-8 text-xs font-semibold px-3 border-blue-200 text-blue-700 hover:bg-blue-50 bg-blue-50/50" onClick={() => {
                                                             const link = interview.meetingLink || '';
-                // snyk-ignore javascript/OR: Handled as per security plan
+
                                                             if (link.startsWith('http://') || link.startsWith('https://')) window.open(link, '_blank');
                                                         }}>
                                                             <Video className="mr-1.5 h-3.5 w-3.5" /> Join

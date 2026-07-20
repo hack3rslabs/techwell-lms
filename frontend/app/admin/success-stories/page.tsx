@@ -264,64 +264,64 @@ export default function SuccessStoriesPage() {
 
             {/* Create / Edit Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="bg-[#0d0d0f] border-white/10 text-foreground max-w-md">
+                <DialogContent className="bg-background border-border text-foreground max-w-md shadow-xl">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-black">
+                        <DialogTitle className="text-xl font-black text-foreground">
                             {editingStory ? "Edit Story" : "Add Success Story"}
                         </DialogTitle>
-                        <DialogDescription className="text-muted-foreground">
+                        <DialogDescription className="text-foreground/70">
                             Upload a success story image to showcase on the homepage.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-3">
                         {!editingStory && (
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Image File *</label>
+                                <label className="text-xs font-bold text-foreground uppercase tracking-wider">Image File *</label>
                                 <Input
                                     type="file"
                                     accept="image/*"
                                     onChange={e => setImageFile(e.target.files?.[0] || null)}
-                                    className="glass-input border-white/10 rounded-xl"
+                                    className="border-border bg-background text-foreground rounded-xl"
                                 />
                             </div>
                         )}
                         {editingStory && (
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Replace Image (optional)</label>
+                                <label className="text-xs font-bold text-foreground uppercase tracking-wider">Replace Image (optional)</label>
                                 <Input
                                     type="file"
                                     accept="image/*"
                                     onChange={e => setImageFile(e.target.files?.[0] || null)}
-                                    className="glass-input border-white/10 rounded-xl"
+                                    className="border-border bg-background text-foreground rounded-xl"
                                 />
                             </div>
                         )}
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Alt Text / Description</label>
+                            <label className="text-xs font-bold text-foreground uppercase tracking-wider">Alt Text / Description</label>
                             <Input
                                 placeholder="Student name or brief description"
                                 value={formAltText}
                                 onChange={e => setFormAltText(e.target.value)}
-                                className="glass-input border-white/10 rounded-xl"
+                                className="border-border bg-background text-foreground rounded-xl"
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Link URL (optional)</label>
+                            <label className="text-xs font-bold text-foreground uppercase tracking-wider">Link URL (optional)</label>
                             <Input
                                 placeholder="https://..."
                                 value={formUrl}
                                 onChange={e => setFormUrl(e.target.value)}
-                                className="glass-input border-white/10 rounded-xl"
+                                className="border-border bg-background text-foreground rounded-xl"
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Display Order</label>
+                            <label className="text-xs font-bold text-foreground uppercase tracking-wider">Display Order</label>
                             <Input
                                 type="number"
                                 placeholder="0"
                                 value={formOrder}
                                 onChange={e => setFormOrder(e.target.value)}
-                                className="glass-input border-white/10 rounded-xl"
+                                className="border-border bg-background text-foreground rounded-xl"
                             />
                         </div>
                         <div className="flex items-center gap-3">
@@ -330,7 +330,7 @@ export default function SuccessStoriesPage() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="rounded-xl hover:bg-white/5">Cancel</Button>
+                        <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="rounded-xl">Cancel</Button>
                         <Button className="rounded-xl bg-primary hover:bg-primary/90" onClick={handleSave} disabled={saving}>
                             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             {editingStory ? "Save Changes" : "Upload Story"}

@@ -109,7 +109,9 @@ router.post('/events/batch', checkFeatureFlag, async (req, res) => {
  */
 router.get('/intent', checkFeatureFlag, async (req, res) => {
     try {
-        const { sessionId } = req.query;
+        let { sessionId } = req.query;
+    if (sessionId !== undefined) sessionId = Array.isArray(sessionId) ? sessionId[0] : String(sessionId);
+
 
         if (!sessionId) {
             return res.status(400).json({ error: 'sessionId is required' });
@@ -149,7 +151,10 @@ router.post('/popup-response', checkFeatureFlag, async (req, res) => {
  */
 router.get('/analytics/intent-distribution', checkFeatureFlag, async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        let { startDate, endDate } = req.query;
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+
         const distribution = await behaviorAnalytics.getIntentDistribution({ startDate, endDate });
         res.json(distribution);
     } catch (error) {
@@ -164,7 +169,10 @@ router.get('/analytics/intent-distribution', checkFeatureFlag, async (req, res) 
  */
 router.get('/analytics/top-pages', checkFeatureFlag, async (req, res) => {
     try {
-        const { startDate, endDate, limit } = req.query;
+        let { startDate, endDate, limit } = req.query;
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+
         const pages = await behaviorAnalytics.getTopPages({
             startDate,
             endDate,
@@ -183,7 +191,10 @@ router.get('/analytics/top-pages', checkFeatureFlag, async (req, res) => {
  */
 router.get('/analytics/cta-performance', checkFeatureFlag, async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        let { startDate, endDate } = req.query;
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+
         const performance = await behaviorAnalytics.getCTAPerformance({ startDate, endDate });
         res.json(performance);
     } catch (error) {
@@ -198,7 +209,10 @@ router.get('/analytics/cta-performance', checkFeatureFlag, async (req, res) => {
  */
 router.get('/analytics/popup-stats', checkFeatureFlag, async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        let { startDate, endDate } = req.query;
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+
         const stats = await behaviorAnalytics.getPopupAnalytics({ startDate, endDate });
         res.json(stats);
     } catch (error) {
@@ -213,7 +227,10 @@ router.get('/analytics/popup-stats', checkFeatureFlag, async (req, res) => {
  */
 router.get('/analytics/time-on-page', checkFeatureFlag, async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        let { startDate, endDate } = req.query;
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+
         const stats = await behaviorAnalytics.getTimeOnPageStats({ startDate, endDate });
         res.json(stats);
     } catch (error) {

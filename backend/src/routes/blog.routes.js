@@ -34,7 +34,11 @@ const createBlogSchema = z.object({
  */
 router.get('/', optionalAuth, async (req, res, next) => {
     try {
-        const { status, search, category, page = 1, limit = 10 } = req.query;
+        let { status, search, category, page = 1, limit = 10 } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+    if (category !== undefined) category = Array.isArray(category) ? category[0] : String(category);
+
         const where = { AND: [] };
 
         // Visibility rules
@@ -309,12 +313,12 @@ router.post('/', authenticate, checkPermission('BLOGS'), async (req, res, next) 
         delete body.excerpt;
         
         // Handle custom slug override
-        const customSlug = body.slug ? body.slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : null;
+        const customSlug = body.slug ? body.String(slug || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : null;
         delete body.slug;
 
         const data = createBlogSchema.parse(body);
 
-        let slug = customSlug || data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        let slug = customSlug || data.String(title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         const existing = await prisma.blogPost.count({ where: { slug } });
         if (existing > 0) slug = `${slug}-${Date.now()}`;
 

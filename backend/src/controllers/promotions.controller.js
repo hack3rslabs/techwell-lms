@@ -260,7 +260,7 @@ exports.deliver = async (req, res) => {
     const userId = req.user?.id;
     const now = new Date();
 
-    if (!zones || !zones.length) {
+    if (!zones || !(Array.isArray(zones) ? zones : []).length) {
       return res.status(400).json({ success: false, message: 'zones[] is required' });
     }
 
@@ -386,7 +386,11 @@ exports.track = async (req, res) => {
 
 exports.getMedia = async (req, res) => {
   try {
-    const { type, category, search, page = 1, limit = 30 } = req.query;
+    let { type, category, search, page = 1, limit = 30 } = req.query;
+    if (type !== undefined) type = Array.isArray(type) ? type[0] : String(type);
+    if (category !== undefined) category = Array.isArray(category) ? category[0] : String(category);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const where = {};
     if (type) where.type = type;
@@ -407,7 +411,7 @@ exports.createMedia = async (req, res) => {
   try {
     const { name, url, type, mimeType, fileSize, width, height, duration, category, tags, alt } = req.body;
     if (!name || !url) return res.status(400).json({ success: false, message: 'Name and URL required' });
-    const filename = url.split('/').pop();
+    const filename = String(url || "").split('/').pop();
     const media = await prisma.marketingMedia.create({
       data: {
         name,
@@ -443,7 +447,9 @@ exports.deleteMedia = async (req, res) => {
 exports.getAnalytics = async (req, res) => {
   try {
     const { id } = req.params;
-    const { days = 30 } = req.query;
+    let { days = 30 } = req.query;
+    if (days !== undefined) days = Array.isArray(days) ? days[0] : String(days);
+
     const since = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
 
     const [byAction, byDevice, byDay] = await Promise.all([

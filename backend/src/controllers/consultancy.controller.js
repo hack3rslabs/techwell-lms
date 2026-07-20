@@ -205,7 +205,9 @@ exports.getDashboardStats = async (req, res) => {
 
 exports.getInvitations = async (req, res) => {
     try {
-        const { status } = req.query;
+        let { status } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+
         const where = status ? { status } : {};
 
         const invitations = await prisma.consultancyInvitation.findMany({

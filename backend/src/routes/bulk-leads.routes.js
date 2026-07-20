@@ -12,7 +12,7 @@ const { authenticate, checkPermission } = require('../middleware/auth');
 router.put('/assign', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
         const { leadIds, assignedToId } = req.body;
-        if (!leadIds || !leadIds.length || !assignedToId) {
+        if (!Array.isArray(leadIds) || !leadIds.length || !assignedToId) {
             return res.status(400).json({ error: 'leadIds and assignedToId are required' });
         }
 
@@ -35,7 +35,7 @@ router.put('/assign', authenticate, checkPermission('LEADS'), async (req, res, n
 router.put('/status', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
         const { leadIds, status } = req.body;
-        if (!leadIds || !leadIds.length || !status) {
+        if (!Array.isArray(leadIds) || !leadIds.length || !status) {
             return res.status(400).json({ error: 'leadIds and status are required' });
         }
 
@@ -58,7 +58,7 @@ router.put('/status', authenticate, checkPermission('LEADS'), async (req, res, n
 router.delete('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
         const { leadIds } = req.body;
-        if (!leadIds || !leadIds.length) {
+        if (!Array.isArray(leadIds) || !leadIds.length) {
             return res.status(400).json({ error: 'leadIds are required' });
         }
 

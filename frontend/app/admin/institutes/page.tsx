@@ -9,6 +9,7 @@ import * as React from "react"
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import api from '@/lib/api';
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -209,8 +210,8 @@ export default function AdminInstitutes() {
                                                             </span>
                                                         )}
                                                         {inst.website && (
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
-                                                            <a href={inst.website.startsWith('http') ? inst.website : `https://${inst.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+
+                                                            <a href={ sanitizeUrl(inst.website.startsWith('http') ? inst.website : `https://${inst.website}`)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
                                                                 <Globe className="h-3 w-3" /> Website
                                                             </a>
                                                         )}

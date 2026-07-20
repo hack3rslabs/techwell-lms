@@ -31,7 +31,7 @@ router.post('/seo', authenticate, checkPermission('BLOGS'), async (req, res) => 
 
         const prompt = `Analyze this blog post and generate SEO metadata. 
 Title: ${title || 'Not provided'}
-Content snippet: ${content.substring(0, 3000)}
+Content snippet: ${String(content || "").substring(0, 3000)}
 
 Return EXACTLY a JSON object with this structure:
 {
@@ -50,7 +50,7 @@ Return EXACTLY a JSON object with this structure:
 Do NOT wrap the JSON in markdown formatting block (\`\`\`json). Return strictly the raw JSON.`;
 
         const responseText = await callGemini(prompt);
-        const seoData = JSON.parse(responseText.trim().replace(/^```json|```$/gi, ''));
+        const seoData = JSON.parse(String(responseText || '').trim().replace(/^```json|```$/gi, ''));
         res.json(seoData);
     } catch (error) {
         console.error("AI SEO Error:", error);
@@ -76,7 +76,7 @@ router.post('/rewrite', authenticate, checkPermission('BLOGS'), async (req, res)
         const prompt = `Task: ${instruction}\n\nText:\n${text}`;
         
         const responseText = await callGemini(prompt);
-        res.json({ result: responseText.trim() });
+        res.json({ result: String(responseText || '').trim() });
     } catch (error) {
         console.error("AI Rewrite Error:", error);
         res.status(500).json({ error: "Failed to process text." });
@@ -102,11 +102,11 @@ Return EXACTLY a JSON object:
         "Add more H2 headings."
     ]
 }
-Content snippet: ${content.substring(0, 2000)}
+Content snippet: ${String(content || "").substring(0, 2000)}
 Do NOT wrap the JSON in markdown formatting block. Return strictly the raw JSON.`;
 
         const responseText = await callGemini(prompt);
-        const scoreData = JSON.parse(responseText.trim().replace(/^```json|```$/gi, ''));
+        const scoreData = JSON.parse(String(responseText || '').trim().replace(/^```json|```$/gi, ''));
         res.json(scoreData);
     } catch (error) {
         console.error("AI Score Error:", error);

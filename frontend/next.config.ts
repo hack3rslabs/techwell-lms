@@ -70,6 +70,11 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "backend.techwell.co.in",
         pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "i.pravatar.cc",
+        pathname: "**",
       }
     ],
   },

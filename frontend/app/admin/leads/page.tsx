@@ -34,6 +34,7 @@ import { exportToCSV } from '@/lib/export-utils'
 import api, { leadApi } from '@/lib/api'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+import { sanitizeUrl } from '@/lib/sanitizeUrl'
 
 const initialLeadForm = {
     name: '',
@@ -166,6 +167,9 @@ export default function LeadsPage() {
             if (filters.name) params.append('name', filters.name)
             if (filters.phone) params.append('phone', filters.phone)
             if (filters.franchiseId !== 'ALL') params.append('franchiseId', filters.franchiseId)
+            
+            // Prevent browser caching
+            params.append('_t', Date.now().toString())
 
             const res = await api.get(`/leads?${params.toString()}`)
             setLeads(res.data || [])
@@ -791,8 +795,7 @@ export default function LeadsPage() {
                                                 <div className="text-xs text-muted-foreground flex items-center gap-1">
                                                     {lead.phone}
                                                     {lead.phone && (
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
-                                                        <a href={`tel:${lead.phone}`} className="text-blue-500 hover:text-blue-700 ml-1" title="Call Lead">
+                                                        <a href={sanitizeUrl(`tel:${lead.phone}`)} className="text-blue-500 hover:text-blue-700 ml-1" title="Call Lead">
                                                             <Phone className="w-3 h-3" />
                                                         </a>
                                                     )}
@@ -845,16 +848,14 @@ export default function LeadsPage() {
                                                     {lead.phone && (
                                                         <>
                                                             <a
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
-                                                                href={`tel:${lead.phone}`}
+                                                                href={sanitizeUrl(`tel:${lead.phone}`)}
                                                                 className="inline-flex items-center justify-center h-8 w-8 rounded-md text-green-600 hover:text-green-700 hover:bg-green-50"
                                                                 title="Call Lead"
                                                             >
                                                                 <Phone className="h-4 w-4" />
                                                             </a>
                                                             <a
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
-                                                                href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                                                                href={sanitizeUrl(`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="inline-flex items-center justify-center h-8 w-8 rounded-md text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"

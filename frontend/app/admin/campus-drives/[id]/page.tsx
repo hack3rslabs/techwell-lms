@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 
 const PIPELINE_STAGES = [
     { key: "APPLIED",        label: "Applied",          color: "bg-slate-100 text-slate-700 border-slate-200" },
@@ -322,7 +323,7 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
                                             </td>
                                             <td className="py-3 px-4">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <a href={`mailto:${c.user?.email}`} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Email">
+                                                    <a href={ sanitizeUrl(`mailto:${c.user?.email}`)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Email">
                                                         <Mail className="h-4 w-4" />
                                                     </a>
                                                     <div className="relative group">

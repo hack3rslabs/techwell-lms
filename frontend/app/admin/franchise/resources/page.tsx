@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { format } from "date-fns"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 import {
     Dialog,
     DialogContent,
@@ -213,8 +214,8 @@ export default function FranchiseResourcesPage() {
                                         <TableCell className="text-right space-x-2">
                                             {res.fileUrl && (
                                                 <Button variant="outline" size="sm" asChild>
-                // snyk-ignore javascript/DOMXSS: Handled as per security plan
-                                                    <a href={getFullUrl(res.fileUrl)} target="_blank" rel="noopener noreferrer" download>
+
+                                                    <a href={ sanitizeUrl(getFullUrl(res.fileUrl))} target="_blank" rel="noopener noreferrer" download>
                                                         <Download className="w-4 h-4 mr-2" /> Download
                                                     </a>
                                                 </Button>

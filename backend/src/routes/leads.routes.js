@@ -20,7 +20,29 @@ const upload = multer({ dest: 'uploads/temp/' });
  */
 router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        const { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName, dob, franchiseId } = req.query;
+        let { status, source, leadType, assignedTo, startDate, endDate, college, location, experienceLevel, interestedRole, courseName, companyName, name, email, phone, district, pinCode, qualification, referralName, dob, franchiseId } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+    if (source !== undefined) source = Array.isArray(source) ? source[0] : String(source);
+    if (leadType !== undefined) leadType = Array.isArray(leadType) ? leadType[0] : String(leadType);
+    if (assignedTo !== undefined) assignedTo = Array.isArray(assignedTo) ? assignedTo[0] : String(assignedTo);
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+    if (college !== undefined) college = Array.isArray(college) ? college[0] : String(college);
+    if (location !== undefined) location = Array.isArray(location) ? location[0] : String(location);
+    if (experienceLevel !== undefined) experienceLevel = Array.isArray(experienceLevel) ? experienceLevel[0] : String(experienceLevel);
+    if (interestedRole !== undefined) interestedRole = Array.isArray(interestedRole) ? interestedRole[0] : String(interestedRole);
+    if (courseName !== undefined) courseName = Array.isArray(courseName) ? courseName[0] : String(courseName);
+    if (companyName !== undefined) companyName = Array.isArray(companyName) ? companyName[0] : String(companyName);
+    if (name !== undefined) name = Array.isArray(name) ? name[0] : String(name);
+    if (email !== undefined) email = Array.isArray(email) ? email[0] : String(email);
+    if (phone !== undefined) phone = Array.isArray(phone) ? phone[0] : String(phone);
+    if (district !== undefined) district = Array.isArray(district) ? district[0] : String(district);
+    if (pinCode !== undefined) pinCode = Array.isArray(pinCode) ? pinCode[0] : String(pinCode);
+    if (qualification !== undefined) qualification = Array.isArray(qualification) ? qualification[0] : String(qualification);
+    if (referralName !== undefined) referralName = Array.isArray(referralName) ? referralName[0] : String(referralName);
+    if (dob !== undefined) dob = Array.isArray(dob) ? dob[0] : String(dob);
+    if (franchiseId !== undefined) franchiseId = Array.isArray(franchiseId) ? franchiseId[0] : String(franchiseId);
+
 
         const where = {};
         if (status && status !== 'ALL') where.status = status;
@@ -104,9 +126,9 @@ router.get('/', authenticate, checkPermission('LEADS'), async (req, res, next) =
         const canSeeUnmasked = req.user.role === 'SUPER_ADMIN' || req.user.permissions.includes('UNMASKED_LEADS') || req.user.permissions.includes('ALL');
         
         if (!canSeeUnmasked) {
-            leads = leads.map(l => {
+            leads = (Array.isArray(leads) ? leads : []).map(l => {
                 let maskedPhone = l.phone ? '+91 ****' + l.phone.slice(-4) : l.phone;
-                let maskedEmail = l.email ? l.email.substring(0, 3) + '****@' + (l.email.split('@')[1] || '') : l.email;
+                let maskedEmail = l.email ? l.email.substring(0, 3) + '****@' + (l.String(email || '').split('@')[1] || '') : l.email;
                 return { ...l, phone: maskedPhone, email: maskedEmail, isMasked: true };
             });
         }
@@ -271,7 +293,10 @@ router.get('/counts', authenticate, checkPermission('LEADS'), async (req, res, n
  */
 router.get('/analytics', authenticate, checkPermission('LEADS'), async (req, res, next) => {
     try {
-        const { startDate, endDate } = req.query;
+        let { startDate, endDate } = req.query;
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+
 
         // Date filter if provided
         const dateFilter = (startDate && endDate) ? {
@@ -506,7 +531,7 @@ router.post('/webhook/generic', async (req, res) => {
                 phone: leadPhone,
                 email: leadEmail,
                 location: city || area,
-                source: leadSource.toUpperCase(),
+                source: String(leadSource || "").toUpperCase(),
                 platform: 'JUSTDIAL',
                 status: 'NEW',
                 notes: `Interest: ${category || 'General'}. JSON: ${JSON.stringify(req.body)}`
@@ -640,7 +665,7 @@ router.post('/:id/convert', authenticate, checkPermission('LEADS'), async (req, 
                     }
 
                     // Remaining Installments
-                    if (installments && installments.length > 0) {
+                    if (Array.isArray(installments) && installments.length > 0) {
                         for (const inst of installments) {
                             await prisma.installment.create({
                                 data: {
