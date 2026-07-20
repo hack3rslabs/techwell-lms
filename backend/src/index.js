@@ -133,6 +133,7 @@ app.use('/api/crm/tasks', require('./routes/crm-tasks.routes'));
 app.use('/api/crm/communication', require('./routes/communication.routes'));
 app.use('/api/crm/customers', require('./routes/crm-customers.routes'));
 app.use('/api/crm/agreements', require('./routes/crm-agreements.routes'));
+app.use('/api/crm/pipelines', require('./routes/pipeline.routes'));
 app.use('/api/messaging', require('./routes/messaging.routes'));
 app.use('/api/analytics', require('./routes/analytics.routes'));
 app.use('/api/analytics/studio', require('./routes/analytics-studio.routes'));
@@ -270,13 +271,13 @@ process.on('unhandledRejection', (err) => {
 
 if (process.env.NODE_ENV !== 'test') {
 
-    // Auto-seed Super Admin
+    // Auto-seed Super Admins
     async function seedSuperAdmin() {
         try {
             const bcrypt = require('bcryptjs');
             const { PrismaClient } = require('@prisma/client');
             const prisma = new PrismaClient();
-            const email = 'admin@techwell.co.in';
+            const adminEmails = ['admin@techwell.co.in', 'uttam@techwell.co.in'];
             const rawPassword = process.env.ADMIN_PASSWORD;
             if (!rawPassword) {
                 console.error('[SEED] ADMIN_PASSWORD environment variable is missing.');
@@ -285,30 +286,31 @@ if (process.env.NODE_ENV !== 'test') {
             const salt = await bcrypt.genSalt(12);
             const hashedPassword = await bcrypt.hash(rawPassword, salt);
 
-            let admin = await prisma.user.findUnique({ where: { email } });
-            if (!admin) {
-                await prisma.user.create({
-                    data: {
-                        email,
-                        password: hashedPassword,
-                        firstName: 'Uttam',
-                        lastName: 'Admin',
-                        name: 'Uttam Admin',
-                        role: 'SUPER_ADMIN',
-                        emailVerified: true
-                    }
-                });
-                console.log(`[SEED] Created super admin: ${email}`);
-            } else {
-                // Ensure they have SUPER_ADMIN role and reset password if needed
-                await prisma.user.update({
-                    where: { email },
-                    data: {
-                        role: 'SUPER_ADMIN',
-                        password: hashedPassword
-                    }
-                });
-                console.log(`[SEED] Verified super admin: ${email}`);
+            for (const email of adminEmails) {
+                let admin = await prisma.user.findUnique({ where: { email } });
+                if (!admin) {
+                    await prisma.user.create({
+                        data: {
+                            email,
+                            password: hashedPassword,
+                            firstName: 'Super',
+                            lastName: 'Admin',
+                            name: 'Super Admin',
+                            role: 'SUPER_ADMIN',
+                            emailVerified: true
+                        }
+                    });
+                    console.log(`[SEED] Created super admin: ${email}`);
+                } else {
+                    // Ensure they have SUPER_ADMIN role
+                    await prisma.user.update({
+                        where: { email },
+                        data: {
+                            role: 'SUPER_ADMIN'
+                        }
+                    });
+                    console.log(`[SEED] Verified super admin: ${email}`);
+                }
             }
         } catch (err) {
             console.error('[SEED] Error seeding super admin:', err);
