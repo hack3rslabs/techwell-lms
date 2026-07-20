@@ -9,22 +9,36 @@ async function main() {
     const defaultPass = process.env.SEED_PASSWORD || Buffer.from('cGFzc3dvcmQxMjM=', 'base64').toString('utf8');
     const hashedPassword = await bcrypt.hash(defaultPass, 12);
 
-    // Create Users (skip if exists)
-    let superAdmin = await prisma.user.findUnique({ where: { email: 'admin@techwell.co.in' } });
-    if (!superAdmin) {
-        superAdmin = await prisma.user.create({
-            data: {
-                email: 'admin@techwell.co.in',
-                password: hashedPassword,
-                name: 'Super Admin',
-                role: 'SUPER_ADMIN',
-                isActive: true,
-                emailVerified: true,
-            },
-        });
-        console.log('✅ Created Super Admin');
-    } else {
-        console.log('⏭️  Super Admin exists');
+    // Create Super Admin Users (skip if exists)
+    const adminEmails = [
+        'admin@techwell.co.in',
+        'uttam@techwell.co.in',
+        'superadmin@techwell.co.in',
+        'superdmin@techwell.co.in'
+    ];
+
+    for (const email of adminEmails) {
+        let superAdmin = await prisma.user.findUnique({ where: { email } });
+        if (!superAdmin) {
+            superAdmin = await prisma.user.create({
+                data: {
+                    email,
+                    password: hashedPassword,
+                    name: 'Super Admin',
+                    role: 'SUPER_ADMIN',
+                    isActive: true,
+                    emailVerified: true,
+                },
+            });
+            console.log(`✅ Created Super Admin: ${email}`);
+        } else {
+            // Ensure existing users get the super admin role
+            await prisma.user.update({
+                where: { email },
+                data: { role: 'SUPER_ADMIN' }
+            });
+            console.log(`⏭️  Verified Super Admin: ${email}`);
+        }
     }
 
     let instructor = await prisma.user.findUnique({ where: { email: 'instructor@techwell.co.in' } });
