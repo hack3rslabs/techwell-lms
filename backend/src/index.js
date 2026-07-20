@@ -298,8 +298,6 @@ if (process.env.NODE_ENV !== 'test') {
                         data: {
                             email,
                             password: hashedPassword,
-                            firstName: 'Super',
-                            lastName: 'Admin',
                             name: 'Super Admin',
                             role: 'SUPER_ADMIN',
                             emailVerified: true
