@@ -315,8 +315,14 @@ export default function LeadsPage() {
 
         try {
             // Optimistic update
-            setLeads(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l))
-            await api.put(`/leads/${id}`, { status: newStatus })
+            setLeads(prev => {
+                if (statusFilter !== 'ALL' && newStatus !== statusFilter) {
+                    return prev.filter(l => l.id !== id);
+                }
+                return prev.map(l => l.id === id ? { ...l, status: newStatus } : l);
+            });
+            await api.put(`/leads/${id}`, { status: newStatus });
+            refreshLeadCounts();
         } catch {
             fetchLeads() // Revert on error
         }
@@ -355,6 +361,7 @@ export default function LeadsPage() {
         try {
             await api.delete('/crm/leads/bulk', { data: { leadIds: selectedLeads } })
             fetchLeads()
+            refreshLeadCounts()
         } catch {
             alert('Failed to delete leads')
         }
