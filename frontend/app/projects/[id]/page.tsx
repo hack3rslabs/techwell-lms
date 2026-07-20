@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import _Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/components/ui/use-toast"
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 
 export default function ProjectDetailsPage() {
     const params = useParams()
@@ -198,7 +199,7 @@ export default function ProjectDetailsPage() {
                                         </Button>
                                         {project.demoLink && (
                                             <Button variant="outline" className="w-full h-12" asChild>
-                                                <a href={project.demoLink} target="_blank" rel="noopener noreferrer">
+                                                <a href={ sanitizeUrl(project.demoLink)} target="_blank" rel="noopener noreferrer">
                                                     <ExternalLink className="w-4 h-4 mr-2" /> Live Demo
                                                 </a>
                                             </Button>

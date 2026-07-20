@@ -249,7 +249,7 @@ export default function StudentJobsPage() {
                                         <div className="flex items-start justify-between gap-3 mb-3">
                                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shrink-0">
                                                 {job.employer?.employerProfile?.logo ? (
-{/* snyk-ignore  */}
+
                                                     <img src={job.employer.employerProfile.logo} alt="" className="w-10 h-10 rounded-lg object-contain" />
                                                 ) : (
                                                     <Building2 className="w-6 h-6 text-blue-500" />
@@ -343,7 +343,7 @@ export default function StudentJobsPage() {
                                 <div className="flex items-start gap-4">
                                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shrink-0">
                                         {selectedJob.employer?.employerProfile?.logo ? (
-{/* snyk-ignore  */}
+
                                             <img src={selectedJob.employer.employerProfile.logo} alt="" className="w-12 h-12 rounded-xl object-contain" />
                                         ) : (
                                             <Building2 className="w-7 h-7 text-blue-500" />

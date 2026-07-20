@@ -12,7 +12,11 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  */
 router.get('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
     try {
-        const { domain, search, difficulty } = req.query;
+        let { domain, search, difficulty } = req.query;
+    if (domain !== undefined) domain = Array.isArray(domain) ? domain[0] : String(domain);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+    if (difficulty !== undefined) difficulty = Array.isArray(difficulty) ? difficulty[0] : String(difficulty);
+
 
         const where = {};
         if (domain && domain !== 'all') where.domain = domain;
@@ -52,7 +56,7 @@ router.post('/', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR'), 
                 difficulty,
                 type: type || 'TECHNICAL',
                 codeSnippet,
-                tags: typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : tags,
+                tags: typeof tags === 'string' ? String(tags || '').split(',').map(t => String(t || '').trim()).filter(Boolean) : tags,
                 status: status || 'PUBLISHED'
             }
         });
@@ -81,7 +85,7 @@ router.put('/:id', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR')
                 difficulty,
                 type,
                 codeSnippet,
-                tags: typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : tags,
+                tags: typeof tags === 'string' ? String(tags || '').split(',').map(t => String(t || '').trim()).filter(Boolean) : tags,
                 status
             }
         });
@@ -151,7 +155,7 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req
 router.post('/bulk-delete', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
     try {
         const { ids } = req.body;
-        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        if (!ids || !Array.isArray(ids) || Array.isArray(ids) ? ids.length : 0 === 0) {
             return res.status(400).json({ error: 'No IDs provided' });
         }
 
@@ -159,7 +163,7 @@ router.post('/bulk-delete', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
             where: { id: { in: ids } }
         });
 
-        res.json({ message: `${ids.length} entries deleted successfully` });
+        res.json({ message: `${Array.isArray(ids) ? ids.length : 0} entries deleted successfully` });
     } catch (error) {
         next(error);
     }
@@ -173,7 +177,7 @@ router.post('/bulk-delete', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
 router.post('/bulk-update', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (req, res, next) => {
     try {
         const { ids, updates } = req.body; // updates: { domain: 'IT', difficulty: 'ADVANCED' }
-        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        if (!ids || !Array.isArray(ids) || Array.isArray(ids) ? ids.length : 0 === 0) {
             return res.status(400).json({ error: 'No IDs provided' });
         }
 
@@ -182,7 +186,7 @@ router.post('/bulk-update', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), asy
             data: updates
         });
 
-        res.json({ message: `${ids.length} entries updated successfully` });
+        res.json({ message: `${Array.isArray(ids) ? ids.length : 0} entries updated successfully` });
     } catch (error) {
         next(error);
     }

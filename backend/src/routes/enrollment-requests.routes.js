@@ -12,7 +12,10 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  */
 router.get('/', async (req, res, next) => {
     try {
-        const { type, location } = req.query;
+        let { type, location } = req.query;
+    if (type !== undefined) type = Array.isArray(type) ? type[0] : String(type);
+    if (location !== undefined) location = Array.isArray(location) ? location[0] : String(location);
+
         const where = { status: 'OPEN' };
 
         if (type) where.type = type;
@@ -318,7 +321,7 @@ router.get('/:id/ai-matches', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPE
             }
         });
 
-        if (candidates.length === 0) return res.json({ matches: [] });
+        if (Array.isArray(candidates) ? candidates.length : 0 === 0) return res.json({ matches: [] });
 
         if (!process.env.GEMINI_API_KEY) {
             return res.status(503).json({ error: 'AI matching service is currently unavailable.' });
@@ -327,7 +330,7 @@ router.get('/:id/ai-matches', authenticate, authorize('EMPLOYER', 'ADMIN', 'SUPE
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const candidateData = candidates.map(c => ({
+        const candidateData = (Array.isArray(candidates) ? candidates : []).map(c => ({
             id: c.id,
             skills: c.skills,
             experience: c.experienceLevel,

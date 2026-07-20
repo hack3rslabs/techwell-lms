@@ -35,7 +35,7 @@ exports.sendMessageToStudents = async (req, res) => {
     });
 
     // Create recipients for each student
-    const recipients = students.map(student => ({
+    const recipients = (Array.isArray(students) ? students : []).map(student => ({
       messageId: adminMessage.id,
       userId: student.id,
       isRead: false
@@ -342,7 +342,10 @@ exports.sendMessageToCourse = async (req, res) => {
 exports.getStudentMessages = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { skip = 0, take = 10 } = req.query;
+    let { skip = 0, take = 10 } = req.query;
+    if (skip !== undefined) skip = Array.isArray(skip) ? skip[0] : String(skip);
+    if (take !== undefined) take = Array.isArray(take) ? take[0] : String(take);
+
 
     const messages = await prisma.adminMessageRecipient.findMany({
       where: { userId },
@@ -486,7 +489,10 @@ exports.getUnreadCount = async (req, res) => {
 // Get all messages (admin only - for viewing sent messages)
 exports.getAllMessages = async (req, res) => {
   try {
-    const { skip = 0, take = 10 } = req.query;
+    let { skip = 0, take = 10 } = req.query;
+    if (skip !== undefined) skip = Array.isArray(skip) ? skip[0] : String(skip);
+    if (take !== undefined) take = Array.isArray(take) ? take[0] : String(take);
+
 
     const messages = await prisma.adminMessage.findMany({
       include: {

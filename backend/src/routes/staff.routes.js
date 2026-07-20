@@ -301,7 +301,9 @@ router.get('/scripts', authenticate, async (req, res, next) => {
  */
 router.get('/monitoring', authenticate, async (req, res, next) => {
     try {
-        const { dateRange } = req.query; // 'today', 'week', 'month', 'all'
+        let { dateRange } = req.query;
+    if (dateRange !== undefined) dateRange = Array.isArray(dateRange) ? dateRange[0] : String(dateRange);
+ // 'today', 'week', 'month', 'all'
         
         let startDate = new Date(0);
         const now = new Date();

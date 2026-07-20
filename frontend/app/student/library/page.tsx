@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 // No, the view_file showed lines 1-3. 
 import { useAuth } from "@/lib/auth-context";
 import { libraryApi } from "@/lib/api";
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 
 interface Category {
     id: string;
@@ -245,8 +246,8 @@ export default function StudentLibraryPage() {
                             
                             {viewResource?.type === 'PDF' && (
                                 <a 
-{/* snyk-ignore  */}
-                                    href={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${viewResource.fileUrl}`} 
+
+                                    href={ sanitizeUrl(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${viewResource.fileUrl}`)} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="text-[10px] flex items-center gap-1 text-primary hover:underline font-bold"
@@ -263,7 +264,7 @@ export default function StudentLibraryPage() {
                         {viewResource?.type === 'PDF' && (
                             <div className="aspect-[4/5] w-full bg-white rounded-lg shadow-inner overflow-hidden border">
                                 <iframe 
-{/* snyk-ignore  */}
+
                                     src={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${viewResource.fileUrl}`} 
                                     className="w-full h-full border-none"
                                     title={viewResource.title}

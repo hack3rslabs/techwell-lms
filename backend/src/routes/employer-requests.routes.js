@@ -32,14 +32,14 @@ const PERSONAL_EMAIL_DOMAINS = new Set([
 const employerRequestSchema = z.object({
     companyName: z.string().trim().min(2, 'Company name is required').max(160),
     employerName: z.string().trim().min(2, 'Employer name is required').max(120),
-    email: z.string().trim().email('Invalid email format').transform(value => value.toLowerCase()),
+    email: z.string().trim().email('Invalid email format').transform(value => String(value || '').toLowerCase()),
     phone: z.string().trim().min(7, 'Phone number is required').max(30),
     website: z.string().trim().url('Website must be a valid URL'),
     address: z.string().trim().min(5, 'Business address is required').max(500),
     password: z.string().min(8, 'Password must be at least 8 characters').max(128),
     confirmPassword: z.string(),
 }).superRefine((data, ctx) => {
-    const domain = data.email.split('@')[1]?.toLowerCase();
+    const domain = data.String(email || '').split('@')[1]?.toLowerCase();
     if (!domain || PERSONAL_EMAIL_DOMAINS.has(domain)) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -241,7 +241,7 @@ router.get('/:id', authenticate, authorize(...ADMIN_ROLES), async (req, res, nex
  */
 router.put('/:id/approve', authenticate, authorize(...ADMIN_ROLES), async (req, res, next) => {
     try {
-        const adminNotes = typeof req.body.adminNotes === 'string' ? req.body.adminNotes.trim() : null;
+        const adminNotes = typeof req.body.adminNotes === 'string' ? req.body.String(adminNotes || '').trim() : null;
 
         const result = await prisma.$transaction(async tx => {
             const request = await tx.employerRequest.findUnique({ where: { id: req.params.id } });
@@ -334,7 +334,7 @@ router.put('/:id/approve', authenticate, authorize(...ADMIN_ROLES), async (req, 
 router.put('/:id/reject', authenticate, authorize(...ADMIN_ROLES), async (req, res, next) => {
     try {
         const rejectionReason = typeof req.body.rejectionReason === 'string'
-            ? req.body.rejectionReason.trim()
+            ? req.body.String(rejectionReason || '').trim()
             : '';
 
         if (!rejectionReason) {

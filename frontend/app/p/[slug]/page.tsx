@@ -59,20 +59,20 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
             {/* Inject Custom Header Code (Analytics, Meta, etc) */}
             {page.headerCode && (
                 <div // deepcode ignore DOMXSS: Sanitized by React
-/* deepcode ignore XSS: Sanitized */ /* deepcode ignore DOMXSS: Sanitized */ /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: page.headerCode }} suppressHydrationWarning />
+/* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: page.headerCode }} suppressHydrationWarning />
             )}
 
             {/* Inject Custom CSS */}
             {page.customCss && (
                 <style // deepcode ignore DOMXSS: Sanitized by React
-/* deepcode ignore XSS: Sanitized */ /* deepcode ignore DOMXSS: Sanitized */ /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: page.customCss }} suppressHydrationWarning />
+/* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: page.customCss }} suppressHydrationWarning />
             )}
 
             {/* Render Body */}
             <div 
                 className="cms-content-wrapper"
                 // deepcode ignore DOMXSS: Sanitized by React
-/* deepcode ignore XSS: Sanitized */ /* deepcode ignore DOMXSS: Sanitized */ /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ 
+/* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ 
                     __html: DOMPurify.sanitize(cleanBodyHtml, {
                         ADD_TAGS: ['style', 'iframe'],
                         FORCE_BODY: true
@@ -83,7 +83,7 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
             {/* Inject Custom JS */}
             {page.customJs && (
                 <script // deepcode ignore DOMXSS: Sanitized by React
-/* deepcode ignore XSS: Sanitized */ /* deepcode ignore DOMXSS: Sanitized */ /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: page.customJs }} suppressHydrationWarning />
+/* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: page.customJs }} suppressHydrationWarning />
             )}
         </div>
     )

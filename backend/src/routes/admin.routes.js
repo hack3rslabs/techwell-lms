@@ -143,7 +143,9 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
  */
 router.get('/courses/pending', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
-        const { status = 'IN_REVIEW' } = req.query;
+        let { status = 'IN_REVIEW' } = req.query;
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+
 
         const whereClause = status === 'ALL'
             ? {}
@@ -408,7 +410,7 @@ router.post('/enrollments/manual', authenticate, checkPermission('STUDENTS'), as
         // Create Payment
         const payment = await prisma.payment.create({
             data: {
-                orderId: `MANUAL_${Date.now()}_${userId.substring(0, 5)}`,
+                orderId: `MANUAL_${Date.now()}_${String(userId || "").substring(0, 5)}`,
                 amount: paymentAmount,
                 status: 'COMPLETED',
                 paymentMethod: paymentMethod || 'CASH', // CASH or ONLINE
@@ -463,7 +465,9 @@ router.patch('/enrollments/:id/status', authenticate, checkPermission('STUDENTS'
  */
 router.get('/students/available-for-batch', authenticate, checkPermission('STUDENTS'), async (req, res, next) => {
     try {
-        const { courseId } = req.query;
+        let { courseId } = req.query;
+    if (courseId !== undefined) courseId = Array.isArray(courseId) ? courseId[0] : String(courseId);
+
         if (!courseId) {
             return res.status(400).json({ error: 'Course ID is required' });
         }
@@ -517,7 +521,11 @@ router.get('/students/available-for-batch', authenticate, checkPermission('STUDE
  */
 router.get('/students', authenticate, checkPermission('STUDENTS'), async (req, res, next) => {
     try {
-        const { search, course, status, page = 1, limit = 50 } = req.query;
+        let { search, course, status, page = 1, limit = 50 } = req.query;
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+    if (course !== undefined) course = Array.isArray(course) ? course[0] : String(course);
+    if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
+
         const skip = (Number(page) - 1) * Number(limit);
 
         // Build filter for users
@@ -617,7 +625,16 @@ router.get('/students', authenticate, checkPermission('STUDENTS'), async (req, r
  */
 router.get('/audit-logs', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
     try {
-        const { search, action, entityType, startDate, endDate, role, severity, ipAddress, page = 1, limit = 50 } = req.query;
+        let { search, action, entityType, startDate, endDate, role, severity, ipAddress, page = 1, limit = 50 } = req.query;
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+    if (action !== undefined) action = Array.isArray(action) ? action[0] : String(action);
+    if (entityType !== undefined) entityType = Array.isArray(entityType) ? entityType[0] : String(entityType);
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+    if (role !== undefined) role = Array.isArray(role) ? role[0] : String(role);
+    if (severity !== undefined) severity = Array.isArray(severity) ? severity[0] : String(severity);
+    if (ipAddress !== undefined) ipAddress = Array.isArray(ipAddress) ? ipAddress[0] : String(ipAddress);
+
         const skip = (Number(page) - 1) * Number(limit);
 
         const where = {};

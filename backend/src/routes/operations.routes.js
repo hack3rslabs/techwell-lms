@@ -83,8 +83,8 @@ router.get('/kanban', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'MANAGER')
         });
 
         res.json({
-            leads: leads.map(l => ({ ...l, type: 'LEAD', stage: 'NEW_LEAD' })),
-            students: students.map(s => ({ ...s, type: 'STUDENT', stage: 'IN_TRAINING' })),
+            leads: (Array.isArray(leads) ? leads : []).map(l => ({ ...l, type: 'LEAD', stage: 'NEW_LEAD' })),
+            students: (Array.isArray(students) ? students : []).map(s => ({ ...s, type: 'STUDENT', stage: 'IN_TRAINING' })),
             ready: placementReady.map(r => ({ ...r, type: 'CANDIDATE', stage: 'PLACEMENT_READY' })),
             hired: hired.map(h => ({ ...h, type: 'CANDIDATE', stage: 'HIRED' }))
         });

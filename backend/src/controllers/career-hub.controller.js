@@ -8,7 +8,7 @@ exports.analyzeATS = async (req, res) => {
             return res.status(400).json({ error: 'Job description and resume text are required.' });
         }
 
-        if (resumeText.trim().length === 0) {
+        if (String(resumeText || '').trim().length === 0) {
             return res.status(400).json({ error: 'Resume text is empty.' });
         }
 

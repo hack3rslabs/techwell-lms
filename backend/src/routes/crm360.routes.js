@@ -8,7 +8,9 @@ const router = express.Router();
 // GET /api/crm/customers
 router.get('/customers', authenticate, checkPermission('CENTRAL_CRM'), async (req, res) => {
   try {
-    const { search, page = 1, limit = 10 } = req.query;
+    let { search, page = 1, limit = 10 } = req.query;
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+
     const skip = (page - 1) * limit;
 
     let where = {};

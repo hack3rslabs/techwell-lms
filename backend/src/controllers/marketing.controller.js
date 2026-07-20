@@ -148,7 +148,7 @@ exports.getCampaigns = async (req, res) => {
             return {
                 ...campaign,
                 totalRevenue,
-                leadsCount: leads.length,
+                leadsCount: Array.isArray(leads) ? leads.length : 0,
                 roiScore: Math.round(roiScore * 100) / 100 // Round to 2 decimals
             };
         }));
@@ -198,7 +198,7 @@ exports.subscribeNewsletter = async (req, res) => {
     }
 
     // Create a new lead for the newsletter
-    const name = email.split('@')[0];
+    const name = String(email || '').split('@')[0];
     await prisma.lead.create({
       data: {
         name: name,

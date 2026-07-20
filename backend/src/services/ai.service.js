@@ -148,7 +148,7 @@ class AIService {
             const data = await pdf(dataBuffer);
             const extractedText = data.text || '';
 
-            if (!extractedText || extractedText.trim().length === 0) {
+            if (!extractedText || String(extractedText || '').trim().length === 0) {
                 console.warn('[PDF Extract] PDF parsing returned empty text');
                 return null;
             }
@@ -385,7 +385,7 @@ Return ONLY a valid JSON object:
             const text = await this.generateWithAIProvider(prompt, interview);
 
             // Robust JSON extraction
-            let jsonStr = text.trim();
+            let jsonStr = String(text || '').trim();
             const jsonMatch = text.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 jsonStr = jsonMatch[0];
@@ -477,7 +477,7 @@ Return ONLY a JSON object:
 }`;
 
             const resText = await this.generateWithAIProvider(prompt, null, true);
-            const jsonText = resText.trim().replace(/```json|```/gi, '');
+            const jsonText = String(resText || '').trim().replace(/```json|```/gi, '');
             return JSON.parse(jsonText);
         } catch (error) {
             console.error("Evaluation Error:", error);
@@ -549,7 +549,7 @@ Return ONLY a JSON array with:
         ]`;
 
             const text = await this.generate(prompt);
-            const parsed = JSON.parse(text.trim().replace(/```json|```/gi, ''));
+            const parsed = JSON.parse(String(text || '').trim().replace(/```json|```/gi, ''));
             return Array.isArray(parsed) ? parsed : (parsed.questions || []);
         } catch (error) {
             console.error("Gemini Context Generation Error:", error);
@@ -564,7 +564,7 @@ Return ONLY a JSON array with:
         try {
             const prompt = `You are an expert ${role} interviewer. Generate exactly ${count} professional interview questions for a ${difficulty} level candidate in the ${domain} domain${company ? ` specifically for a position at ${company}` : ''}.\n\nInstructions:\n1. Focus on actual industry-standard technical concepts.\n2. Provide a detailed "ideal answer".\n3. Format strictly as a JSON array of objects with keys: "topic", "content", "answer".\n4. Return ONLY the JSON (no markdown).`;
             const text = await this.generate(prompt);
-            const parsed = JSON.parse(text.trim().replace(/```json|```/gi, ''));
+            const parsed = JSON.parse(String(text || '').trim().replace(/```json|```/gi, ''));
             const questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
 
             return questions.map(q => ({

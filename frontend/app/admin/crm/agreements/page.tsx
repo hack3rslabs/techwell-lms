@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 
 export default function AgreementsDashboard() {
     const [agreements, setAgreements] = useState<any[]>([])
@@ -140,7 +141,7 @@ export default function AgreementsDashboard() {
                                                             const link = document.createElement('a')
                                                             link.href = url
                                                             link.setAttribute('download', `${agreement.agreementNum}.pdf`)
-{/* snyk-ignore  */}
+
                                                             document.body.appendChild(link)
                                                             link.click()
                                                             link.remove()
@@ -152,7 +153,7 @@ export default function AgreementsDashboard() {
                                                         <FileText className="h-4 w-4 text-green-500" />
                                                     </Button>
                                                     {hasPermission('CENTRAL_CRM', 'update') && (
-                                                        <Link href={`/admin/crm/agreements/builder?id=${agreement.id}`}>
+                                                        <Link href={ sanitizeUrl(`/admin/crm/agreements/builder?id=${agreement.id}`)}>
                                                             <Button variant="ghost" size="icon" title="Edit">
                                                                 <Edit className="h-4 w-4 text-gray-500" />
                                                             </Button>

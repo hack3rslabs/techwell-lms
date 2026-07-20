@@ -153,8 +153,8 @@ Agent:`;
                 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const result = await model.generateContent(systemPrompt);
                 const text = result.response.text();
-                if (text && text.trim()) {
-                    aiReply = text.trim();
+                if (text && String(text || '').trim()) {
+                    aiReply = String(text || '').trim();
                 }
             } catch (geminiErr) {
                 console.error('[WhatsApp AI Agent] Gemini Generation failed:', geminiErr.message);

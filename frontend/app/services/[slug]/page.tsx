@@ -174,32 +174,33 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
     notFound()
   }
 
+  // Remove the unserializable 'icon' function before passing data to Client Components
+  const { icon: Icon, ...serializableData } = data;
+
   // Dedicated single-page website for Cyber Security
   if (resolvedParams.slug === 'cyber-security') {
-    return <CyberSecurityLandingPage data={data} />
+    return <CyberSecurityLandingPage data={serializableData} />
   }
 
   // Dedicated single-page website for IT Solutions
   if (resolvedParams.slug === 'it-infrastructure') {
-    return <ITSolutionsLandingPage data={data} />
+    return <ITSolutionsLandingPage data={serializableData} />
   }
 
   // Dedicated single-page website for Software Solutions
   if (resolvedParams.slug === 'software-development') {
-    return <SoftwareSolutionsLandingPage data={data} />
+    return <SoftwareSolutionsLandingPage data={serializableData} />
   }
 
   // Dedicated single-page website for AI Automation
   if (resolvedParams.slug === 'ai-automation') {
-    return <AIAutomationLandingPage data={data} />
+    return <AIAutomationLandingPage data={serializableData} />
   }
 
   // Dedicated single-page website for Digital Marketing
   if (resolvedParams.slug === 'digital-marketing') {
-    return <DigitalMarketingLandingPage data={data} />
+    return <DigitalMarketingLandingPage data={serializableData} />
   }
-
-  const Icon = data.icon
 
   // Force corporate brand colors across all pages
   const colorStyles = 'text-primary bg-primary/10 border-primary/20 shadow-primary/20'

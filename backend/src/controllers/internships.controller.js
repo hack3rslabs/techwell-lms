@@ -108,7 +108,7 @@ const createProgram = async (req, res, next) => {
                 durationMonths: durationMonths ? parseInt(durationMonths) : 6,
                 skillsRequired: Array.isArray(skillsRequired)
                     ? skillsRequired
-                    : (skillsRequired ? skillsRequired.split(',').map(s => s.trim()) : []),
+                    : (skillsRequired ? String(skillsRequired || '').split(',').map(s => String(s || '').trim()) : []),
                 isActive: isActive !== undefined ? isActive : true
             }
         });
@@ -135,7 +135,7 @@ const updateProgram = async (req, res, next) => {
                 ...(skillsRequired && {
                     skillsRequired: Array.isArray(skillsRequired)
                         ? skillsRequired
-                        : skillsRequired.split(',').map(s => s.trim())
+                        : String(skillsRequired || '').split(',').map(s => String(s || '').trim())
                 }),
                 ...(isActive !== undefined && { isActive })
             }

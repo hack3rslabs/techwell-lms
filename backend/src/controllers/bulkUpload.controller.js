@@ -19,7 +19,7 @@ exports.bulkUploadStudents = async (req, res) => {
         let failedCount = 0;
         let errors = [];
 
-        for (let i = 0; i < students.length; i++) {
+        for (let i = 0; i < Array.isArray(students) ? students.length : 0; i++) {
             const student = students[i];
             try {
                 // Ensure email is present
@@ -60,7 +60,7 @@ exports.bulkUploadStudents = async (req, res) => {
                 instituteId: req.user.instituteId,
                 uploadedBy: req.user.id,
                 filename: filename || 'unknown.csv',
-                totalRecords: students.length,
+                totalRecords: Array.isArray(students) ? students.length : 0,
                 successCount,
                 failedCount,
                 errors: errors.length > 0 ? errors : null

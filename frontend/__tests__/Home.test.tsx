@@ -1,16 +1,20 @@
-import { render } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { expect, test, vi } from 'vitest'
 import Home from '../app/page'
-
-import { vi } from 'vitest'
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
 }))
 
-import { redirect } from 'next/navigation'
+vi.mock('@/components/sections/Testimonials', () => ({
+  Testimonials: () => <div data-testid="testimonials">Testimonials</div>
+}))
 
-test('redirects to courses page', () => {
+vi.mock('@/components/sections/PlacementPartners', () => ({
+  PlacementPartners: () => <div data-testid="placement-partners">Partners</div>
+}))
+
+test('renders Home page correctly', () => {
   render(<Home />)
-  expect(redirect).toHaveBeenCalledWith('/courses')
+  expect(screen.getByText('Our Expertise')).toBeTruthy()
 })

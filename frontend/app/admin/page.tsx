@@ -31,7 +31,8 @@ import {
     Briefcase,
     Zap,
     CheckSquare,
-    LifeBuoy
+    LifeBuoy,
+    ChevronRight
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { AdminReportModal } from '@/components/admin/report-modal'
@@ -94,8 +95,7 @@ export default function AdminDashboard() {
 
     const [isMounted, setIsMounted] = React.useState(false)
     const [layout, setLayout] = React.useState<WidgetId[]>(DEFAULT_LAYOUT)
-    const [visibleWidgets, setVisibleWidgets] = React.useState<Record<WidgetId, boolean>>({
-        revenue: true,
+    const [visibleWidgets, setVisibleWidgets] = React.useState<Record<WidgetId | string, boolean>>({
         upcomingFees: true,
         users: true,
         franchises: true,
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
             {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-teal-500">
                         Dashboard Overview
                     </h1>
                     <p className="text-muted-foreground mt-2">
@@ -266,10 +266,16 @@ export default function AdminDashboard() {
                     {/* Master Dashboard Overview (Super Admin / Admin Only) */}
                     {masterStats && (
                         <div className="grid gap-6 md:grid-cols-3 mb-8">
-                            <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg border-0 relative overflow-hidden">
+                            <Card 
+                                className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg border-0 relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
+                                onClick={() => router.push('/admin/revenue')}
+                            >
                                 <div className="absolute top-0 right-0 p-4 opacity-20"><BarChart3 className="w-16 h-16" /></div>
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-emerald-50 text-sm font-medium uppercase tracking-wider">Total Unified Revenue</CardTitle>
+                                    <CardTitle className="text-emerald-50 text-sm font-medium uppercase tracking-wider flex items-center justify-between">
+                                        Total Unified Revenue
+                                        <ChevronRight className="w-4 h-4 opacity-70" />
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-4xl font-bold">₹{masterStats.revenue?.total?.toLocaleString('en-IN') || 0}</div>
@@ -319,11 +325,10 @@ export default function AdminDashboard() {
                                 if (!visibleWidgets[widgetId]) return null
                                 
                                 // Handle permissions for specific widgets
-                                if (widgetId === 'revenue' && !hasPermission('FINANCE')) return null
                                 if (widgetId === 'upcomingFees' && !hasPermission('FINANCE')) return null
                                 
-                                // Determine column span for specific widgets (like revenue taking 2 cols)
-                                const colSpanClass = widgetId === 'revenue' ? 'col-span-1 xl:col-span-2' : 'col-span-1'
+                                // Determine column span for specific widgets
+                                const colSpanClass = 'col-span-1'
                                 
                                 return (
                                     <div key={widgetId} className={colSpanClass}>

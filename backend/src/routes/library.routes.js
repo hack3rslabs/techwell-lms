@@ -119,7 +119,9 @@ router.delete('/categories/:id', authenticate, checkPermission('MANAGE_LIBRARY')
 // Get domains (optionally filtered by category)
 router.get('/domains', async (req, res) => {
     try {
-        const { categoryId } = req.query;
+        let { categoryId } = req.query;
+    if (categoryId !== undefined) categoryId = Array.isArray(categoryId) ? categoryId[0] : String(categoryId);
+
 
         const domains = await prisma.libraryDomain.findMany({
             where: categoryId ? { categoryId } : undefined,
@@ -195,7 +197,12 @@ router.delete('/domains/:id', authenticate, checkPermission('MANAGE_LIBRARY'), a
 // Get resources (with filters)
 router.get('/resources', async (req, res) => {
     try {
-        const { domainId, type, search, isPaid } = req.query;
+        let { domainId, type, search, isPaid } = req.query;
+    if (domainId !== undefined) domainId = Array.isArray(domainId) ? domainId[0] : String(domainId);
+    if (type !== undefined) type = Array.isArray(type) ? type[0] : String(type);
+    if (search !== undefined) search = Array.isArray(search) ? search[0] : String(search);
+    if (isPaid !== undefined) isPaid = Array.isArray(isPaid) ? isPaid[0] : String(isPaid);
+
 
         const where = {};
 
@@ -490,7 +497,9 @@ router.get('/download/:id', async (req, res) => {
 // Search resources
 router.get('/search', async (req, res) => {
     try {
-        const { q } = req.query;
+        let { q } = req.query;
+    if (q !== undefined) q = Array.isArray(q) ? q[0] : String(q);
+
 
         if (!q) {
             return res.status(400).json({ error: 'Search query is required' });

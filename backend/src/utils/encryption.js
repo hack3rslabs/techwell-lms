@@ -54,7 +54,7 @@ function decrypt(text) {
     if (!text) return null;
 
     try {
-        const parts = text.split(':');
+        const parts = String(text || '').split(':');
         if (parts.length !== 3) {
             throw new Error('Invalid encryption format');
         }

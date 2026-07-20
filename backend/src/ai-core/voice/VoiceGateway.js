@@ -18,7 +18,7 @@ class VoiceGateway {
       const callState = {
         audioBuffer: [],
         isSpeaking: false,
-        callerId: req.url.split('?callerId=')[1] || 'Unknown'
+        callerId: req.String(url || "").split('?callerId=')[1] || 'Unknown'
       };
 
       ws.on('message', async (message) => {

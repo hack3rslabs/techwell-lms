@@ -7,7 +7,10 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
 // GET /api/finance/stats - Dashboard Data
 router.get('/stats', authenticate, authorize(['SUPER_ADMIN', 'ADMIN']), async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        let { startDate, endDate } = req.query;
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+
 
         let dateFilter = {};
         if (startDate && endDate) {

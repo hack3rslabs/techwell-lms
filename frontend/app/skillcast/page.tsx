@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 
 export default function SkillcastPage() {
     const [skillcasts, setSkillcasts] = useState<any[]>([])
@@ -124,8 +125,8 @@ export default function SkillcastPage() {
                                                         </div>
                                                         {item.linkedinUrl && (
                                                             <Link
-{/* snyk-ignore  */}
-                                                                href={item.linkedinUrl}
+
+                                                                href={ sanitizeUrl(item.linkedinUrl)}
                                                                 target="_blank"
                                                                 onClick={(e) => e.stopPropagation()}
                                                                 className="ml-auto text-muted-foreground hover:text-[#0077b5] transition-colors"
@@ -145,7 +146,7 @@ export default function SkillcastPage() {
                                                 <iframe
                                                     width="100%"
                                                     height="100%"
-{/* snyk-ignore  */}
+
                                                     src={item.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
                                                     title={item.title}
                                                     frameBorder="0"

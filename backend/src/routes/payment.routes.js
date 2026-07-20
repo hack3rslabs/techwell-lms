@@ -79,10 +79,10 @@ router.put('/config', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), async (re
         // Only update secrets if they differ from masked version (meaning user typed new one)
         // Simple logic: if input includes "...", ignore it. If full string, save it.
         // Better logic: user sends "UNCHANGED" or null. But for now we assume masking format.
-        if (razorpayKeySecret && !razorpayKeySecret.includes('...')) {
+        if (typeof razorpayKeySecret === "string" && !razorpayKeySecret.includes('...')) {
             data.razorpayKeySecret = razorpayKeySecret;
         }
-        if (stripeSecretKey && !stripeSecretKey.includes('...')) {
+        if (typeof stripeSecretKey === "string" && !stripeSecretKey.includes('...')) {
             data.stripeSecretKey = stripeSecretKey;
         }
 
@@ -232,7 +232,7 @@ router.post('/create-order', authenticate, async (req, res) => {
             const stripe = require('stripe')(config.stripeSecretKey);
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: Math.round(amount * 100),
-                currency: currency.toLowerCase(),
+                currency: String(currency || '').toLowerCase(),
                 automatic_payment_methods: { enabled: true },
             });
             return res.json({

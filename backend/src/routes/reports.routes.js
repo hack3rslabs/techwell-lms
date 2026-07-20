@@ -12,7 +12,9 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  */
 router.get('/business-summary', authenticate, checkPermission('REPORTS'), async (req, res, next) => {
     try {
-        const { year } = req.query;
+        let { year } = req.query;
+    if (year !== undefined) year = Array.isArray(year) ? year[0] : String(year);
+
         const targetYear = year ? parseInt(year) : new Date().getFullYear();
 
         const startDate = new Date(targetYear, 0, 1); // Jan 1st

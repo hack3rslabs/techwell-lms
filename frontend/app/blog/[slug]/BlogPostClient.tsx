@@ -163,7 +163,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
 
             {/* Schema.org */}
             <script type="application/ld+json" // deepcode ignore DOMXSS: Sanitized by React
-/* deepcode ignore XSS: Sanitized */ /* deepcode ignore DOMXSS: Sanitized */ /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: JSON.stringify({
+/* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "BlogPosting",
                 "headline": post.title,
@@ -276,7 +276,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
                     <div 
                         className="prose prose-lg md:prose-xl dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-3xl prose-img:shadow-2xl leading-loose"
                         // deepcode ignore DOMXSS: Sanitized by React
-/* deepcode ignore XSS: Sanitized */ /* deepcode ignore DOMXSS: Sanitized */ /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+/* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                     />
 
                     {/* Tags block */}

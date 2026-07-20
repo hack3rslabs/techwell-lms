@@ -4,7 +4,10 @@ const prisma = new PrismaClient();
 // 1. Get all STAFF with attendance stats for the month
 exports.getStaffRoster = async (req, res, next) => {
     try {
-        const { month, year } = req.query;
+        let { month, year } = req.query;
+    if (month !== undefined) month = Array.isArray(month) ? month[0] : String(month);
+    if (year !== undefined) year = Array.isArray(year) ? year[0] : String(year);
+
         const targetMonth = parseInt(month) || new Date().getMonth() + 1;
         const targetYear = parseInt(year) || new Date().getFullYear();
 

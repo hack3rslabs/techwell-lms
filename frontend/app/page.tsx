@@ -11,6 +11,7 @@ import {
   ShieldCheck, Server, Globe2, Rocket, Cpu, Calendar, TrendingUp
 } from 'lucide-react'
 import { Testimonials } from "@/components/sections/Testimonials"
+import { SuccessStories } from "@/components/sections/SuccessStories"
 import { PlacementPartners } from "@/components/sections/PlacementPartners"
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techwell.co.in"
@@ -283,8 +284,9 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
           </div>
         </section>
 
-        {/* TESTIMONIALS & PARTNERS SECTIONS */}
+        {/* SUCCESS STORIES, TESTIMONIALS & PARTNERS SECTIONS */}
         <div className="bg-slate-50 dark:bg-[#030712] relative z-20 shadow-[0_-20px_50px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_-20px_50px_-15px_rgba(0,0,0,0.5)]">
+          <SuccessStories />
           <Testimonials />
           <div className="border-t border-slate-200 dark:border-slate-800/60">
             <PlacementPartners />

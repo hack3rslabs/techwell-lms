@@ -161,7 +161,7 @@ router.post('/verify-otp', authLimiter, async (req, res, next) => {
         }
 
         // Verify OTP
-        if (pending.otp !== otp.toString()) {
+        if (pending.otp !== String(otp || "").toString()) {
             return res.status(400).json({ error: 'Invalid OTP. Please try again.' });
         }
 
@@ -483,7 +483,7 @@ router.post('/refresh', async (req, res, next) => {
             return res.status(401).json({ error: 'No token provided' });
         }
 
-        const token = authHeader.split(' ')[1];
+        const token = String(authHeader || '').split(' ')[1];
 
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -617,7 +617,7 @@ router.post('/verify-reset-otp', authLimiter, async (req, res, next) => {
         }
 
         // Verify OTP
-        if (resetData.otp !== otp.toString()) {
+        if (resetData.otp !== String(otp || "").toString()) {
             return res.status(400).json({ error: 'Invalid OTP.' });
         }
 
@@ -646,13 +646,13 @@ router.post('/reset-password', async (req, res, next) => {
             return res.status(400).json({ error: 'Email, OTP, and new password are required' });
         }
 
-        if (newPassword.length < 8) {
+        if (String(newPassword || "").length < 8) {
             return res.status(400).json({ error: 'Password must be at least 8 characters' });
         }
 
         const resetData = passwordResets.get(email);
 
-        if (!resetData || !resetData.verified || resetData.otp !== otp.toString()) {
+        if (!resetData || !resetData.verified || resetData.otp !== String(otp || "").toString()) {
             return res.status(400).json({ error: 'Verification failed. Please try again.' });
         }
 

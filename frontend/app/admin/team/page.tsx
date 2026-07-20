@@ -133,7 +133,7 @@ export default function AdminTeamPage() {
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 rounded-full bg-muted border border-border overflow-hidden flex items-center justify-center shrink-0">
                                         {member.photoUrl ? (
-{/* snyk-ignore  */}
+
                                             <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover" />
                                         ) : (
                                             <ImageIcon className="h-6 w-6 text-muted-foreground" />

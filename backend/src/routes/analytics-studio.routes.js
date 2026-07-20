@@ -9,7 +9,12 @@ const moment = require('moment');
 // Accepts ?metric=XXX & dimension=YYY & startDate=ZZZ & endDate=AAA
 router.get('/', authenticate, checkPermission('ANALYTICS'), async (req, res) => {
     try {
-        const { metric, dimension, startDate, endDate } = req.query;
+        let { metric, dimension, startDate, endDate } = req.query;
+    if (metric !== undefined) metric = Array.isArray(metric) ? metric[0] : String(metric);
+    if (dimension !== undefined) dimension = Array.isArray(dimension) ? dimension[0] : String(dimension);
+    if (startDate !== undefined) startDate = Array.isArray(startDate) ? startDate[0] : String(startDate);
+    if (endDate !== undefined) endDate = Array.isArray(endDate) ? endDate[0] : String(endDate);
+
 
         // Default Date Range: Last 30 Days if not provided
         const fromDate = startDate ? new Date(startDate) : moment().subtract(30, 'days').toDate();

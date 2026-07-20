@@ -12,8 +12,10 @@ const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE
  */
 router.get('/', optionalAuth, async (req, res, next) => {
     try {
-        const { q } = req.query;
-        if (!q || q.length < 2) {
+        let { q } = req.query;
+    if (q !== undefined) q = Array.isArray(q) ? q[0] : String(q);
+
+        if (!q || String(q || "").length < 2) {
             return res.json({ courses: [], instructors: [] });
         }
 
