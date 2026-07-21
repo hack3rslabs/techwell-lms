@@ -86,7 +86,7 @@ export default function PipelineKanbanPage() {
             // API Call to update status
             const candidate = candidates.find(c => c.id === draggableId)
             if (candidate) {
-                await api.patch(`/campus-drives/${params.id}/pipeline/${candidate.userId}`, {
+                await api.patch(`/campus-drives/${params.id}/pipeline/${candidate.id}`, {
                     status: newStatus
                 })
             }

@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = 'E:/FinalProjects/techwell-lms/backend/prisma/schema.prisma';
 let content = fs.readFileSync(path, 'utf8');
 
+// eslint-disable-next-line no-regex-spaces
 const regex = /  taxPercentage     Float    @default\(0\)\n  customer          Customer/m;
 const replacement = `  taxPercentage     Float    @default(0)
   taxAmount         Float    @default(0)

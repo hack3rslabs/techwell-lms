@@ -6,6 +6,9 @@ const path = require('path');
 const fs = require('fs');
 
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 // Configure Multer for local uploads
@@ -58,7 +61,7 @@ router.get('/', authenticate, checkPermission('ADMIN'), async (req, res, next) =
  * @desc    Upload a new secure document
  * @access  Private (Admin)
  */
-router.post('/', authenticate, checkPermission('ADMIN'), upload.single('file'), async (req, res, next) => {
+router.post('/', authenticate, checkPermission('ADMIN'), uploadLimiter, upload.single('file'), async (req, res, next) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'PDF file is required' });

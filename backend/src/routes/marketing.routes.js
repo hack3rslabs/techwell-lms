@@ -17,6 +17,9 @@ router.use(authorize('SUPER_ADMIN', 'ADMIN', 'MANAGER'));
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
+
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
 
 const uploadDir = path.join(__dirname, '../../uploads/marketing');
 if (!fs.existsSync(uploadDir)) {
@@ -32,7 +35,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/landing-pages/assets/upload', upload.single('image'), (req, res) => {
+router.post('/landing-pages/assets/upload', uploadLimiter, upload.single('image'), (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });

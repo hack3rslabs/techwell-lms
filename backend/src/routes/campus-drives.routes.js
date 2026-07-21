@@ -20,7 +20,10 @@ const campusDriveSchema = z.object({
     employerId: z.string().optional(),
     participatingCompanies: z.array(z.any()).optional().default([]),
     customFormFields: z.array(z.any()).optional().default([]),
-    brandingAssets: z.record(z.any()).optional().default({})
+    brandingAssets: z.record(z.any()).optional().default({}),
+    hostType: z.string().optional().default('TECHWELL'),
+    hostName: z.string().optional().nullable(),
+    hostLogo: z.string().optional().nullable()
 });
 
 // Get all campus drives (Admin/Employer/Institute view based on role)
@@ -80,7 +83,10 @@ router.post('/', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'I
                 employerId,
                 participatingCompanies: validatedData.participatingCompanies,
                 customFormFields: validatedData.customFormFields,
-                brandingAssets: validatedData.brandingAssets
+                brandingAssets: validatedData.brandingAssets,
+                hostType: validatedData.hostType,
+                hostName: validatedData.hostName,
+                hostLogo: validatedData.hostLogo
             }
         });
         res.status(201).json(drive);
@@ -213,8 +219,26 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/students', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), async (req, res) => {
     try {
         const driveId = req.params.id;
+        let queryFilter = { driveId };
+
+        if (req.user.role === 'EMPLOYER') {
+            const employerProfile = await prisma.employerProfile.findUnique({
+                where: { userId: req.user.id }
+            });
+            if (employerProfile) {
+                // targetRole stores the company name for multi-company melas
+                queryFilter.targetRole = { startsWith: employerProfile.companyName };
+            }
+        } else if (['INSTITUTE_OWNER', 'INSTITUTE_ADMIN', 'COLLEGE_ADMIN'].includes(req.user.role)) {
+            const userInst = await prisma.user.findUnique({ where: { id: req.user.id }, include: { institute: true } });
+            if (userInst?.institute?.name) {
+                // Assuming student's user.college maps to institute name
+                queryFilter.user = { college: userInst.institute.name };
+            }
+        }
+
         const students = await prisma.campusDriveStudent.findMany({
-            where: { driveId },
+            where: queryFilter,
             include: {
                 user: {
                     select: { name: true, email: true, phone: true, college: true }
@@ -229,15 +253,15 @@ router.get('/:id/students', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 
 });
 
 // PATCH Pipeline Status
-router.patch('/:id/pipeline/:userId', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), async (req, res) => {
+router.patch('/:id/pipeline/:studentId', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), async (req, res) => {
     try {
-        const { id, userId } = req.params;
+        const { id, studentId } = req.params;
         const { status } = req.body;
         
         if (!status) return res.status(400).json({ error: 'Status is required' });
 
         const updated = await prisma.campusDriveStudent.update({
-            where: { driveId_userId: { driveId: id, userId } },
+            where: { id: studentId },
             data: { status }
         });
         

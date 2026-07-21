@@ -178,6 +178,7 @@ app.use('/api/employer-requests', require('./routes/employer-requests.routes'));
 app.use('/api/messages', require('./routes/messages.routes'));
 app.use('/api/course-categories', require('./routes/course-categories.routes'));
 app.use('/api/resume', require('./routes/resume.routes'));
+app.use('/api/forum', require('./routes/forum.routes'));
 app.use('/api/skillcasts', require('./routes/skillcastRoutes'));
 app.use('/api/coupons', require('./routes/coupons.routes'));
 app.use('/api/candidates', require('./routes/candidate.routes'));

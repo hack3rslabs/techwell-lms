@@ -44,7 +44,10 @@ export default function SettingsPage() {
         supportEmail: '',
         primaryColor: '#2563eb',
         isMaintenanceMode: false,
-        isTestMode: false
+        isTestMode: false,
+        showAffiliate: false,
+        affiliateUrl: '',
+        affiliateTitle: ''
     })
 
     async function fetchProfile() {
@@ -301,6 +304,41 @@ export default function SettingsPage() {
                                     disabled={!hasPermission('SETTINGS', 'update')}
                                 />
                             </div>
+
+                            <div className="flex items-center justify-between border p-4 rounded-lg mt-4">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Enable Affiliate Link in Footer</Label>
+                                    <p className="text-sm text-muted-foreground">Show an affiliate link in the website footer.</p>
+                                </div>
+                                <Switch
+                                    checked={systemSettings.showAffiliate}
+                                    onCheckedChange={(checked) => setSystemSettings({ ...systemSettings, showAffiliate: checked })}
+                                    disabled={!hasPermission('SETTINGS', 'update')}
+                                />
+                            </div>
+                            
+                            {systemSettings.showAffiliate && (
+                                <div className="grid grid-cols-2 gap-4 mt-2">
+                                    <div className="grid gap-2">
+                                        <Label>Affiliate Link Title</Label>
+                                        <Input
+                                            placeholder="e.g. Become an Affiliate"
+                                            value={systemSettings.affiliateTitle || ''}
+                                            onChange={e => setSystemSettings({ ...systemSettings, affiliateTitle: e.target.value })}
+                                            disabled={!hasPermission('SETTINGS', 'update')}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label>Affiliate Link URL</Label>
+                                        <Input
+                                            placeholder="e.g. https://affiliate.techwell.com"
+                                            value={systemSettings.affiliateUrl || ''}
+                                            onChange={e => setSystemSettings({ ...systemSettings, affiliateUrl: e.target.value })}
+                                            disabled={!hasPermission('SETTINGS', 'update')}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                             
                             <div className="flex items-center justify-between border p-4 rounded-lg mt-4">
                                 <div className="space-y-0.5">

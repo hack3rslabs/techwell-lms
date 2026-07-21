@@ -335,5 +335,54 @@ ${JSON.stringify(resumeData, null, 2)}
     }
 });
 
+/**
+ * @route   POST /api/resume/suggest-edits/:driveId
+ * @desc    Suggest real-time resume edits against a Campus Drive's skills
+ * @access  Private
+ */
+router.post('/suggest-edits/:driveId', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const driveId = req.params.driveId;
+        const { resumeData } = req.body;
+
+        if (!resumeData) {
+            return res.status(400).json({ error: "resumeData is required" });
+        }
+
+        const drive = await prisma.campusDrive.findUnique({
+            where: { id: driveId }
+        });
+
+        if (!drive) {
+            return res.status(404).json({ error: "Campus Drive not found" });
+        }
+
+        const aiService = require('../services/ai.service');
+        const prompt = `Act as an ATS Resume Optimization Expert. 
+A candidate is applying for the Campus Drive: "${drive.title}".
+Target Job Role: "${drive.jobRole || 'Not specified'}"
+Required Skills: ${drive.skills?.join(', ') || 'Not specified'}
+
+Analyze the provided resume data and suggest 3-5 specific, actionable edits to improve their chances of being shortlisted for this drive. 
+Focus on missing keywords, how to rephrase experience to match the required skills, and any gaps in their technical stack.
+
+Resume Data:
+${JSON.stringify(resumeData, null, 2)}
+
+Return ONLY a JSON array of strings containing the suggestions. 
+Example: ["Add 'React' to your Skills section as it is required.", "Rephrase project X to highlight teamwork..."]`;
+
+        const responseText = await aiService.generate(prompt);
+        let cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const suggestions = JSON.parse(cleanJson);
+
+        return res.status(200).json({ suggestions });
+    } catch (error) {
+        console.error('Suggest Resume Edits Error:', error);
+        return res.status(500).json({ error: 'Failed to generate suggestions' });
+    }
+});
+
 module.exports = router;
 

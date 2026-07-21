@@ -665,6 +665,30 @@ Return ONLY a JSON array with:
         const strengths = this.generateStrengths(technicalScore, communicationScore, confidenceScore, interview.domain);
         const weaknesses = this.generateWeaknesses(technicalScore, communicationScore, starMethodScore, interview.domain);
         const recommendations = this.generateRecommendations(technicalScore, starMethodScore, interview.domain);
+        
+        // Auto-recommend courses if student fails
+        if (overallScore < 50 || technicalScore < 50) {
+            try {
+                const suggestedCourses = await prisma.course.findMany({
+                    where: {
+                        OR: [
+                            { title: { contains: interview.domain, mode: 'insensitive' } },
+                            { title: { contains: interview.technology || interview.domain, mode: 'insensitive' } }
+                        ],
+                        status: 'PUBLISHED' // Assumes PUBLISHED is the active status
+                    },
+                    take: 3,
+                    select: { id: true, title: true }
+                });
+                if (suggestedCourses.length > 0) {
+                    recommendations.push("Recommended Courses for improvement:");
+                    suggestedCourses.forEach(c => recommendations.push(`- ${c.title}`));
+                }
+            } catch (e) {
+                console.error('Error fetching course recommendations:', e);
+            }
+        }
+
         const aiInsights = this.generateAIInsights(interview.role, interview.domain, overallScore, technicalScore);
 
         const detailedAnalysis = `Market Readiness: ${marketReadinessScore}%\nBased on your performance, you have a ${marketReadinessScore > 75 ? 'High' : marketReadinessScore > 50 ? 'Moderate' : 'Low'} probability of clearing screening rounds for this role.\nYour pacing and confidence markers indicate ${confidenceScore > 70 ? 'strong executive presence' : 'room for improvement in delivery'}.`;

@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { authenticate, checkPermission } = require('../middleware/auth');
@@ -39,7 +42,7 @@ const upload = multer({
  * @desc    Upload an event banner image
  * @access  Private/Admin
  */
-router.post('/upload-image', authenticate, checkPermission('LEADS'), upload.single('image'), (req, res) => {
+router.post('/upload-image', authenticate, checkPermission('LEADS'), uploadLimiter, upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No image file provided' });
     }

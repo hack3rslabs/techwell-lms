@@ -43,7 +43,10 @@ router.get('/public', async (req, res, next) => {
                 address: true,
                 isMaintenanceMode: true,
                 isTestMode: true,
-                showOurTeam: true
+                showOurTeam: true,
+                showAffiliate: true,
+                affiliateUrl: true,
+                affiliateTitle: true
             }
         });
         res.json(settings);

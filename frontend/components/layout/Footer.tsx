@@ -6,16 +6,13 @@ import { usePathname } from "next/navigation"
 import { Mail, MapPin, Phone, Instagram, Linkedin, Youtube, ExternalLink, Star, ArrowRight, ChevronRight, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "react-hot-toast"
 import api from "@/lib/api"
 
 const platformLinks = [
     { label: 'Browse Courses', href: '/courses' },
-    { label: 'Live Classes', href: '/live-classes' },
-    { label: 'Assessments', href: '/assessments' },
-    { label: 'Projects', href: '/projects' },
-    { label: 'Community Forum', href: '/forum' },
+    { label: 'Community Forum', href: '/community' },
     { label: "AI Interview Prep", href: "/interviews" },
     { label: "Resume Builder", href: "/resume-builder" },
     { label: "Jobs & Placements", href: "/jobs" },
@@ -52,6 +49,12 @@ export function Footer() {
     const [email, setEmail] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
 
+    const [settings, setSettings] = useState<any>(null)
+
+    useEffect(() => {
+        api.get('/settings/public').then(res => setSettings(res.data)).catch(console.error)
+    }, [])
+
     const handleSubscribe = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!email) return
@@ -73,6 +76,14 @@ export function Footer() {
 
     if (pathname?.startsWith("/admin")) {
         return null
+    }
+
+    const finalCompanyLinks = [...companyLinks]
+    if (settings?.showAffiliate && settings?.affiliateUrl) {
+        finalCompanyLinks.push({ 
+            label: settings.affiliateTitle || 'Affiliate Program', 
+            href: settings.affiliateUrl 
+        })
     }
 
     return (
@@ -194,7 +205,7 @@ export function Footer() {
 
                     {/* Columns 3, 4, 5: Links */}
                     <FooterLinkGroup title="Platform" links={platformLinks} />
-                    <FooterLinkGroup title="Company" links={companyLinks} />
+                    <FooterLinkGroup title="Company" links={finalCompanyLinks} />
                     <FooterLinkGroup title="Support" links={policyLinks} />
                 </div>
 

@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 const { PrismaClient } = require('@prisma/client');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 const multer = require('multer');
@@ -284,7 +287,7 @@ router.post(
     '/resources/pdf',
     authenticate,
     authorize('SUPER_ADMIN', 'ADMIN'),
-    upload.single('file'),
+    uploadLimiter, upload.single('file'),
     async (req, res) => {
         try {
             const {

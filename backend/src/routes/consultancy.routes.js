@@ -12,6 +12,9 @@ const {
 const { authenticate, authorize, checkPermission } = require('../middleware/auth');
 
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 
 // -------------------------------------------------------------
 // PUBLIC ROUTES
@@ -54,7 +57,7 @@ const upload = multer({
 
 router.get('/public/invite/:token', verifyInvitation);
 router.post('/public/invite/:token/status', require('../controllers/consultancy.controller').updatePublicStatus);
-router.post('/public/invite/:token/upload', upload.single('file'), require('../controllers/consultancy.controller').uploadCandidateDocument);
+router.post('/public/invite/:token/upload', uploadLimiter, upload.single('file'), require('../controllers/consultancy.controller').uploadCandidateDocument);
 router.post('/public/invite/:token/submit', submitAgreement);
 
 // -------------------------------------------------------------

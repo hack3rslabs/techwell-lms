@@ -6,6 +6,9 @@ const path = require('path');
 const fs = require('fs');
 
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 // Configure storage for ticket attachments
@@ -33,7 +36,7 @@ const upload = multer({
  * @desc    Create a new support ticket
  * @access  Private
  */
-router.post('/', authenticate, upload.single('attachment'), async (req, res, next) => {
+router.post('/', authenticate, uploadLimiter, upload.single('attachment'), async (req, res, next) => {
     try {
         const { subject, description, priority, category } = req.body;
         const attachmentUrl = req.file ? `/uploads/tickets/${req.file.filename}` : null;
@@ -168,7 +171,7 @@ router.get('/:id', authenticate, checkPermission('TICKETS'), async (req, res, ne
  * @desc    Add a reply to a ticket
  * @access  Private
  */
-router.post('/:id/reply', authenticate, checkPermission('TICKETS'), upload.single('attachment'), async (req, res, next) => {
+router.post('/:id/reply', authenticate, checkPermission('TICKETS'), uploadLimiter, upload.single('attachment'), async (req, res, next) => {
     try {
         const { message } = req.body;
         const attachmentUrl = req.file ? `/uploads/tickets/${req.file.filename}` : null;
