@@ -183,6 +183,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
         },
         { label: "Franchise Resources", icon: Megaphone, href: "/admin/franchise/resources", permission: "ADMIN", group: "Finance & Administration" },
         { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Finance & Administration" },
+        { label: "Blogs", icon: PenLine, href: "/admin/blogs/dashboard", permission: "BLOGS", group: "Finance & Administration" },
         { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Finance & Administration" },
         { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Finance & Administration" },
         { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS", group: "Finance & Administration" },
