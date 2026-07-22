@@ -90,7 +90,7 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             ]
         },
         { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)" },
-        { label: "Sales Pipelines", icon: Briefcase, href: "/admin/crm/pipelines", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)" },
+
         { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Sales & Revenue (CRM)" },
         { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Sales & Revenue (CRM)" },
         { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER", group: "Sales & Revenue (CRM)" },

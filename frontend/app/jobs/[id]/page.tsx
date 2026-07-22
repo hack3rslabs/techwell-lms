@@ -27,6 +27,7 @@ interface JobDetail {
     experience: string
     description: string
     requirements: string | null
+    skills?: string | string[] | null
     createdAt: string
     employer: {
         id: string
@@ -334,9 +335,9 @@ dangerouslySetInnerHTML={{
                             <div>
                                 <h3 className="font-semibold mb-3">Key Skills</h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {['React', 'Next.js', 'Typescript', 'Node.js', 'PostgreSQL'].map(skill => (
-                                        <Badge key={skill} variant="secondary" className="px-3 py-1 font-normal text-sm">
-                                            {skill}
+                                    {(job.skills ? (typeof job.skills === 'string' ? job.skills.split(',') : Array.isArray(job.skills) ? job.skills : []) : []).map(skill => (
+                                        <Badge key={skill.trim()} variant="secondary" className="px-3 py-1 font-normal text-sm">
+                                            {skill.trim()}
                                         </Badge>
                                     ))}
                                 </div>

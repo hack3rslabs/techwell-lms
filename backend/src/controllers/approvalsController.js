@@ -146,19 +146,38 @@ async function handleEntityCreation(request) {
                 }
             });
         }
+    } else if (request.entityType === 'INSTITUTE' || request.entityType === 'COLLEGE') {
+        const existingInstitute = await prisma.institute.findFirst({ where: { email: request.requesterEmail } });
+        if (!existingInstitute) {
+            const newInstitute = await prisma.institute.create({
+                data: {
+                    name: payload.instituteName || 'Unknown Institute',
+                    type: request.entityType === 'COLLEGE' ? 'COLLEGE' : 'TRAINING_INSTITUTE',
+                    email: request.requesterEmail,
+                    phone: request.requesterPhone,
+                    status: 'APPROVED',
+                    contactPerson: request.requesterName
+                }
+            });
+            // Update the user to belong to this institute
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { instituteId: newInstitute.id }
+            });
+        }
     } else if (request.entityType === 'FRANCHISE') {
-        const existingFranchise = await prisma.franchise.findUnique({ where: { email: request.requesterEmail } });
+        const existingFranchise = await prisma.franchise.findFirst({ where: { email: request.requesterEmail } });
         if (!existingFranchise) {
             const newFranchise = await prisma.franchise.create({
                 data: {
-                    name: payload.franchiseName || request.requesterName,
+                    name: payload.franchiseName || 'Unknown Franchise',
                     email: request.requesterEmail,
                     phone: request.requesterPhone,
-                    contactPerson: request.requesterName,
                     status: 'ACTIVE',
-                    approvedById: request.approvedByAdminId
+                    contactPerson: request.requesterName
                 }
             });
+            // Update the user to belong to this franchise
             await prisma.user.update({
                 where: { id: user.id },
                 data: { franchiseId: newFranchise.id }
