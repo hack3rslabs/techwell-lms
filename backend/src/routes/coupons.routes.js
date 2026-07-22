@@ -22,7 +22,8 @@ const adminOrCoursePermission = (accessType) => (req, res, next) => {
 
 const serializeCoupon = (coupon) => ({
     ...coupon,
-
+    couponName: coupon.code,
+    discountPercentage: coupon.discountPercent,
     courseIds:
         coupon.courses?.map((item) => item.id) || [],
 
@@ -39,7 +40,7 @@ const findActiveCouponForCourse = async (couponName, courseId) => {
 
     const coupon = await prisma.coupon.findFirst({
         where: {
-            couponName: {
+            code: {
                 equals: normalizedName,
                 mode: 'insensitive'
             },
@@ -159,7 +160,7 @@ router.post(
 
             const existing = await prisma.coupon.findFirst({
                 where: {
-                    couponName: {
+                    code: {
                         equals: normalizedName,
                         mode: 'insensitive'
                     }
@@ -193,9 +194,9 @@ router.post(
 
             const coupon = await prisma.coupon.create({
                 data: {
-                    couponName: normalizedName,
+                    code: normalizedName,
 
-                    discountPercentage: discount,
+                    discountPercent: discount,
 
                     expiryDate: expiry,
 
@@ -334,9 +335,9 @@ router.post(
             res.json({
                 coupon: {
                     id: coupon.id,
-                    couponName: coupon.couponName,
+                    couponName: coupon.code,
                     discountPercentage:
-                        coupon.discountPercentage,
+                        coupon.discountPercent,
                     expiryDate: coupon.expiryDate
                 },
 
