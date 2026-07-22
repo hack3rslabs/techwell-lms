@@ -249,54 +249,6 @@ router.post('/:id/click', async (req, res, next) => {
 });
 
 /**
- * @route   GET /api/blogs/analytics/summary
- * @desc    Get overall blog analytics for the admin dashboard
- * @access  Private/Admin
- */
-router.get('/analytics/summary', authenticate, async (req, res, next) => {
-    try {
-        const [totalPosts, publishedPosts, draftPosts, topPosts, totalViews, totalLeads] = await Promise.all([
-            prisma.blogPost.count(),
-            prisma.blogPost.count({ where: { status: 'PUBLISHED' } }),
-            prisma.blogPost.count({ where: { status: 'DRAFT' } }),
-            prisma.blogPost.findMany({
-                where: { status: 'PUBLISHED' },
-                orderBy: { views: 'desc' },
-                take: 5,
-                select: { id: true, title: true, slug: true, views: true, ctr: true, leadsGenerated: true, category: true, publishedAt: true }
-            }),
-            prisma.blogPost.aggregate({ _sum: { views: true } }),
-            prisma.blogPost.aggregate({ _sum: { leadsGenerated: true } }),
-        ]);
-
-        // Category breakdown
-        const categoryBreakdown = await prisma.blogPost.groupBy({
-            by: ['category'],
-            where: { status: 'PUBLISHED', category: { not: null } },
-            _count: { _all: true },
-            _sum: { views: true },
-            orderBy: { _sum: { views: 'desc' } },
-        });
-
-        res.json({
-            totalPosts,
-            publishedPosts,
-            draftPosts,
-            totalViews: totalViews._sum.views || 0,
-            totalLeads: totalLeads._sum.leadsGenerated || 0,
-            topPosts,
-            categoryBreakdown: categoryBreakdown.map(c => ({
-                category: c.category || 'Uncategorized',
-                posts: c._count._all,
-                views: c._sum.views || 0
-            }))
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
  * @route   POST /api/blogs
  * @desc    Create blog post
  * @access  Private/Admin

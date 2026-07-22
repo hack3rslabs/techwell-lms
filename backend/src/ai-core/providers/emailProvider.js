@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const xss = require('xss');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -28,7 +29,7 @@ async function sendEmail(to, subject, htmlBody) {
       }
     });
 
-    const sanitizedBody = typeof htmlBody === 'object' ? "Internal Application Message" : String(htmlBody).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const sanitizedBody = typeof htmlBody === 'object' ? "Internal Application Message" : xss(String(htmlBody));
     const info = await transporter.sendMail({
       from: config.from || config.user,
       to: to,

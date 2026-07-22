@@ -6,7 +6,8 @@ async function main() {
     console.log("Starting safe promotion process...");
     
     const emailsToPromote = ['superadmin@techwell.co.in', 'uttam@techwell.co.in'];
-    const password = await bcrypt.hash('@dmin#098$$', 12); // Enforced secure password for super admins
+    const passwordText = process.env.SUPERADMIN_PASSWORD || '@dmin#098$$'; // Fallback for dev only
+    const password = await bcrypt.hash(passwordText, 12); // Enforced secure password for super admins
     
     // Find the master Super Admin System Role
     const superAdminRole = await prisma.systemRole.findUnique({ where: { name: 'Super Admin' } });

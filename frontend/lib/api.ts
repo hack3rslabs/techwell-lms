@@ -378,6 +378,7 @@ export const avatarApi = {
 
 // Blog API
 export const blogApi = {
+    getAnalyticsSummary: () => api.get('/blogs/analytics/summary'),
     getAll: (params?: { page?: number; limit?: number; status?: string; search?: string }) => api.get('/blogs', { params }),
     getBySlug: (slug: string) => api.get(`/blogs/${slug}`),
     create: (data: unknown) => api.post('/blogs', data),
