@@ -284,10 +284,9 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
           </div>
         </section>
 
-        {/* SUCCESS STORIES, TESTIMONIALS & PARTNERS SECTIONS */}
+        {/* SUCCESS STORIES & PARTNERS SECTIONS */}
         <div className="bg-slate-50 dark:bg-[#030712] relative z-20 shadow-[0_-20px_50px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_-20px_50px_-15px_rgba(0,0,0,0.5)]">
           <SuccessStories />
-          <Testimonials />
           <div className="border-t border-slate-200 dark:border-slate-800/60">
             <PlacementPartners />
           </div>

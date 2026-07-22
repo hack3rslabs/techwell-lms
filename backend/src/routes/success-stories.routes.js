@@ -6,6 +6,9 @@ const path = require('path');
 const fs = require('fs');
 
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 // Configure Multer for local uploads
@@ -75,7 +78,7 @@ router.get('/admin', authenticate, async (req, res, next) => {
  * @desc    Create a new success story
  * @access  Private (Admin)
  */
-router.post('/', authenticate, upload.single('image'), async (req, res, next) => {
+router.post('/', authenticate, uploadLimiter, upload.single('image'), async (req, res, next) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Image file is required' });
@@ -105,7 +108,7 @@ router.post('/', authenticate, upload.single('image'), async (req, res, next) =>
  * @desc    Update a success story
  * @access  Private (Admin)
  */
-router.put('/:id', authenticate, upload.single('image'), async (req, res, next) => {
+router.put('/:id', authenticate, uploadLimiter, upload.single('image'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { url, altText, isActive, order } = req.body;

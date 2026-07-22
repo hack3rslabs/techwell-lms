@@ -14,6 +14,13 @@ const upload = multer({ dest: 'uploads/temp/' });
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(GEMINI_KEY || 'MISSING_KEY');
+const rateLimit = require('express-rate-limit');
+
+const uploadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { error: 'Too many resumes uploaded from this IP, please try again later' }
+});
 
 /**
  * @route   GET /api/candidates
@@ -298,7 +305,7 @@ router.post('/onboard', authenticate, async (req, res, next) => {
  * @desc    Upload & Parse resume using Gemini, auto-link to Users or CRM Leads
  * @access  Private (Admin/Staff)
  */
-router.post('/parse-upload', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'STAFF'), upload.single('resume'), async (req, res, next) => {
+router.post('/parse-upload', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'STAFF'), uploadLimiter, upload.single('resume'), async (req, res, next) => {
     let tempPath = null;
     try {
         if (!req.file) {

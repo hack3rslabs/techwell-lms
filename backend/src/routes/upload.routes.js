@@ -5,6 +5,9 @@ const fs = require('fs');
 const { authenticate, authorize, checkPermission, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, '../../uploads');
@@ -47,7 +50,7 @@ const upload = multer({
  * @desc    Upload a single file
  * @access  Private
  */
-router.post('/', authenticate, upload.single('file'), (req, res) => {
+router.post('/', authenticate, uploadLimiter, upload.single('file'), (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });

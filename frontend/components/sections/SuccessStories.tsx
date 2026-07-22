@@ -1,41 +1,36 @@
-import Image from "next/image"
-import { Building2, Quote, ArrowRight } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+"use client"
 
-const stories = [
-  {
-    id: 1,
-    name: "Aisha Sharma",
-    role: "SDE-1",
-    company: "Microsoft",
-    image: "https://i.pravatar.cc/150?u=aisha",
-    quote: "The intensive Full-Stack bootcamp at Techwell completely transformed my career trajectory. The mock interviews and placement drive access were exactly what I needed to land my dream job at Microsoft.",
-    techStack: ["React", "Node.js", "Azure"],
-    color: "from-slate-300/30 to-slate-500/20"
-  },
-  {
-    id: 2,
-    name: "Rohan Patel",
-    role: "Cyber Security Analyst",
-    company: "Palo Alto Networks",
-    image: "https://i.pravatar.cc/150?u=rohan",
-    quote: "Techwell's Cyber Security RTraining program gave me hands-on experience with real-world enterprise architectures. The direct corporate referrals they provided were a game-changer for my career.",
-    techStack: ["PenTesting", "Network Sec", "Python"],
-    color: "from-gray-300/30 to-gray-500/20"
-  },
-  {
-    id: 3,
-    name: "Priya Desai",
-    role: "Senior Product Manager",
-    company: "Atlassian",
-    image: "https://i.pravatar.cc/150?u=priya",
-    quote: "I transitioned from a non-tech background into Product Management seamlessly. Techwell's dedicated career coach and AI resume builder helped me showcase my transferable skills perfectly.",
-    techStack: ["Agile", "Jira", "Strategy"],
-    color: "from-zinc-300/30 to-zinc-500/20"
-  }
-]
+import * as React from "react"
+import { useState, useEffect } from "react"
+import { ArrowRight, Loader2 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import api from "@/lib/api"
+
+import Image from "next/image"
 
 export function SuccessStories() {
+  const [stories, setStories] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const backendBase = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"
+
+  useEffect(() => {
+      const fetchStories = async () => {
+          try {
+              const res = await api.get("/success-stories")
+              const activeStories = res.data
+                  .filter((s: any) => s.isActive)
+                  .sort((a: any, b: any) => a.order - b.order)
+                  .slice(0, 6)
+              setStories(activeStories)
+          } catch (err) {
+              console.error("Failed to fetch success stories", err)
+          } finally {
+              setLoading(false)
+          }
+      }
+      fetchStories()
+  }, [])
+
   return (
     <section className="py-24 relative overflow-hidden bg-white dark:bg-black">
       {/* Background glow effects - Grayscale */}
@@ -53,53 +48,41 @@ export function SuccessStories() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {stories.map((story) => (
-            <div 
-              key={story.id} 
-              className="group relative bg-black dark:bg-white backdrop-blur-xl border border-slate-800 dark:border-slate-200 rounded-3xl p-8 hover:-translate-y-2 transition-all duration-500 shadow-xl hover:shadow-2xl"
-            >
-              {/* Card gradient background */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${story.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl -z-10`}></div>
-              
-              <Quote className="w-10 h-10 text-white/20 dark:text-black/20 absolute top-8 right-8" />
-              
-              <div className="flex items-center gap-4 mb-6">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white/20 dark:border-black/20 shadow-md group-hover:scale-105 transition-transform duration-500">
-                  <Image 
-                    src={story.image} 
-                    alt={story.name} 
-                    fill 
-                    className="object-cover"
-                    sizes="64px"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg text-white dark:text-black">{story.name}</h3>
-                  <div className="flex items-center gap-1 text-sm font-medium text-slate-300 dark:text-slate-600">
-                    <Building2 className="w-3.5 h-3.5" />
-                    {story.role} at {story.company}
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-slate-300 dark:text-slate-700 mb-8 leading-relaxed relative z-10 italic font-medium">
-                "{story.quote}"
-              </p>
-
-              <div className="flex flex-wrap gap-2 mt-auto">
-                {story.techStack.map((tech, idx) => (
-                  <span 
-                    key={idx} 
-                    className="text-xs font-bold px-3 py-1 bg-white/10 dark:bg-black/5 text-white dark:text-black rounded-full border border-white/20 dark:border-black/20"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
+        {loading ? (
+            <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ))}
-        </div>
+        ) : stories.length === 0 ? (
+            <div className="text-center py-12 opacity-50">
+                <p>New success stories are being updated.</p>
+            </div>
+        ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {stories.map((story) => {
+                const imageUrl = story.imagePath?.startsWith('http') ? story.imagePath : `${backendBase}${story.imagePath}`
+                return (
+                <div 
+                  key={story.id} 
+                  className="group relative bg-black dark:bg-white backdrop-blur-xl border border-slate-800 dark:border-slate-200 rounded-3xl overflow-hidden hover:-translate-y-2 transition-all duration-500 shadow-xl hover:shadow-2xl aspect-[4/3]"
+                >
+                        <div className="relative h-full w-full">
+                            <Image 
+                                src={imageUrl} 
+                                alt={story.altText || 'Success Story'}
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                className="object-cover transition-transform duration-700 hover:scale-105"
+                            />
+                        </div>
+                    {story.altText && (
+                        <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white">
+                            <p className="font-semibold text-sm drop-shadow-md">{story.altText}</p>
+                        </div>
+                    )}
+                </div>
+              )})}
+            </div>
+        )}
 
         <div className="mt-16 flex justify-center">
           <a href="/placements" className="inline-flex items-center gap-2 text-black dark:text-white font-bold hover:gap-4 transition-all group">

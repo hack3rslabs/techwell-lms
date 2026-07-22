@@ -1230,6 +1230,9 @@ model SystemSettings {
   updatedAt             DateTime @updatedAt
   showOurTeam           Boolean  @default(false)
   enableRegistration    Boolean  @default(true)
+  showAffiliate         Boolean  @default(false)
+  affiliateUrl          String?
+  affiliateTitle        String?
   razorpayKeyId         String?
   razorpayKeySecret     String?
   smtpHost              String?

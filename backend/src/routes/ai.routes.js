@@ -5,6 +5,9 @@ const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -268,7 +271,7 @@ router.post('/generate-from-jd', authenticate, authorize(['ADMIN', 'SUPER_ADMIN'
  * @route   POST /api/ai/parse-resume
  * @desc    Extracts structured data from a PDF resume using Gemini AI
  */
-router.post('/parse-resume', authenticate, upload.single('resume'), async (req, res) => {
+router.post('/parse-resume', authenticate, uploadLimiter, upload.single('resume'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "No resume file provided" });
         

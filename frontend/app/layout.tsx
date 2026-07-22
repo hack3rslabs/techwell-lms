@@ -101,6 +101,22 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col no-scrollbar`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Techwell",
+              "url": "https://techwell.co.in",
+              "logo": "https://techwell.co.in/logo-dark.png",
+              "sameAs": [
+                "https://www.linkedin.com/company/techwell",
+                "https://twitter.com/techwell_edu"
+              ]
+            })
+          }}
+        />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <BehaviorTrackingProvider>

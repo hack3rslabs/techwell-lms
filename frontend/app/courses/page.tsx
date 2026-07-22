@@ -14,5 +14,30 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-    return <CourseList />
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Web Development Course'
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Data Science Certification'
+            }
+        ]
+    }
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <CourseList />
+        </>
+    )
 }

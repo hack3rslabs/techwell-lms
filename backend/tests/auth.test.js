@@ -3,6 +3,7 @@ const express = require('express');
 
 // Create a basic express app instance to test routes
 const app = express();
+app.disable('x-powered-by');
 app.use(express.json());
 
 // Mocking the DB and Services
@@ -49,11 +50,12 @@ app.use('/api/auth', authRoutes);
 
 describe('Authentication API Tests', () => {
     test('POST /api/auth/login - Success', async () => {
+        const testToken = process.env.TEST_TOKEN || 'test-fallback-token';
         const response = await request(app)
             .post('/api/auth/login')
             .send({
                 email: 'test@example.com',
-                password: process.env.TEST_PASSWORD || 'dummy-test-password-123!'
+                password: testToken
             });
 
         expect(response.status).toBe(200);

@@ -8,6 +8,9 @@ const path = require('path');
 const fs = require('fs');
 
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many uploads' } });
+
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
 
@@ -91,7 +94,7 @@ router.post('/upgrade-test', authenticate, async (req, res, next) => {
  * @desc    Upload profile picture
  * @access  Private
  */
-router.post('/profile-image', authenticate, upload.single('avatar'), async (req, res, next) => {
+router.post('/profile-image', authenticate, uploadLimiter, upload.single('avatar'), async (req, res, next) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No image file uploaded' });
         const avatarUrl = `/uploads/avatars/${req.file.filename}`;
