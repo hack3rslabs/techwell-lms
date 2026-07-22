@@ -41,7 +41,7 @@ export default function FranchiseDashboard() {
             </Button>
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Franchise Management</h1>
-                {hasPermission('FRANCHISES', 'create') && (
+                {hasPermission('FRANCHISE', 'create') && (
                     <Link href="/admin/franchise/registration">
                         <Button>Register New Franchise</Button>
                     </Link>
@@ -144,7 +144,7 @@ export default function FranchiseDashboard() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            {hasPermission('FRANCHISES', 'update') && (
+                                            {hasPermission('FRANCHISE', 'update') && (
                                                 <Link href={`/admin/franchise/${f.id}`}>
                                                     <Button variant="outline" size="sm">Manage</Button>
                                                 </Link>

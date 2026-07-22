@@ -60,7 +60,7 @@ export default function ReportsPage() {
         fetchReport(activeTab)
     }, [activeTab, fetchReport])
 
-    const canViewFinance = user?.role === "SUPER_ADMIN" || hasPermission("VIEW_FINANCE")
+    const canViewFinance = user?.role === "SUPER_ADMIN" || hasPermission("FINANCE")
     const isEmployer = user?.role === "EMPLOYER"
 
     return (
