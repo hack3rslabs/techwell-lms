@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useState, useEffect } from "react"
-import { ArrowRight, Loader2, ExternalLink } from "lucide-react"
+import { ArrowRight, Loader2, ExternalLink, ChevronRight, ChevronLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import api from "@/lib/api"
 import Image from "next/image"
@@ -10,6 +10,8 @@ import Image from "next/image"
 export function SuccessStories() {
   const [stories, setStories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
+  
   const backendBase = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"
 
   useEffect(() => {
@@ -19,7 +21,6 @@ export function SuccessStories() {
               const activeStories = res.data
                   .filter((s: any) => s.isActive)
                   .sort((a: any, b: any) => a.order - b.order)
-                  .slice(0, 8)
               setStories(activeStories)
           } catch (err) {
               console.error("Failed to fetch success stories", err)
@@ -30,11 +31,18 @@ export function SuccessStories() {
       fetchStories()
   }, [])
 
+  const scroll = (direction: 'left' | 'right') => {
+      if (scrollContainerRef.current) {
+          const scrollAmount = direction === 'left' ? -350 : 350
+          scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+      }
+  }
+
   return (
     <section className="py-24 relative overflow-hidden bg-slate-50 dark:bg-[#0A0A0A]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
             <div className="max-w-2xl">
                 <Badge className="bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-slate-200 border-none font-bold tracking-widest uppercase mb-6 rounded-sm px-3 py-1">
                     Corporate Placements
@@ -47,10 +55,20 @@ export function SuccessStories() {
                 </p>
             </div>
             
-            <a href="/placements" className="hidden md:inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white hover:text-primary transition-colors group">
-                View Placement Directory 
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </a>
+            <div className="flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-2 mr-4">
+                    <button onClick={() => scroll('left')} className="p-3 rounded-full border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+                        <ChevronLeft className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                    </button>
+                    <button onClick={() => scroll('right')} className="p-3 rounded-full border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+                        <ChevronRight className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                    </button>
+                </div>
+                <a href="/placements" className="hidden md:inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white hover:text-primary transition-colors group">
+                    View Placement Directory 
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </a>
+            </div>
         </div>
 
         {loading ? (
@@ -62,7 +80,11 @@ export function SuccessStories() {
                 <p className="text-slate-500 dark:text-slate-400 font-medium tracking-wide">Placements are currently being updated.</p>
             </div>
         ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div 
+                ref={scrollContainerRef}
+                className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 [&::-webkit-scrollbar]:hidden"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
                 {stories.map((story) => {
                     const imageUrl = story.imagePath?.startsWith('http') ? story.imagePath : `${backendBase}${story.imagePath}`
                     const CardWrapper = story.url ? 'a' : 'div'
@@ -72,9 +94,9 @@ export function SuccessStories() {
                     <CardWrapper 
                         key={story.id} 
                         {...wrapperProps as any}
-                        className={`group relative bg-white dark:bg-black border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden transition-all duration-300 shadow-sm hover:shadow-2xl aspect-[4/3] flex flex-col ${story.url ? 'cursor-pointer hover:border-primary/50' : ''}`}
+                        className={`shrink-0 w-[280px] sm:w-[320px] lg:w-[380px] snap-start group relative bg-white dark:bg-black border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden transition-all duration-300 shadow-sm hover:shadow-2xl flex flex-col ${story.url ? 'cursor-pointer hover:border-primary/50' : ''}`}
                     >
-                        <div className="relative flex-1 w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+                        <div className="relative w-full aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-900">
                             {/* Overlay for a more premium muted look until hover */}
                             <div className="absolute inset-0 bg-black/10 dark:bg-black/40 group-hover:bg-transparent transition-colors duration-500 z-10" />
                             
@@ -82,7 +104,7 @@ export function SuccessStories() {
                                 src={imageUrl} 
                                 alt={story.altText || 'Success Story'}
                                 fill
-                                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                 className="object-cover scale-100 group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-multiply dark:mix-blend-normal"
                             />
 
@@ -110,9 +132,17 @@ export function SuccessStories() {
             </div>
         )}
         
-        <div className="mt-12 md:hidden flex justify-center">
+        <div className="mt-4 flex items-center justify-between md:hidden">
+            <div className="flex items-center gap-2">
+                <button onClick={() => scroll('left')} className="p-3 rounded-full border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+                    <ChevronLeft className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                </button>
+                <button onClick={() => scroll('right')} className="p-3 rounded-full border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+                    <ChevronRight className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                </button>
+            </div>
             <a href="/placements" className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white hover:text-primary transition-colors group">
-                View Placement Directory 
+                Directory 
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
         </div>
