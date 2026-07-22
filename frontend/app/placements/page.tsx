@@ -7,6 +7,8 @@ import { ArrowRight, Loader2, Award } from "lucide-react"
 import api from "@/lib/api"
 import { Footer } from "@/components/layout/Footer"
 
+import Image from "next/image"
+
 export default function PlacementsPage() {
     const [stories, setStories] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -16,7 +18,6 @@ export default function PlacementsPage() {
         const fetchStories = async () => {
             try {
                 const res = await api.get("/success-stories")
-                // Sort by order
                 const activeStories = res.data
                     .filter((s: any) => s.isActive)
                     .sort((a: any, b: any) => a.order - b.order)
@@ -30,9 +31,22 @@ export default function PlacementsPage() {
         fetchStories()
     }, [])
 
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        itemListElement: stories.map((story, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            name: story.altText || 'Placement Success Story'
+        }))
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white pt-24">
-            
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             {/* Header Section */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 text-center">
                 <Badge className="bg-primary/10 text-primary border-none font-bold tracking-widest uppercase mb-4 px-4 py-1.5">
@@ -67,11 +81,13 @@ export default function PlacementsPage() {
                                 className="break-inside-avoid relative group rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800"
                             >
                                 <div className="relative">
-                                    <img 
+                                    <Image 
                                         src={imageUrl} 
                                         alt={story.altText || 'Success Story'}
+                                        width={500}
+                                        height={500}
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                         className="w-full h-auto object-cover transition-transform duration-700 hover:scale-105"
-                                        loading="lazy"
                                     />
                                 </div>
                                 {story.altText && (

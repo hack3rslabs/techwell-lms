@@ -6,6 +6,8 @@ import { ArrowRight, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import api from "@/lib/api"
 
+import Image from "next/image"
+
 export function SuccessStories() {
   const [stories, setStories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -15,11 +17,10 @@ export function SuccessStories() {
       const fetchStories = async () => {
           try {
               const res = await api.get("/success-stories")
-              // Sort by order and limit to 3 or 6 for the homepage
               const activeStories = res.data
                   .filter((s: any) => s.isActive)
                   .sort((a: any, b: any) => a.order - b.order)
-                  .slice(0, 6) // show max 6 on homepage
+                  .slice(0, 6)
               setStories(activeStories)
           } catch (err) {
               console.error("Failed to fetch success stories", err)
@@ -62,14 +63,15 @@ export function SuccessStories() {
                 return (
                 <div 
                   key={story.id} 
-                  className="group relative bg-black dark:bg-white backdrop-blur-xl border border-slate-800 dark:border-slate-200 rounded-3xl overflow-hidden hover:-translate-y-2 transition-all duration-500 shadow-xl hover:shadow-2xl"
+                  className="group relative bg-black dark:bg-white backdrop-blur-xl border border-slate-800 dark:border-slate-200 rounded-3xl overflow-hidden hover:-translate-y-2 transition-all duration-500 shadow-xl hover:shadow-2xl aspect-[4/3]"
                 >
-                        <div className="relative h-full">
-                            <img 
+                        <div className="relative h-full w-full">
+                            <Image 
                                 src={imageUrl} 
                                 alt={story.altText || 'Success Story'}
-                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105 min-h-[250px]"
-                                loading="lazy"
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                className="object-cover transition-transform duration-700 hover:scale-105"
                             />
                         </div>
                     {story.altText && (
