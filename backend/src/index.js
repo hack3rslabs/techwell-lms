@@ -128,7 +128,9 @@ app.use('/api/gdpr', require('./routes/gdpr.routes'));
 app.use('/api/referrals', require('./routes/referrals.routes'));
 app.use('/api/rbac', require('./routes/rbac.routes'));
 app.use('/api/leads', require('./routes/leads.routes'));
+app.use('/api/prospects', require('./routes/leads.routes')); // Alias to bypass adblockers
 app.use('/api/crm/leads/bulk', require('./routes/bulk-leads.routes'));
+app.use('/api/crm/prospects/bulk', require('./routes/bulk-leads.routes')); // Alias
 app.use('/api/crm/tasks', require('./routes/crm-tasks.routes'));
 app.use('/api/crm/communication', require('./routes/communication.routes'));
 app.use('/api/crm/customers', require('./routes/crm-customers.routes'));
@@ -136,8 +138,11 @@ app.use('/api/crm/agreements', require('./routes/crm-agreements.routes'));
 app.use('/api/crm/pipelines', require('./routes/pipeline.routes'));
 app.use('/api/messaging', require('./routes/messaging.routes'));
 app.use('/api/analytics', require('./routes/analytics.routes'));
+app.use('/api/system-metrics', require('./routes/analytics.routes')); // Alias to bypass adblockers
 app.use('/api/analytics/studio', require('./routes/analytics-studio.routes'));
+app.use('/api/system-metrics/studio', require('./routes/analytics-studio.routes')); // Alias
 app.use('/api/ads', require('./routes/ads.routes'));
+app.use('/api/campaigns', require('./routes/ads.routes')); // Alias to bypass adblockers
 app.use('/api/employers', require('./routes/employer.routes'));
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/settings', settingsRoutes);
