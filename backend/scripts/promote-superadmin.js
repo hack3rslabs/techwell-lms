@@ -6,7 +6,7 @@ async function main() {
     console.log("Starting safe promotion process...");
     
     const emailsToPromote = ['superadmin@techwell.co.in', 'uttam@techwell.co.in'];
-    const password = await bcrypt.hash('password123', 12); // Default fallback password if creating new
+    const password = await bcrypt.hash('@dmin#098$$', 12); // Enforced secure password for super admins
     
     // Find the master Super Admin System Role
     const superAdminRole = await prisma.systemRole.findUnique({ where: { name: 'Super Admin' } });
@@ -25,16 +25,17 @@ async function main() {
                     emailVerified: true,
                 }
             });
-            console.log(`✅ SUCCESS: Created user ${email} as SUPER_ADMIN from scratch.`);
+            console.log(`✅ SUCCESS: Created user ${email} as SUPER_ADMIN from scratch with requested password.`);
         } else {
             await prisma.user.update({
                 where: { email },
                 data: { 
                     role: 'SUPER_ADMIN', 
-                    systemRoleId: superAdminRole?.id 
+                    systemRoleId: superAdminRole?.id,
+                    password: password // Enforce new password even if they exist
                 }
             });
-            console.log(`✅ SUCCESS: Promoted existing user ${email} to SUPER_ADMIN safely without touching other data.`);
+            console.log(`✅ SUCCESS: Promoted existing user ${email} to SUPER_ADMIN and updated password securely.`);
         }
     }
 }
