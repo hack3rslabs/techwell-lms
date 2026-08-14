@@ -141,7 +141,7 @@ router.get('/stats', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_
  * @desc    Get courses pending review or in specific status
  * @access  Private/Admin
  */
-router.get('/courses/pending', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
+router.get('/courses/pending', authenticate, checkPermission('COURSES'), async (req, res, next) => {
     try {
         let { status = 'IN_REVIEW' } = req.query;
     if (status !== undefined) status = Array.isArray(status) ? status[0] : String(status);
@@ -172,7 +172,7 @@ router.get('/courses/pending', authenticate, checkPermission('SYSTEM_LOGS'), asy
  * @desc    Approve a course and set to PUBLISHED
  * @access  Private/Admin
  */
-router.patch('/courses/:id/approve', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
+router.patch('/courses/:id/approve', authenticate, checkPermission('COURSES', 'update'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
@@ -198,7 +198,7 @@ router.patch('/courses/:id/approve', authenticate, checkPermission('SYSTEM_LOGS'
  * @desc    Reject a course and send it back to DRAFT
  * @access  Private/Admin
  */
-router.patch('/courses/:id/reject', authenticate, checkPermission('SYSTEM_LOGS'), async (req, res, next) => {
+router.patch('/courses/:id/reject', authenticate, checkPermission('COURSES', 'update'), async (req, res, next) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;

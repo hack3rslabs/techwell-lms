@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation"
 import { Header } from "@/components/layout/Header"
 import { Footer } from "@/components/layout/Footer"
 import { ScrollButton } from "@/components/ui/scroll-button"
-import { FloatingCallButton } from "@/components/ui/floating-call-button"
+
 
 // Routes that should NOT show public Header/Footer
 const DASHBOARD_PREFIXES = [
@@ -46,7 +46,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                 <ScrollButton />
             </div>
             <div className="print:hidden">
-                <FloatingCallButton />
+
             </div>
         </>
     )

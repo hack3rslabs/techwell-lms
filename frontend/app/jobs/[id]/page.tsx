@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
 
 interface JobDetail {
     id: string
@@ -132,6 +133,25 @@ export default function JobDetailPage() {
         }
     }
 
+    const handleShare = async () => {
+        const shareData = {
+            title: `Job Opportunity: ${job?.title} at ${job?.employer?.employerProfile?.companyName || job?.clientName || 'Techwell'}`,
+            text: `Check out this job opportunity for ${job?.title} on Techwell CareerHub!`,
+            url: window.location.href,
+        }
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData)
+            } else {
+                await navigator.clipboard.writeText(window.location.href)
+                toast.success('Job link copied to clipboard!')
+            }
+        } catch (err) {
+            console.error('Error sharing:', err)
+        }
+    }
+
     if (isLoading) return <div className="min-h-screen grid place-items-center">Loading...</div>
     if (!job) return <div className="min-h-screen grid place-items-center">Job not found</div>
 
@@ -184,6 +204,9 @@ dangerouslySetInnerHTML={{
                         </div>
 
                         <div className="flex gap-3">
+                            <Button variant="outline" size="lg" onClick={handleShare} className="hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                                <Share2 className="mr-2 h-4 w-4" /> Share
+                            </Button>
                             <Button variant="outline" size="lg">
                                 <Bookmark className="mr-2 h-4 w-4" /> Save
                             </Button>

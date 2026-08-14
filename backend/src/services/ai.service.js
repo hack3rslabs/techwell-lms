@@ -54,19 +54,37 @@ class AIService {
                 where: { isDefault: true, isActive: true }
             });
 
-            if (provider?.provider === 'OPENAI') {
+            if (provider?.provider === 'OPENAI' || provider?.provider === 'OPEN_LLM') {
                 const { OpenAI } = require('openai');
-                const client = new OpenAI({ apiKey: provider.apiKey });
-                return { provider: 'OPENAI', client, model: provider.model };
+                const config = { apiKey: provider.apiKey };
+                if (provider.endpoint) {
+                    config.baseURL = provider.endpoint;
+                }
+                const client = new OpenAI(config);
+                return { provider: 'OPENAI', client, model: provider.model || 'gpt-3.5-turbo' };
             }
 
             if (provider?.provider === 'GEMINI') {
                 const genAI = new GoogleGenerativeAI(provider.apiKey);
-                const model = genAI.getGenerativeModel({ model: provider.model });
+                const model = genAI.getGenerativeModel({ model: provider.model || 'gemini-1.5-flash' });
                 return { provider: 'GEMINI', client: genAI, model };
             }
         } catch (error) {
             console.error('[AI] DB Provider failed, falling back to ENV', error);
+        }
+
+        // Fallback to Open LLMs Env (e.g., Groq, Together, OpenRouter)
+        if (process.env.OPEN_LLM_API_KEY) {
+            const { OpenAI } = require('openai');
+            const client = new OpenAI({ 
+                apiKey: process.env.OPEN_LLM_API_KEY, 
+                baseURL: process.env.OPEN_LLM_BASE_URL || undefined 
+            });
+            return { 
+                provider: 'OPENAI', 
+                client, 
+                model: process.env.OPEN_LLM_MODEL || "llama3-8b-8192" 
+            };
         }
 
         // Fallback to Env Gemini
@@ -190,8 +208,8 @@ class AIService {
             return { phase: 'TECHNICAL', indexInPhase: questionCount }; // We'll treat HR mode as tech round but force behavioral questions
         }
 
-        const OPENING_COUNT = 5;
-        const CLOSING_COUNT = 5;
+        const OPENING_COUNT = 2; // Was 5
+        const CLOSING_COUNT = 1; // Was 5
         const technicalCount = Math.max(0, maxQuestions - OPENING_COUNT - CLOSING_COUNT);
 
         if (questionCount < OPENING_COUNT) {
@@ -199,7 +217,10 @@ class AIService {
         } else if (questionCount < OPENING_COUNT + technicalCount) {
             return { phase: 'TECHNICAL', indexInPhase: questionCount - OPENING_COUNT };
         } else {
-            return { phase: 'CLOSING', indexInPhase: questionCount - OPENING_COUNT - technicalCount };
+            // For closing, we want the last question to always be "Do you have any questions for us?"
+            // which is at index 4 in HR_CLOSING_QUESTIONS. But we can just pass 4 as index.
+            const closingIndex = questionCount === maxQuestions - 1 ? 4 : (questionCount - OPENING_COUNT - technicalCount);
+            return { phase: 'CLOSING', indexInPhase: closingIndex };
         }
     }
 
@@ -228,6 +249,7 @@ class AIService {
      */
     async generateNextQuestion(interviewId, previousResponse = null) {
         let phase = 'TECHNICAL';
+        let indexInPhase = 0;
         try {
             console.log(`[generateNextQuestion] Starting for interview: ${interviewId}`);
 
@@ -266,7 +288,7 @@ class AIService {
             // Determine phase
             const phaseInfo = this.getInterviewPhase(questionCount, maxQuestions, interview.mode);
             phase = phaseInfo.phase;
-            const indexInPhase = phaseInfo.indexInPhase;
+            indexInPhase = phaseInfo.indexInPhase;
 
             console.log(`[generateNextQuestion] Phase: ${phase}, Index: ${indexInPhase}`);
 
@@ -417,18 +439,34 @@ Return ONLY a valid JSON object:
             };
         } catch (error) {
             console.error(`[generateNextQuestion] Error:`, error);
+            
+            const diff = 'INTERMEDIATE'; // Default since we cannot access interview in catch block easily
+            let fallbackQuestion = "Tell me about a challenging technical problem you solved recently.";
+            
+            if (phase === 'CLOSING') {
+                fallbackQuestion = "Do you have any questions for us?";
+            } else if (phase === 'OPENING') {
+                fallbackQuestion = "Tell me about yourself and your background.";
+            } else {
+                // Try to use QUESTION_BANK
+                try {
+                    const bank = QUESTION_BANK['IT']?.[diff] || QUESTION_BANK['IT']?.['INTERMEDIATE'] || [];
+                    if (bank.length > 0) {
+                        // Pick a random question based on technicalQuestionIndex to avoid duplicates
+                        const idx = ((indexInPhase || 0) % bank.length);
+                        fallbackQuestion = bank[idx];
+                    }
+                } catch(e) {}
+            }
+
             return {
-                question: phase === 'CLOSING'
-                    ? "Do you have any questions for us?"
-                    : phase === 'OPENING'
-                    ? "Tell me about yourself and your background."
-                    : "Tell me about a challenging technical problem you solved recently.",
-                type: (phase === 'OPENING' || phase === 'CLOSING') ? 'HR' : 'SITUATIONAL',
+                question: fallbackQuestion,
+                type: (phase === 'OPENING' || phase === 'CLOSING') ? 'HR' : 'TECHNICAL',
                 avatarRole: (phase === 'OPENING' || phase === 'CLOSING') ? 'HR Manager' : 'Tech Lead',
                 avatarId: (phase === 'OPENING' || phase === 'CLOSING') ? 'hr-manager' : 'tech-lead',
                 phase: phase,
                 phaseLabel: phase,
-                difficulty: 'INTERMEDIATE'
+                difficulty: diff
             };
         }
     }

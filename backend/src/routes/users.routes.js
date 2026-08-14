@@ -475,7 +475,7 @@ router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) 
         let enumRole = validatedData.role;
         let systemRoleId = null;
         
-        if (validatedData.roleId && validatedData.String(roleId || '').trim() !== "") {
+        if (validatedData.roleId && String(validatedData.roleId || '').trim() !== "") {
             const systemRole = await prisma.systemRole.findUnique({
                 where: { id: validatedData.roleId }
             });
@@ -497,6 +497,8 @@ router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) 
             };
             if (nameMap[systemRole.name]) {
                 enumRole = nameMap[systemRole.name];
+            } else {
+                enumRole = 'STAFF'; // Fallback for completely custom roles
             }
         }
         
@@ -547,7 +549,7 @@ router.post('/', authenticate, checkPermission('USERS'), async (req, res, next) 
 router.put('/:id/permissions', authenticate, checkPermission('USERS'), async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { role, isActive, permissions } = req.body;
+        const { role, roleId, isActive, permissions } = req.body; // Added roleId
 
         // Strictly protect role and permission changes: Only SUPER_ADMIN and ADMIN are authorized
         if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
@@ -567,15 +569,45 @@ router.put('/:id/permissions', authenticate, checkPermission('USERS'), async (re
         if (targetUser.role === 'SUPER_ADMIN') {
             return res.status(403).json({ error: 'Super Admin users are protected and cannot be edited.' });
         }
+        
+        // Handle custom roles via systemRoleId
+        let enumRole = role;
+        let systemRoleId = undefined;
+        
+        if (roleId && String(roleId).trim() !== "") {
+            const systemRole = await prisma.systemRole.findUnique({
+                where: { id: roleId }
+            });
+            if (systemRole) {
+                systemRoleId = roleId;
+                const nameMap = {
+                    'Super Admin': 'SUPER_ADMIN',
+                    'Admin': 'ADMIN',
+                    'Instructor': 'INSTRUCTOR',
+                    'Student': 'STUDENT',
+                    'Employer': 'EMPLOYER',
+                    'Staff': 'STAFF',
+                    'Institute Admin': 'INSTITUTE_ADMIN'
+                };
+                if (nameMap[systemRole.name]) {
+                    enumRole = nameMap[systemRole.name];
+                } else {
+                    enumRole = 'STAFF'; // Fallback enum for custom roles
+                }
+            }
+        } else if (roleId === null || roleId === "") {
+             systemRoleId = null;
+        }
 
         const user = await prisma.user.update({
             where: { id },
             data: {
-                role: role,
+                role: enumRole !== undefined ? enumRole : undefined,
+                systemRoleId: systemRoleId,
                 isActive: isActive !== undefined ? Boolean(isActive) : undefined,
                 permissions: permissions // json array
             },
-            select: { id: true, email: true, name: true, role: true, isActive: true, permissions: true }
+            select: { id: true, email: true, name: true, role: true, systemRole: { select: { name: true } }, isActive: true, permissions: true }
         });
 
         res.json({ message: 'User permissions updated successfully', user });

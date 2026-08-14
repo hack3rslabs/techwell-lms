@@ -8,33 +8,25 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { leadApi } from '@/lib/api'
 
-const contactInfo = [
-    { icon: Mail, label: 'Email', value: 'info@techwell.co.in', href: 'mailto:info@techwell.co.in' },
-    { icon: Phone, label: 'Phone', value: '+91 7997473473', href: 'tel:+917997473473' },
+const defaultLocations = [
     {
-        icon: MapPin,
-        label: 'Address',
-        value: 'Techwell HQ',
-        href: 'https://www.google.com/maps/place/Techwell(Twiis+Innovations)/@18.2899025,83.9033944,17z/data=!3m1!4b1!4m6!3m5!1s0x3a3c1517a45fc9e1:0x39c24e2311f003a!8m2!3d18.2899025!4d83.9033944!16s%2Fg%2F11c2j7m7xv?entry=ttu&g_ep=EgoyMDI2MDIxMS4wIKXMDSoASAFQAw%3D%3D'
+        id: 'vijayawada',
+        city: 'Vijayawada',
+        title: 'Techwell – Business & Consultation Workspace',
+        address: 'Flat No. F.F.A, Mallika Apartments, M.G. Road, Opp. D.V. Manor, Beside Sundaram Honda, Vijayawada – 520010, Andhra Pradesh.',
+        phone: '+91 79974 73473',
+        email: 'support@techwell.co.in',
+        googleMapsUrl: 'https://maps.google.com/?q=Mallika+Apartments,M.G.+Road,Vijayawada'
     },
     {
-        icon: Instagram,
-        label: 'Instagram',
-        value: '@techwell_official',
-        href: 'https://www.instagram.com/techwell_official/'
-    },
-    {
-        icon: ExternalLink,
-        label: 'Justdial Reviews',
-        value: 'Verified on Justdial',
-        href: 'https://www.justdial.com/Srikakulam/Techwell-It-Solutions-Opposite-Psnmh-Schoolabove-Andhra-Bank-Atm-O-Arasavilli/9999P8942-8942-161117181501-G1M1_BZDET'
-    },
-    {
-        icon: ExternalLink,
-        label: 'Google Reviews',
-        value: 'Rate us on Google',
-        href: 'https://share.google/hEEd5G027yQXanCDt'
-    },
+        id: 'srikakulam',
+        city: 'Srikakulam',
+        title: 'Techwell – Business & Consultation Workspace',
+        address: 'Opp. SBI, Arasavalli Road, Ambedkar Junction, Srikakulam – 532001, Andhra Pradesh.',
+        phone: '+91 79974 73473',
+        email: 'support@techwell.co.in',
+        googleMapsUrl: 'https://maps.google.com/?q=Techwell,Opp.+SBI,Arasavalli+Road,Srikakulam'
+    }
 ]
 
 export default function ContactClient() {
@@ -58,6 +50,33 @@ export default function ContactClient() {
                 setFormData(prev => ({ ...prev, inquiryType: type }));
             }
         }
+    }, [])
+
+    const [locations, setLocations] = React.useState(defaultLocations)
+    
+    React.useEffect(() => {
+        // Fetch public settings for locations
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/settings/public`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.address) {
+                        try {
+                            const parsed = JSON.parse(data.address);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                setLocations(parsed);
+                            }
+                        } catch (e) {
+                            // Keep default locations if JSON parsing fails
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch settings", err);
+            }
+        }
+        fetchSettings();
     }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -236,54 +255,84 @@ export default function ContactClient() {
                     <div className="space-y-6">
                         <Card className="border-white/10">
                             <CardHeader>
-                                <CardTitle>Corporate Contact Details</CardTitle>
+                                <CardTitle>Global Contacts</CardTitle>
                                 <CardDescription>Reach out to Techwell IT Solutions directly.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {contactInfo.map((info, idx) => (
-                                    <div key={idx} className="flex items-start gap-4">
-                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                            <info.icon className="h-5 w-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium">{info.label}</p>
-                                            {info.href ? (
-                                                <a href={info.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                                                    {info.value}
-                                                </a>
-                                            ) : (
-                                                <p className="text-sm text-muted-foreground">{info.value}</p>
-                                            )}
-                                        </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <Mail className="h-5 w-5 text-primary" />
                                     </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-white/10">
-                            <CardHeader>
-                                <CardTitle>Office Hours</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Monday - Friday</span>
-                                        <span>9:00 AM - 6:00 PM IST</span>
+                                    <div>
+                                        <p className="text-sm font-medium">Business Support</p>
+                                        <a href="mailto:support@techwell.co.in" className="text-sm text-muted-foreground hover:text-primary transition-colors">support@techwell.co.in</a>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Saturday</span>
-                                        <span>10:00 AM - 4:00 PM IST</span>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <Mail className="h-5 w-5 text-primary" />
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Sunday</span>
-                                        <span className="text-red-500 font-semibold">Closed</span>
+                                    <div>
+                                        <p className="text-sm font-medium">Recruitment & Careers</p>
+                                        <a href="mailto:hr@techwell.co.in" className="text-sm text-muted-foreground hover:text-primary transition-colors">hr@techwell.co.in</a>
                                     </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <Phone className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium">Phone</p>
+                                        <a href="tel:+917997473473" className="text-sm text-muted-foreground hover:text-primary transition-colors">+91 79974 73473</a>
+                                    </div>
+                                </div>
+                                <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
+                                    <p className="text-sm font-medium text-center text-primary">Visits are available by prior appointment.</p>
                                 </div>
                             </CardContent>
                         </Card>
+
+                        {locations.map((loc) => (
+                            <Card key={loc.id} className="border-white/10">
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <MapPin className="h-5 w-5 text-primary" />
+                                        {loc.city}
+                                    </CardTitle>
+                                    <CardDescription className="font-medium text-foreground">{loc.title}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <p className="text-sm text-muted-foreground leading-relaxed">{loc.address}</p>
+                                    <div className="flex flex-wrap gap-3">
+                                        {loc.googleMapsUrl && (
+                                            <Button variant="outline" size="sm" asChild className="flex-1">
+                                                <a href={loc.googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                                                    <MapPin className="w-4 h-4 mr-2" />
+                                                    Get Directions
+                                                </a>
+                                            </Button>
+                                        )}
+                                        {loc.phone && (
+                                            <Button variant="outline" size="sm" asChild>
+                                                <a href={`tel:${loc.phone}`}>
+                                                    <Phone className="w-4 h-4" />
+                                                </a>
+                                            </Button>
+                                        )}
+                                        {loc.email && (
+                                            <Button variant="outline" size="sm" asChild>
+                                                <a href={`mailto:${loc.email}`}>
+                                                    <Mail className="w-4 h-4" />
+                                                </a>
+                                            </Button>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
                     </div>
                 </div>
             </div>
         </div>
-)
+    )
 }

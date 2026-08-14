@@ -157,55 +157,55 @@ export default function ConsultingDashboard({ type: initialType = 'ALL' }: { typ
         <div className="p-6 space-y-6 animate-in fade-in zoom-in duration-500">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
                         Consulting Management Hub
                     </h1>
-                    <p className="text-muted-foreground mt-1">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         Manage all consulting projects from onboarding to delivery.
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Button onClick={openCreateForm} className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all">
+                    <Button onClick={openCreateForm} className="shadow-sm">
                         <Plus className="mr-2 h-4 w-4" /> New Engagement
                     </Button>
                 </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500">
+                <Card className="hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Total Engagements</CardTitle>
-                        <Briefcase className="h-4 w-4 text-blue-500" />
+                        <CardTitle className="text-sm font-medium text-slate-500">Total Engagements</CardTitle>
+                        <Briefcase className="h-4 w-4 text-slate-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.total}</div>
+                        <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">{stats.total}</div>
                     </CardContent>
                 </Card>
-                <Card className="hover:shadow-md transition-shadow border-l-4 border-l-green-500">
+                <Card className="hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
-                        <Activity className="h-4 w-4 text-green-500" />
+                        <CardTitle className="text-sm font-medium text-slate-500">Active Projects</CardTitle>
+                        <Activity className="h-4 w-4 text-slate-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.active}</div>
+                        <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">{stats.active}</div>
                     </CardContent>
                 </Card>
-                <Card className="hover:shadow-md transition-shadow border-l-4 border-l-indigo-500">
+                <Card className="hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Pipeline Revenue</CardTitle>
-                        <DollarSign className="h-4 w-4 text-indigo-500" />
+                        <CardTitle className="text-sm font-medium text-slate-500">Pipeline Revenue</CardTitle>
+                        <DollarSign className="h-4 w-4 text-slate-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">₹{stats.revenue.toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">₹{stats.revenue.toLocaleString()}</div>
                     </CardContent>
                 </Card>
-                <Card className="hover:shadow-md transition-shadow border-l-4 border-l-purple-500">
+                <Card className="hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Completed</CardTitle>
-                        <Users className="h-4 w-4 text-purple-500" />
+                        <CardTitle className="text-sm font-medium text-slate-500">Completed</CardTitle>
+                        <Users className="h-4 w-4 text-slate-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.completed}</div>
+                        <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">{stats.completed}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -287,9 +287,7 @@ export default function ConsultingDashboard({ type: initialType = 'ALL' }: { typ
                                                                 style={{...provided.draggableProps.style}}
                                                             >
                                                                 <Card 
-                                                                    className={`shadow-sm cursor-grab active:cursor-grabbing border-l-4 ${
-                                                                        project.type === 'IT' ? 'border-l-blue-500' : 'border-l-green-500'
-                                                                    } hover:shadow-md transition-shadow ${snapshot.isDragging ? 'shadow-lg ring-2 ring-indigo-500' : ''}`}
+                                                                    className={`shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border border-slate-200 dark:border-slate-800 ${snapshot.isDragging ? 'shadow-lg ring-1 ring-primary' : ''}`}
                                                                 >
                                                                     <CardContent className="p-4">
                                                                         <div className="flex justify-between items-start mb-2">

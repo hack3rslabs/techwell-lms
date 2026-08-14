@@ -103,7 +103,7 @@ export const userApi = {
     getAdminStats: () => api.get('/admin/stats'),
     getEnrollments: () => api.get('/admin/enrollments'),
     deleteUser: (id: string) => api.delete(`/users/${id}`),
-    updatePermissions: (id: string, data: { role: string; isActive: boolean; permissions: string[] }) => api.put(`/users/${id}/permissions`, data),
+    updatePermissions: (id: string, data: { role: string; roleId?: string; isActive: boolean; permissions: string[] }) => api.put(`/users/${id}/permissions`, data),
     updateStatus: (id: string, isActive: boolean) => api.patch(`/users/${id}/status`, { isActive }),
     getAuditLogs: (params?: { page?: number; limit?: number; action?: string; entityType?: string; search?: string }) => api.get('/admin/audit-logs', { params }),
 };

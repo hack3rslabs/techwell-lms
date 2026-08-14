@@ -7,6 +7,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogFooter,
+    DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -156,22 +157,20 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
             <DialogContent className="max-w-4xl max-h-[92vh] overflow-hidden flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-2xl p-0">
 
                 {/* Header Banner */}
-                <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 px-6 pt-6 pb-8 shrink-0">
+                <div className="bg-card border-b border-border px-6 pt-6 pb-8 shrink-0">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-3 text-white text-xl font-bold">
-                            <div className="bg-white/20 rounded-xl p-2">
-                                <Shield className="h-5 w-5 text-white" />
-                            </div>
-                            {roleToEdit ? "Edit Role" : "Create New Role"}
+                        <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                            <Shield className="h-6 w-6" />
+                            {roleToEdit ? 'Edit Role' : 'Create Custom Role'}
                         </DialogTitle>
-                        <p className="text-indigo-100 text-sm mt-1">
-                            Configure feature-level read, write and access permissions for this role.
-                        </p>
+                        <DialogDescription className="text-slate-500 dark:text-slate-400 mt-2 text-base">
+                            Define the access scope and permissions for this role.
+                        </DialogDescription>
                     </DialogHeader>
                 </div>
 
-                {/* Content pulled up over banner */}
-                <div className="bg-white dark:bg-slate-900 rounded-t-2xl -mt-4 flex flex-col overflow-hidden flex-1 min-h-0">
+                {/* Content */}
+                <div className="flex flex-col overflow-hidden flex-1 min-h-0">
 
                     {/* Role name + desc */}
                     <div className="px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
@@ -207,7 +206,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                             <div className="mt-4 flex items-center gap-3">
                                 <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-2">
                                     <div
-                                        className="bg-gradient-to-r from-indigo-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                                        className="bg-primary h-2 rounded-full transition-all duration-300"
                                         style={{ width: `${(enabled / total) * 100}%` }}
                                     />
                                 </div>

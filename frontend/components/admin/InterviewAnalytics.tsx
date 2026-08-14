@@ -128,11 +128,11 @@ export function InterviewAnalytics() {
                         {/* 2026 Feature: Market Readiness Estimate */}
                         <div className="mt-8 border-t pt-6">
                             <h4 className="text-sm font-semibold mb-4 text-center">Market Readiness Score</h4>
-                            <div className="relative h-4 bg-secondary rounded-full overflow-hidden w-3/4 mx-auto">
-                                <div
-                                    className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
-                                    style={{ width: `${Math.min(data.radar ? (data.radar.tech * 0.5 + data.radar.comm * 0.3 + data.radar.conf * 0.2) : 0, 100)}%` }}
-                                />
+                            <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative w-3/4 mx-auto">
+                                <div 
+                                    className="absolute top-0 bottom-0 left-0 bg-primary"
+                                    style={{ width: `${Math.min(avgScore, 100)}%` }}
+                                ></div>
                             </div>
                             <div className="flex justify-between text-xs text-muted-foreground mt-2 w-3/4 mx-auto">
                                 <span>Needs Work</span>

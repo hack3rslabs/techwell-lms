@@ -159,7 +159,6 @@ app.use('/api/portfolio', require('./routes/portfolio.routes'));
 app.use('/api/ai', require('./routes/ai.routes'));
 app.use('/api/video', require('./routes/video.routes'));
 app.use('/api/jobs', require('./routes/jobs.routes'));
-app.use('/api/campus-drives', require('./routes/campusDrives.routes'));
 app.use('/api/campus-drives', require('./routes/campus-drives.routes'));
 app.use('/api/campus-applications', require('./routes/campus-applications.routes'));
 app.use('/api/tasks', require('./routes/tasks.routes'));

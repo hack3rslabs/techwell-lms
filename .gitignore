@@ -46,6 +46,24 @@ backend/uploads/temp/*
 .lost_found_blobs/
 replace_emails.js
 
+# Backend debug/test scripts (not for production)
+backend/check_features.js
+backend/fix-pass.js
+backend/test_ai_interview.js
+backend/test_ai_service.js
+backend/test_rbac_api.js
+
+# Root setup/helper scripts
+setup-everything.bat
+start-local.bat
+fix_security.py
+
+# Log files at root
+*.log
+backend-install.log
+frontend-install.log
+docker-db.log
+
 # Playwright
 /test-results/
 /playwright-report/
