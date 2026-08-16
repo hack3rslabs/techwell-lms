@@ -95,7 +95,7 @@ export default function ViewAgreement() {
                                 <p><strong>Tax:</strong> {agreement.taxPercentage}%</p>
                             </CardDescription>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => window.print()}>
                             <Download className="mr-2 h-4 w-4" /> Export PDF
                         </Button>
                     </div>

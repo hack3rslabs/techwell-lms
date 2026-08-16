@@ -63,6 +63,10 @@ export function Header() {
             ]
         },
         {
+            name: "Careers",
+            href: "/jobs"
+        },
+        {
             name: "Career Hub",
             href: "/interviews",
             icon: <Briefcase className="h-4 w-4 text-emerald-500" />,

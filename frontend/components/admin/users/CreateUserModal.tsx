@@ -93,22 +93,20 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-2xl p-0 overflow-hidden">
                 {/* Header Banner */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 pt-6 pb-8">
+                <div className="bg-card border-b border-border px-6 pt-6 pb-8">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-3 text-white text-xl font-bold">
-                            <div className="bg-white/20 rounded-xl p-2">
-                                <UserPlus className="h-5 w-5 text-white" />
-                            </div>
+                        <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                            <UserPlus className="h-6 w-6" />
                             Create New User
                         </DialogTitle>
-                        <DialogDescription className="text-blue-100 text-sm mt-1">
-                            Add a new account and assign their access level.
+                        <DialogDescription className="text-slate-500 dark:text-slate-400 mt-2 text-base">
+                            Add a new user to the system. Fill in their details below.
                         </DialogDescription>
                     </DialogHeader>
                 </div>
 
                 {/* Form Body — pulled up over banner */}
-                <div className="bg-white dark:bg-slate-900 rounded-t-2xl -mt-4 px-6 pt-5 pb-2 space-y-4">
+                <div className="bg-white dark:bg-slate-900 rounded-t-2xl px-6 pt-5 pb-2 space-y-4">
 
                     {/* Full Name */}
                     <div className="space-y-1.5">

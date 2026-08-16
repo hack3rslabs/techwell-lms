@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Switch } from '@/components/ui/switch'
-import { Loader2, Camera, Upload, User, QrCode, Shield } from 'lucide-react'
+import { Loader2, Camera, Upload, User, QrCode, Shield, MapPin, Plus, Trash2 } from 'lucide-react'
 import api from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 
@@ -47,8 +47,60 @@ export default function SettingsPage() {
         isTestMode: false,
         showAffiliate: false,
         affiliateUrl: '',
-        affiliateTitle: ''
+        affiliateTitle: '',
+        address: ''
     })
+
+    interface LocationData {
+        id: string;
+        city: string;
+        title: string;
+        address: string;
+        googleMapsUrl: string;
+        phone: string;
+        email: string;
+    }
+    const [locations, setLocations] = React.useState<LocationData[]>([])
+
+    // Parse address string into locations on load
+    React.useEffect(() => {
+        if (systemSettings.address) {
+            try {
+                const parsed = JSON.parse(systemSettings.address);
+                if (Array.isArray(parsed)) setLocations(parsed);
+            } catch (e) {
+                // Not valid JSON, ignore or default
+            }
+        }
+    }, [systemSettings.address])
+
+    // Update systemSettings.address whenever locations change
+    React.useEffect(() => {
+        setSystemSettings(prev => ({
+            ...prev,
+            address: JSON.stringify(locations)
+        }))
+    }, [locations])
+
+    const handleAddLocation = () => {
+        setLocations([...locations, {
+            id: Math.random().toString(36).substr(2, 9),
+            city: '',
+            title: 'Techwell – Business & Consultation Workspace',
+            address: '',
+            googleMapsUrl: '',
+            phone: '',
+            email: ''
+        }])
+    }
+
+    const handleRemoveLocation = (id: string) => {
+        setLocations(locations.filter(loc => loc.id !== id))
+    }
+
+    const updateLocation = (id: string, field: keyof LocationData, value: string) => {
+        setLocations(locations.map(loc => loc.id === id ? { ...loc, [field]: value } : loc))
+    }
 
     async function fetchProfile() {
         try {
@@ -371,6 +423,77 @@ export default function SettingsPage() {
                                         alert('Settings updated!')
                                     } catch (e) { console.error(e); alert('Update failed') }
                                 }}>Update Config</Button>
+                            )}
+                        </CardContent>
+                    </Card>
+                ) : null}
+
+                {/* Locations Management */}
+                {hasPermission('SETTINGS') ? (
+                    <Card className="md:col-span-2">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="flex items-center gap-2">
+                                    <MapPin className="h-5 w-5 text-indigo-500" />
+                                    Locations Management
+                                </CardTitle>
+                                <CardDescription>Manage your business & consultation workspaces globally.</CardDescription>
+                            </div>
+                            <Button size="sm" onClick={handleAddLocation} disabled={!hasPermission('SETTINGS', 'update')}>
+                                <Plus className="w-4 h-4 mr-2" /> Add Location
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {locations.length === 0 ? (
+                                <p className="text-sm text-muted-foreground text-center py-4">No locations added yet.</p>
+                            ) : (
+                                locations.map((loc, index) => (
+                                    <div key={loc.id} className="border rounded-lg p-4 space-y-4 relative bg-slate-50 dark:bg-slate-900/50">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h4 className="font-semibold text-sm">Location {index + 1}</h4>
+                                            <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50" onClick={() => handleRemoveLocation(loc.id)} disabled={!hasPermission('SETTINGS', 'update')}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>City</Label>
+                                                <Input value={loc.city} onChange={(e) => updateLocation(loc.id, 'city', e.target.value)} placeholder="e.g. Vijayawada" disabled={!hasPermission('SETTINGS', 'update')} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Workspace Title</Label>
+                                                <Input value={loc.title} onChange={(e) => updateLocation(loc.id, 'title', e.target.value)} placeholder="e.g. Techwell – Business & Consultation Workspace" disabled={!hasPermission('SETTINGS', 'update')} />
+                                            </div>
+                                            <div className="space-y-2 md:col-span-2">
+                                                <Label>Full Address</Label>
+                                                <Input value={loc.address} onChange={(e) => updateLocation(loc.id, 'address', e.target.value)} placeholder="Full physical address" disabled={!hasPermission('SETTINGS', 'update')} />
+                                            </div>
+                                            <div className="space-y-2 md:col-span-2">
+                                                <Label>Google Maps URL</Label>
+                                                <Input value={loc.googleMapsUrl} onChange={(e) => updateLocation(loc.id, 'googleMapsUrl', e.target.value)} placeholder="https://maps.google.com/..." disabled={!hasPermission('SETTINGS', 'update')} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Location Phone</Label>
+                                                <Input value={loc.phone} onChange={(e) => updateLocation(loc.id, 'phone', e.target.value)} placeholder="+91..." disabled={!hasPermission('SETTINGS', 'update')} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Location Email</Label>
+                                                <Input value={loc.email} onChange={(e) => updateLocation(loc.id, 'email', e.target.value)} placeholder="support@..." disabled={!hasPermission('SETTINGS', 'update')} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            
+                            {locations.length > 0 && hasPermission('SETTINGS', 'update') && (
+                                <div className="pt-2">
+                                    <Button onClick={async () => {
+                                        try {
+                                            await api.put('/settings', systemSettings)
+                                            alert('Locations saved successfully!')
+                                        } catch (e) { console.error(e); alert('Save failed') }
+                                    }}>Save Locations</Button>
+                                </div>
                             )}
                         </CardContent>
                     </Card>

@@ -169,7 +169,7 @@ export default function ConsultancyInvitePage() {
         if (!hasSignature) missing.push("Signature")
 
         if (!hasScrolled) missing.push("Scroll to end of Terms")
-        if (!Object.values(consents).every(v => v)) missing.push("All Consent Checkboxes")
+        if (!consents.readAgreement || !consents.infoTrue || !consents.acceptTerms) missing.push("All Consent Checkboxes")
 
         if (formData.typedLegalName.toLowerCase().trim() !== formData.fullName.toLowerCase().trim()) missing.push("Typed Legal Name must match Full Name")
         if (parseInt(captchaAnswer) !== (captcha.a + captcha.b)) missing.push("Math CAPTCHA")

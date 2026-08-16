@@ -263,10 +263,12 @@ router.post('/', authenticate, async (req, res, next) => {
             }
         }
 
+        const { interviewMode, ...restData } = validatedData;
+
         const interview = await prisma.interview.create({
             data: {
-                ...validatedData,
-                mode: validatedData.interviewMode,
+                ...restData,
+                mode: interviewMode,
                 userId: userId,
                 status: 'SCHEDULED'
             }

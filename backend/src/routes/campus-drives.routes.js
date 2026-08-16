@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 const { authenticate, authorize } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const { z } = require('zod');
+const driveController = require('../controllers/campusDrives.controller');
 
 const campusDriveSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters").max(100),
@@ -25,6 +26,31 @@ const campusDriveSchema = z.object({
     hostName: z.string().optional().nullable(),
     hostLogo: z.string().optional().nullable()
 });
+
+// ==== CHMS Mock Endpoints (To prevent frontend crashes) ====
+router.get('/reports', authenticate, async (req, res) => {
+    res.json({ totalDrives: 0, candidates: 0, offers: 0, hired: 0, series: [] });
+});
+router.get('/reports/export', authenticate, async (req, res) => {
+    res.setHeader('Content-Type', 'text/csv');
+    res.send('drive,candidates,hired\n');
+});
+router.get('/panels', authenticate, async (req, res) => res.json([]));
+router.post('/panels', authenticate, async (req, res) => res.json({ id: Date.now().toString(), ...req.body }));
+router.delete('/panels/:id', authenticate, async (req, res) => res.json({ success: true }));
+
+router.get('/offers', authenticate, async (req, res) => res.json([]));
+router.post('/offers', authenticate, async (req, res) => res.json({ id: Date.now().toString(), ...req.body, status: 'PENDING' }));
+router.patch('/offers/:id', authenticate, async (req, res) => res.json({ success: true }));
+
+// ==== Controller Static Routes ====
+router.get('/admin/all', authenticate, authorize('SUPER_ADMIN', 'ADMIN'), driveController.getAdminDrives);
+router.post('/request', authenticate, authorize('EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN'), driveController.createCampusDrive);
+router.get('/employer', authenticate, authorize('EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN'), driveController.getEmployerDrives);
+router.get('/institute', authenticate, authorize('INSTITUTE_ADMIN', 'INSTITUTE_OWNER', 'COLLEGE_ADMIN'), driveController.getInstituteDrives);
+router.get('/my-drives', authenticate, authorize('STUDENT'), driveController.getMyDrives);
+
+// ==== Core Campus Drives Routes ====
 
 // Get all campus drives (Admin/Employer/Institute view based on role)
 router.get('/', authenticate, async (req, res) => {
@@ -99,6 +125,16 @@ router.post('/', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'I
     }
 });
 
+// ==== Dynamic ID Routes (MUST come after static routes) ====
+
+router.post('/:driveId/invite', authenticate, authorize('INSTITUTE_ADMIN', 'INSTITUTE_OWNER', 'COLLEGE_ADMIN'), driveController.inviteStudents);
+router.post('/:driveId/match', authenticate, authorize('INSTITUTE_ADMIN', 'INSTITUTE_OWNER', 'COLLEGE_ADMIN', 'SUPER_ADMIN', 'ADMIN'), driveController.matchStudents);
+router.post('/:driveId/apply', authenticate, authorize('STUDENT'), driveController.applyToDrive);
+router.patch('/:driveId/status', authenticate, authorize('INSTITUTE_ADMIN', 'INSTITUTE_OWNER', 'COLLEGE_ADMIN'), driveController.updateDriveStatus);
+
+// Pipeline Status Patch (Uses controller logic)
+router.patch('/:driveId/pipeline/:studentId', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), driveController.updatePipelineStatus);
+
 // Job Mela Registration (Public Route for Leads/Students)
 router.post('/:id/mela-register', async (req, res) => {
     try {
@@ -107,8 +143,6 @@ router.post('/:id/mela-register', async (req, res) => {
 
         const drive = await prisma.campusDrive.findUnique({ where: { id: driveId } });
         if (!drive) return res.status(404).json({ error: 'Job Mela not found' });
-        // Removed the strict isOffCampus check so institutes can host Mega Melas on campus too, or we can check hostType.
-        // if (!drive.isOffCampus) return res.status(400).json({ error: 'This drive is not open for public registration' });
 
         // 1. Capture as a Lead first (Analytics/Marketing)
         await prisma.lead.create({
@@ -139,7 +173,6 @@ router.post('/:id/mela-register', async (req, res) => {
         // 3. Register for Drive(s) based on selected companies
         if (Array.isArray(selectedCompanies) && selectedCompanies.length > 0) {
             for (const companyName of selectedCompanies) {
-                // Check if they already applied to this specific company
                 const existingApp = await prisma.campusDriveStudent.findFirst({
                     where: { driveId, userId: user.id, targetRole: { startsWith: companyName } }
                 });
@@ -150,7 +183,7 @@ router.post('/:id/mela-register', async (req, res) => {
                             driveId,
                             userId: user.id,
                             status: 'APPLIED',
-                            targetRole: companyName // Save company name directly into targetRole so we can filter by it
+                            targetRole: companyName
                         }
                     });
                 }
@@ -252,24 +285,5 @@ router.get('/:id/students', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 
     }
 });
 
-// PATCH Pipeline Status
-router.patch('/:id/pipeline/:studentId', authenticate, authorize(['EMPLOYER', 'SUPER_ADMIN', 'ADMIN', 'INSTITUTE_OWNER', 'FRANCHISE_OWNER', 'COLLEGE_ADMIN']), async (req, res) => {
-    try {
-        const { id, studentId } = req.params;
-        const { status } = req.body;
-        
-        if (!status) return res.status(400).json({ error: 'Status is required' });
-
-        const updated = await prisma.campusDriveStudent.update({
-            where: { id: studentId },
-            data: { status }
-        });
-        
-        res.json(updated);
-    } catch (error) {
-        console.error('Error updating campus drive student status:', error);
-        res.status(500).json({ error: 'Failed to update status' });
-    }
-});
-
 module.exports = router;
+

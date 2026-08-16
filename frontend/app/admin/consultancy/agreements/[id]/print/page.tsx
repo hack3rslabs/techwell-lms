@@ -61,7 +61,19 @@ dangerouslySetInnerHTML={{__html: `
                     div[class*="md:ml-"] {
                         margin-left: 0 !important;
                     }
+                    
+                    /* CRITICAL: Remove all height restrictions and overflow limits so the whole document prints */
+                    html, body, #__next, div, main {
+                        height: auto !important;
+                        max-height: none !important;
+                        min-height: 0 !important;
+                        overflow: visible !important;
+                    }
+                    
                     main {
+                        padding: 0 !important;
+                    }
+                    main > div {
                         padding: 0 !important;
                     }
                     
@@ -85,9 +97,10 @@ dangerouslySetInnerHTML={{__html: `
             </div>
 
             {/* Document Content */}
-            <div className="bg-white text-black p-12 print:p-0 print:max-w-none max-w-4xl mx-auto shadow-lg print:shadow-none font-serif leading-relaxed">
+            <div className="bg-white text-black p-12 print:px-8 print:py-6 print:max-w-none max-w-4xl mx-auto shadow-lg print:shadow-none font-serif leading-relaxed">
                 <div className="flex flex-col items-center text-center mb-8 border-b-2 border-black pb-6">
-                    <img src="/logo-light.png" alt="Techwell Logo" className="h-20 mb-4 object-contain" />
+                    {/* Using the custom uploaded print logo */}
+                    <img src="/logo-print.png" alt="Techwell Logo" className="h-20 w-auto mb-4 object-contain print:block" />
                     <h1 className="text-2xl print:text-xl font-bold uppercase tracking-[0.15em] text-black">Techwell Placement Consultancy</h1>
                     <h2 className="text-xl print:text-lg font-semibold mt-2 text-gray-800">Candidate Consent & Consultancy Agreement</h2>
                     <p className="text-xs mt-2 text-gray-500 font-sans tracking-wide">DOCUMENT VERSION: 1.0 | DIGITALLY SIGNED OFFICIAL RECORD</p>

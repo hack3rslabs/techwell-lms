@@ -125,11 +125,24 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
         { id: 'delivery', title: 'Delivery & Notes', icon: <FileText className="w-5 h-5" /> }
     ];
 
-    const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    const nextStep = () => {
+        if (currentStep === 0 && !formData.title.trim()) {
+            toast({ title: "Validation Error", description: "Project Title is required.", variant: "destructive" });
+            return;
+        }
+        setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    };
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
-    const handleSubmit = async (e: any) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: any) => {
+        if (e && e.preventDefault) e.preventDefault();
+        
+        if (!formData.title.trim()) {
+            toast({ title: "Validation Error", description: "Project Title is required.", variant: "destructive" });
+            setCurrentStep(0);
+            return;
+        }
+        
         setLoading(true);
 
         const payload = { ...formData, contacts };
@@ -160,19 +173,18 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
             <DialogContent className="sm:max-w-[800px] p-0 border-0 overflow-hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-2xl rounded-2xl">
                 <div className="flex flex-col h-full max-h-[90vh]">
                     {/* Header with Gradient */}
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shrink-0">
-                        <DialogTitle className="text-2xl font-bold tracking-tight text-white mb-1">
-                            {project ? 'Edit Engagement' : 'Create New Engagement'}
+                    <div className="bg-card border-b border-border p-6 shrink-0">
+                        <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                            {project ? 'Edit Engagement' : 'New Engagement'}
                         </DialogTitle>
-                        <DialogDescription className="text-blue-100/80">
-                            {project ? 'Update the details for this consulting project.' : 'Add a new Business or IT consulting project.'}
+                        <DialogDescription className="text-slate-500 dark:text-slate-400 mt-1.5 opacity-100">
+                            {project ? 'Update the details of the engagement.' : 'Set up a new consulting engagement.'}
                         </DialogDescription>
-                        
                         {/* Premium Wizard Stepper */}
-                        <div className="mt-8 flex items-center justify-between relative">
-                            <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-white/20 -z-0 rounded-full"></div>
+                        <div className="mt-8 flex items-center justify-between relative px-6">
+                            <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 dark:bg-slate-800 -z-0 rounded-full"></div>
                             <div 
-                                className="absolute left-6 top-1/2 -translate-y-1/2 h-0.5 bg-white -z-0 rounded-full transition-all duration-500 ease-in-out"
+                                className="absolute left-6 top-1/2 -translate-y-1/2 h-0.5 bg-indigo-600 -z-0 rounded-full transition-all duration-500 ease-in-out"
                                 style={{ width: `calc(${currentStep === 0 ? 0 : currentStep === 1 ? 50 : 100}% - ${currentStep === 0 ? 0 : 3}rem)` }}
                             ></div>
                             
@@ -402,8 +414,8 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
                                 </Button>
                             ) : (
                                 <Button 
-                                    type="submit" 
-                                    form="consulting-form"
+                                    type="button" 
+                                    onClick={handleSubmit}
                                     disabled={loading} 
                                     className="h-12 px-8 rounded-xl font-medium bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 transition-all hover:shadow-emerald-600/40"
                                 >

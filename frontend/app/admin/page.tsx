@@ -363,10 +363,6 @@ export default function AdminDashboard() {
                                         <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform"><Building2 className="h-4 w-4" /></div>
                                         <span className="text-[11px] font-bold uppercase tracking-wider">New Drive</span>
                                     </Button>
-                                    <Button variant="outline" className="h-24 flex-col gap-3 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-purple-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 shadow-sm transition-all group" onClick={() => router.push('/admin/crm/pipelines')}>
-                                        <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform"><Briefcase className="h-4 w-4" /></div>
-                                        <span className="text-[11px] font-bold uppercase tracking-wider">Pipeline</span>
-                                    </Button>
                                     <Button variant="outline" className="h-24 flex-col gap-3 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 shadow-sm transition-all group" onClick={() => router.push('/admin/events')}>
                                         <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform"><Calendar className="h-4 w-4" /></div>
                                         <span className="text-[11px] font-bold uppercase tracking-wider">New Event</span>

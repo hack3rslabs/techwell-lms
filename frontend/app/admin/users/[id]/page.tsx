@@ -50,6 +50,7 @@ export default function User360Page() {
 
     const [user, setUser] = useState<UserProfile | null>(null)
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
+    const [interviews, setInterviews] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     
     // RBAC States
@@ -57,6 +58,7 @@ export default function User360Page() {
     const [editedRole, setEditedRole] = useState<string>("")
     const [editedIsActive, setEditedIsActive] = useState<boolean>(true)
     const [editedPermissions, setEditedPermissions] = useState<string[]>([])
+    const [roles, setRoles] = useState<{ id: string; name: string }[]>([])
 
     const RBAC_MODULES = [
         { id: "USERS", label: "Users & Roles", desc: "Admin staff and internal profiles" },
@@ -80,19 +82,26 @@ export default function User360Page() {
 
     async function fetchData() {
         try {
-            const [activityRes, usersRes] = await Promise.all([
+            const [activityRes, usersRes, rolesRes, interviewsRes] = await Promise.all([
                 api.get(`/users/${id}/activity`),
-                api.get('/users')
+                api.get('/users'),
+                api.get('/rbac/roles'),
+                api.get(`/interviews/user/${id}`).catch(() => ({ data: { interviews: [] } }))
             ])
 
             setAuditLogs(activityRes.data)
+            setRoles(rolesRes.data)
+            setInterviews(interviewsRes.data.interviews || [])
 
             const foundUser = usersRes.data.users.find((u: UserProfile) => u.id === id)
             if (foundUser) {
                 const perms = foundUser.permissions || (foundUser.role === 'SUPER_ADMIN' ? ["ALL"] : []);
                 foundUser.permissions = perms;
                 setUser(foundUser);
-                setEditedRole(foundUser.role);
+                // Pre-select the system role if available, otherwise match by name or fallback to enum
+                const userSystemRole = foundUser.systemRole?.name;
+                const matchedRole = rolesRes.data.find((r: any) => r.name === userSystemRole);
+                setEditedRole(matchedRole ? matchedRole.id : foundUser.role);
                 setEditedIsActive(foundUser.isActive);
                 setEditedPermissions(perms);
             }
@@ -150,15 +159,21 @@ export default function User360Page() {
 
         setIsSavingObject(true);
         try {
+            // Check if editedRole is a standard role or an ID from the roles list
+            const isStandardRole = ROLES_LIST.includes(editedRole);
+            const roleId = !isStandardRole ? editedRole : undefined;
+            const standardRoleFallback = isStandardRole ? editedRole : 'STAFF';
+
             await userApi.updatePermissions(id as string, {
-                role: editedRole,
+                role: standardRoleFallback,
+                roleId: roleId,
                 isActive: editedIsActive,
                 permissions: editedPermissions
             });
             if (user) {
                 setUser({
                     ...user,
-                    role: editedRole,
+                    role: standardRoleFallback,
                     isActive: editedIsActive,
                     permissions: editedPermissions
                 });
@@ -215,10 +230,55 @@ export default function User360Page() {
 
                 <div className="md:col-span-2">
                     <Tabs defaultValue="access" className="w-full">
-                        <TabsList className="mb-4 w-full grid grid-cols-2">
+                        <TabsList className="mb-4 w-full grid grid-cols-3">
                             <TabsTrigger value="activity">Audit Trail</TabsTrigger>
                             <TabsTrigger value="access">Access & Permissions</TabsTrigger>
+                            <TabsTrigger value="interviews">AI Mock Interviews</TabsTrigger>
                         </TabsList>
+
+                        <TabsContent value="interviews">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>AI Mock Interviews</CardTitle>
+                                    <CardDescription>Review the candidate's performance in AI-driven mock interviews.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {interviews.length === 0 ? (
+                                        <div className="text-center py-10 text-muted-foreground">
+                                            No mock interviews found for this user.
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {interviews.map((inv) => (
+                                                <div key={inv.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/20">
+                                                    <div>
+                                                        <h4 className="font-semibold">{inv.role}</h4>
+                                                        <div className="text-sm text-muted-foreground flex gap-2">
+                                                            <span>{inv.domain}</span>
+                                                            <span>•</span>
+                                                            <span>{inv.difficulty}</span>
+                                                            <span>•</span>
+                                                            <span>{new Date(inv.createdAt).toLocaleDateString()}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="text-right">
+                                                            <div className="text-sm font-medium">{inv.status}</div>
+                                                            {inv.evaluation?.overallScore && (
+                                                                <div className="text-sm font-bold text-primary">Score: {inv.evaluation.overallScore}%</div>
+                                                            )}
+                                                        </div>
+                                                        <Button variant="outline" onClick={() => router.push(`/interviews/${inv.id}/report`)}>
+                                                            View Report
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
 
                         <TabsContent value="activity">
                             <Card>
@@ -290,7 +350,11 @@ export default function User360Page() {
                                                 <Select value={editedRole} onValueChange={setEditedRole} disabled={isProtectedSuperAdmin}>
                                                     <SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger>
                                                     <SelectContent>
-                                                        {ROLES_LIST.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                                        {roles.length > 0 ? (
+                                                            roles.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)
+                                                        ) : (
+                                                            ROLES_LIST.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)
+                                                        )}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
