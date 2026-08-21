@@ -143,7 +143,7 @@ export default function TechwellGPTPage() {
             {/* Header */}
             <div className="h-14 bg-[#343541] border-b border-white/10 flex items-center justify-between px-4">
                 <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-br from-purple-500 to-blue-500 p-1.5 rounded-md">
+                    <div className="bg-gradient-to-br from-sky-500 to-blue-500 p-1.5 rounded-md">
                         <Bot className="h-4 w-4 text-white" />
                     </div>
                     <span className="text-white font-medium">Techwell GPT</span>
@@ -178,7 +178,7 @@ export default function TechwellGPTPage() {
                             </Button>
                         </Link>
                     ) : (
-                        <Button onClick={handleLogin} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                        <Button onClick={handleLogin} size="sm" className="bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700">
                             <LogIn className="h-4 w-4 mr-2" />
                             Login
                         </Button>
@@ -193,7 +193,7 @@ export default function TechwellGPTPage() {
             >
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-white/60 px-4">
-                        <div className="bg-gradient-to-br from-purple-500 to-blue-500 p-4 rounded-2xl mb-6">
+                        <div className="bg-gradient-to-br from-sky-500 to-blue-500 p-4 rounded-2xl mb-6">
                             <Bot className="h-12 w-12 text-white" />
                         </div>
                         <h1 className="text-4xl font-semibold mb-2 text-white">Techwell GPT</h1>
@@ -239,11 +239,11 @@ export default function TechwellGPTPage() {
                                 <div className="max-w-3xl mx-auto flex gap-4">
                                     <div className="flex-shrink-0">
                                         {msg.role === 'user' ? (
-                                            <div className="w-8 h-8 rounded-sm bg-purple-600 flex items-center justify-center">
+                                            <div className="w-8 h-8 rounded-sm bg-sky-600 flex items-center justify-center">
                                                 <User className="h-5 w-5 text-white" />
                                             </div>
                                         ) : (
-                                            <div className="w-8 h-8 rounded-sm bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                                            <div className="w-8 h-8 rounded-sm bg-gradient-to-br from-sky-500 to-blue-500 flex items-center justify-center">
                                                 <Bot className="h-5 w-5 text-white" />
                                             </div>
                                         )}
@@ -259,7 +259,7 @@ export default function TechwellGPTPage() {
                             <div className="py-6 px-4 bg-[#444654]">
                                 <div className="max-w-3xl mx-auto flex gap-4">
                                     <div className="flex-shrink-0">
-                                        <div className="w-8 h-8 rounded-sm bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-sm bg-gradient-to-br from-sky-500 to-blue-500 flex items-center justify-center">
                                             <Bot className="h-5 w-5 text-white" />
                                         </div>
                                     </div>
@@ -279,7 +279,7 @@ export default function TechwellGPTPage() {
 
             {/* Limit Warning Banner */}
             {showLimitWarning && !isLoggedIn && (
-                <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 border-t border-white/10">
+                <div className="bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-3 border-t border-white/10">
                     <div className="max-w-3xl mx-auto flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Sparkles className="h-5 w-5 text-white" />
@@ -297,7 +297,7 @@ export default function TechwellGPTPage() {
                         <Button
                             onClick={handleLogin}
                             size="sm"
-                            className="bg-white text-purple-600 hover:bg-white/90"
+                            className="bg-white text-sky-600 hover:bg-white/90"
                         >
                             <LogIn className="h-4 w-4 mr-2" />
                             Login Now
@@ -327,7 +327,7 @@ export default function TechwellGPTPage() {
                         <div className="flex items-center justify-between px-3 pb-2">
                             <div className="text-xs text-white/40">
                                 {!isLoggedIn && userMessageCount >= GUEST_MESSAGE_LIMIT ? (
-                                    <span className="text-yellow-400">Login required to continue</span>
+                                    <span className="text-sky-400">Login required to continue</span>
                                 ) : (
                                     <>Press Enter to send, Shift+Enter for new line</>
                                 )}

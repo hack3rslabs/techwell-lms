@@ -225,7 +225,7 @@ export default function AdminEventsPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Events Management</h1>
                     <p className="text-muted-foreground">Manage events, webinars, custom forms, and generate QR codes.</p>
                 </div>
-                <Button onClick={() => { resetForm(); setIsAddOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700">
+                <Button onClick={() => { resetForm(); setIsAddOpen(true); }} className="bg-sky-600 hover:bg-sky-700">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Event
                 </Button>
@@ -250,7 +250,7 @@ export default function AdminEventsPage() {
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-32 text-center">
-                                        <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-500 mb-2" />
+                                        <Loader2 className="h-8 w-8 animate-spin mx-auto text-sky-500 mb-2" />
                                         Fetching events...
                                     </TableCell>
                                 </TableRow>
@@ -304,11 +304,11 @@ export default function AdminEventsPage() {
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
                                                 {event.generateCertificate && (
-                                                    <Button variant="outline" size="sm" onClick={() => handleGenerateCertificates(event.id)} className="border-amber-200 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20">
+                                                    <Button variant="outline" size="sm" onClick={() => handleGenerateCertificates(event.id)} className="border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
                                                         <Award className="w-4 h-4 mr-1" /> Issue
                                                     </Button>
                                                 )}
-                                                <Button variant="outline" size="sm" onClick={() => showQRCode(event)} className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                                                <Button variant="outline" size="sm" onClick={() => showQRCode(event)} className="border-sky-200 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20">
                                                     <QrCode className="w-4 h-4 mr-1" /> QR
                                                 </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => handleEdit(event)}>
@@ -350,7 +350,7 @@ export default function AdminEventsPage() {
                                         onClick={() => setImageInputMode('url')}
                                         className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
                                             imageInputMode === 'url'
-                                                ? 'bg-indigo-600 text-white'
+                                                ? 'bg-sky-600 text-white'
                                                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                         }`}
                                     >
@@ -361,7 +361,7 @@ export default function AdminEventsPage() {
                                         onClick={() => setImageInputMode('upload')}
                                         className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
                                             imageInputMode === 'upload'
-                                                ? 'bg-indigo-600 text-white'
+                                                ? 'bg-sky-600 text-white'
                                                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                         }`}
                                     >
@@ -381,13 +381,13 @@ export default function AdminEventsPage() {
                                 {/* Upload mode */}
                                 {imageInputMode === 'upload' && (
                                     <div
-                                        className="relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors group"
+                                        className="relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-sky-400 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-colors group"
                                         onClick={() => document.getElementById('event-img-input')?.click()}
-                                        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-indigo-400') }}
-                                        onDragLeave={e => e.currentTarget.classList.remove('border-indigo-400')}
+                                        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-sky-400') }}
+                                        onDragLeave={e => e.currentTarget.classList.remove('border-sky-400')}
                                         onDrop={e => {
                                             e.preventDefault()
-                                            e.currentTarget.classList.remove('border-indigo-400')
+                                            e.currentTarget.classList.remove('border-sky-400')
                                             const f = e.dataTransfer.files[0]
                                             if (f) handleImageFileChange(f)
                                         }}
@@ -400,7 +400,7 @@ export default function AdminEventsPage() {
                                             onChange={e => handleImageFileChange(e.target.files?.[0] || null)}
                                         />
                                         {imageUploading ? (
-                                            <div className="flex flex-col items-center gap-2 text-indigo-600">
+                                            <div className="flex flex-col items-center gap-2 text-sky-600">
                                                 <Loader2 className="w-8 h-8 animate-spin" />
                                                 <span className="text-sm font-medium">Uploading...</span>
                                             </div>
@@ -412,7 +412,7 @@ export default function AdminEventsPage() {
                                             </div>
                                         ) : (
                                             <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                                <Upload className="w-8 h-8 group-hover:text-indigo-500 transition-colors" />
+                                                <Upload className="w-8 h-8 group-hover:text-sky-500 transition-colors" />
                                                 <div>
                                                     <p className="text-sm font-medium">Click or drag & drop an image</p>
                                                     <p className="text-xs mt-1">JPG, PNG, GIF, WEBP · Max 5 MB</p>
@@ -504,7 +504,7 @@ export default function AdminEventsPage() {
                                         </div>
 
                                         {/* Certificate Settings */}
-                                        <div className="mt-8 border rounded-xl p-6 bg-amber-50/50 dark:bg-amber-900/10">
+                                        <div className="mt-8 border rounded-xl p-6 bg-emerald-50/50 dark:bg-emerald-900/10">
                                             <div className="flex items-center gap-4 mb-4">
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox 
@@ -516,7 +516,7 @@ export default function AdminEventsPage() {
                                                 </div>
                                             </div>
                                             {formData.generateCertificate && (
-                                                <div className="space-y-2 max-w-md ml-6 border-l-2 border-amber-200 pl-4 py-2">
+                                                <div className="space-y-2 max-w-md ml-6 border-l-2 border-emerald-200 pl-4 py-2">
                                                     <Label>Select Certificate Template</Label>
                                                     <Select value={formData.certificateTemplateId} onValueChange={v => setFormData({...formData, certificateTemplateId: v})}>
                                                         <SelectTrigger><SelectValue placeholder="Choose a template..." /></SelectTrigger>
@@ -535,7 +535,7 @@ export default function AdminEventsPage() {
                                         <div className="mt-8 border rounded-xl p-6 bg-slate-50 dark:bg-slate-900/50">
                             <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 className="font-semibold flex items-center gap-2"><Settings2 className="w-5 h-5 text-indigo-500" /> Custom Registration Form</h3>
+                                    <h3 className="font-semibold flex items-center gap-2"><Settings2 className="w-5 h-5 text-sky-500" /> Custom Registration Form</h3>
                                     <p className="text-sm text-muted-foreground mt-1">Add dynamic fields beyond the standard (Name, Email, Phone, College, District).</p>
                                 </div>
                                 <Button type="button" variant="outline" size="sm" onClick={addCustomField}>
@@ -608,7 +608,7 @@ export default function AdminEventsPage() {
                         
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                            <Button type="submit" disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700">
+                            <Button type="submit" disabled={isSaving} className="bg-sky-600 hover:bg-sky-700">
                                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Save Event
                             </Button>

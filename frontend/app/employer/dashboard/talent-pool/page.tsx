@@ -126,7 +126,7 @@ export default function TalentPoolPage() {
                                             </div>
                                         </div>
                                         {t.avgAiScore > 0 && (
-                                            <Badge variant={t.avgAiScore >= 75 ? "default" : "secondary"} className={t.avgAiScore >= 75 ? "bg-green-600 hover:bg-green-700" : "bg-amber-500"}>
+                                            <Badge variant={t.avgAiScore >= 75 ? "default" : "secondary"} className={t.avgAiScore >= 75 ? "bg-green-600 hover:bg-green-700" : "bg-emerald-500"}>
                                                 <Zap className="h-3 w-3 mr-1" /> {t.avgAiScore}% AI Score
                                             </Badge>
                                         )}

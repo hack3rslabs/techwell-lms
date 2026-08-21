@@ -23,7 +23,7 @@ export default function AdminLayout({
                 router.push('/login')
                 return
             }
-            if (user?.role === 'STUDENT') {
+            if (user?.role !== 'STAFF' && user?.role !== 'SUPER_ADMIN') {
                 router.push('/dashboard')
                 return
             }
@@ -34,14 +34,14 @@ export default function AdminLayout({
         return (
             <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
                 <div className="flex flex-col items-center gap-3">
-                    <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                    <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
                     <p className="text-sm text-muted-foreground">Loading workspace...</p>
                 </div>
             </div>
         )
     }
 
-    if (!isAuthenticated || user?.role === 'STUDENT') {
+    if (!isAuthenticated || (user?.role !== 'STAFF' && user?.role !== 'SUPER_ADMIN')) {
         return null
     }
 

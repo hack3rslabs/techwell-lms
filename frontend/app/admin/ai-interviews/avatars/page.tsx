@@ -309,7 +309,7 @@ export default function AvatarsPage() {
                                                 <span className={cn(
                                                     "text-[10px] px-1.5 py-0.5 rounded-full uppercase font-bold",
                                                     avatar.gender === 'MALE' ? 'bg-blue-100 text-blue-700' :
-                                                        avatar.gender === 'FEMALE' ? 'bg-pink-100 text-pink-700' : 'bg-gray-100 text-gray-700'
+                                                        avatar.gender === 'FEMALE' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
                                                 )}>
                                                     {avatar.gender}
                                                 </span>

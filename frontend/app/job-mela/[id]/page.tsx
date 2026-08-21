@@ -151,7 +151,7 @@ export default function JobMelaRegistration() {
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+            <Loader2 className="w-10 h-10 animate-spin text-sky-600" />
         </div>
     );
     if (!drive) return <div className="min-h-screen flex items-center justify-center">Event not found</div>;
@@ -186,12 +186,12 @@ export default function JobMelaRegistration() {
                         We&apos;ve created your account — check your email for login credentials.
                     </p>
                     {selectedCount > 0 && (
-                        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6 text-left">
-                            <p className="text-sm font-semibold text-indigo-700 mb-2">Applied for {selectedCount} position{selectedCount > 1 ? 's' : ''}:</p>
+                        <div className="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-6 text-left">
+                            <p className="text-sm font-semibold text-sky-700 mb-2">Applied for {selectedCount} position{selectedCount > 1 ? 's' : ''}:</p>
                             {Object.entries(selections).map(([cid, sel]) => {
                                 const c = companies.find(x => x.id === cid);
                                 return (
-                                    <div key={cid} className="flex items-center gap-2 text-sm text-indigo-600 mt-1">
+                                    <div key={cid} className="flex items-center gap-2 text-sm text-sky-600 mt-1">
                                         <Building2 className="w-3.5 h-3.5" />
                                         <span>{c?.name} — {sel.role} ({sel.location})</span>
                                     </div>
@@ -315,7 +315,7 @@ export default function JobMelaRegistration() {
                                         <p className="text-xs text-slate-500 mt-0.5">Choose one role per company. You can apply to multiple companies.</p>
                                     </div>
                                     {selectedCount > 0 && (
-                                        <span className="bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full px-3 py-1">
+                                        <span className="bg-sky-100 text-sky-700 text-xs font-bold rounded-full px-3 py-1">
                                             {selectedCount} selected
                                         </span>
                                     )}
@@ -328,7 +328,7 @@ export default function JobMelaRegistration() {
                                         const sel = selections[company.id];
 
                                         return (
-                                            <div key={company.id} className={`transition-colors ${companySelected ? 'bg-indigo-50/60' : 'bg-white'}`}>
+                                            <div key={company.id} className={`transition-colors ${companySelected ? 'bg-sky-50/60' : 'bg-white'}`}>
                                                 {/* Company Header */}
                                                 <button
                                                     type="button"
@@ -339,7 +339,7 @@ export default function JobMelaRegistration() {
                                                         {company.logo ? (
                                                             <img src={company.logo} alt={company.name} className="w-10 h-10 rounded-xl object-contain border border-slate-100 bg-white p-1" />
                                                         ) : (
-                                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                                                                 {company.name.charAt(0)}
                                                             </div>
                                                         )}
@@ -350,7 +350,7 @@ export default function JobMelaRegistration() {
                                                                 {company.salary && <><span className="w-1 h-1 bg-slate-300 rounded-full inline-block"></span><span className="text-green-600 font-medium">{company.salary}</span></>}
                                                             </div>
                                                             {companySelected && (
-                                                                <div className="text-xs text-indigo-600 font-semibold mt-1 flex items-center gap-1">
+                                                                <div className="text-xs text-sky-600 font-semibold mt-1 flex items-center gap-1">
                                                                     <CheckCircle2 className="w-3 h-3" />
                                                                     {sel.role} · {sel.location}
                                                                 </div>
@@ -369,7 +369,7 @@ export default function JobMelaRegistration() {
                                                         {(company.roles || []).map(role => (
                                                             <div key={role}>
                                                                 <div className="flex items-center gap-1.5 mb-2">
-                                                                    <Briefcase className="w-3.5 h-3.5 text-indigo-500" />
+                                                                    <Briefcase className="w-3.5 h-3.5 text-sky-500" />
                                                                     <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">{role}</span>
                                                                 </div>
                                                                 <div className="flex flex-wrap gap-2 pl-5">
@@ -382,8 +382,8 @@ export default function JobMelaRegistration() {
                                                                                 onClick={() => toggleCompanySelection(company, role, loc)}
                                                                                 className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
                                                                                     active
-                                                                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
-                                                                                        : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'
+                                                                                        ? 'bg-sky-600 text-white border-sky-600 shadow-md'
+                                                                                        : 'bg-white text-slate-600 border-slate-200 hover:border-sky-300 hover:text-sky-600'
                                                                                 }`}
                                                                             >
                                                                                 <MapPin className="w-3 h-3" />
@@ -425,7 +425,7 @@ export default function JobMelaRegistration() {
                                                 required={field.required}
                                                 value={formData[field.id] || ''}
                                                 onChange={handleChange}
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-slate-700 bg-white text-sm"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-slate-700 bg-white text-sm"
                                             >
                                                 <option value="">Select...</option>
                                                 {field.options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -438,7 +438,7 @@ export default function JobMelaRegistration() {
                                                 onChange={handleChange}
                                                 rows={3}
                                                 placeholder={field.label}
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-slate-700 text-sm resize-none"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-slate-700 text-sm resize-none"
                                             />
                                         ) : (
                                             <input
@@ -448,7 +448,7 @@ export default function JobMelaRegistration() {
                                                 value={formData[field.id] || ''}
                                                 onChange={handleChange}
                                                 placeholder={field.label}
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-slate-700 text-sm"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-slate-700 text-sm"
                                             />
                                         )}
                                     </div>
@@ -468,7 +468,7 @@ export default function JobMelaRegistration() {
                                 value={formData.password || ''}
                                 onChange={handleChange}
                                 placeholder="Create a strong password"
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-slate-700 text-sm"
+                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-slate-700 text-sm"
                             />
                         </div>
 

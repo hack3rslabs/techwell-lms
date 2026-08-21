@@ -62,8 +62,8 @@ export default function BlogsAdminPage() {
         switch (status) {
             case 'PUBLISHED': return 'bg-emerald-500 hover:bg-emerald-600 text-white'
             case 'DRAFT': return 'bg-slate-500 hover:bg-slate-600 text-white'
-            case 'REVIEW': return 'bg-amber-500 hover:bg-amber-600 text-white'
-            case 'SCHEDULED': return 'bg-indigo-500 hover:bg-indigo-600 text-white'
+            case 'REVIEW': return 'bg-emerald-500 hover:bg-emerald-600 text-white'
+            case 'SCHEDULED': return 'bg-sky-500 hover:bg-sky-600 text-white'
             case 'ARCHIVED': return 'bg-red-500 hover:bg-red-600 text-white'
             default: return 'bg-slate-500 text-white'
         }
@@ -87,7 +87,7 @@ export default function BlogsAdminPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Blog Management</h1>
                     <p className="text-slate-500 mt-1">Manage all your articles, drafts, and published content.</p>
                 </div>
-                <Button onClick={() => router.push('/admin/blogs/editor')} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
+                <Button onClick={() => router.push('/admin/blogs/editor')} className="bg-sky-600 hover:bg-sky-700 text-white shadow-sm">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Blog
                 </Button>
@@ -121,7 +121,7 @@ export default function BlogsAdminPage() {
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-32 text-center">
-                                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-indigo-500 mb-2" />
+                                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-sky-500 mb-2" />
                                         <span className="text-sm text-slate-500">Loading blogs...</span>
                                     </TableCell>
                                 </TableRow>
@@ -182,7 +182,7 @@ export default function BlogsAdminPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Button variant="ghost" size="icon" onClick={() => router.push(`/admin/blogs/editor?id=${blog.id}`)} className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                                                <Button variant="ghost" size="icon" onClick={() => router.push(`/admin/blogs/editor?id=${blog.id}`)} className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20">
                                                     <Edit className="w-4 h-4" />
                                                 </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => handleDelete(blog.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">

@@ -312,9 +312,9 @@ export default function AIQATrainingPage() {
                                 </TabsContent>
 
                                 <TabsContent value="medium" className="mt-4">
-                                    <Card className="bg-yellow-50/50 border-yellow-200">
+                                    <Card className="bg-sky-50/50 border-sky-200">
                                         <CardContent className="pt-4">
-                                            <Badge className="mb-3 bg-yellow-500">Medium Level</Badge>
+                                            <Badge className="mb-3 bg-sky-500">Medium Level</Badge>
                                             <Textarea
                                                 value={generatedAnswers.medium}
                                                 onChange={(e) => setGeneratedAnswers({
@@ -380,7 +380,7 @@ export default function AIQATrainingPage() {
                                                     <GraduationCap className="h-3 w-3 mr-1" />
                                                     Beginner
                                                 </Badge>
-                                                <Badge className="bg-yellow-100 text-yellow-700">
+                                                <Badge className="bg-sky-100 text-sky-700">
                                                     <BookOpen className="h-3 w-3 mr-1" />
                                                     Medium
                                                 </Badge>

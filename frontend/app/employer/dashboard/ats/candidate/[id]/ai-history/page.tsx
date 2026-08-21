@@ -46,7 +46,7 @@ export default function EmployerCandidateAIHistoryPage({ params }: { params: { i
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5 text-purple-500"/> AI Assessment Records</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5 text-sky-500"/> AI Assessment Records</CardTitle>
                     <CardDescription>Click View Report to see detailed transcript, technical scores, and AI feedback.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -82,7 +82,7 @@ export default function EmployerCandidateAIHistoryPage({ params }: { params: { i
                                             </td>
                                             <td className="px-6 py-4">
                                                 {interview.evaluation?.overallScore ? (
-                                                    <span className={`font-bold ${interview.evaluation.overallScore >= 70 ? 'text-green-600' : interview.evaluation.overallScore >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                                    <span className={`font-bold ${interview.evaluation.overallScore >= 70 ? 'text-green-600' : interview.evaluation.overallScore >= 40 ? 'text-sky-600' : 'text-red-600'}`}>
                                                         {interview.evaluation.overallScore}/100
                                                     </span>
                                                 ) : (

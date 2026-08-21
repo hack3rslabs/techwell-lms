@@ -81,7 +81,7 @@ export default function EmployerInterviewsPage() {
             'SCHEDULED': { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Scheduled' },
             'COMPLETED': { bg: 'bg-green-50', text: 'text-green-700', label: 'Completed' },
             'CANCELLED': { bg: 'bg-red-50', text: 'text-red-700', label: 'Cancelled' },
-            'RESCHEDULED': { bg: 'bg-amber-50', text: 'text-amber-700', label: 'Rescheduled' },
+            'RESCHEDULED': { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Rescheduled' },
             'NO_SHOW': { bg: 'bg-gray-100', text: 'text-gray-600', label: 'No Show' },
         }
         const s = map[status] || { bg: 'bg-gray-50', text: 'text-gray-600', label: status }

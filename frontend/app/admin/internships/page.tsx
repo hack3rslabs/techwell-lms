@@ -159,7 +159,7 @@ export default function AdminInternshipsPortal() {
                 </Card>
                 <Card className="glass-card border-white/10">
                     <CardContent className="pt-6 flex items-center gap-4">
-                        <div className="p-3 bg-amber-500/20 text-amber-500 rounded-xl"><FileText className="w-6 h-6" /></div>
+                        <div className="p-3 bg-emerald-500/20 text-emerald-500 rounded-xl"><FileText className="w-6 h-6" /></div>
                         <div>
                             <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Pending Assignments</p>
                             <p className="text-3xl font-black">{enrollments.filter(e => e.status === 'PENDING').length}</p>
@@ -254,7 +254,7 @@ export default function AdminInternshipsPortal() {
                                         <td className="p-4 align-top">
                                             <Badge className={`font-bold uppercase text-[10px] border-none ${
                                                 enroll.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 
-                                                enroll.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500' :
+                                                enroll.status === 'PENDING' ? 'bg-emerald-500/10 text-emerald-500' :
                                                 'bg-white/10 text-muted-foreground'
                                             }`}>
                                                 {enroll.status}
@@ -263,7 +263,7 @@ export default function AdminInternshipsPortal() {
                                         <td className="p-4 align-top">
                                             {enroll.mentor?.name ? (
                                                 <div className="flex items-center gap-2">
-                                                    <div className="h-6 w-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-[10px]">
+                                                    <div className="h-6 w-6 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-400 font-bold text-[10px]">
                                                         {enroll.mentor.name.charAt(0)}
                                                     </div>
                                                     <span className="font-medium text-sm">{enroll.mentor.name}</span>

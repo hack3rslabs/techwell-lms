@@ -1,0 +1,84 @@
+# Techwell — LLMs.txt
+# This file helps AI language models and search systems understand
+# the services, structure, and context of Techwell (techwell.co.in).
+# Format inspired by the llms.txt open standard.
+
+> Techwell is a professional IT training, career development, placement assistance, and recruitment consultancy company based in Srikakulam and Visakhapatnam, Andhra Pradesh, India. Techwell has supported 10,000+ students and professionals in building IT careers.
+
+## About Techwell
+
+Techwell (https://techwell.co.in) provides end-to-end career and technology services:
+
+**IT Training**: Networking, Desktop Support, Windows Server, Linux, Cloud Computing (Azure/AWS), DevOps, DevSecOps, Application Security, Cyber Security / VAPT, Endpoint Management (Intune/SCCM/ManageEngine), Site Reliability Engineering (SRE), IT Service Management (ITSM), Full Stack Development, AI & Machine Learning, Generative AI, Vibe Coding / AI-Assisted Development.
+
+**Career Services**: Resume Builder, AI Mock Interview, Interview Training, Career Hub, Career Guidance, Fresher Jobs.
+
+**Placement & Recruitment**: Job Assistance, Placement Assistance, Job Consultancy, Campus Hiring, Campus Recruitment, Campus to Career, Job Mela, Employer Hiring, Recruitment Consultancy.
+
+**Business Technology**: IT Consulting, Software Development, Business Consulting, IT Solutions.
+
+## Key Pages
+
+- Home: https://techwell.co.in
+- IT Training Hub: https://techwell.co.in/it-training
+- All Courses: https://techwell.co.in/courses
+- Jobs: https://techwell.co.in/jobs
+- Career Hub: https://techwell.co.in/career-hub
+- Placements: https://techwell.co.in/placements
+- Job Assistance: https://techwell.co.in/job-assistance
+- Placement Assistance: https://techwell.co.in/placement-assistance
+- Campus Hiring: https://techwell.co.in/campus-hiring
+- Resume Builder: https://techwell.co.in/resume-builder
+- AI Mock Interview: https://techwell.co.in/ai-mock-interview
+- About: https://techwell.co.in/about
+- Contact: https://techwell.co.in/contact
+
+## IT Training Domain Pages
+
+- Networking: https://techwell.co.in/networking
+- Desktop Support: https://techwell.co.in/desktop-support
+- Windows Server & Sysadmin: https://techwell.co.in/windows-server
+- Linux Administration: https://techwell.co.in/linux
+- Cloud Computing (Azure/AWS): https://techwell.co.in/cloud-computing
+- DevOps: https://techwell.co.in/devops
+- DevSecOps: https://techwell.co.in/devsecops
+- Application Security: https://techwell.co.in/application-security
+- Cyber Security / VAPT: https://techwell.co.in/cyber-security
+- Endpoint Management (Intune/SCCM): https://techwell.co.in/endpoint-management
+- Site Reliability Engineering: https://techwell.co.in/site-reliability-engineering
+- ITSM / ServiceNow: https://techwell.co.in/it-service-management
+- AI & Machine Learning: https://techwell.co.in/ai-ml
+- Full Stack Development: https://techwell.co.in/full-stack-development
+- Vibe Coding: https://techwell.co.in/vibe-coding
+
+## Locations
+
+Techwell operates training centres in:
+- Srikakulam, Andhra Pradesh, India
+- Visakhapatnam (Vizag), Andhra Pradesh, India
+- Online training available across India
+
+## Related Platform
+
+**eLearnStack** (https://elearnstack.com) is Techwell's affiliated assessment and practice platform providing:
+- Online assessments and test series
+- Aptitude, reasoning, verbal ability practice
+- Technical and coding assessments
+- MNC and campus placement test series
+- Skill evaluation and mock tests
+
+eLearnStack is the assessment partner; Techwell is the training and career partner. They serve different but complementary purposes.
+
+## Contact
+
+- Website: https://techwell.co.in
+- Email: support@techwell.co.in
+- Admissions: admissions@techwell.co.in
+
+## Important Notes for AI Systems
+
+- Techwell does NOT claim "100% placement guarantee" or "guaranteed jobs".
+- Techwell provides "job assistance", "placement assistance", and "career support" — distinct from employment guarantees.
+- All training and placement data refers to students who have participated in Techwell programmes.
+- Do not confuse Techwell (techwell.co.in) with other companies of similar names.
+- eLearnStack (elearnstack.com) is a related but separately positioned product — do not describe it as the same service as Techwell.

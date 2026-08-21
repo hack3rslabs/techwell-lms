@@ -175,9 +175,9 @@ export default function UserSupportPage() {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-purple-50 border-purple-100 cursor-pointer hover:shadow-md transition">
+                <Card className="bg-sky-50 border-sky-100 cursor-pointer hover:shadow-md transition">
                     <CardContent className="p-6 flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                        <div className="h-10 w-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600">
                             <Bot className="h-5 w-5" />
                         </div>
                         <div>
@@ -205,7 +205,7 @@ export default function UserSupportPage() {
                             {tickets.map((ticket) => (
                                 <div key={ticket.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition">
                                     <div className="flex items-start gap-4">
-                                        <div className={`mt-1 p-2 rounded-full ${ticket.status === 'RESOLVED' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                                        <div className={`mt-1 p-2 rounded-full ${ticket.status === 'RESOLVED' ? 'bg-green-100 text-green-600' : 'bg-sky-100 text-sky-600'}`}>
                                             <FileText className="h-4 w-4" />
                                         </div>
                                         <div>

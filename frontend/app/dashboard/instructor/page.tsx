@@ -31,14 +31,14 @@ export default function InstructorDashboard() {
         <div className="relative min-h-screen bg-background overflow-hidden">
             {/* Background Decor */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px]" />
+                <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-sky-500/5 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[10%] left-[-5%] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px]" />
             </div>
 
             <div className="container py-8 relative z-10">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-xs font-medium mb-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300 text-xs font-medium mb-2">
                             Instructor Panel
                         </div>
                         <h1 className="text-3xl font-extrabold tracking-tight">
@@ -84,7 +84,7 @@ export default function InstructorDashboard() {
                                 <p className="text-sm text-muted-foreground">Active Courses</p>
                                 <h3 className="text-3xl font-bold mt-2">{stats.activeCourses}</h3>
                             </div>
-                            <div className="p-3 bg-purple-500/10 rounded-xl text-purple-600"><BookOpen className="h-6 w-6" /></div>
+                            <div className="p-3 bg-sky-500/10 rounded-xl text-sky-600"><BookOpen className="h-6 w-6" /></div>
                         </div>
                     </div>
                     <div className="glass-card p-6 rounded-2xl relative overflow-hidden">
@@ -100,9 +100,9 @@ export default function InstructorDashboard() {
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm text-muted-foreground">Instructor Rating</p>
-                                <h3 className="text-3xl font-bold mt-2 text-amber-500">{stats.rating}/5.0</h3>
+                                <h3 className="text-3xl font-bold mt-2 text-emerald-500">{stats.rating}/5.0</h3>
                             </div>
-                            <div className="p-3 bg-amber-500/10 rounded-xl text-amber-600"><TrendingUp className="h-6 w-6" /></div>
+                            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-600"><TrendingUp className="h-6 w-6" /></div>
                         </div>
                     </div>
                 </div>
@@ -148,7 +148,7 @@ export default function InstructorDashboard() {
                             {enrollments.length === 0 && <p className="text-muted-foreground text-sm">No recent enrollments.</p>}
                             {enrollments.map(enrollment => (
                                 <div key={enrollment.id} className="flex items-center gap-3 pb-3 border-b border-white/10 last:border-0">
-                                    <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold">
+                                    <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-400 to-sky-400 flex items-center justify-center text-white font-bold">
                                         {enrollment.student[0]}
                                     </div>
                                     <div className="flex-1">

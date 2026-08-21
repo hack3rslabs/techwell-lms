@@ -17,22 +17,21 @@ const eslintConfig = [
       "@typescript-eslint/no-explicit-any": "off",
       "react-hooks/exhaustive-deps": "off",
       "react/no-unescaped-entities": "off",
-      "react-hooks/set-state-in-effect": "off",
       "@next/next/no-img-element": "off"
     }
   },
   {
     ignores: [
+      "node_modules/**",
       ".next/**",
       "out/**",
       "build/**",
       "next-env.d.ts",
-      "fix-unused-vars.js",
-      "cleanup-imports.js",
-      "lint-results.json",
-      "lint-results-reduced.json"
+      "scripts/**",
+      "public/**"
     ]
   }
 ];
 
 export default eslintConfig;
+

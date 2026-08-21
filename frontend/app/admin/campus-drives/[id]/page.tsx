@@ -19,10 +19,10 @@ import { sanitizeUrl } from '@/lib/sanitizeUrl';
 const PIPELINE_STAGES = [
     { key: "APPLIED",        label: "Applied",          color: "bg-slate-100 text-slate-700 border-slate-200" },
     { key: "SHORTLISTED",    label: "Shortlisted",      color: "bg-blue-100 text-blue-700 border-blue-200" },
-    { key: "TECH_INTERVIEW", label: "Tech Interview",   color: "bg-indigo-100 text-indigo-700 border-indigo-200" },
-    { key: "HR_INTERVIEW",   label: "HR Interview",     color: "bg-purple-100 text-purple-700 border-purple-200" },
+    { key: "TECH_INTERVIEW", label: "Tech Interview",   color: "bg-sky-100 text-sky-700 border-sky-200" },
+    { key: "HR_INTERVIEW",   label: "HR Interview",     color: "bg-sky-100 text-sky-700 border-sky-200" },
     { key: "SELECTED",       label: "Selected",         color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-    { key: "OFFERED",        label: "Offered",          color: "bg-teal-100 text-teal-700 border-teal-200" },
+    { key: "OFFERED",        label: "Offered",          color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
     { key: "JOINED",         label: "Joined",           color: "bg-green-100 text-green-700 border-green-200" },
     { key: "REJECTED",       label: "Rejected",         color: "bg-red-100 text-red-700 border-red-200" },
 ];
@@ -155,12 +155,12 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
                 <Link href="/admin/campus-drives" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground w-fit">
                     <ArrowLeft className="h-4 w-4" /> Back to Drives
                 </Link>
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white border border-slate-700">
-                    <div className="absolute -top-16 -right-16 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-sky-950 to-slate-900 p-6 text-white border border-slate-700">
+                    <div className="absolute -top-16 -right-16 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl pointer-events-none" />
                     <div className="relative flex flex-col md:flex-row justify-between gap-4">
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${drive?.isOffCampus ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"}`}>
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${drive?.isOffCampus ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-sky-500/20 text-sky-300 border border-sky-500/30"}`}>
                                     {drive?.isOffCampus ? "Job Mela (Public)" : "On-Campus Drive"}
                                 </span>
                                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${drive?.status === "ACTIVE" ? "bg-emerald-500/20 text-emerald-300" : "bg-slate-500/20 text-slate-300"}`}>
@@ -238,7 +238,7 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
                         )}
                         <div className="flex items-center gap-2 ml-auto">
                             <button onClick={handleMatch} disabled={matching}
-                                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium disabled:opacity-60 transition-colors">
+                                className="flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm rounded-lg font-medium disabled:opacity-60 transition-colors">
                                 {matching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
                                 AI Match
                             </button>
@@ -311,7 +311,7 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
                                             </td>
                                             <td className="py-3 px-4">
                                                 {c.atsScore != null ? (
-                                                    <span className={`font-semibold ${c.atsScore >= 80 ? "text-emerald-600" : c.atsScore >= 60 ? "text-amber-600" : "text-red-500"}`}>
+                                                    <span className={`font-semibold ${c.atsScore >= 80 ? "text-emerald-600" : c.atsScore >= 60 ? "text-emerald-600" : "text-red-500"}`}>
                                                         {c.atsScore}%
                                                     </span>
                                                 ) : <span className="text-muted-foreground">—</span>}
@@ -359,7 +359,7 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
                             {companies.map((co, i) => (
                                 <div key={i} className="rounded-xl border bg-card p-5 space-y-3">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white font-bold text-lg">
                                             {co.name?.charAt(0) ?? "?"}
                                         </div>
                                         <div>
@@ -372,7 +372,7 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
                                     {co.roles && co.roles.length > 0 && (
                                         <div className="flex flex-wrap gap-1">
                                             {co.roles.map(r => (
-                                                <span key={r} className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-full">{r}</span>
+                                                <span key={r} className="text-xs bg-sky-50 text-sky-700 border border-sky-100 px-2 py-0.5 rounded-full">{r}</span>
                                             ))}
                                         </div>
                                     )}
@@ -415,7 +415,7 @@ export default function DrivePipelinePage({ params }: { params: { id: string } }
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {drive?.institutes?.map(inst => (
                                 <div key={inst.id} className="rounded-xl border bg-card p-5 flex items-center gap-4">
-                                    <div className="p-3 rounded-xl bg-indigo-50"><GraduationCap className="h-5 w-5 text-indigo-600" /></div>
+                                    <div className="p-3 rounded-xl bg-sky-50"><GraduationCap className="h-5 w-5 text-sky-600" /></div>
                                     <div>
                                         <div className="font-semibold">{inst.name}</div>
                                         <div className="text-xs text-muted-foreground">

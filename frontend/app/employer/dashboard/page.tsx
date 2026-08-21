@@ -128,10 +128,10 @@ export default function EmployerDashboard() {
     const getActivityIcon = (icon: string) => {
         switch (icon) {
             case 'status': return <TrendingUp className="h-4 w-4 text-blue-600" />
-            case 'interview': return <Video className="h-4 w-4 text-purple-600" />
-            case 'note': return <Activity className="h-4 w-4 text-amber-600" />
+            case 'interview': return <Video className="h-4 w-4 text-sky-600" />
+            case 'note': return <Activity className="h-4 w-4 text-emerald-600" />
             case 'feedback': return <Check className="h-4 w-4 text-green-600" />
-            case 'apply': return <Users className="h-4 w-4 text-indigo-600" />
+            case 'apply': return <Users className="h-4 w-4 text-sky-600" />
             default: return <Activity className="h-4 w-4 text-gray-500" />
         }
     }
@@ -139,10 +139,10 @@ export default function EmployerDashboard() {
     const getActivityBg = (icon: string) => {
         switch (icon) {
             case 'status': return 'bg-blue-50'
-            case 'interview': return 'bg-purple-50'
-            case 'note': return 'bg-amber-50'
+            case 'interview': return 'bg-sky-50'
+            case 'note': return 'bg-emerald-50'
             case 'feedback': return 'bg-green-50'
-            case 'apply': return 'bg-indigo-50'
+            case 'apply': return 'bg-sky-50'
             default: return 'bg-gray-100'
         }
     }
@@ -170,10 +170,10 @@ export default function EmployerDashboard() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent tracking-tight">
+                    <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-700 to-sky-700 bg-clip-text text-transparent tracking-tight">
                         Hiring Overview
                     </h1>
-                    <p className="text-indigo-900/60 mt-2 text-sm font-medium">Welcome back! Here&apos;s what&apos;s happening with your jobs today.</p>
+                    <p className="text-sky-900/60 mt-2 text-sm font-medium">Welcome back! Here&apos;s what&apos;s happening with your jobs today.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" onClick={() => router.push('/employer/reports')} className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm">
@@ -202,7 +202,7 @@ export default function EmployerDashboard() {
                             <p className="text-sm font-medium text-gray-500">Total Applicants</p>
                         </div>
                         <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2 text-xs font-medium text-gray-500">
-                            <Zap className="w-3.5 h-3.5 text-amber-500" />
+                            <Zap className="w-3.5 h-3.5 text-emerald-500" />
                             <span>Avg Score: <span className="text-gray-900 font-bold">{stats.avgAtsScore || '—'}</span></span>
                         </div>
                     </CardContent>
@@ -211,10 +211,10 @@ export default function EmployerDashboard() {
                 <Card className="bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-purple-50 rounded-xl">
-                                <Briefcase className="h-6 w-6 text-purple-600" />
+                            <div className="p-3 bg-sky-50 rounded-xl">
+                                <Briefcase className="h-6 w-6 text-sky-600" />
                             </div>
-                            <Badge variant="outline" className="text-purple-600 bg-purple-50 border-purple-100 font-medium">
+                            <Badge variant="outline" className="text-sky-600 bg-sky-50 border-sky-100 font-medium">
                                 Active
                             </Badge>
                         </div>
@@ -253,10 +253,10 @@ export default function EmployerDashboard() {
                 <Card className="bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-amber-50 rounded-xl">
-                                <Clock className="h-6 w-6 text-amber-600" />
+                            <div className="p-3 bg-emerald-50 rounded-xl">
+                                <Clock className="h-6 w-6 text-emerald-600" />
                             </div>
-                            <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-100 font-medium">
+                            <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-100 font-medium">
                                 Speed
                             </Badge>
                         </div>
@@ -327,7 +327,7 @@ export default function EmployerDashboard() {
                                                             ? 'bg-green-50 text-green-700 border-green-200'
                                                             : job.status === 'CLOSED'
                                                                 ? 'bg-gray-100 text-gray-600 border-gray-200'
-                                                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                                                                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                                     )}
                                                 >
                                                     {job.status}
@@ -369,8 +369,8 @@ export default function EmployerDashboard() {
                                 <div className="space-y-4">
                                     {[
                                         { label: 'Applied', value: analytics.funnel.applied, color: 'bg-blue-500', icon: Users },
-                                        { label: 'Screened', value: analytics.funnel.screened, color: 'bg-indigo-500', icon: Check },
-                                        { label: 'Interview', value: analytics.funnel.interviewScheduled, color: 'bg-purple-500', icon: Video },
+                                        { label: 'Screened', value: analytics.funnel.screened, color: 'bg-sky-500', icon: Check },
+                                        { label: 'Interview', value: analytics.funnel.interviewScheduled, color: 'bg-sky-500', icon: Video },
                                         { label: 'Hired', value: analytics.funnel.hired, color: 'bg-green-500', icon: UserCheck },
                                     ].map((stage) => {
                                         const pct = analytics.funnel.applied > 0 ? (stage.value / analytics.funnel.applied) * 100 : 0
@@ -399,7 +399,7 @@ export default function EmployerDashboard() {
                     <Card className="bg-white/70 backdrop-blur-md border border-white/40 shadow-xl rounded-2xl overflow-hidden">
                         <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4">
                             <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-                                <Activity className="h-4 w-4 text-amber-500" /> Activity Feed
+                                <Activity className="h-4 w-4 text-emerald-500" /> Activity Feed
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">

@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, Loader2, AlertTriangle, X, ArrowRight, ShieldCheck, Lock, CheckCircle2, GraduationCap, Briefcase, Building2, Home } from 'lucide-react'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
+import { Suspense } from 'react'
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { login, verify2FA, isAuthenticated, user } = useAuth()
@@ -100,8 +101,10 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
-            {/* Clean Corporate Background Pattern */}
+            {/* Clean Corporate Background Pattern with subtle gradient glow */}
             <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] -z-10 mix-blend-multiply dark:mix-blend-screen opacity-50"></div>
+            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] -z-10 mix-blend-multiply dark:mix-blend-screen opacity-50"></div>
 
             {/* Mobile Home Button */}
             <div className="lg:hidden absolute top-4 left-4 z-50">
@@ -122,11 +125,11 @@ export default function LoginPage() {
                     transition={{ duration: 0.6 }}
                     className="flex-1 w-full max-w-lg hidden lg:flex flex-col justify-center"
                 >
-                    <Link href="/" className="mb-12 inline-block">
-                        <div className="p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 inline-block">
-                            <Image src="/logo-dark.png" alt="Techwell" width={180} height={50} priority className="dark:hidden" />
-                            <Image src="/logo-light.png" alt="Techwell" width={180} height={50} priority className="hidden dark:block" />
+                    <Link href="/" className="mb-8 inline-flex items-center gap-4">
+                        <div className="p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                            <Image src="/logo-new.png" alt="Techwell Icon" width={60} height={60} priority className="object-contain" />
                         </div>
+                        <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Techwell</span>
                     </Link>
 
                     <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
@@ -167,13 +170,15 @@ export default function LoginPage() {
                     transition={{ duration: 0.6, delay: 0.1 }}
                     className="w-full max-w-md lg:max-w-[440px]"
                 >
-                    <div className="bg-white dark:bg-slate-900 p-8 sm:p-10 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-8 sm:p-10 rounded-2xl shadow-2xl border border-slate-200/50 dark:border-slate-800/50 relative overflow-hidden ring-1 ring-slate-900/5 dark:ring-white/5">
                         
                         {/* Mobile Logo */}
-                        <div className="lg:hidden flex justify-center mb-8">
-                            <Link href="/">
-                                <Image src="/logo-dark.png" alt="Techwell" width={140} height={40} priority className="dark:hidden" />
-                                <Image src="/logo-light.png" alt="Techwell" width={140} height={40} priority className="hidden dark:block" />
+                        <div className="lg:hidden flex flex-col items-center justify-center mb-6 gap-3">
+                            <Link href="/" className="flex flex-col items-center gap-3">
+                                <div className="p-2.5 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                    <Image src="/logo-new.png" alt="Techwell Icon" width={56} height={56} priority className="object-contain" />
+                                </div>
+                                <span className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">Techwell</span>
                             </Link>
                         </div>
 
@@ -244,10 +249,10 @@ export default function LoginPage() {
                                     </div>
 
                                     {showIdleBanner && (
-                                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-2 p-3 text-sm font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900/20 dark:border-amber-900/50 dark:text-amber-400">
-                                            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-500" />
+                                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-2 p-3 text-sm font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg dark:bg-emerald-900/20 dark:border-emerald-900/50 dark:text-emerald-400">
+                                            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-emerald-500" />
                                             <span className="flex-1">Session expired due to inactivity.</span>
-                                            <button onClick={() => setShowIdleBanner(false)} className="text-amber-500 hover:text-amber-600">
+                                            <button onClick={() => setShowIdleBanner(false)} className="text-emerald-500 hover:text-emerald-600">
                                                 <X className="h-4 w-4" />
                                             </button>
                                         </motion.div>
@@ -341,5 +346,13 @@ export default function LoginPage() {
                 </motion.div>
             </div>
         </div>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+            <LoginForm />
+        </Suspense>
     )
 }

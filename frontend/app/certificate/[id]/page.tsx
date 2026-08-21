@@ -219,7 +219,7 @@ export default function CertificatePublicPage() {
                 <div className="w-full lg:w-2/3 flex items-center justify-center">
                     <div className="relative group perspective-1000 w-full flex justify-center">
                         {/* Decorative glow behind certificate */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-400 to-purple-400 opacity-20 blur-3xl transform group-hover:opacity-30 transition-opacity duration-700 rounded-[2rem]" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-400 to-sky-400 opacity-20 blur-3xl transform group-hover:opacity-30 transition-opacity duration-700 rounded-[2rem]" />
                         
                         {/* The Certificate Display Container */}
                         <div className="relative shadow-2xl rounded-sm overflow-hidden border border-slate-200/50 transform transition-transform duration-500 hover:scale-[1.02] bg-white"

@@ -136,7 +136,7 @@ export default function JobMelaBuilder() {
                             <ChevronLeft className="w-4 h-4 mr-1" /> Back to Drives
                         </button>
                         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                            <Layout className="w-6 h-6 text-indigo-600" />
+                            <Layout className="w-6 h-6 text-sky-600" />
                             Job Mela Page Builder
                         </h1>
                         <p className="text-slate-500 mt-1">Configure the public registration page for {driveData?.title || 'this drive'}</p>
@@ -146,7 +146,7 @@ export default function JobMelaBuilder() {
                             <QrCode className="w-4 h-4 mr-2" /> Share QR
                         </Button>
                         <Button variant="outline" onClick={() => window.open(publicUrl, '_blank')}>Preview Page</Button>
-                        <Button onClick={handleSaveConfig} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+                        <Button onClick={handleSaveConfig} disabled={saving} className="bg-sky-600 hover:bg-sky-700">
                             <Save className="w-4 h-4 mr-2" />
                             {saving ? 'Saving...' : 'Save Configuration'}
                         </Button>

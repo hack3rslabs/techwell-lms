@@ -92,7 +92,7 @@ export default function AdminClientsPage() {
     if (loadingData) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-zinc-950">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
             </div>
         )
     }
@@ -103,7 +103,7 @@ export default function AdminClientsPage() {
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
                         <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
-                            <Users className="h-7 w-7 text-indigo-600" />
+                            <Users className="h-7 w-7 text-sky-600" />
                             Client Manager
                         </h1>
                         <p className="text-xs text-zinc-500 mt-1">Manage the clients displayed in the footer menu.</p>
@@ -118,7 +118,7 @@ export default function AdminClientsPage() {
                         </div>
                         <Button 
                             onClick={() => setEditingClient({ name: '', description: '', url: '', isActive: true })}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold h-9 px-4 rounded-lg flex items-center gap-1.5"
+                            className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold h-9 px-4 rounded-lg flex items-center gap-1.5"
                         >
                             <Plus className="w-4 h-4" /> Add Client
                         </Button>
@@ -165,7 +165,7 @@ export default function AdminClientsPage() {
                                             id="clientActive"
                                             checked={editingClient.isActive !== false}
                                             onChange={e => setEditingClient({ ...editingClient, isActive: e.target.checked })}
-                                            className="w-4 h-4 text-indigo-600 border-zinc-300 rounded cursor-pointer"
+                                            className="w-4 h-4 text-sky-600 border-zinc-300 rounded cursor-pointer"
                                         />
                                         <label htmlFor="clientActive" className="text-zinc-700 dark:text-zinc-300 cursor-pointer font-semibold">Active (Visible to public)</label>
                                     </div>
@@ -174,7 +174,7 @@ export default function AdminClientsPage() {
                                         <Button type="button" variant="outline" onClick={() => setEditingClient(null)}>
                                             Cancel
                                         </Button>
-                                        <Button type="submit" disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6">
+                                        <Button type="submit" disabled={isSaving} className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-6">
                                             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 mr-1.5" />}
                                             Save Client
                                         </Button>
@@ -199,7 +199,7 @@ export default function AdminClientsPage() {
                                         {!c.isActive && <span className="bg-zinc-100 text-zinc-500 text-[8px] px-1.5 py-0.5 rounded font-bold uppercase">Inactive</span>}
                                     </div>
 
-                                    {c.url && <a href={ sanitizeUrl(c.url)} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 hover:underline block truncate max-w-[200px]">{c.url}</a>}
+                                    {c.url && <a href={ sanitizeUrl(c.url)} target="_blank" rel="noreferrer" className="text-xs text-sky-600 hover:underline block truncate max-w-[200px]">{c.url}</a>}
                                     <p className="text-xs text-zinc-500 line-clamp-2">{c.description || 'No description provided'}</p>
                                 </div>
                                 <div className="flex flex-col gap-1">
@@ -207,7 +207,7 @@ export default function AdminClientsPage() {
                                         variant="ghost" 
                                         size="icon" 
                                         onClick={() => setEditingClient(c)}
-                                        className="h-8 w-8 text-zinc-500 hover:text-indigo-600"
+                                        className="h-8 w-8 text-zinc-500 hover:text-sky-600"
                                     >
                                         <Edit className="w-4 h-4" />
                                     </Button>

@@ -15,7 +15,7 @@ import { toast } from 'sonner'
 import api from '@/lib/api'
 import dynamic from 'next/dynamic'
 
-const GrapesJsEditor = dynamic(() => import('@/components/admin/GrapesJsEditor'), { ssr: false, loading: () => <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-indigo-500" /></div> })
+const GrapesJsEditor = dynamic(() => import('@/components/admin/GrapesJsEditor'), { ssr: false, loading: () => <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-sky-500" /></div> })
 
 interface LandingPage {
     id: string
@@ -214,7 +214,7 @@ export default function CMSPagesBuilderPage() {
                             ← Back
                         </Button>
                         <div className="flex items-center gap-2">
-                            <FileCode className="h-4 w-4 text-indigo-400" />
+                            <FileCode className="h-4 w-4 text-sky-400" />
                             <span className="font-semibold text-sm">{editingPage.id ? 'Edit Page' : 'New Page'}</span>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
@@ -242,7 +242,7 @@ export default function CMSPagesBuilderPage() {
                             <option value="DRAFT">📝 Draft</option>
                             <option value="PUBLISHED">🌐 Published</option>
                         </select>
-                        <Button size="sm" onClick={handleSave} disabled={isSaving} className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500">
+                        <Button size="sm" onClick={handleSave} disabled={isSaving} className="h-7 text-xs bg-sky-600 hover:bg-sky-500">
                             {isSaving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle className="h-3 w-3 mr-1" />}
                             Save Settings
                         </Button>
@@ -255,8 +255,8 @@ export default function CMSPagesBuilderPage() {
                     <div className="flex flex-col w-full border-r border-slate-800">
                         <div className="flex items-center gap-1 px-2 py-1.5 bg-slate-900 border-b border-slate-800">
                             {[
-                                { id: 'builder', label: 'Visual Builder', icon: <Palette className="h-3 w-3" />, color: 'text-indigo-400' },
-                                { id: 'js', label: 'Custom Scripts', icon: <Zap className="h-3 w-3" />, color: 'text-yellow-400' },
+                                { id: 'builder', label: 'Visual Builder', icon: <Palette className="h-3 w-3" />, color: 'text-sky-400' },
+                                { id: 'js', label: 'Custom Scripts', icon: <Zap className="h-3 w-3" />, color: 'text-sky-400' },
                                 { id: 'seo', label: 'SEO & Meta', icon: <Search className="h-3 w-3" />, color: 'text-green-400' },
                             ].map(tab => (
                                 <button
@@ -364,7 +364,7 @@ export default function CMSPagesBuilderPage() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center">
                             <Globe className="h-4 w-4 text-white" />
                         </div>
                         <h1 className="text-2xl font-bold tracking-tight">CMS Page Builder</h1>
@@ -373,7 +373,7 @@ export default function CMSPagesBuilderPage() {
                         Create custom pages at <code className="bg-muted px-1.5 py-0.5 rounded text-xs">yoursite.com/p/slug</code> — no deployment needed. Paste HTML, publish instantly.
                     </p>
                 </div>
-                <Button onClick={handleNewPage} className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shrink-0">
+                <Button onClick={handleNewPage} className="bg-sky-600 hover:bg-sky-700 text-white gap-2 shrink-0">
                     <Plus className="h-4 w-4" /> New Page
                 </Button>
             </div>
@@ -381,10 +381,10 @@ export default function CMSPagesBuilderPage() {
             {/* Stats row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Pages', value: pages.length, icon: <FileCode className="h-4 w-4" />, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950/30' },
+                    { label: 'Total Pages', value: pages.length, icon: <FileCode className="h-4 w-4" />, color: 'text-sky-600', bg: 'bg-sky-50 dark:bg-sky-950/30' },
                     { label: 'Published', value: pages.filter(p => p.status === 'PUBLISHED').length, icon: <Globe className="h-4 w-4" />, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/30' },
-                    { label: 'Drafts', value: pages.filter(p => p.status === 'DRAFT').length, icon: <Edit className="h-4 w-4" />, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
-                    { label: 'Total Views', value: pages.reduce((a, p) => a + (p.views || 0), 0).toLocaleString(), icon: <BarChart2 className="h-4 w-4" />, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+                    { label: 'Drafts', value: pages.filter(p => p.status === 'DRAFT').length, icon: <Edit className="h-4 w-4" />, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+                    { label: 'Total Views', value: pages.reduce((a, p) => a + (p.views || 0), 0).toLocaleString(), icon: <BarChart2 className="h-4 w-4" />, color: 'text-sky-600', bg: 'bg-sky-50 dark:bg-sky-950/30' },
                 ].map(stat => (
                     <Card key={stat.label} className="border-0 shadow-sm">
                         <CardContent className="p-4">
@@ -415,12 +415,12 @@ export default function CMSPagesBuilderPage() {
             ) : filteredPages.length === 0 ? (
                 <Card className="border-dashed border-2">
                     <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                        <div className="h-16 w-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center mb-4">
-                            <Globe className="h-8 w-8 text-indigo-400" />
+                        <div className="h-16 w-16 rounded-2xl bg-sky-50 dark:bg-sky-950/30 flex items-center justify-center mb-4">
+                            <Globe className="h-8 w-8 text-sky-400" />
                         </div>
                         <h3 className="font-semibold text-lg mb-1">No pages yet</h3>
                         <p className="text-sm text-muted-foreground mb-4">Create your first custom page — no CICD deployment needed!</p>
-                        <Button onClick={handleNewPage} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                        <Button onClick={handleNewPage} className="bg-sky-600 hover:bg-sky-700 text-white">
                             <Plus className="h-4 w-4 mr-2" /> Create First Page
                         </Button>
                     </CardContent>
@@ -431,7 +431,7 @@ export default function CMSPagesBuilderPage() {
                         <Card key={page.id} className="border border-border shadow-sm hover:shadow-md transition-shadow">
                             <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                                    <div className={`mt-0.5 h-2.5 w-2.5 rounded-full shrink-0 ${page.status === 'PUBLISHED' ? 'bg-green-500 animate-pulse' : 'bg-amber-400'}`} />
+                                    <div className={`mt-0.5 h-2.5 w-2.5 rounded-full shrink-0 ${page.status === 'PUBLISHED' ? 'bg-green-500 animate-pulse' : 'bg-emerald-400'}`} />
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <span className="font-semibold text-sm">{page.title}</span>
@@ -459,7 +459,7 @@ export default function CMSPagesBuilderPage() {
                                     {/* Copy URL */}
                                     <Button
                                         variant="ghost" size="icon"
-                                        className="h-8 w-8 text-slate-500 hover:text-indigo-600"
+                                        className="h-8 w-8 text-slate-500 hover:text-sky-600"
                                         onClick={() => copyUrl(page.slug)}
                                         title="Copy URL"
                                     >
@@ -479,7 +479,7 @@ export default function CMSPagesBuilderPage() {
                                     {/* Duplicate */}
                                     <Button
                                         variant="ghost" size="icon"
-                                        className="h-8 w-8 text-slate-500 hover:text-purple-600"
+                                        className="h-8 w-8 text-slate-500 hover:text-sky-600"
                                         onClick={() => handleDuplicate(page)}
                                         title="Duplicate page"
                                     >
@@ -488,7 +488,7 @@ export default function CMSPagesBuilderPage() {
                                     {/* Publish Toggle */}
                                     <Button
                                         variant="ghost" size="sm"
-                                        className={`h-8 text-xs px-2 ${page.status === 'PUBLISHED' ? 'text-amber-600 hover:bg-amber-50' : 'text-green-600 hover:bg-green-50'}`}
+                                        className={`h-8 text-xs px-2 ${page.status === 'PUBLISHED' ? 'text-emerald-600 hover:bg-emerald-50' : 'text-green-600 hover:bg-green-50'}`}
                                         onClick={() => handlePublishToggle(page)}
                                         title={page.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
                                     >
@@ -521,22 +521,22 @@ export default function CMSPagesBuilderPage() {
             )}
 
             {/* Info card */}
-            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/20 border-indigo-100 dark:border-indigo-900">
+            <Card className="bg-gradient-to-br from-sky-50 to-sky-50 dark:from-sky-950/30 dark:to-sky-950/20 border-sky-100 dark:border-sky-900">
                 <CardContent className="p-5">
-                    <h3 className="font-semibold text-sm text-indigo-900 dark:text-indigo-300 mb-3 flex items-center gap-2">
+                    <h3 className="font-semibold text-sm text-sky-900 dark:text-sky-300 mb-3 flex items-center gap-2">
                         <Zap className="h-4 w-4" /> How to use the Page Builder
                     </h3>
-                    <div className="grid sm:grid-cols-3 gap-4 text-xs text-indigo-800 dark:text-indigo-300">
+                    <div className="grid sm:grid-cols-3 gap-4 text-xs text-sky-800 dark:text-sky-300">
                         <div className="flex gap-2">
-                            <span className="font-bold text-indigo-500 shrink-0">1.</span>
+                            <span className="font-bold text-sky-500 shrink-0">1.</span>
                             <span>Click <strong>New Page</strong>, set a title and slug (e.g., <code>campus-drive</code>)</span>
                         </div>
                         <div className="flex gap-2">
-                            <span className="font-bold text-indigo-500 shrink-0">2.</span>
+                            <span className="font-bold text-sky-500 shrink-0">2.</span>
                             <span>Design your page using the drag-and-drop <strong>Visual Builder</strong>. Add images and text blocks visually!</span>
                         </div>
                         <div className="flex gap-2">
-                            <span className="font-bold text-indigo-500 shrink-0">3.</span>
+                            <span className="font-bold text-sky-500 shrink-0">3.</span>
                             <span>Hit <strong>Publish</strong> — instantly live at <code>yoursite.com/p/campus-drive</code></span>
                         </div>
                     </div>

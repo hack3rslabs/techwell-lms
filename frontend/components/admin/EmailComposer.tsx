@@ -81,7 +81,7 @@ export default function EmailComposer({ lead, isOpen, onClose }: EmailComposerPr
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Mail className="h-5 w-5 text-purple-600" />
+                        <Mail className="h-5 w-5 text-sky-600" />
                         Email to {lead?.name}
                     </DialogTitle>
                     <DialogDescription>
@@ -109,7 +109,7 @@ export default function EmailComposer({ lead, isOpen, onClose }: EmailComposerPr
                             variant="outline"
                             onClick={handleGenerate}
                             disabled={isGenerating}
-                            className="border-purple-200 hover:bg-purple-50 text-purple-700"
+                            className="border-sky-200 hover:bg-sky-50 text-sky-700"
                         >
                             {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
                             AI Draft

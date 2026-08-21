@@ -58,7 +58,7 @@ export default function ClientConsultingDashboard() {
     return (
         <div className="p-8 space-y-8 animate-in fade-in duration-500">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
                     My Consulting Engagements
                 </h1>
                 <p className="text-muted-foreground mt-2">
@@ -81,9 +81,9 @@ export default function ClientConsultingDashboard() {
                                             {project.type} CONSULTING
                                         </span>
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                            project.status === 'ACTIVE' ? 'bg-indigo-100 text-indigo-700' :
+                                            project.status === 'ACTIVE' ? 'bg-sky-100 text-sky-700' :
                                             project.status === 'COMPLETED' ? 'bg-slate-200 text-slate-700' :
-                                            'bg-purple-100 text-purple-700'
+                                            'bg-sky-100 text-sky-700'
                                         }`}>
                                             {project.status.replace('_', ' ')}
                                         </span>
@@ -130,7 +130,7 @@ export default function ClientConsultingDashboard() {
                                             <div key={m.id} className="flex justify-between items-center text-sm bg-slate-50 dark:bg-slate-800/50 p-2 rounded">
                                                 <span className="font-medium">{m.title}</span>
                                                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                                                    m.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                                    m.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-sky-100 text-sky-700'
                                                 }`}>
                                                     {m.status}
                                                 </span>

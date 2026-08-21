@@ -99,7 +99,7 @@ export default function AdminCompanies() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'APPROVED': return <Badge className="bg-green-500/10 text-green-600 border-none font-bold uppercase text-[10px]">Approved</Badge>;
-            case 'PENDING': return <Badge className="bg-yellow-500/10 text-yellow-600 border-none font-bold uppercase text-[10px]">Pending</Badge>;
+            case 'PENDING': return <Badge className="bg-sky-500/10 text-sky-600 border-none font-bold uppercase text-[10px]">Pending</Badge>;
             case 'REJECTED': return <Badge className="bg-red-500/10 text-red-600 border-none font-bold uppercase text-[10px]">Rejected</Badge>;
             case 'CANCELLED_APPROVAL': return <Badge className="bg-gray-500/10 text-gray-600 border-none font-bold uppercase text-[10px]">Cancelled</Badge>;
             default: return <Badge variant="outline" className="font-bold uppercase text-[10px]">{status}</Badge>;

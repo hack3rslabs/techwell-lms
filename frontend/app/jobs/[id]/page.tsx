@@ -271,7 +271,7 @@ dangerouslySetInnerHTML={{
                                                         type="button" 
                                                         variant="ghost" 
                                                         size="sm" 
-                                                        className="text-indigo-600 h-6 px-2 text-xs"
+                                                        className="text-sky-600 h-6 px-2 text-xs"
                                                         onClick={handleGenerateCoverLetter}
                                                         disabled={isGeneratingCL}
                                                     >
@@ -370,17 +370,17 @@ dangerouslySetInnerHTML={{
 
                     {/* AI Match Card for Students */}
                     {user?.role === 'STUDENT' && aiMatch && aiMatch.matchScore && (
-                        <Card className="border-indigo-100 bg-indigo-50/50 shadow-sm">
+                        <Card className="border-sky-100 bg-sky-50/50 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardTitle className="flex items-center gap-2 text-indigo-700 text-lg">
+                                <CardTitle className="flex items-center gap-2 text-sky-700 text-lg">
                                     <Sparkles className="h-5 w-5" /> AI Profile Match
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center gap-4">
                                     <div className="flex-shrink-0">
-                                        <div className="w-16 h-16 rounded-full border-4 border-indigo-200 flex items-center justify-center bg-white shadow-sm">
-                                            <span className="font-bold text-indigo-700">{aiMatch.matchScore}%</span>
+                                        <div className="w-16 h-16 rounded-full border-4 border-sky-200 flex items-center justify-center bg-white shadow-sm">
+                                            <span className="font-bold text-sky-700">{aiMatch.matchScore}%</span>
                                         </div>
                                     </div>
                                     <div>

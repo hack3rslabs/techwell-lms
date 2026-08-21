@@ -1,6 +1,5 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { execSync } = require('child_process');
 
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');

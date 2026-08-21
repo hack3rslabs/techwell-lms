@@ -148,7 +148,7 @@ export default function TransactionsPage() {
                                                     className={
                                                         payment.status === 'SUCCESS' ? 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200' : 
                                                         payment.status === 'FAILED' ? 'bg-red-100 text-red-700 hover:bg-red-100 border-red-200' :
-                                                        'bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200'
+                                                        'bg-sky-100 text-sky-700 hover:bg-sky-100 border-sky-200'
                                                     }
                                                 >
                                                     {payment.status}

@@ -27,7 +27,7 @@ export default function InstituteLayout({
     if (isLoading) {
         return (
             <div className="flex h-screen items-center justify-center bg-white">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
             </div>
         )
     }

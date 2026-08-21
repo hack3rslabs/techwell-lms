@@ -126,7 +126,7 @@ export default function StudentSettingsPage() {
                     </CardContent>
                     <CardFooter>
                         <p className="text-xs text-muted-foreground flex items-center gap-2">
-                            <AlertTriangle className="w-3 h-3 text-amber-500" />
+                            <AlertTriangle className="w-3 h-3 text-emerald-500" />
                             Deletion requests take up to 30 days to process.
                         </p>
                     </CardFooter>

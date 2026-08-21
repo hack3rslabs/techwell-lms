@@ -99,11 +99,11 @@ export default function CollegesPage() {
                                         <p className="text-xs text-muted-foreground">Students Trained</p>
                                     </div>
                                     <div className="bg-background/50 rounded-xl p-4 text-center">
-                                        <p className="text-3xl font-bold text-pink-500">92%</p>
+                                        <p className="text-3xl font-bold text-emerald-500">92%</p>
                                         <p className="text-xs text-muted-foreground">Student Satisfaction</p>
                                     </div>
                                     <div className="bg-background/50 rounded-xl p-4 text-center">
-                                        <p className="text-3xl font-bold text-yellow-400">4.9★</p>
+                                        <p className="text-3xl font-bold text-sky-400">4.9★</p>
                                         <p className="text-xs text-muted-foreground">Average Rating</p>
                                     </div>
                                 </div>
@@ -130,16 +130,16 @@ export default function CollegesPage() {
                             <h3 className="text-xl font-bold mb-2">Interview Anxiety</h3>
                             <p className="text-muted-foreground">70% of students experience severe anxiety during interviews, affecting their performance.</p>
                         </Card>
-                        <Card className="p-8 border-yellow-500/20 bg-yellow-500/5">
-                            <div className="w-14 h-14 bg-yellow-500/20 rounded-2xl flex items-center justify-center mb-4">
-                                <AlertTriangle className="w-7 h-7 text-yellow-500" />
+                        <Card className="p-8 border-sky-500/20 bg-sky-500/5">
+                            <div className="w-14 h-14 bg-sky-500/20 rounded-2xl flex items-center justify-center mb-4">
+                                <AlertTriangle className="w-7 h-7 text-sky-500" />
                             </div>
                             <h3 className="text-xl font-bold mb-2">Lack of Practice</h3>
                             <p className="text-muted-foreground">Students rarely get real interview practice before facing actual recruiters.</p>
                         </Card>
-                        <Card className="p-8 border-orange-500/20 bg-orange-500/5">
-                            <div className="w-14 h-14 bg-orange-500/20 rounded-2xl flex items-center justify-center mb-4">
-                                <MessageCircle className="w-7 h-7 text-orange-500" />
+                        <Card className="p-8 border-sky-500/20 bg-sky-500/5">
+                            <div className="w-14 h-14 bg-sky-500/20 rounded-2xl flex items-center justify-center mb-4">
+                                <MessageCircle className="w-7 h-7 text-sky-500" />
                             </div>
                             <h3 className="text-xl font-bold mb-2">Communication Gap</h3>
                             <p className="text-muted-foreground">Technical skills are there, but articulation and soft skills need development.</p>
@@ -169,7 +169,7 @@ export default function CollegesPage() {
                                 title: "Technical Skills", desc: "Role-specific technical questions covering data structures, algorithms, system design, and more."
                             },
                             {
-                                icon: Mic, color: "text-pink-500", bg: "bg-pink-500/20", border: "hover:border-pink-500/50",
+                                icon: Mic, color: "text-emerald-500", bg: "bg-emerald-500/20", border: "hover:border-emerald-500/50",
                                 title: "Communication Skills", desc: "Real-time speech analysis helps students articulate their thoughts clearly and professionally."
                             },
                             {
@@ -177,7 +177,7 @@ export default function CollegesPage() {
                                 title: "Domain Expertise", desc: "Customized interview prep for IT, Finance, Healthcare, Marketing, and more industries."
                             },
                             {
-                                icon: Terminal, color: "text-yellow-500", bg: "bg-yellow-500/20", border: "hover:border-yellow-500/50",
+                                icon: Terminal, color: "text-sky-500", bg: "bg-sky-500/20", border: "hover:border-sky-500/50",
                                 title: "Coding Practice", desc: "Integrated coding environment for live coding rounds with real-time evaluation."
                             },
                             {
@@ -208,9 +208,9 @@ export default function CollegesPage() {
                     <div className="grid md:grid-cols-4 gap-8 mb-16">
                         {[
                             { val: "47%", label: "Higher Placement Rate", grad: "from-primary to-secondary" },
-                            { val: "3x", label: "More Mock Interviews", grad: "from-secondary to-pink-500" },
-                            { val: "85%", label: "Confidence Increase", grad: "from-pink-500 to-yellow-500" },
-                            { val: "₹2L+", label: "Avg Package Increase", grad: "from-yellow-500 to-green-500" }
+                            { val: "3x", label: "More Mock Interviews", grad: "from-secondary to-emerald-500" },
+                            { val: "85%", label: "Confidence Increase", grad: "from-emerald-500 to-sky-500" },
+                            { val: "₹2L+", label: "Avg Package Increase", grad: "from-sky-500 to-green-500" }
                         ].map((stat, i) => (
                             <div key={i} className="text-center">
                                 <p className={`text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r ${stat.grad}`}>

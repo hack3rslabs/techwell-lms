@@ -48,11 +48,11 @@ export default function PlacementAnalytics() {
                 </Card>
 
                 <Card className="bg-white border-none shadow-md rounded-xl overflow-hidden relative">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600"></div>
+                    <div className="absolute top-0 left-0 w-1 h-full bg-sky-600"></div>
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-indigo-50 rounded-xl">
-                                <Briefcase className="h-6 w-6 text-indigo-600" />
+                            <div className="p-3 bg-sky-50 rounded-xl">
+                                <Briefcase className="h-6 w-6 text-sky-600" />
                             </div>
                         </div>
                         <h3 className="text-3xl font-black text-gray-900">{stats.totalDrives}</h3>
@@ -62,17 +62,17 @@ export default function PlacementAnalytics() {
                 </Card>
 
                 <Card className="bg-white border-none shadow-md rounded-xl overflow-hidden relative">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+                    <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-amber-50 rounded-xl">
-                                <TrendingUp className="h-6 w-6 text-amber-500" />
+                            <div className="p-3 bg-emerald-50 rounded-xl">
+                                <TrendingUp className="h-6 w-6 text-emerald-500" />
                             </div>
                         </div>
                         <h3 className="text-3xl font-black text-gray-900">{stats.placementRate}%</h3>
                         <p className="text-sm font-medium text-gray-500 mt-1">Average Placement Rate</p>
                         <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4">
-                            <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${stats.placementRate}%` }}></div>
+                            <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${stats.placementRate}%` }}></div>
                         </div>
                     </CardContent>
                 </Card>
@@ -97,15 +97,15 @@ export default function PlacementAnalytics() {
                 <Card className="bg-white border border-gray-100 shadow-sm rounded-xl">
                     <CardHeader className="border-b border-gray-50 pb-4">
                         <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-                            <BarChart3 className="h-4 w-4 text-indigo-600" /> Hiring Funnel
+                            <BarChart3 className="h-4 w-4 text-sky-600" /> Hiring Funnel
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-8">
                         <div className="space-y-6">
                             {[
                                 { stage: 'Registered', count: 15420, pct: 100, color: 'bg-blue-500' },
-                                { stage: 'Applied', count: 12500, pct: 81, color: 'bg-indigo-500' },
-                                { stage: 'Interviewed', count: 8200, pct: 53, color: 'bg-purple-500' },
+                                { stage: 'Applied', count: 12500, pct: 81, color: 'bg-sky-500' },
+                                { stage: 'Interviewed', count: 8200, pct: 53, color: 'bg-sky-500' },
                                 { stage: 'Offered', count: 4100, pct: 26, color: 'bg-green-500' },
                             ].map(item => (
                                 <div key={item.stage} className="relative">

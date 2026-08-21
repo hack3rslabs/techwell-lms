@@ -182,7 +182,7 @@ export default function PublicPortfolioPage() {
                         </Card>
                         <Card className="bg-white/50 backdrop-blur">
                             <CardContent className="pt-4 text-center">
-                                <p className="text-3xl font-bold text-orange-600">{portfolio.stats.averageScore}%</p>
+                                <p className="text-3xl font-bold text-sky-600">{portfolio.stats.averageScore}%</p>
                                 <p className="text-sm text-muted-foreground">Avg Score</p>
                             </CardContent>
                         </Card>
@@ -267,8 +267,8 @@ export default function PublicPortfolioPage() {
                                     <div key={interview.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                                         <div className="flex items-center gap-4">
                                             <div className={`h-12 w-12 rounded-lg flex items-center justify-center ${interview.score >= 90 ? 'bg-green-100 text-green-600' :
-                                                interview.score >= 70 ? 'bg-yellow-100 text-yellow-600' :
-                                                    'bg-orange-100 text-orange-600'
+                                                interview.score >= 70 ? 'bg-sky-100 text-sky-600' :
+                                                    'bg-sky-100 text-sky-600'
                                                 }`}>
                                                 <span className="font-bold">{interview.score}%</span>
                                             </div>
@@ -284,7 +284,7 @@ export default function PublicPortfolioPage() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             {interview.score >= 85 && (
-                                                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+                                                <Badge className="bg-gradient-to-r from-sky-500 to-sky-500 text-white">
                                                     <Star className="h-3 w-3 mr-1" />
                                                     Top Performer
                                                 </Badge>

@@ -197,7 +197,7 @@ export default function ExecutiveTemplate(props: ResumeProps) {
                                 <div className="mt-4 bg-slate-50 p-4 rounded-lg flex flex-col gap-2">
                                     {exp.resultsAchieved && (
                                         <div className="text-[12px] leading-snug">
-                                            <span className="text-[9px] font-black uppercase text-indigo-400 block mb-0.5">Impact</span>
+                                            <span className="text-[9px] font-black uppercase text-sky-400 block mb-0.5">Impact</span>
                                             <span className="font-bold text-slate-800">{exp.resultsAchieved}</span>
                                         </div>
                                     )}
@@ -225,7 +225,7 @@ export default function ExecutiveTemplate(props: ResumeProps) {
                         <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100">
                             <h4 className="font-black text-[12px] text-slate-900 uppercase mb-1">{proj.name}</h4>
                             <p className="text-[11px] text-slate-600 mb-2 leading-relaxed">{proj.description}</p>
-                            {proj.outcome && <div className="text-[10px] font-black text-indigo-500 underline decoration-indigo-200 uppercase tracking-tighter">Result: {proj.outcome}</div>}
+                            {proj.outcome && <div className="text-[10px] font-black text-sky-500 underline decoration-sky-200 uppercase tracking-tighter">Result: {proj.outcome}</div>}
                         </div>
                     ))}
                 </div>

@@ -65,7 +65,7 @@ export default function ClientsPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-1000">
                                 {clients.map((client) => (
                                     <Card key={client.id} className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-xl transition-all duration-300 group overflow-hidden flex flex-col h-full">
-                                        <div className="h-2 w-full bg-gradient-to-r from-primary to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <div className="h-2 w-full bg-gradient-to-r from-primary to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                         <CardHeader className="pb-2">
                                             <CardTitle className="text-xl font-bold flex items-center justify-between">
                                                 <span className="truncate pr-4">{client.name}</span>
@@ -84,7 +84,7 @@ export default function ClientsPage() {
                                                         href={ sanitizeUrl(client.url.startsWith('http') ? client.url : `https://${client.url}`)} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
-                                                        className="inline-flex items-center text-sm font-semibold text-primary hover:text-indigo-700 dark:hover:text-indigo-400 transition-colors"
+                                                        className="inline-flex items-center text-sm font-semibold text-primary hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                                                     >
                                                         Visit Website
                                                         <ExternalLink className="ml-1.5 h-3.5 w-3.5" />

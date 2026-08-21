@@ -56,7 +56,7 @@ export default function AtsChecker() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-indigo-500" />
+                                <FileText className="w-5 h-5 text-sky-500" />
                                 Your Resume
                             </CardTitle>
                         </CardHeader>
@@ -73,7 +73,7 @@ export default function AtsChecker() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Briefcase className="w-5 h-5 text-indigo-500" />
+                                <Briefcase className="w-5 h-5 text-sky-500" />
                                 Target Job Description
                             </CardTitle>
                         </CardHeader>
@@ -88,7 +88,7 @@ export default function AtsChecker() {
                     </Card>
 
                     <Button 
-                        className="w-full h-12 text-lg bg-indigo-600 hover:bg-indigo-700" 
+                        className="w-full h-12 text-lg bg-sky-600 hover:bg-sky-700" 
                         onClick={analyzeResume}
                         disabled={loading}
                     >
@@ -107,15 +107,15 @@ export default function AtsChecker() {
                     )}
 
                     {loading && (
-                        <div className="h-full flex flex-col items-center justify-center text-indigo-500 p-12 border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50/50">
+                        <div className="h-full flex flex-col items-center justify-center text-sky-500 p-12 border-2 border-dashed border-sky-200 rounded-xl bg-sky-50/50">
                             <Loader2 className="w-16 h-16 mb-4 animate-spin" />
-                            <p className="text-lg font-medium text-center text-indigo-700">Gemini AI is analyzing your resume...</p>
+                            <p className="text-lg font-medium text-center text-sky-700">Gemini AI is analyzing your resume...</p>
                         </div>
                     )}
 
                     {result && !loading && (
                         <>
-                            <Card className={result.score >= 80 ? "border-emerald-500 shadow-sm" : result.score >= 50 ? "border-amber-500 shadow-sm" : "border-rose-500 shadow-sm"}>
+                            <Card className={result.score >= 80 ? "border-emerald-500 shadow-sm" : result.score >= 50 ? "border-emerald-500 shadow-sm" : "border-emerald-500 shadow-sm"}>
                                 <CardContent className="pt-6 flex items-center justify-between">
                                     <div>
                                         <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">ATS Match Score</h3>
@@ -127,9 +127,9 @@ export default function AtsChecker() {
                                         {result.score >= 80 ? (
                                             <Badge className="bg-emerald-100 text-emerald-800 text-lg py-1 px-4">Highly Matched</Badge>
                                         ) : result.score >= 50 ? (
-                                            <Badge className="bg-amber-100 text-amber-800 text-lg py-1 px-4">Needs Improvement</Badge>
+                                            <Badge className="bg-emerald-100 text-emerald-800 text-lg py-1 px-4">Needs Improvement</Badge>
                                         ) : (
-                                            <Badge className="bg-rose-100 text-rose-800 text-lg py-1 px-4">Poor Match</Badge>
+                                            <Badge className="bg-emerald-100 text-emerald-800 text-lg py-1 px-4">Poor Match</Badge>
                                         )}
                                     </div>
                                 </CardContent>
@@ -138,14 +138,14 @@ export default function AtsChecker() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <AlertTriangle className="w-5 h-5 text-amber-500" />
+                                        <AlertTriangle className="w-5 h-5 text-emerald-500" />
                                         Missing Keywords (Add these!)
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex flex-wrap gap-2">
                                         {result.missingKeywords?.length > 0 ? result.missingKeywords.map((kw: string, i: number) => (
-                                            <Badge key={i} variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">{kw}</Badge>
+                                            <Badge key={i} variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">{kw}</Badge>
                                         )) : <p className="text-sm text-slate-500">Great job! You have all the key terms.</p>}
                                     </div>
                                 </CardContent>
@@ -175,7 +175,7 @@ export default function AtsChecker() {
                                     <ul className="space-y-3">
                                         {result.recommendations?.map((rec: string, i: number) => (
                                             <li key={i} className="flex gap-3 text-sm">
-                                                <span className="text-indigo-500 mt-0.5">•</span>
+                                                <span className="text-sky-500 mt-0.5">•</span>
                                                 <span className="text-slate-700">{rec}</span>
                                             </li>
                                         ))}

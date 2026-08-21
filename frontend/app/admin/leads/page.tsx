@@ -434,9 +434,9 @@ export default function LeadsPage() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'NEW': return 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-            case 'CONTACTED': return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-            case 'INTERESTED': return 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-            case 'QUALIFIED': return 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+            case 'CONTACTED': return 'bg-sky-100 text-sky-700 hover:bg-sky-200'
+            case 'INTERESTED': return 'bg-sky-100 text-sky-700 hover:bg-sky-200'
+            case 'QUALIFIED': return 'bg-sky-100 text-sky-700 hover:bg-sky-200'
             case 'CONVERTED': return 'bg-green-100 text-green-700 hover:bg-green-200'
             case 'LOST': return 'bg-red-100 text-red-700 hover:bg-red-200'
             default: return 'bg-gray-100 text-gray-700'
@@ -447,11 +447,11 @@ export default function LeadsPage() {
         const base = 'whitespace-nowrap h-8 px-4 rounded-md font-medium text-xs shadow-sm transition-colors border ';
         switch (statusValue) {
             case 'NEW': return base + (isActive ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600' : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800');
-            case 'CONTACTED': return base + (isActive ? 'bg-yellow-500 text-white border-yellow-600 hover:bg-yellow-600' : 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800');
-            case 'INTERESTED': return base + (isActive ? 'bg-purple-500 text-white border-purple-600 hover:bg-purple-600' : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800');
-            case 'QUALIFIED': return base + (isActive ? 'bg-indigo-500 text-white border-indigo-600 hover:bg-indigo-600' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800');
+            case 'CONTACTED': return base + (isActive ? 'bg-sky-500 text-white border-sky-600 hover:bg-sky-600' : 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800');
+            case 'INTERESTED': return base + (isActive ? 'bg-sky-500 text-white border-sky-600 hover:bg-sky-600' : 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800');
+            case 'QUALIFIED': return base + (isActive ? 'bg-sky-500 text-white border-sky-600 hover:bg-sky-600' : 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800');
             case 'CONVERTED': return base + (isActive ? 'bg-green-500 text-white border-green-600 hover:bg-green-600' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800');
-            case 'FOLLOW_UP': return base + (isActive ? 'bg-orange-500 text-white border-orange-600 hover:bg-orange-600' : 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800');
+            case 'FOLLOW_UP': return base + (isActive ? 'bg-sky-500 text-white border-sky-600 hover:bg-sky-600' : 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800');
             case 'LOST': return base + (isActive ? 'bg-red-500 text-white border-red-600 hover:bg-red-600' : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800');
             case 'ALL': return base + (isActive ? 'bg-slate-800 text-white border-slate-900 hover:bg-slate-900 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-100' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700');
             default: return base + (isActive ? 'bg-primary text-primary-foreground' : 'bg-white hover:bg-slate-50');
@@ -622,17 +622,17 @@ export default function LeadsPage() {
                                     <label className="text-sm font-medium">Notes</label>
                                     <Input value={newLead.notes} onChange={e => setNewLead({ ...newLead, notes: e.target.value })} placeholder="Additional details..." />
                                 </div>
-                                <div className={`col-span-2 space-y-2 p-3 rounded-lg border ${newLead.source === 'Referral' ? 'border-orange-300 bg-orange-50/50 dark:bg-orange-950/20' : 'border-border'}`}>
+                                <div className={`col-span-2 space-y-2 p-3 rounded-lg border ${newLead.source === 'Referral' ? 'border-sky-300 bg-sky-50/50 dark:bg-sky-950/20' : 'border-border'}`}>
                                     <label className="text-sm font-medium flex items-center gap-1.5">
                                         {newLead.source === 'Referral' ? '🤝' : '👤'} Reference / Referred By
-                                        {newLead.source === 'Referral' && <span className="text-xs font-semibold text-orange-600 ml-1">Required for Referral</span>}
+                                        {newLead.source === 'Referral' && <span className="text-xs font-semibold text-sky-600 ml-1">Required for Referral</span>}
                                         {newLead.source !== 'Referral' && <span className="text-xs text-muted-foreground font-normal ml-1">(optional)</span>}
                                     </label>
                                     <Input
                                         value={(newLead as any).referralName || ''}
                                         onChange={e => setNewLead({ ...newLead, referralName: e.target.value } as any)}
                                         placeholder={newLead.source === 'Referral' ? 'Name of person who referred this lead (required)' : 'Who referred this lead? (optional)'}
-                                        className={newLead.source === 'Referral' ? 'border-orange-300 focus-visible:ring-orange-400' : ''}
+                                        className={newLead.source === 'Referral' ? 'border-sky-300 focus-visible:ring-sky-400' : ''}
                                     />
                                 </div>
                             </div>
@@ -875,7 +875,7 @@ export default function LeadsPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                                        className="h-8 w-8 text-sky-600 hover:text-sky-700 hover:bg-sky-50"
                                                         onClick={() => setEmailLead(lead)}
                                                         title="Email Lead"
                                                     >
@@ -885,7 +885,7 @@ export default function LeadsPage() {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                                            className="h-8 w-8 text-sky-600 hover:text-sky-700 hover:bg-sky-50"
                                                             title="View 360 Profile"
                                                         >
                                                             <Eye className="h-4 w-4" />
@@ -894,7 +894,7 @@ export default function LeadsPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                                        className="h-8 w-8 text-sky-600 hover:text-sky-700 hover:bg-sky-50"
                                                         onClick={() => openHistory(lead)}
                                                         title="Lead History"
                                                     >
@@ -968,34 +968,34 @@ export default function LeadsPage() {
                         </div>
 
                         <div className="flex justify-end">
-                            <Button variant="outline" onClick={handleGenerateAI} disabled={isGeneratingAI} className="border-purple-200 text-purple-700 hover:bg-purple-50">
+                            <Button variant="outline" onClick={handleGenerateAI} disabled={isGeneratingAI} className="border-sky-200 text-sky-700 hover:bg-sky-50">
                                 {isGeneratingAI ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
                                 Generate AI Insights
                             </Button>
                         </div>
 
                         {historyLead?.aiSummary && (
-                            <Card className="border-purple-200 bg-purple-50/50">
+                            <Card className="border-sky-200 bg-sky-50/50">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-semibold flex items-center gap-2 text-purple-800">
+                                    <CardTitle className="text-sm font-semibold flex items-center gap-2 text-sky-800">
                                         <Wand2 className="h-4 w-4" /> AI Lead Insights
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     <div>
-                                        <h4 className="text-xs font-semibold text-purple-900/60 uppercase mb-1">Summary</h4>
-                                        <p className="text-sm text-purple-900">{historyLead.aiSummary}</p>
+                                        <h4 className="text-xs font-semibold text-sky-900/60 uppercase mb-1">Summary</h4>
+                                        <p className="text-sm text-sky-900">{historyLead.aiSummary}</p>
                                     </div>
                                     <div className="flex items-start gap-4">
                                         <div className="flex-1">
-                                            <h4 className="text-xs font-semibold text-purple-900/60 uppercase mb-1">Next Best Action</h4>
-                                            <p className="text-sm font-medium text-purple-900">{historyLead.aiNextBestAction}</p>
+                                            <h4 className="text-xs font-semibold text-sky-900/60 uppercase mb-1">Next Best Action</h4>
+                                            <p className="text-sm font-medium text-sky-900">{historyLead.aiNextBestAction}</p>
                                         </div>
                                         <div>
-                                            <h4 className="text-xs font-semibold text-purple-900/60 uppercase mb-1">Priority</h4>
+                                            <h4 className="text-xs font-semibold text-sky-900/60 uppercase mb-1">Priority</h4>
                                             <Badge variant="outline" className={
                                                 historyLead.aiPriority === 'HIGH' ? 'border-red-200 text-red-700 bg-red-50' :
-                                                historyLead.aiPriority === 'MEDIUM' ? 'border-orange-200 text-orange-700 bg-orange-50' :
+                                                historyLead.aiPriority === 'MEDIUM' ? 'border-sky-200 text-sky-700 bg-sky-50' :
                                                 'border-green-200 text-green-700 bg-green-50'
                                             }>
                                                 {historyLead.aiPriority}
@@ -1020,7 +1020,7 @@ export default function LeadsPage() {
                                         <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded border border-slate-200 bg-white shadow-sm">
                                             <div className="flex items-center justify-between space-x-2 mb-1">
                                                 <div className="font-bold text-slate-900">{log.actionType}</div>
-                                                <time className="font-mono text-xs text-indigo-500">{format(new Date(log.createdAt), 'dd MMM, hh:mm a')}</time>
+                                                <time className="font-mono text-xs text-sky-500">{format(new Date(log.createdAt), 'dd MMM, hh:mm a')}</time>
                                             </div>
                                             <div className="text-slate-500 text-sm">{log.notes}</div>
                                             <div className="text-[10px] text-muted-foreground mt-2 font-mono">By {log.performedBy}</div>

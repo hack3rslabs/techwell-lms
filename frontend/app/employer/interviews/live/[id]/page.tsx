@@ -110,7 +110,7 @@ export default function LiveInterviewRoom() {
             {/* Header */}
             <header className="h-16 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-900/50">
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-indigo-600/20 text-indigo-400">
+                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-sky-600/20 text-sky-400">
                         <Video className="h-4 w-4" />
                     </div>
                     <div>
@@ -206,13 +206,13 @@ export default function LiveInterviewRoom() {
 
                 {/* AI Copilot Sidebar */}
                 <div className="w-96 border-l border-slate-800 bg-slate-900/80 backdrop-blur-md flex flex-col relative z-10 shadow-2xl">
-                    <div className="p-4 border-b border-slate-800 bg-indigo-950/30 flex items-center gap-3">
-                        <div className="h-8 w-8 rounded bg-indigo-600/20 flex items-center justify-center">
-                            <BrainCircuit className="h-5 w-5 text-indigo-400" />
+                    <div className="p-4 border-b border-slate-800 bg-sky-950/30 flex items-center gap-3">
+                        <div className="h-8 w-8 rounded bg-sky-600/20 flex items-center justify-center">
+                            <BrainCircuit className="h-5 w-5 text-sky-400" />
                         </div>
                         <div>
-                            <h2 className="font-bold text-indigo-50">AI Copilot</h2>
-                            <p className="text-[10px] text-indigo-300 uppercase tracking-widest font-semibold">Live Analysis Active</p>
+                            <h2 className="font-bold text-sky-50">AI Copilot</h2>
+                            <p className="text-[10px] text-sky-300 uppercase tracking-widest font-semibold">Live Analysis Active</p>
                         </div>
                     </div>
 
@@ -246,7 +246,7 @@ export default function LiveInterviewRoom() {
                         {/* Smart Suggestions */}
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-slate-300 mb-2">
-                                <Zap className="h-4 w-4 text-amber-400" />
+                                <Zap className="h-4 w-4 text-emerald-400" />
                                 <h3 className="text-sm font-semibold uppercase tracking-wider">Smart Suggestions</h3>
                             </div>
                             
@@ -255,11 +255,11 @@ export default function LiveInterviewRoom() {
                             ) : (
                                 <div className="space-y-3">
                                     {suggestions.map((sugg, idx) => (
-                                        <div key={idx} className="bg-indigo-950/40 border border-indigo-500/20 rounded-xl p-3 animate-in slide-in-from-right-4 duration-300">
+                                        <div key={idx} className="bg-sky-950/40 border border-sky-500/20 rounded-xl p-3 animate-in slide-in-from-right-4 duration-300">
                                             <div className="flex items-center gap-1.5 mb-1.5">
-                                                <Badge variant="outline" className="text-[9px] bg-indigo-500/10 text-indigo-300 border-indigo-500/20">{sugg.type}</Badge>
+                                                <Badge variant="outline" className="text-[9px] bg-sky-500/10 text-sky-300 border-sky-500/20">{sugg.type}</Badge>
                                             </div>
-                                            <p className="text-sm text-indigo-100 leading-snug">{sugg.text}</p>
+                                            <p className="text-sm text-sky-100 leading-snug">{sugg.text}</p>
                                         </div>
                                     ))}
                                 </div>

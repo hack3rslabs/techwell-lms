@@ -168,7 +168,7 @@ export default function AdminAISettingsPage() {
         switch (provider) {
             case 'OPENAI': return 'bg-green-100 text-green-700 border-green-300'
             case 'GOOGLE': return 'bg-blue-100 text-blue-700 border-blue-300'
-            case 'ANTHROPIC': return 'bg-orange-100 text-orange-700 border-orange-300'
+            case 'ANTHROPIC': return 'bg-sky-100 text-sky-700 border-sky-300'
             default: return 'bg-gray-100 text-gray-700 border-gray-300'
         }
     }
@@ -402,7 +402,7 @@ export default function AdminAISettingsPage() {
                         <Card>
                             <CardContent className="pt-6">
                                 <div className="text-center">
-                                    <Zap className="h-8 w-8 mx-auto text-yellow-500 mb-2" />
+                                    <Zap className="h-8 w-8 mx-auto text-sky-500 mb-2" />
                                     <p className="text-3xl font-bold">{usage?.total.requests || 0}</p>
                                     <p className="text-sm text-muted-foreground">Total Requests</p>
                                 </div>

@@ -119,7 +119,7 @@ export default function ProjectDetailsPage() {
                         {features.length > 0 && (
                             <div>
                                 <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-                                    <Zap className="w-6 h-6 text-yellow-500" /> Key Features
+                                    <Zap className="w-6 h-6 text-sky-500" /> Key Features
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {features.map((feature: string, i: number) => (

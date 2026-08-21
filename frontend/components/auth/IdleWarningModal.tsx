@@ -50,7 +50,7 @@ export function IdleWarningModal({
                     className="flex items-center justify-center w-16 h-16 rounded-full"
                     style={{ background: 'linear-gradient(135deg, #fef9c3 0%, #fde68a 100%)' }}
                 >
-                    <ShieldAlert className="h-8 w-8 text-amber-500" />
+                    <ShieldAlert className="h-8 w-8 text-emerald-500" />
                 </div>
 
                 {/* Title & Message */}

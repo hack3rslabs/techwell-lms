@@ -74,9 +74,20 @@ app.use(helmet({
 // Serve Static Uploads
 const path = require('path');
 const uploadsPath = path.join(__dirname, '../uploads');
+// Allowed origins for static uploads (restrict wildcard for security)
+const ALLOWED_UPLOAD_ORIGINS = [
+    'https://techwell.co.in',
+    process.env.FRONTEND_URL,
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+].filter(Boolean);
+
 app.use('/uploads', express.static(uploadsPath, {
-    setHeaders: (res) => {
-        res.set('Access-Control-Allow-Origin', '*');
+    setHeaders: (res, filePath, stat) => {
+        const origin = res.req?.headers?.origin;
+        if (origin && ALLOWED_UPLOAD_ORIGINS.some(o => origin.startsWith(o))) {
+            res.set('Access-Control-Allow-Origin', origin);
+        }
         res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     }
 }));
@@ -118,8 +129,8 @@ app.use('/api', auditMiddleware);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/courses', courseRoutes);
-app.use('/api/events', require('./routes/events.routes'));
-app.use('/api/staff', require('./routes/staff.routes'));
+app.use('/api/events', eventsRoutes);
+app.use('/api/staff', require('./routes/staff.routes'));  // registered once
 app.use('/api/approvals', approvalsRoutes);
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/consultancy', require('./routes/consultancy.routes'));
@@ -147,6 +158,7 @@ app.use('/api/employers', require('./routes/employer.routes'));
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/projects', require('./routes/projectRoutes'));
+app.use('/api/faqs', require('./routes/faq.routes'));
 app.use('/api/payments', require('./routes/payment.routes'));
 app.use('/api/finance', require('./routes/finance.routes'));
 app.use('/api/upload', require('./routes/upload.routes'));
@@ -186,9 +198,8 @@ app.use('/api/forum', require('./routes/forum.routes'));
 app.use('/api/skillcasts', require('./routes/skillcastRoutes'));
 app.use('/api/coupons', require('./routes/coupons.routes'));
 app.use('/api/candidates', require('./routes/candidate.routes'));
-app.use('/api/assessments', require('./routes/assessment.routes'));
+app.use('/api/assessments', assessmentRoutes); // unified — uses assessments.routes
 app.use('/api/quizzes', require('./routes/quiz.routes'));
-app.use('/api/assessments', assessmentRoutes);
 app.use('/api/operations', require('./routes/operations.routes'));
 app.use('/api/admin/gallery', require('./routes/galleryRoutes'));
 app.use('/api/success-stories', require('./routes/success-stories.routes'));
@@ -198,7 +209,8 @@ app.use('/api/products', require('./routes/product.routes'));
 app.use('/api/clients', require('./routes/client.routes'));
 app.use('/api/team', require('./routes/team'));
 app.use('/api/batches', require('./routes/batch.routes'));
-app.use('/api/staff', require('./routes/staff.routes'));
+app.use('/api/seo', require('./routes/seo.routes'));
+// NOTE: /api/staff already registered above — removed duplicate
 app.use('/api/sales/templates', require('./routes/templates.routes'));
 app.use('/api/internships', require('./routes/internships.routes'));
 app.use('/api/ats-checker', require('./routes/ats-checker.routes'));
@@ -210,6 +222,8 @@ app.use('/api/admin/newsletters', require('./routes/newsletter.routes'));
 app.use('/api/admin/automation-studio', require('./api/admin/automation-studio/index'));
 app.use('/api/franchise', require('./routes/franchise.routes'));
 app.use('/api/twilio', twilioRouter);
+app.use('/api/shop', require('./routes/store.routes'));
+app.use('/api/main-banners', require('./routes/main-banner.routes'));
 
 // Health check
 app.get('/api/health', async (req, res) => {
@@ -247,7 +261,8 @@ app.use((err, req, res, next) => {
         console.error('PRISMA ERROR:', err);
         return res.status(400).json({
             error: errorMsg,
-            details: err.message, // Temporarily expose for debugging
+            // Never expose internal database details in production
+            ...(process.env.NODE_ENV === 'development' && { details: err.message }),
             code: err.code
         });
     }
@@ -260,7 +275,7 @@ app.use((err, req, res, next) => {
 
 const http = require('http');
 const server = http.createServer(app);
-const PORT = 5000; // Hardcoded to match Dockerfile EXPOSE
+const PORT = parseInt(process.env.PORT || '5000', 10); // Configurable via env, default 5000 (matches Dockerfile EXPOSE)
 
 // Permanent solution to prevent server from crashing due to unhandled errors
 process.on('uncaughtException', (err) => {

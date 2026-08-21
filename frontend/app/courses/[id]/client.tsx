@@ -459,7 +459,7 @@ export default function CourseDetailClient() {
     const getDifficultyColor = (diff: string) => {
         switch (diff) {
             case 'BEGINNER': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-            case 'INTERMEDIATE': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+            case 'INTERMEDIATE': return 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'
             case 'ADVANCED': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
             default: return 'bg-gray-100 text-gray-700'
         }
@@ -528,7 +528,7 @@ export default function CourseDetailClient() {
                             <span className="text-sm text-muted-foreground">{course.category}</span>
 
                             {course.hasInterviewPrep && (
-                                <span className="text-xs px-3 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 flex items-center gap-1">
+                                <span className="text-xs px-3 py-1 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 flex items-center gap-1">
                                     <Star className="h-3 w-3" />
                                     Interview Prep Available
                                 </span>
@@ -539,7 +539,7 @@ export default function CourseDetailClient() {
                             {!course.isEnrolled && (
                                 <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
                                     <DialogTrigger asChild>
-                                        <Button size="lg" className="shadow-lg shadow-primary/20 shrink-0 font-bold rounded-xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white border-0 transition-all duration-300 hover:scale-[1.02] active:scale-95">
+                                        <Button size="lg" className="shadow-lg shadow-primary/20 shrink-0 font-bold rounded-xl bg-gradient-to-r from-primary to-sky-600 hover:from-primary/90 hover:to-sky-600/90 text-white border-0 transition-all duration-300 hover:scale-[1.02] active:scale-95">
                                             Share Interest
                                         </Button>
                                     </DialogTrigger>
@@ -827,19 +827,19 @@ export default function CourseDetailClient() {
                                     </div>
 
                                     <div
-                                        className={`flex items-center justify-between p-3 rounded border cursor-pointer ${purchaseType === 'BUNDLE' ? 'border-purple-500 bg-purple-50' : 'border-border'}`}
+                                        className={`flex items-center justify-between p-3 rounded border cursor-pointer ${purchaseType === 'BUNDLE' ? 'border-sky-500 bg-sky-50' : 'border-border'}`}
                                         onClick={() => setPurchaseType('BUNDLE')}
                                     >
                                         <div className="flex items-center gap-2">
-                                            <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${purchaseType === 'BUNDLE' ? 'border-purple-500' : 'border-muted-foreground'}`}>
-                                                {purchaseType === 'BUNDLE' && <div className="h-2 w-2 rounded-full bg-purple-500" />}
+                                            <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${purchaseType === 'BUNDLE' ? 'border-sky-500' : 'border-muted-foreground'}`}>
+                                                {purchaseType === 'BUNDLE' && <div className="h-2 w-2 rounded-full bg-sky-500" />}
                                             </div>
                                             <div>
                                                 <span className="font-medium block">Complete Bundle</span>
                                                 <span className="text-xs text-green-600 font-medium">Includes AI Interview Prep</span>
                                             </div>
                                         </div>
-                                        <span className="font-bold text-purple-700">₹{course.bundlePrice || (course.price * 1.2)}</span>
+                                        <span className="font-bold text-sky-700">₹{course.bundlePrice || (course.price * 1.2)}</span>
                                     </div>
                                 </div>
                             )}
@@ -948,8 +948,15 @@ export default function CourseDetailClient() {
                                             </p>
                                         )}
                                     </div>
+
+                                    {/* PAYMENT SAFETY NOTICE */}
+                                    <div className="mb-3 p-3 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-lg text-xs text-amber-900 dark:text-amber-200 leading-relaxed shadow-sm">
+                                        <p className="font-bold mb-1 flex items-center gap-1.5"><span className="text-[14px]">⚠️</span> Payment Safety Notice</p>
+                                        <p className="opacity-90 text-[11px]">Use only the official Techwell payment process. Never transfer money to an unverified individual claiming to represent Techwell. When in doubt, contact <a href="mailto:support@techwell.co.in" className="font-semibold underline hover:text-amber-700 dark:hover:text-white">support@techwell.co.in</a>.</p>
+                                    </div>
+
                                     <Button
-                                        className={`w-full min-h-[3.25rem] py-3.5 ${purchaseType === 'BUNDLE' ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
+                                        className={`w-full min-h-[3.25rem] py-3.5 ${purchaseType === 'BUNDLE' ? 'bg-sky-600 hover:bg-sky-700' : ''}`}
                                         size="lg"
                                         onClick={handleBuy}
                                         disabled={isEnrolling}
@@ -983,7 +990,7 @@ export default function CourseDetailClient() {
                                     <span>Certificate of completion</span>
                                 </div>
                                 {purchaseType === 'BUNDLE' && (
-                                    <div className="flex items-center gap-2 font-medium text-purple-700">
+                                    <div className="flex items-center gap-2 font-medium text-sky-700">
                                         <Star className="h-4 w-4" />
                                         <span>Unlimited AI Mock Interviews</span>
                                     </div>

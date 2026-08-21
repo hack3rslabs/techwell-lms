@@ -133,11 +133,11 @@ export default function AIManagerPage() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-4">
-                    <ShieldAlert className="h-6 w-6 text-yellow-600" />
+                <div className="bg-sky-50 border border-sky-200 rounded-lg p-4 flex items-center gap-4">
+                    <ShieldAlert className="h-6 w-6 text-sky-600" />
                     <div>
-                        <h3 className="font-semibold text-yellow-900">No Default Provider Selected</h3>
-                        <p className="text-sm text-yellow-700">The system will fall back to environment variables. Please set a default provider below.</p>
+                        <h3 className="font-semibold text-sky-900">No Default Provider Selected</h3>
+                        <p className="text-sm text-sky-700">The system will fall back to environment variables. Please set a default provider below.</p>
                     </div>
                 </div>
             )}
@@ -243,7 +243,7 @@ export default function AIManagerPage() {
             <Card className="mt-8 shadow-sm">
                 <CardHeader>
                     <div className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-amber-500" />
+                        <Sparkles className="h-5 w-5 text-emerald-500" />
                         <CardTitle>AI Skills & Smart Features</CardTitle>
                     </div>
                     <CardDescription>Toggle specific AI capabilities across the platform. Disabling features will revert them to standard manual workflows.</CardDescription>

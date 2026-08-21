@@ -55,21 +55,21 @@ const STATUS_OPTIONS = [
 
 const STATUS_COLOR: Record<string, string> = {
     APPLIED: 'bg-blue-100 text-blue-700',
-    VIEWED: 'bg-indigo-100 text-indigo-700',
+    VIEWED: 'bg-sky-100 text-sky-700',
     SCREENED: 'bg-violet-100 text-violet-700',
-    SHORTLISTED: 'bg-amber-100 text-amber-700',
-    INTERVIEW_SCHEDULED: 'bg-orange-100 text-orange-700',
-    INTERVIEWED: 'bg-orange-100 text-orange-600',
+    SHORTLISTED: 'bg-emerald-100 text-emerald-700',
+    INTERVIEW_SCHEDULED: 'bg-sky-100 text-sky-700',
+    INTERVIEWED: 'bg-sky-100 text-sky-600',
     SELECTED: 'bg-emerald-100 text-emerald-700',
     OFFER_RELEASED: 'bg-emerald-100 text-emerald-700',
     OFFER_ACCEPTED: 'bg-green-100 text-green-800',
     JOINED: 'bg-green-200 text-green-900',
     NOT_JOINED: 'bg-slate-100 text-slate-600',
     REJECTED: 'bg-red-100 text-red-700',
-    ON_HOLD: 'bg-yellow-100 text-yellow-700',
+    ON_HOLD: 'bg-sky-100 text-sky-700',
     WITHDRAWN: 'bg-slate-100 text-slate-500',
-    BG_VERIFICATION: 'bg-cyan-100 text-cyan-700',
-    DOCS_VERIFIED: 'bg-teal-100 text-teal-700',
+    BG_VERIFICATION: 'bg-sky-100 text-sky-700',
+    DOCS_VERIFIED: 'bg-emerald-100 text-emerald-700',
 };
 
 export default function JobApplicationsPage() {
@@ -244,8 +244,8 @@ export default function JobApplicationsPage() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {[
                     { label: 'Total', value: stats.total, color: 'text-slate-800' },
-                    { label: 'Shortlisted', value: stats.shortlisted, color: 'text-amber-600' },
-                    { label: 'Interviewing', value: stats.interviewing, color: 'text-orange-600' },
+                    { label: 'Shortlisted', value: stats.shortlisted, color: 'text-emerald-600' },
+                    { label: 'Interviewing', value: stats.interviewing, color: 'text-sky-600' },
                     { label: 'Offered', value: stats.offered, color: 'text-emerald-600' },
                     { label: 'Joined', value: stats.joined, color: 'text-green-700' },
                 ].map(s => (
@@ -342,7 +342,7 @@ export default function JobApplicationsPage() {
                                                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-violet-600 hover:bg-violet-50" title="Timeline" onClick={() => setSelectedApp(app)}>
                                                     <ClipboardList className="w-3.5 h-3.5" />
                                                 </Button>
-                                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-orange-600 hover:bg-orange-50" title="Schedule Interview" onClick={() => setScheduleApp(app)}>
+                                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-sky-600 hover:bg-sky-50" title="Schedule Interview" onClick={() => setScheduleApp(app)}>
                                                     <Video className="w-3.5 h-3.5" />
                                                 </Button>
                                                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50" title="Release Offer" onClick={() => setOfferApp(app)}>
@@ -397,7 +397,7 @@ export default function JobApplicationsPage() {
                                             <div key={iv.id} className={`rounded-xl border p-4 ${iv.result === 'PASSED' ? 'border-emerald-200 bg-emerald-50' : iv.result === 'FAILED' ? 'border-red-100 bg-red-50' : 'border-slate-100'}`}>
                                                 <div className="flex items-center justify-between mb-1">
                                                     <span className="font-bold text-sm">{iv.roundName}</span>
-                                                    <Badge className={`text-xs ${iv.result === 'PASSED' ? 'bg-emerald-100 text-emerald-700' : iv.result === 'FAILED' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                    <Badge className={`text-xs ${iv.result === 'PASSED' ? 'bg-emerald-100 text-emerald-700' : iv.result === 'FAILED' ? 'bg-red-100 text-red-700' : 'bg-sky-100 text-sky-700'}`}>
                                                         {iv.result || iv.status}
                                                     </Badge>
                                                 </div>
@@ -407,7 +407,7 @@ export default function JobApplicationsPage() {
                                                 {iv.score && (
                                                     <div className="flex items-center gap-1 mt-1">
                                                         {Array.from({ length: 5 }).map((_, si) => (
-                                                            <Star key={si} className={`w-3 h-3 ${si < Math.round(iv.score / 20) ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} />
+                                                            <Star key={si} className={`w-3 h-3 ${si < Math.round(iv.score / 20) ? 'fill-emerald-400 text-emerald-400' : 'text-slate-200'}`} />
                                                         ))}
                                                         <span className="text-xs text-slate-400 ml-1">{iv.score}/100</span>
                                                     </div>
@@ -526,7 +526,7 @@ export default function JobApplicationsPage() {
                     </div>
                     <div className="flex gap-3 mt-4">
                         <Button variant="outline" className="flex-1" onClick={() => setScheduleApp(null)}>Cancel</Button>
-                        <Button className="flex-1 bg-orange-600 hover:bg-orange-700 text-white" onClick={handleScheduleInterview} disabled={scheduling}>
+                        <Button className="flex-1 bg-sky-600 hover:bg-sky-700 text-white" onClick={handleScheduleInterview} disabled={scheduling}>
                             {scheduling ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />} Schedule
                         </Button>
                     </div>

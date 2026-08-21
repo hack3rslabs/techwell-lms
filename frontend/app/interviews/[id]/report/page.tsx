@@ -115,21 +115,21 @@ export default function InterviewReportPage() {
 
     const getScoreColor = (score: number) => {
         if (score >= 80) return 'text-green-600'
-        if (score >= 60) return 'text-yellow-600'
+        if (score >= 60) return 'text-sky-600'
         return 'text-red-600'
     }
 
     const getScoreGradient = (score: number) => {
         if (score >= 80) return 'from-green-500 to-emerald-400'
-        if (score >= 60) return 'from-yellow-500 to-amber-400'
-        return 'from-red-500 to-orange-400'
+        if (score >= 60) return 'from-sky-500 to-emerald-400'
+        return 'from-red-500 to-sky-400'
     }
 
     const getTypeColor = (type: string) => {
         switch (type) {
             case 'TECHNICAL': return 'bg-blue-100 text-blue-700'
-            case 'BEHAVIORAL': return 'bg-purple-100 text-purple-700'
-            case 'HR': return 'bg-pink-100 text-pink-700'
+            case 'BEHAVIORAL': return 'bg-sky-100 text-sky-700'
+            case 'HR': return 'bg-emerald-100 text-emerald-700'
             default: return 'bg-gray-100 text-gray-700'
         }
     }
@@ -256,7 +256,7 @@ export default function InterviewReportPage() {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-amber-600">
+                            <CardTitle className="flex items-center gap-2 text-emerald-600">
                                 <Target className="h-5 w-5" />
                                 Areas to Improve
                             </CardTitle>
@@ -265,7 +265,7 @@ export default function InterviewReportPage() {
                             <ul className="space-y-3">
                                 {evaluation.weaknesses.map((weakness, idx) => (
                                     <li key={idx} className="flex items-start gap-2">
-                                        <TrendingDown className="h-4 w-4 text-amber-500 mt-1 flex-shrink-0" />
+                                        <TrendingDown className="h-4 w-4 text-emerald-500 mt-1 flex-shrink-0" />
                                         <span className="text-sm">{weakness}</span>
                                     </li>
                                 ))}
@@ -313,7 +313,7 @@ export default function InterviewReportPage() {
                 <Card className="mb-6">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Lightbulb className="h-5 w-5 text-yellow-500" />
+                            <Lightbulb className="h-5 w-5 text-sky-500" />
                             Personalized Recommendations
                         </CardTitle>
                         <CardDescription>Based on your performance, here&apos;s what to focus on next</CardDescription>

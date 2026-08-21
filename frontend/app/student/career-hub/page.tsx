@@ -7,7 +7,7 @@ export default function CareerHubDashboard() {
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-8">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
+            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 rounded-2xl p-8 text-white">
                 <h1 className="text-3xl font-black tracking-tight">Career Hub</h1>
                 <p className="text-blue-100 mt-2 text-lg">AI-powered tools to help you land your dream job.</p>
             </div>
@@ -45,16 +45,16 @@ export default function CareerHubDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
 
                     {/* Resume Builder */}
-                    <Card className="border-indigo-100 hover:border-indigo-300 hover:shadow-md transition-all">
+                    <Card className="border-sky-100 hover:border-sky-300 hover:shadow-md transition-all">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-indigo-700">
+                            <CardTitle className="flex items-center gap-2 text-sky-700">
                                 <Briefcase className="w-6 h-6" />
                                 ATS Resume Builder
                             </CardTitle>
                             <CardDescription>Create a professionally formatted, ATS-compliant resume from scratch.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Button className="w-full bg-indigo-600 hover:bg-indigo-700" onClick={() => window.location.href = '/student/resume'}>
+                            <Button className="w-full bg-sky-600 hover:bg-sky-700" onClick={() => window.location.href = '/student/resume'}>
                                 Open Resume Builder <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </CardContent>
@@ -93,16 +93,16 @@ export default function CareerHubDashboard() {
                     </Card>
 
                     {/* Mock Interview */}
-                    <Card className="border-amber-100 hover:border-amber-300 hover:shadow-md transition-all">
+                    <Card className="border-emerald-100 hover:border-emerald-300 hover:shadow-md transition-all">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-amber-700">
+                            <CardTitle className="flex items-center gap-2 text-emerald-700">
                                 <Video className="w-6 h-6" />
                                 AI Mock Interview
                             </CardTitle>
                             <CardDescription>Practice technical and HR rounds with our live AI video interviewer.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Button className="w-full bg-amber-600 hover:bg-amber-700" onClick={() => window.location.href = '/student/career-hub/mock-interview'}>
+                            <Button className="w-full bg-emerald-600 hover:bg-emerald-700" onClick={() => window.location.href = '/student/career-hub/mock-interview'}>
                                 Start Practice <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </CardContent>

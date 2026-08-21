@@ -79,7 +79,7 @@ function PostCard({ post }: { post: any }) {
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                 ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-sky-100 to-sky-100 dark:from-sky-900/30 dark:to-sky-900/30" />
                 )}
                 {post.category && (
                     <Badge className="absolute top-4 left-4 bg-white/90 text-slate-900 backdrop-blur border-none font-bold shadow-sm">{post.category}</Badge>
@@ -98,7 +98,7 @@ function PostCard({ post }: { post: any }) {
                     </span>
                 </div>
 
-                <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug">
+                <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors line-clamp-2 leading-snug">
                     {post.title}
                 </h3>
 
@@ -182,10 +182,10 @@ export default function BlogPage() {
       {/* Dynamic Header */}
       <div className="relative py-20 overflow-hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-          <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-indigo-500 opacity-20 blur-[100px]"></div>
+          <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-sky-500 opacity-20 blur-[100px]"></div>
           <div className="container relative z-10 text-center max-w-4xl mx-auto px-6">
               <div className="flex items-center justify-center gap-4 mb-6">
-                  <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:hover:bg-indigo-800/50 rounded-full px-4 py-1.5 border-none">
+                  <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-200 dark:bg-sky-900/50 dark:text-sky-300 dark:hover:bg-sky-800/50 rounded-full px-4 py-1.5 border-none">
                       <Sparkles className="w-3.5 h-3.5 mr-2 inline" /> Techwell Insights
                   </Badge>
                   {user && ['SUPER_ADMIN', 'ADMIN', 'CONTENT_WRITER'].includes(user.role) && (
@@ -197,7 +197,7 @@ export default function BlogPage() {
                   )}
               </div>
               <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-slate-900 dark:text-white leading-tight">
-                  Ideas that <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-cyan-500">shape</span> your tech career.
+                  Ideas that <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-sky-500">shape</span> your tech career.
               </h1>
               <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
                   Deep dives into software engineering, AI, UI/UX, and career growth. Learn directly from industry experts.
@@ -205,12 +205,12 @@ export default function BlogPage() {
 
               {/* Search + Filters */}
               <div className="relative max-w-2xl mx-auto mb-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-full group">
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-sky-500 transition-colors" />
                   <Input
                       placeholder="Search for an article..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-14 h-16 rounded-full text-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-slate-200/60 dark:border-slate-800 focus-visible:ring-indigo-500 focus-visible:ring-offset-0"
+                      className="pl-14 h-16 rounded-full text-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-slate-200/60 dark:border-slate-800 focus-visible:ring-sky-500 focus-visible:ring-offset-0"
                   />
               </div>
 
@@ -233,7 +233,7 @@ export default function BlogPage() {
                       onClick={() => setCategory(cat)}
                       className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
                         category === cat
-                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-105 border-none"
+                          ? "bg-sky-600 text-white shadow-lg shadow-sky-500/30 scale-105 border-none"
                           : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
                       }`}
                     >
@@ -248,7 +248,7 @@ export default function BlogPage() {
       <div className="container py-16 px-6 max-w-7xl mx-auto">
         {isLoading ? (
           <div className="flex justify-center py-32">
-            <Loader2 className="animate-spin h-10 w-10 text-indigo-600" />
+            <Loader2 className="animate-spin h-10 w-10 text-sky-600" />
           </div>
         ) : (
           <>
@@ -256,7 +256,7 @@ export default function BlogPage() {
             {featuredPost && (
               <div className="mb-16">
                   <div className="flex items-center gap-2 mb-6">
-                      <TrendingUp className="h-5 w-5 text-rose-500" />
+                      <TrendingUp className="h-5 w-5 text-emerald-500" />
                       <h2 className="text-2xl font-bold tracking-tight">Featured Story</h2>
                   </div>
                   <Link href={`/blog/${featuredPost.slug || featuredPost.id}`} className="group block">
@@ -270,13 +270,13 @@ export default function BlogPage() {
                                   className="w-full h-[400px] md:h-[500px] object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105"
                               />
                           ) : (
-                              <div className="w-full h-[400px] md:h-[500px] bg-gradient-to-br from-indigo-900 to-purple-900" />
+                              <div className="w-full h-[400px] md:h-[500px] bg-gradient-to-br from-sky-900 to-sky-900" />
                           )}
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent flex flex-col justify-end p-8 md:p-12">
                               {featuredPost.category && (
-                                  <Badge className="bg-indigo-600 text-white border-none w-fit mb-4 text-xs tracking-wider uppercase">{featuredPost.category}</Badge>
+                                  <Badge className="bg-sky-600 text-white border-none w-fit mb-4 text-xs tracking-wider uppercase">{featuredPost.category}</Badge>
                               )}
-                              <h3 className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight group-hover:text-indigo-200 transition-colors">
+                              <h3 className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight group-hover:text-sky-200 transition-colors">
                                   {featuredPost.title}
                               </h3>
                               <p className="text-slate-300 md:text-lg mb-6 line-clamp-2 max-w-3xl">
@@ -310,7 +310,7 @@ export default function BlogPage() {
                               <div key={catGroup as string} className="space-y-6">
                                   <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                                       <h3 className="text-2xl font-bold">{catGroup as string}</h3>
-                                      <button onClick={() => setCategory(catGroup as string)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">View All →</button>
+                                      <button onClick={() => setCategory(catGroup as string)} className="text-sm font-bold text-sky-600 hover:text-sky-700">View All →</button>
                                   </div>
                                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                       {groupPosts.map(post => (
@@ -332,8 +332,8 @@ export default function BlogPage() {
             ) : (
               !featuredPost && (
                 <div className="text-center py-32 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                  <div className="h-20 w-20 bg-indigo-50 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Search className="h-10 w-10 text-indigo-500" />
+                  <div className="h-20 w-20 bg-sky-50 dark:bg-sky-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Search className="h-10 w-10 text-sky-500" />
                   </div>
                   <h3 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">No articles found</h3>
                   <p className="text-slate-500">Try adjusting your search or category filters.</p>
@@ -348,18 +348,18 @@ export default function BlogPage() {
       <div className="container pb-24 px-6 max-w-5xl mx-auto">
           <div className="relative rounded-3xl overflow-hidden bg-slate-900 shadow-2xl">
               <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/90 to-purple-800/90 backdrop-blur-sm"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-sky-600/90 to-sky-800/90 backdrop-blur-sm"></div>
               <div className="relative p-10 md:p-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
                   <div className="max-w-xl">
                       <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">Never miss an update.</h2>
-                      <p className="text-indigo-100 text-lg leading-relaxed">Join 10,000+ developers and tech enthusiasts getting our best insights delivered to their inbox weekly.</p>
+                      <p className="text-sky-100 text-lg leading-relaxed">Join 10,000+ developers and tech enthusiasts getting our best insights delivered to their inbox weekly.</p>
                   </div>
                   <div className="w-full md:w-auto flex-shrink-0">
                       <div className="flex flex-col sm:flex-row gap-3">
                           <Input placeholder="Enter your email" className="h-12 w-full md:w-72 rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 transition-colors" />
-                          <Button size="lg" className="h-12 bg-white text-indigo-900 hover:bg-slate-100 font-bold rounded-xl px-8 shadow-xl">Subscribe</Button>
+                          <Button size="lg" className="h-12 bg-white text-sky-900 hover:bg-slate-100 font-bold rounded-xl px-8 shadow-xl">Subscribe</Button>
                       </div>
-                      <p className="text-xs text-indigo-200 mt-3 opacity-80 text-center sm:text-left">No spam. Unsubscribe anytime.</p>
+                      <p className="text-xs text-sky-200 mt-3 opacity-80 text-center sm:text-left">No spam. Unsubscribe anytime.</p>
                   </div>
               </div>
           </div>

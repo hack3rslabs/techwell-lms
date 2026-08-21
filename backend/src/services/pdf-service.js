@@ -47,6 +47,22 @@ async function generateAgreementPdf(agreement) {
                     border-bottom: 1px solid #333;
                     padding-bottom: 5px;
                 }
+                .fraud-warning {
+                    margin-top: 40px;
+                    padding: 15px;
+                    background-color: #fff8f0;
+                    border: 1px solid #ffe8cc;
+                    border-left: 4px solid #ff9900;
+                    font-size: 12px;
+                    color: #555;
+                    page-break-inside: avoid;
+                }
+                .fraud-warning strong {
+                    color: #cc7a00;
+                    display: block;
+                    margin-bottom: 5px;
+                    font-size: 14px;
+                }
             </style>
         </head>
         <body>
@@ -85,6 +101,11 @@ async function generateAgreementPdf(agreement) {
                     <p><em>(Pending Client Signature)</em></p>
                 </div>
             `}
+
+            <div class="fraud-warning">
+                <strong>⚠️ SECURITY & FRAUD ALERT</strong>
+                <p style="margin:0;">Techwell does not authorize unknown individuals to collect payments or make commitments on its behalf. Always verify through official channels. When in doubt, contact support@techwell.co.in immediately.</p>
+            </div>
         </body>
         </html>
     `;

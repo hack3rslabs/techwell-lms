@@ -155,8 +155,8 @@ export default function FeedbackPage({ params }: { params: { id: string } }) {
                     
                     {evaluation.recommendations && evaluation.recommendations.length > 0 && (
                         <div className="mt-6 border-t pt-4">
-                            <h3 className="font-semibold text-purple-700 mb-3 flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-purple-500"></div> Action Items
+                            <h3 className="font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-sky-500"></div> Action Items
                             </h3>
                             <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
                                 {evaluation.recommendations.map((rec: string, i: number) => (
@@ -188,7 +188,7 @@ export default function FeedbackPage({ params }: { params: { id: string } }) {
                                 <span className="font-medium text-sm md:text-base">{item.question}</span>
                             </div>
                             <div className="flex items-center gap-4 shrink-0">
-                                <span className={`text-sm font-bold ${item.score >= 70 ? 'text-green-600' : item.score >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                <span className={`text-sm font-bold ${item.score >= 70 ? 'text-green-600' : item.score >= 40 ? 'text-sky-600' : 'text-red-600'}`}>
                                     Score: {item.score}
                                 </span>
                                 <ChevronDown className="h-5 w-5 text-muted-foreground" />

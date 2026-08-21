@@ -207,7 +207,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   const gradStyles = 'from-primary to-primary/60 dark:from-primary dark:to-primary/50'
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#030712] font-sans selection:bg-indigo-500/30 pb-12">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#030712] font-sans selection:bg-sky-500/30 pb-12">
       
       {/* IMMERSIVE HERO SECTION */}
       <section className="relative w-full h-[55vh] min-h-[450px] flex items-center justify-center overflow-hidden">

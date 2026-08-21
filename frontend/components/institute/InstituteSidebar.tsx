@@ -50,14 +50,14 @@ export function InstituteSidebar() {
             {/* Brand Header */}
             <div className="flex h-16 items-center px-6 border-b border-gray-100">
                 <Link href="/" className="flex items-center gap-3 group">
-                    <div className="h-9 w-9 rounded-lg bg-indigo-600 flex items-center justify-center shadow-sm group-hover:bg-indigo-700 transition-colors">
+                    <div className="h-9 w-9 rounded-lg bg-sky-600 flex items-center justify-center shadow-sm group-hover:bg-sky-700 transition-colors">
                         <GraduationCap className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-lg font-bold text-gray-900 leading-none tracking-tight">
                             Techwell
                         </span>
-                        <span className="text-[11px] font-semibold text-indigo-600 uppercase tracking-widest mt-0.5">
+                        <span className="text-[11px] font-semibold text-sky-600 uppercase tracking-widest mt-0.5">
                             Institute
                         </span>
                     </div>
@@ -76,7 +76,7 @@ export function InstituteSidebar() {
                                 className={cn(
                                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 group",
                                     active
-                                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                                        ? "bg-sky-600 text-white shadow-md shadow-sky-200"
                                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                                 )}
                             >

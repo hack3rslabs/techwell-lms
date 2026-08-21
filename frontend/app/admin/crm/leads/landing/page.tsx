@@ -68,7 +68,7 @@ export default function LeadLandingPage() {
           <button 
             onClick={handleBulkAssign}
             disabled={!selectedLeads.length}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md disabled:bg-gray-400"
+            className="px-4 py-2 bg-sky-600 text-white rounded-md disabled:bg-gray-400"
           >
             Bulk Assign ({selectedLeads.length})
           </button>
@@ -140,7 +140,7 @@ export default function LeadLandingPage() {
                     )}
                     <a
                         href={`mailto:${lead.email}`}
-                        className="inline-flex items-center justify-center h-8 w-8 rounded-md text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                        className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sky-600 hover:text-sky-700 hover:bg-sky-50"
                         title="Email Lead"
                     >
                         <Mail className="h-4 w-4" />
@@ -148,7 +148,7 @@ export default function LeadLandingPage() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                        className="h-8 w-8 text-sky-600 hover:text-sky-700 hover:bg-sky-50"
                         title="View Profile"
                         onClick={() => {
                             if (lead.customer?.customerNo || lead.customerId) {

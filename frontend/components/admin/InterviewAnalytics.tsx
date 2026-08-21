@@ -131,7 +131,7 @@ export function InterviewAnalytics() {
                             <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative w-3/4 mx-auto">
                                 <div 
                                     className="absolute top-0 bottom-0 left-0 bg-primary"
-                                    style={{ width: `${Math.min(avgScore, 100)}%` }}
+                                    style={{ width: `${Math.min(((data.radar.tech + data.radar.comm + data.radar.conf) / 3) || 0, 100)}%` }}
                                 ></div>
                             </div>
                             <div className="flex justify-between text-xs text-muted-foreground mt-2 w-3/4 mx-auto">

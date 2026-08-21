@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
 
@@ -299,7 +299,7 @@ router.get('/scripts', authenticate, async (req, res, next) => {
  * @desc    Get aggregated metrics for all staff members
  * @access  Private (Admin/Manager)
  */
-router.get('/monitoring', authenticate, async (req, res, next) => {
+router.get('/monitoring', authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'INSTITUTE_ADMIN', 'INSTRUCTOR'), async (req, res, next) => {
     try {
         let { dateRange } = req.query;
     if (dateRange !== undefined) dateRange = Array.isArray(dateRange) ? dateRange[0] : String(dateRange);
@@ -320,7 +320,7 @@ router.get('/monitoring', authenticate, async (req, res, next) => {
 
         // Fetch all staff members (users with roles other than STUDENT, or specifically STAFF/ADMIN)
         const staffMembers = await prisma.user.findMany({
-            where: { role: { in: ['ADMIN', 'MANAGER', 'STAFF', 'SUPER_ADMIN', 'INSTRUCTOR'] } },
+            where: { role: { in: ['ADMIN', 'STAFF', 'SUPER_ADMIN', 'INSTRUCTOR'] } },
             select: { id: true, name: true, role: true, email: true }
         });
 
@@ -343,12 +343,12 @@ router.get('/monitoring', authenticate, async (req, res, next) => {
 
             // 4. Leads Converted
             const leadsConverted = await prisma.lead.count({
-                where: { assignedToId: staff.id, status: 'ENROLLED' } // Assuming ENROLLED is converted
+                where: { assignedToId: staff.id, status: 'CONVERTED' } // Assuming CONVERTED is converted
             });
 
             // 5. Leads Lost
             const leadsLost = await prisma.lead.count({
-                where: { assignedToId: staff.id, status: { in: ['LOST', 'DROPPED'] } }
+                where: { assignedToId: staff.id, status: 'LOST' }
             });
 
             // 6. Demo Schedules

@@ -43,19 +43,19 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(consultancyJsonLd) }}
         {/* HERO SECTION */}
         <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay z-0"></div>
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-teal-500/20 to-transparent blur-3xl -z-10"></div>
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-emerald-500/20 to-transparent blur-3xl -z-10"></div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <Badge className="bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-500/20 border-none px-4 py-2 text-sm mb-8">
+            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-none px-4 py-2 text-sm mb-8">
               Expert Guidance
             </Badge>
             <h1 className="text-5xl md:text-7xl font-black tracking-tight text-slate-900 dark:text-white mb-6">
-              Empowering <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-400">Careers & Business</span>
+              Empowering <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-emerald-400">Careers & Business</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
               Whether you're a professional seeking 100% placement assistance or an enterprise needing digital transformation strategy, our consultancy experts are here to guide you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-teal-500 hover:bg-teal-600 text-white font-bold h-14 px-8 rounded-xl">
+              <Button asChild size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-14 px-8 rounded-xl">
                 <Link href="/contact?type=business-consulting">Business Consulting <ChevronRight className="w-5 h-5 ml-2" /></Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="h-14 px-8 rounded-xl font-bold border-slate-200 dark:border-slate-800">
@@ -71,9 +71,9 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(consultancyJsonLd) }}
             
             {/* Job Assistance Block */}
             <div className="bg-white dark:bg-[#0B1121] p-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-[80px] rounded-full group-hover:bg-indigo-500/20 transition-colors duration-700"></div>
-              <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-8 border border-indigo-200 dark:border-indigo-500/30">
-                <Briefcase className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 blur-[80px] rounded-full group-hover:bg-sky-500/20 transition-colors duration-700"></div>
+              <div className="w-16 h-16 bg-sky-100 dark:bg-sky-500/20 rounded-2xl flex items-center justify-center mb-8 border border-sky-200 dark:border-sky-500/30">
+                <Briefcase className="h-8 w-8 text-sky-600 dark:text-sky-400" />
               </div>
               <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4">Job Consultancy & Assistance</h2>
               <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
@@ -82,12 +82,12 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(consultancyJsonLd) }}
               <ul className="space-y-4 mb-8">
                 {['AI-Powered Resume Building', 'MNC Mock Interview Simulations', '1-on-1 Career Mentorship', 'Direct Referrals to 500+ Hiring Partners'].map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
-                    <CheckCircle2 className="w-6 h-6 text-indigo-500 shrink-0" />
+                    <CheckCircle2 className="w-6 h-6 text-sky-500 shrink-0" />
                     <span className="font-medium">{feature}</span>
                   </li>
                 ))}
               </ul>
-              <Button asChild variant="default" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl">
+              <Button asChild variant="default" className="w-full bg-sky-600 hover:bg-sky-700 h-12 rounded-xl">
                 <Link href="/register">Start Your Career Journey</Link>
               </Button>
             </div>

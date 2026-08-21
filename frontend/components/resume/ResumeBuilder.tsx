@@ -526,8 +526,8 @@ export default function ResumeBuilder() {
                         <textarea value={proj.description} onChange={(e) => handleArrayChange("projects", idx, "description", e.target.value)} className="border border-gray-200 p-4 rounded-xl h-24 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm" placeholder="State the problem you addressed..." />
                     </div>
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-pink-500 uppercase tracking-widest pl-1">Outcome / Final Result</label>
-                        <input value={proj.outcome} onChange={(e) => handleArrayChange("projects", idx, "outcome", e.target.value)} className="border border-pink-100 bg-pink-50/30 p-3 rounded-xl outline-none focus:ring-2 focus:ring-pink-500 text-sm" placeholder="e.g. Achieved 95% accuracy, Saved 20 hours/week" />
+                        <label className="text-xs font-bold text-emerald-500 uppercase tracking-widest pl-1">Outcome / Final Result</label>
+                        <input value={proj.outcome} onChange={(e) => handleArrayChange("projects", idx, "outcome", e.target.value)} className="border border-emerald-100 bg-emerald-50/30 p-3 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="e.g. Achieved 95% accuracy, Saved 20 hours/week" />
                     </div>
                 </div>
               </div>
@@ -608,11 +608,11 @@ export default function ResumeBuilder() {
                                 <p className="text-[10px] font-bold text-gray-300 uppercase pl-1">Honors & Recognitions</p>
                                 {form.awards.map((aw: any, idx: number) => (
                                     <div key={idx} className="flex gap-2 group">
-                                         <input value={aw.text} onChange={(e) => handleArrayChange("awards", idx, "text", e.target.value)} className="border border-gray-100 p-2.5 rounded-lg w-full text-xs shadow-sm bg-amber-50/20 border-amber-100/50" placeholder="Award description..." />
+                                         <input value={aw.text} onChange={(e) => handleArrayChange("awards", idx, "text", e.target.value)} className="border border-gray-100 p-2.5 rounded-lg w-full text-xs shadow-sm bg-emerald-50/20 border-emerald-100/50" placeholder="Award description..." />
                                          <button onClick={() => handleRemoveItem("awards", idx)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-4 h-4"/></button>
                                     </div>
                                 ))}
-                                <button onClick={() => handleAddItem("awards", { text: "" })} className="text-[10px] text-amber-600 font-bold hover:underline">+ Add Award</button>
+                                <button onClick={() => handleAddItem("awards", { text: "" })} className="text-[10px] text-emerald-600 font-bold hover:underline">+ Add Award</button>
                              </div>
                         </div>
                     </div>

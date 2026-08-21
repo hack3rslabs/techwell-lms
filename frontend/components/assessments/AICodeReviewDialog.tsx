@@ -36,7 +36,7 @@ export function AICodeReviewDialog({ open, onOpenChange, data }: AICodeReviewDia
                         {data.passed ? (
                             <CheckCircle2 className="h-8 w-8 text-emerald-500" />
                         ) : (
-                            <XCircle className="h-8 w-8 text-rose-500" />
+                            <XCircle className="h-8 w-8 text-emerald-500" />
                         )}
                         AI Code Evaluation
                     </DialogTitle>
@@ -48,17 +48,17 @@ export function AICodeReviewDialog({ open, onOpenChange, data }: AICodeReviewDia
                 <div className="grid grid-cols-3 gap-4 my-6">
                     <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center text-center">
                         <span className="text-sm text-slate-400 mb-1">Score</span>
-                        <span className={`text-3xl font-black ${data.score >= 80 ? 'text-emerald-400' : data.score >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
+                        <span className={`text-3xl font-black ${data.score >= 80 ? 'text-emerald-400' : data.score >= 50 ? 'text-emerald-400' : 'text-emerald-400'}`}>
                             {data.score}/100
                         </span>
                     </div>
                     <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center text-center">
-                        <Clock className="h-5 w-5 text-indigo-400 mb-2" />
+                        <Clock className="h-5 w-5 text-sky-400 mb-2" />
                         <span className="text-sm text-slate-400 mb-1">Time</span>
                         <span className="text-lg font-bold text-slate-200">{data.timeComplexity}</span>
                     </div>
                     <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center text-center">
-                        <Database className="h-5 w-5 text-indigo-400 mb-2" />
+                        <Database className="h-5 w-5 text-sky-400 mb-2" />
                         <span className="text-sm text-slate-400 mb-1">Space</span>
                         <span className="text-lg font-bold text-slate-200">{data.spaceComplexity}</span>
                     </div>
@@ -67,7 +67,7 @@ export function AICodeReviewDialog({ open, onOpenChange, data }: AICodeReviewDia
                 <div className="space-y-4">
                     <div className="bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
                         <h4 className="flex items-center gap-2 font-semibold text-slate-200 mb-2">
-                            <AlertTriangle className="h-4 w-4 text-amber-400" /> Feedback
+                            <AlertTriangle className="h-4 w-4 text-emerald-400" /> Feedback
                         </h4>
                         <p className="text-slate-300 text-sm leading-relaxed">
                             {data.feedback}
@@ -75,9 +75,9 @@ export function AICodeReviewDialog({ open, onOpenChange, data }: AICodeReviewDia
                     </div>
 
                     {data.suggestions && data.suggestions.length > 0 && (
-                        <div className="bg-indigo-950/30 p-4 rounded-xl border border-indigo-900/50">
-                            <h4 className="flex items-center gap-2 font-semibold text-indigo-300 mb-2">
-                                <Lightbulb className="h-4 w-4 text-amber-300" /> Optimization Suggestions
+                        <div className="bg-sky-950/30 p-4 rounded-xl border border-sky-900/50">
+                            <h4 className="flex items-center gap-2 font-semibold text-sky-300 mb-2">
+                                <Lightbulb className="h-4 w-4 text-emerald-300" /> Optimization Suggestions
                             </h4>
                             <ul className="list-disc pl-5 space-y-1">
                                 {data.suggestions.map((s, i) => (
@@ -89,7 +89,7 @@ export function AICodeReviewDialog({ open, onOpenChange, data }: AICodeReviewDia
                 </div>
 
                 <DialogFooter className="mt-6">
-                    <Button onClick={() => onOpenChange(false)} className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button onClick={() => onOpenChange(false)} className="w-full sm:w-auto bg-sky-600 hover:bg-sky-700 text-white">
                         Got it, thanks!
                     </Button>
                 </DialogFooter>

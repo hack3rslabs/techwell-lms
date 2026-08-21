@@ -77,7 +77,7 @@ export function StudentReferrals() {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-0 shadow-lg relative overflow-hidden group">
+                <Card className="bg-gradient-to-br from-sky-500 to-sky-600 text-white border-0 shadow-lg relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
@@ -86,11 +86,11 @@ export function StudentReferrals() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-4xl font-bold">₹{stats?.referralCommissionBal || 0}</div>
-                        <p className="text-indigo-100 mt-1 text-sm">Available for withdrawal or courses</p>
+                        <p className="text-sky-100 mt-1 text-sm">Available for withdrawal or courses</p>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg relative overflow-hidden group">
+                <Card className="bg-gradient-to-br from-blue-500 to-sky-500 text-white border-0 shadow-lg relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
@@ -106,14 +106,14 @@ export function StudentReferrals() {
                 <Card className="bg-white border-gray-200 shadow-sm relative overflow-hidden">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
-                            <Share2 className="h-5 w-5 text-indigo-500" /> Your Code
+                            <Share2 className="h-5 w-5 text-sky-500" /> Your Code
                         </CardTitle>
                         <CardDescription>Share this code with your friends.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {stats?.referralCode ? (
                             <div className="flex items-center gap-2">
-                                <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 font-mono text-center font-bold text-lg tracking-widest text-indigo-700">
+                                <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 font-mono text-center font-bold text-lg tracking-widest text-sky-700">
                                     {stats.referralCode}
                                 </div>
                                 <Button 
@@ -128,7 +128,7 @@ export function StudentReferrals() {
                         ) : (
                             <div className="text-center">
                                 <p className="text-sm text-gray-500 mb-3">You don't have a referral code yet.</p>
-                                <Button onClick={handleGenerate} disabled={generating} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                                <Button onClick={handleGenerate} disabled={generating} className="w-full bg-sky-600 hover:bg-sky-700 text-white">
                                     {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Gift className="h-4 w-4 mr-2" />}
                                     Generate Code
                                 </Button>
@@ -157,7 +157,7 @@ export function StudentReferrals() {
                             {stats.rewards.map(reward => (
                                 <div key={reward.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold">
+                                        <div className="h-10 w-10 bg-sky-100 text-sky-700 rounded-full flex items-center justify-center font-bold">
                                             {reward.referred.name.charAt(0)}
                                         </div>
                                         <div>
@@ -167,7 +167,7 @@ export function StudentReferrals() {
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-lg text-emerald-600">₹{reward.amount}</p>
-                                        <Badge variant="outline" className={reward.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}>
+                                        <Badge variant="outline" className={reward.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}>
                                             {reward.status}
                                         </Badge>
                                     </div>

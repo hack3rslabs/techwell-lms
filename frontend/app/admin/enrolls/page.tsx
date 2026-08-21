@@ -96,7 +96,7 @@ export default function EnrollmentOverviewPage() {
         <div className="p-8 max-w-[1600px] mx-auto space-y-8">
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-sky-600">
                         Enrollment Overview
                     </h1>
                     <p className="text-muted-foreground mt-2 text-lg">
@@ -106,7 +106,7 @@ export default function EnrollmentOverviewPage() {
                 
                     <Dialog open={isManualModalOpen} onOpenChange={setIsManualModalOpen}>
                         <DialogTrigger asChild>
-                            <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white">
+                            <Button className="gap-2 bg-sky-600 hover:bg-sky-700 text-white">
                                 <GraduationCap className="h-4 w-4" />
                                 New Enrollment
                             </Button>

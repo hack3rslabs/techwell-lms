@@ -254,7 +254,7 @@ export default function RegisterPage() {
                         />
                     </div>
                     {/* Decorative blobs */}
-                    <div className="absolute top-20 right-10 w-64 h-64 bg-indigo-500 rounded-full blur-3xl" style={{opacity: 0.15}} />
+                    <div className="absolute top-20 right-10 w-64 h-64 bg-sky-500 rounded-full blur-3xl" style={{opacity: 0.15}} />
                     <div className="absolute bottom-20 left-10 w-64 h-64 bg-violet-500 rounded-full blur-3xl" style={{opacity: 0.15}} />
                     
                     <div className="relative z-10 flex flex-col h-full justify-between p-12">
@@ -270,7 +270,7 @@ export default function RegisterPage() {
                                 <span className="text-white/90 text-xs font-semibold tracking-wide uppercase">Career Platform</span>
                             </div>
                             <h2 className="text-4xl font-extrabold text-white tracking-tight leading-tight">
-                                Elevate your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-violet-300">Career</span> Journey.
+                                Elevate your <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-violet-300">Career</span> Journey.
                             </h2>
                             <p className="text-slate-300 text-lg max-w-md leading-relaxed">
                                 Join the premier ecosystem connecting ambitious students and job seekers with top-tier global employers. Build your profile, take assessments, and land your dream job.

@@ -33,7 +33,7 @@ interface PanelMember {
 const AVAILABILITY = ["AVAILABLE", "BUSY", "UNAVAILABLE"]
 const AVAIL_COLORS: Record<string, string> = {
     AVAILABLE: "bg-green-100 text-green-700",
-    BUSY: "bg-yellow-100 text-yellow-700",
+    BUSY: "bg-sky-100 text-sky-700",
     UNAVAILABLE: "bg-red-100 text-red-700"
 }
 
@@ -107,7 +107,7 @@ export default function CHMSPanelsPage() {
                 {[
                     { label: "Total Panelists", value: panels.length, color: "text-blue-600 bg-blue-100" },
                     { label: "Available", value: panels.filter(p => p.availability === 'AVAILABLE').length, color: "text-green-600 bg-green-100" },
-                    { label: "Busy", value: panels.filter(p => p.availability === 'BUSY').length, color: "text-yellow-600 bg-yellow-100" },
+                    { label: "Busy", value: panels.filter(p => p.availability === 'BUSY').length, color: "text-sky-600 bg-sky-100" },
                 ].map(s => (
                     <Card key={s.label} className="border-0 shadow-sm">
                         <CardContent className="p-4 flex items-center gap-3">

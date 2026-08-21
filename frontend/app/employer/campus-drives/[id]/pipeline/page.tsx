@@ -67,7 +67,7 @@ export default function EmployerPipeline() {
 
                         {loading ? (
                             <div className="flex items-center justify-center flex-1">
-                                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                                <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
                             </div>
                         ) : (
                             <div className="flex-1 overflow-x-auto pb-4">
@@ -86,7 +86,7 @@ export default function EmployerPipeline() {
                                                     {stageApps.map(app => (
                                                         <div key={app.id} className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
                                                             <div className="flex items-start gap-3 mb-3">
-                                                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 overflow-hidden">
+                                                                <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 shrink-0 overflow-hidden">
                                                                     {app.user.avatar ? (
                                                                         <Image src={app.user.avatar} alt="Avatar" width={40} height={40} />
                                                                     ) : (
@@ -112,7 +112,7 @@ export default function EmployerPipeline() {
 
                                                             <div className="pt-3 border-t border-slate-100">
                                                                 <select
-                                                                    className="w-full text-xs border-slate-200 rounded p-1.5 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-slate-700"
+                                                                    className="w-full text-xs border-slate-200 rounded p-1.5 focus:ring-sky-500 focus:border-sky-500 font-medium text-slate-700"
                                                                     value={app.status}
                                                                     onChange={(e) => updateStatus(app.id, e.target.value)}
                                                                 >

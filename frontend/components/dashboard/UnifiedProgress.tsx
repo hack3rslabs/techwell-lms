@@ -65,7 +65,7 @@ export function UnifiedProgressCard({ courses, onStartInterview, onContinueCours
                 )
             case 'in_progress':
                 return (
-                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                    <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200">
                         <PlayCircle className="h-3 w-3 mr-1" />
                         In Progress
                     </Badge>
@@ -182,7 +182,7 @@ export function UnifiedProgressCard({ courses, onStartInterview, onContinueCours
                                             Start Interview
                                         </Button>
                                         {course.progress < 50 && (
-                                            <p className="text-xs text-orange-600">
+                                            <p className="text-xs text-sky-600">
                                                 Complete 50% of course to unlock
                                             </p>
                                         )}
@@ -234,7 +234,7 @@ export function LearningStatsCard({ stats }: {
             <Card>
                 <CardContent className="pt-4">
                     <div className="flex items-center gap-2">
-                        <Video className="h-5 w-5 text-purple-600" />
+                        <Video className="h-5 w-5 text-sky-600" />
                         <div>
                             <p className="text-2xl font-bold">{stats.totalInterviews}</p>
                             <p className="text-xs text-muted-foreground">Interviews</p>
@@ -245,7 +245,7 @@ export function LearningStatsCard({ stats }: {
             <Card>
                 <CardContent className="pt-4">
                     <div className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-orange-600" />
+                        <TrendingUp className="h-5 w-5 text-sky-600" />
                         <div>
                             <p className="text-2xl font-bold">{stats.averageScore}%</p>
                             <p className="text-xs text-muted-foreground">Avg Score</p>

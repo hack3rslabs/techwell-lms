@@ -8,7 +8,7 @@ import DOMPurify from 'isomorphic-dompurify'
 
 export default function DigitalMarketingLandingPage({ data }: { data: any }) {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#030712] font-sans selection:bg-amber-500/30 pb-12">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#030712] font-sans selection:bg-emerald-500/30 pb-12">
       
       {/* IMMERSIVE HERO SECTION */}
       <section className="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
@@ -30,7 +30,7 @@ export default function DigitalMarketingLandingPage({ data }: { data: any }) {
           </Badge>
           
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight mb-6 text-white drop-shadow-xl">
-            <span className="text-amber-500">Digital</span> Marketing
+            <span className="text-emerald-500">Digital</span> Marketing
           </h1>
           
           <p className="text-slate-200 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed font-light drop-shadow-md">
@@ -49,7 +49,7 @@ export default function DigitalMarketingLandingPage({ data }: { data: any }) {
             {/* Introduction */}
             <div className="prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight max-w-none">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
-                <div className="p-3 rounded-2xl w-14 h-14 flex items-center justify-center shrink-0 text-amber-500 bg-amber-500/10 border-amber-500/20 shadow-amber-500/20">
+                <div className="p-3 rounded-2xl w-14 h-14 flex items-center justify-center shrink-0 text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-emerald-500/20">
                   <Globe className="w-8 h-8" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white m-0">
@@ -66,12 +66,12 @@ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.introduction)
             {/* Features Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
-                <Search className="w-8 h-8 text-amber-500 mb-4" />
+                <Search className="w-8 h-8 text-emerald-500 mb-4" />
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">SEO Dominance</h3>
                 <p className="text-slate-600 dark:text-slate-400 text-sm">Rank at the top of search engines for keywords that drive actual revenue and targeted traffic.</p>
               </div>
               <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
-                <Smartphone className="w-8 h-8 text-amber-500 mb-4" />
+                <Smartphone className="w-8 h-8 text-emerald-500 mb-4" />
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Social Strategy</h3>
                 <p className="text-slate-600 dark:text-slate-400 text-sm">Build a massive, highly engaged community across all relevant social platforms tailored to your brand.</p>
               </div>
@@ -79,7 +79,7 @@ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.introduction)
 
             {/* In-content feature image */}
             {data.inlineImage && (
-              <div className="w-full h-[350px] md:h-[450px] relative rounded-[2rem] overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-800 group transition-all duration-700 hover:shadow-amber-500/10">
+              <div className="w-full h-[350px] md:h-[450px] relative rounded-[2rem] overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-800 group transition-all duration-700 hover:shadow-emerald-500/10">
                 <Image 
                   src={data.inlineImage}
                   alt={`${data.title} Expertise`}
@@ -94,7 +94,7 @@ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.introduction)
             {/* Methodology */}
             <div className="prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight max-w-none">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
-                <div className="p-3 rounded-2xl w-14 h-14 flex items-center justify-center shrink-0 text-amber-500 bg-amber-500/10 border-amber-500/20 shadow-amber-500/20">
+                <div className="p-3 rounded-2xl w-14 h-14 flex items-center justify-center shrink-0 text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-emerald-500/20">
                   <BarChart className="w-8 h-8" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white m-0">
@@ -115,13 +115,13 @@ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.methodology) 
             
             <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 shadow-xl border border-slate-100 dark:border-slate-800/60">
               <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-                <span className="w-2 h-8 rounded-full bg-amber-500" />
+                <span className="w-2 h-8 rounded-full bg-emerald-500" />
                 Key Deliverables
               </h3>
               <div className="space-y-4">
                 {data.content.features.map((feature: string, idx: number) => (
                   <div key={idx} className="flex items-start gap-3 group">
-                    <div className="p-2 rounded-lg shrink-0 mt-0.5 transition-colors bg-amber-500/10 text-amber-500">
+                    <div className="p-2 rounded-lg shrink-0 mt-0.5 transition-colors bg-emerald-500/10 text-emerald-500">
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
                     <span className="font-medium text-[15px] leading-relaxed text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
@@ -132,7 +132,7 @@ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.methodology) 
               </div>
             </div>
 
-            <div className="rounded-[2rem] p-6 sm:p-8 shadow-xl border relative overflow-hidden bg-amber-500/10 border-amber-500/20">
+            <div className="rounded-[2rem] p-6 sm:p-8 shadow-xl border relative overflow-hidden bg-emerald-500/10 border-emerald-500/20">
               <div className="relative z-10 space-y-6">
                 <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
                   Ready to elevate your enterprise?
@@ -140,7 +140,7 @@ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content.methodology) 
                 <p className="text-sm text-slate-700 dark:text-slate-300">
                   Connect directly with our elite marketing and strategy team to discuss how we can accelerate your growth.
                 </p>
-                <Button asChild className="w-full font-bold shadow-md h-12 bg-amber-600 hover:bg-amber-700 text-white">
+                <Button asChild className="w-full font-bold shadow-md h-12 bg-emerald-600 hover:bg-emerald-700 text-white">
                   <Link href={`/contact?service=${encodeURIComponent(data.title)}`}>
                     Enquire Now
                     <ArrowUpRight className="ml-2 w-5 h-5" />

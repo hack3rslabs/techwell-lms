@@ -4,7 +4,7 @@ import * as React from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import { userApi, uploadApi } from '@/lib/api'
+import { userApi, uploadApi, api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -121,20 +121,14 @@ export default function ProfilePage() {
         formData.append('resume', file)
 
         try {
-            const res = await fetch('/api/ai/parse-resume', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                body: formData
+            const res = await api.post('/ai/parse-resume', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             })
-            const data = await res.json()
-            if (res.ok) {
-                setResumeData(data)
-                toast.success('Resume intelligently parsed by AI!')
-            } else {
-                toast.error(data.error || 'Failed to parse resume')
-            }
-        } catch (error) {
-            toast.error('Error connecting to AI service')
+            const data = res.data
+            setResumeData(data)
+            toast.success('Resume intelligently parsed by AI!')
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || 'Failed to parse resume')
         } finally {
             setIsParsingResume(false)
         }
@@ -143,7 +137,7 @@ export default function ProfilePage() {
     const getRoleBadgeColor = (role: string) => {
         switch (role) {
             case 'SUPER_ADMIN': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-            case 'ADMIN': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+            case 'ADMIN': return 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'
             case 'INSTRUCTOR': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
             default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
         }
@@ -152,7 +146,7 @@ export default function ProfilePage() {
     const getPlanBadge = (plan?: string) => {
         if (plan === 'PRO') {
             return (
-                <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 shadow-sm ml-2 font-bold px-2 py-0.5 text-[10px] tracking-wider">
+                <Badge className="bg-gradient-to-r from-emerald-400 to-sky-500 text-white border-0 shadow-sm ml-2 font-bold px-2 py-0.5 text-[10px] tracking-wider">
                     <Crown className="w-3 h-3 mr-1 fill-white" /> PRO
                 </Badge>
             )
@@ -186,7 +180,7 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Profile Card */}
                 <Card className="col-span-1 md:col-span-3 bg-white border-gray-200 shadow-sm rounded-xl overflow-hidden">
-                    <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+                    <div className="h-32 bg-gradient-to-r from-blue-600 to-sky-600 relative">
                         <div className="absolute bottom-4 right-4">
                             {!isEditing && (
                                 <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)} className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm">

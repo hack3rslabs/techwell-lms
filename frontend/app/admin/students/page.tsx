@@ -448,7 +448,7 @@ export default function StudentsPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600">
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-sky-600 to-sky-600">
                         Students
                     </h1>
                     <p className="text-muted-foreground mt-2 text-lg">
@@ -468,7 +468,7 @@ export default function StudentsPage() {
                     <Button
                         size="sm"
                         onClick={() => setIsBatchModalOpen(true)}
-                        className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md"
+                        className="gap-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white shadow-md"
                     >
                         <Users className="h-4 w-4" />
                         Create Batch
@@ -477,7 +477,7 @@ export default function StudentsPage() {
                     <Button
                         size="sm"
                         onClick={handleExportCSV}
-                        className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md"
+                        className="gap-2 bg-gradient-to-r from-violet-600 to-sky-600 hover:from-violet-700 hover:to-sky-700 text-white shadow-md"
                         disabled={students.length === 0}
                     >
                         <Download className="h-4 w-4" />
@@ -488,7 +488,7 @@ export default function StudentsPage() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border-0 shadow-md bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30">
+                <Card className="border-0 shadow-md bg-gradient-to-br from-violet-50 to-sky-50 dark:from-violet-950/30 dark:to-sky-950/30">
                     <CardContent className="p-5">
                         <div className="flex items-center justify-between">
                             <div>
@@ -514,15 +514,15 @@ export default function StudentsPage() {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30">
+                <Card className="border-0 shadow-md bg-gradient-to-br from-emerald-50 to-sky-50 dark:from-emerald-950/30 dark:to-sky-950/30">
                     <CardContent className="p-5">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-muted-foreground font-medium">In Progress</p>
-                                <p className="text-3xl font-bold text-amber-700 dark:text-amber-400 mt-1">{inProgressCount}</p>
+                                <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-400 mt-1">{inProgressCount}</p>
                             </div>
-                            <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
-                                <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                            <div className="h-12 w-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+                                <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
                         </div>
                     </CardContent>
@@ -578,23 +578,23 @@ export default function StudentsPage() {
             </Card>
 
             {errorMessage && (
-                <Card className="border-amber-200 bg-amber-50/70 shadow-sm">
+                <Card className="border-emerald-200 bg-emerald-50/70 shadow-sm">
                     <CardContent className="p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-start gap-3">
-                                <div className="mt-0.5 rounded-full bg-amber-100 p-2 text-amber-700">
+                                <div className="mt-0.5 rounded-full bg-emerald-100 p-2 text-emerald-700">
                                     <AlertCircle className="h-4 w-4" />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-amber-950">Student data is unavailable right now</p>
-                                    <p className="text-sm text-amber-800">{errorMessage}</p>
+                                    <p className="font-medium text-emerald-950">Student data is unavailable right now</p>
+                                    <p className="text-sm text-emerald-800">{errorMessage}</p>
                                 </div>
                             </div>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => fetchStudents(pagination.page)}
-                                className="gap-2 border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                                className="gap-2 border-emerald-300 bg-white text-emerald-900 hover:bg-emerald-100"
                             >
                                 <RefreshCw className="h-4 w-4" />
                                 Retry
@@ -648,7 +648,7 @@ export default function StudentsPage() {
                                                 <TableRow key={student.id} className="group hover:bg-muted/30 transition-colors">
                                                     <TableCell>
                                                         <div className="flex items-center gap-3">
-                                                            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-sm font-semibold shrink-0">
+                                                            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-violet-500 to-sky-500 flex items-center justify-center text-white text-sm font-semibold shrink-0">
                                                                 {student.name?.charAt(0)?.toUpperCase() || '?'}
                                                             </div>
                                                             <div>
@@ -733,10 +733,10 @@ export default function StudentsPage() {
                                                             }
                                                             const paidInstallments = installments.filter(i => i.status === 'PAID').length;
                                                             if (installments.length > 0) {
-                                                                return <Badge className="bg-orange-500 hover:bg-orange-600">{paidInstallments} EMIs Paid</Badge>;
+                                                                return <Badge className="bg-sky-500 hover:bg-sky-600">{paidInstallments} EMIs Paid</Badge>;
                                                             }
                                                             if (totalPaid > 0 && totalPaid < coursePrice) {
-                                                                return <Badge className="bg-orange-500 hover:bg-orange-600">Partial</Badge>;
+                                                                return <Badge className="bg-sky-500 hover:bg-sky-600">Partial</Badge>;
                                                             }
                                                             return <Badge className="bg-red-500 hover:bg-red-600">Pending</Badge>;
                                                         })()}
@@ -753,7 +753,7 @@ export default function StudentsPage() {
                                                             return (
                                                                 <div className="flex flex-col gap-1 items-center justify-center">
                                                                     {isCash && <Badge className="bg-blue-500 hover:bg-blue-600 w-full justify-center">Offline/Cash</Badge>}
-                                                                    {isOnline && <Badge className="bg-purple-500 hover:bg-purple-600 w-full justify-center">Online</Badge>}
+                                                                    {isOnline && <Badge className="bg-sky-500 hover:bg-sky-600 w-full justify-center">Online</Badge>}
                                                                     {!isCash && !isOnline && <Badge variant="outline">Unknown</Badge>}
                                                                 </div>
                                                             )
@@ -852,7 +852,7 @@ export default function StudentsPage() {
                         </>
                     ) : (
                         <div className="text-center py-16 border rounded-lg bg-muted/10">
-                            <div className={`h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4 ${errorMessage ? 'bg-amber-100 text-amber-600' : 'bg-violet-100 dark:bg-violet-900/30 text-violet-400'}`}>
+                            <div className={`h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4 ${errorMessage ? 'bg-emerald-100 text-emerald-600' : 'bg-violet-100 dark:bg-violet-900/30 text-violet-400'}`}>
                                 {errorMessage ? <AlertCircle className="h-8 w-8" /> : <GraduationCap className="h-8 w-8" />}
                             </div>
                             <p className="text-lg font-medium">
@@ -1051,7 +1051,7 @@ export default function StudentsPage() {
                                     </div>
                                 </div>
                                 {batchForm.studentIds.length > 20 && (
-                                    <div className="text-xs text-amber-600 font-medium flex items-center bg-amber-50 p-2 rounded border border-amber-200">
+                                    <div className="text-xs text-emerald-600 font-medium flex items-center bg-emerald-50 p-2 rounded border border-emerald-200">
                                         Warning: Batch capacity exceeded (Max 20 recommended).
                                     </div>
                                 )}
@@ -1093,7 +1093,7 @@ export default function StudentsPage() {
                                                             </Badge>
                                                         )}
                                                         {/* @ts-expect-error - enrollmentMode property might be missing on Student type */}
-                                                        <Badge className={`text-[10px] ${student.enrollmentMode === 'OFFLINE' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-purple-500 hover:bg-purple-600'}`}>
+                                                        <Badge className={`text-[10px] ${student.enrollmentMode === 'OFFLINE' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-sky-500 hover:bg-sky-600'}`}>
                                                             {/* @ts-expect-error - enrollmentMode property might be missing on Student type */}
                                                             {student.enrollmentMode || 'ONLINE'}
                                                         </Badge>

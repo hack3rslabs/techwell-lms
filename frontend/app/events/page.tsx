@@ -178,20 +178,20 @@ export default function EventsPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#030712] pt-24 pb-20">
             {/* Header */}
-            <div className="bg-indigo-900/10 dark:bg-indigo-500/5 border-b border-indigo-500/10 py-16">
+            <div className="bg-sky-900/10 dark:bg-sky-500/5 border-b border-sky-500/10 py-16">
                 <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <Badge className="bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border-none mb-6">Explore What's Next</Badge>
+                    <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-400 border-none mb-6">Explore What's Next</Badge>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white mb-6">
-                        Events, Job Melas & <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-teal-400">Campus Drives</span>
+                        Events, Job Melas & <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-emerald-400">Campus Drives</span>
                     </h1>
                     <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-8">
                         Level up your skills, connect with industry leaders, and secure your career with our exclusive upcoming events, mega job melas, and campus placement drives.
                     </p>
                     <div className="flex flex-wrap justify-center gap-3">
-                        <Badge variant="outline" className="bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 py-1.5 px-4 text-sm font-medium"><Video className="w-4 h-4 mr-2 text-indigo-500 inline"/> Webinars</Badge>
-                        <Badge variant="outline" className="bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 py-1.5 px-4 text-sm font-medium"><Users className="w-4 h-4 mr-2 text-teal-500 inline"/> Job Melas</Badge>
-                        <Badge variant="outline" className="bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 py-1.5 px-4 text-sm font-medium"><MapPin className="w-4 h-4 mr-2 text-rose-500 inline"/> Campus Drives</Badge>
-                        <Badge variant="outline" className="bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 py-1.5 px-4 text-sm font-medium"><Calendar className="w-4 h-4 mr-2 text-amber-500 inline"/> Workshops</Badge>
+                        <Badge variant="outline" className="bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 py-1.5 px-4 text-sm font-medium"><Video className="w-4 h-4 mr-2 text-sky-500 inline"/> Webinars</Badge>
+                        <Badge variant="outline" className="bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 py-1.5 px-4 text-sm font-medium"><Users className="w-4 h-4 mr-2 text-emerald-500 inline"/> Job Melas</Badge>
+                        <Badge variant="outline" className="bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 py-1.5 px-4 text-sm font-medium"><MapPin className="w-4 h-4 mr-2 text-emerald-500 inline"/> Campus Drives</Badge>
+                        <Badge variant="outline" className="bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 py-1.5 px-4 text-sm font-medium"><Calendar className="w-4 h-4 mr-2 text-emerald-500 inline"/> Workshops</Badge>
                     </div>
                 </div>
             </div>
@@ -219,7 +219,7 @@ export default function EventsPage() {
                     <div className="lg:col-span-8 space-y-6">
                     {isLoadingEvents ? (
                         <div className="py-20 text-center">
-                            <Loader2 className="w-10 h-10 animate-spin mx-auto text-indigo-500 mb-4" />
+                            <Loader2 className="w-10 h-10 animate-spin mx-auto text-sky-500 mb-4" />
                             <p className="text-muted-foreground text-lg">Loading events...</p>
                         </div>
                     ) : events.length === 0 ? (
@@ -232,7 +232,7 @@ export default function EventsPage() {
                         events.map((event) => {
                             const eventDate = new Date(event.date)
                             return (
-                                <div key={event.id} className="group bg-white dark:bg-[#0B1121] rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 hover:shadow-xl transition-all duration-300">
+                                <div key={event.id} className="group bg-white dark:bg-[#0B1121] rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-sky-500/50 hover:shadow-xl transition-all duration-300">
                                     {event.imageUrl && (
                                         <div className="w-full h-48 md:h-64 rounded-xl overflow-hidden mb-6 bg-slate-100 dark:bg-slate-800/50">
                                             { }
@@ -248,8 +248,8 @@ export default function EventsPage() {
                                     )}
                                     <div className="flex flex-col md:flex-row gap-6">
                                     {/* Date Block */}
-                                    <div className="flex-shrink-0 w-32 h-32 bg-indigo-50 dark:bg-indigo-950/30 rounded-xl flex flex-col items-center justify-center border border-indigo-100 dark:border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-300">
-                                        <span className="text-sm font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-100">
+                                    <div className="flex-shrink-0 w-32 h-32 bg-sky-50 dark:bg-sky-950/30 rounded-xl flex flex-col items-center justify-center border border-sky-100 dark:border-sky-500/20 group-hover:bg-sky-500 group-hover:text-white transition-colors duration-300">
+                                        <span className="text-sm font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 group-hover:text-sky-100">
                                             {eventDate.toLocaleString('default', { month: 'short' })}
                                         </span>
                                         <span className="text-4xl font-black my-1">{eventDate.getDate()}</span>
@@ -259,7 +259,7 @@ export default function EventsPage() {
                                     {/* Details */}
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <Badge variant="outline" className="text-xs border-indigo-200 dark:border-indigo-800">{event.type}</Badge>
+                                            <Badge variant="outline" className="text-xs border-sky-200 dark:border-sky-800">{event.type}</Badge>
                                             {event.status === 'Registration Open' && (
                                                 <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                                                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -267,7 +267,7 @@ export default function EventsPage() {
                                                 </span>
                                             )}
                                         </div>
-                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-500 transition-colors">{event.title}</h3>
+                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-sky-500 transition-colors">{event.title}</h3>
                                         {event.description && (
                                             <p className="text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{event.description}</p>
                                         )}
@@ -440,7 +440,7 @@ export default function EventsPage() {
                                 className="w-[400px] bg-white rounded-3xl overflow-hidden shadow-lg border border-slate-200 relative"
                             >
                                 {/* Banner Area */}
-                                <div className="h-40 bg-gradient-to-br from-indigo-600 to-purple-600 relative flex items-center justify-center p-6 text-center">
+                                <div className="h-40 bg-gradient-to-br from-sky-600 to-sky-600 relative flex items-center justify-center p-6 text-center">
                                     <div className="absolute inset-0 bg-black/20 mix-blend-overlay"></div>
                                     <h2 className="text-white text-2xl font-black relative z-10 leading-tight drop-shadow-md">
                                         {eventToShare.title}
@@ -450,14 +450,14 @@ export default function EventsPage() {
                                 {/* Content Area */}
                                 <div className="p-8 pb-10 bg-white">
                                     <div className="flex justify-center mb-6">
-                                        <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-none px-4 py-1 text-sm font-bold uppercase tracking-widest">
+                                        <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-100 border-none px-4 py-1 text-sm font-bold uppercase tracking-widest">
                                             {eventToShare.type}
                                         </Badge>
                                     </div>
                                     
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-4 text-slate-700">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                            <div className="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center text-sky-600">
                                                 <Calendar className="w-5 h-5" />
                                             </div>
                                             <div>
@@ -466,7 +466,7 @@ export default function EventsPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4 text-slate-700">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                            <div className="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center text-sky-600">
                                                 <Clock className="w-5 h-5" />
                                             </div>
                                             <div>
@@ -475,7 +475,7 @@ export default function EventsPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4 text-slate-700">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                            <div className="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center text-sky-600">
                                                 <MapPin className="w-5 h-5" />
                                             </div>
                                             <div>
@@ -487,7 +487,7 @@ export default function EventsPage() {
                                     
                                     <div className="mt-8 text-center pt-6 border-t border-slate-100">
                                         <p className="text-sm font-semibold text-slate-800">Techwell Career Platform</p>
-                                        <p className="text-xs text-slate-500 mt-1">Register at <span className="text-indigo-600 font-bold">techwell.in/events</span></p>
+                                        <p className="text-xs text-slate-500 mt-1">Register at <span className="text-sky-600 font-bold">techwell.in/events</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -496,7 +496,7 @@ export default function EventsPage() {
                             <div className="flex gap-4 w-full px-6">
                                 <Button 
                                     onClick={downloadInviteCard} 
-                                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-6 text-lg font-semibold shadow-md"
+                                    className="flex-1 bg-sky-600 hover:bg-sky-700 text-white rounded-xl py-6 text-lg font-semibold shadow-md"
                                 >
                                     <Download className="w-5 h-5 mr-2" />
                                     Download Card

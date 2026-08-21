@@ -358,102 +358,91 @@ export default function JobListing() {
 
                         {isLoading ? (
                             Array(5).fill(0).map((_, i) => (
-                                <Card key={i} className="p-8 space-y-6 animate-pulse rounded-3xl border-slate-100">
-                                    <div className="flex gap-6">
-                                        <div className="h-16 w-16 bg-slate-100 rounded-2xl"></div>
-                                        <div className="flex-1 space-y-4">
-                                            <div className="h-6 bg-slate-100 rounded-lg w-1/3"></div>
-                                            <div className="h-4 bg-slate-100 rounded-lg w-1/4"></div>
+                                <Card key={i} className="p-5 animate-pulse rounded-2xl border-slate-100">
+                                    <div className="flex gap-4">
+                                        <div className="h-12 w-12 bg-slate-100 rounded-xl"></div>
+                                        <div className="flex-1 space-y-3">
+                                            <div className="h-5 bg-slate-100 rounded-md w-1/3"></div>
+                                            <div className="h-4 bg-slate-100 rounded-md w-1/4"></div>
+                                            <div className="flex gap-2">
+                                                <div className="h-6 w-20 bg-slate-100 rounded-md"></div>
+                                                <div className="h-6 w-20 bg-slate-100 rounded-md"></div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="h-12 bg-slate-50 rounded-xl"></div>
                                 </Card>
                             ))
                         ) : filteredJobs.length === 0 ? (
-                            <Card className="p-20 text-center rounded-[3rem] border-dashed border-2 bg-white/50 border-slate-200">
-                                <div className="mx-auto w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
-                                    <Search className="h-10 w-10 text-slate-400" />
+                            <Card className="p-16 text-center rounded-3xl border-dashed border-2 bg-white/50 border-slate-200">
+                                <div className="mx-auto w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                                    <Search className="h-8 w-8 text-slate-400" />
                                 </div>
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">System Empty</h3>
-                                <p className="text-slate-500 font-medium max-w-sm mx-auto mt-2">Adjust your filters or try global keywords for broader reach.</p>
-                                <Button variant="outline" className="mt-8 font-black uppercase tracking-widest text-[10px]" onClick={() => setFilters({ ...filters, search: "" })}>Clear Parameters</Button>
+                                <h3 className="text-xl font-semibold text-slate-900">No Jobs Found</h3>
+                                <p className="text-slate-500 mt-2">Try adjusting your search or filters.</p>
+                                <Button variant="outline" className="mt-6" onClick={() => setFilters({ ...filters, search: "" })}>Clear Filters</Button>
                             </Card>
                         ) : (
-                            <div className="grid gap-6">
+                            <div className="grid gap-4">
                                 {filteredJobs.map(job => {
                                     const matchScore = calculateMatchScore(job)
                                     return (
                                         <Link href={`/jobs/${job.id}`} key={job.id} className="block group">
-                                            <Card className="hover:shadow-3xl hover:shadow-slate-200/50 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden rounded-[2.5rem] border-slate-200/60 bg-white group-hover:border-blue-200">
-                                                <div className="absolute top-0 right-0 w-2 h-full bg-blue-600 origin-right scale-y-0 group-hover:scale-y-100 transition-transform duration-500" />
-                                                <CardContent className="p-8">
-                                                    <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
-                                                        <Avatar className="h-20 w-20 rounded-3xl border bg-slate-50 p-2 shadow-sm shrink-0">
-                                                            <AvatarImage src={job.employer.employerProfile?.logo || undefined} className="object-contain" />
-                                                            <AvatarFallback className="rounded-3xl bg-slate-100 text-slate-400"><Building2 className="h-10 w-10" /></AvatarFallback>
+                                            <Card className="hover:border-blue-300 hover:shadow-md transition-all duration-300 rounded-2xl border-slate-200 bg-white">
+                                                <CardContent className="p-5">
+                                                    <div className="flex flex-col md:flex-row gap-5 items-start md:items-center">
+                                                        <Avatar className="h-14 w-14 rounded-xl border bg-slate-50 p-1">
+                                                            <AvatarImage src={job.employer.employerProfile?.logo || undefined} className="object-contain rounded-lg" />
+                                                            <AvatarFallback className="rounded-xl bg-slate-100 text-slate-400"><Building2 className="h-7 w-7" /></AvatarFallback>
                                                         </Avatar>
 
-                                                        <div className="flex-1 space-y-4">
-                                                            <div className="flex justify-between items-start">
-                                                                <div>
-                                                                    <h3 className="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition-colors tracking-tight leading-none mb-2">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex justify-between items-start gap-4">
+                                                                <div className="truncate">
+                                                                    <h3 className="text-lg font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
                                                                         {job.title}
                                                                     </h3>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-sm font-bold text-slate-500">{job.employer.employerProfile?.companyName}</span>
+                                                                    <div className="flex items-center gap-2 mt-1">
+                                                                        <span className="text-sm text-slate-500 font-medium truncate">{job.employer.employerProfile?.companyName}</span>
                                                                         {matchScore > 80 && (
-                                                                            <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[9px] font-black uppercase py-0.5 px-1.5 shadow-none">Must Apply</Badge>
+                                                                            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[10px] font-semibold">Top Match</Badge>
                                                                         )}
                                                                     </div>
                                                                 </div>
-                                                                <div className="hidden md:flex flex-col items-end">
-                                                                    <span className="text-2xl font-black text-slate-900 tracking-tighter uppercase whitespace-nowrap">₹{job.salary || 'N/A'}</span>
-                                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Est. Compensation</span>
+                                                                <div className="hidden md:flex flex-col items-end shrink-0">
+                                                                    <span className="text-base font-semibold text-slate-900">₹{job.salary || 'N/A'}</span>
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex flex-wrap gap-4 pt-2">
-                                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100 text-[11px] font-black text-slate-600 uppercase tracking-tighter">
-                                                                    <Briefcase className="h-3.5 w-3.5 text-blue-500" />
+                                                            <div className="flex flex-wrap gap-2 mt-3">
+                                                                <Badge variant="outline" className="bg-slate-50 text-slate-600 font-normal border-slate-200 rounded-lg">
+                                                                    <Briefcase className="h-3.5 w-3.5 mr-1 text-slate-400" />
                                                                     {job.experience || 'Fresher'}
-                                                                </div>
-                                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100 text-[11px] font-black text-slate-600 uppercase tracking-tighter">
-                                                                    <MapPin className="h-3.5 w-3.5 text-blue-500" />
+                                                                </Badge>
+                                                                <Badge variant="outline" className="bg-slate-50 text-slate-600 font-normal border-slate-200 rounded-lg">
+                                                                    <MapPin className="h-3.5 w-3.5 mr-1 text-slate-400" />
                                                                     {job.location}
-                                                                </div>
-                                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-xl border border-blue-100 text-[11px] font-black text-blue-600 uppercase tracking-tighter">
-                                                                    <Zap className="h-3.5 w-3.5" />
+                                                                </Badge>
+                                                                <Badge variant="secondary" className="bg-blue-50 text-blue-700 font-normal border-transparent rounded-lg">
+                                                                    <Zap className="h-3.5 w-3.5 mr-1" />
                                                                     {job.type.replace('_', ' ')}
-                                                                </div>
+                                                                </Badge>
                                                             </div>
-
-                                                            <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
-                                                                <div className="flex flex-wrap gap-2 items-center">
-                                                                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-tighter">
-                                                                        <Clock className="w-3 h-3" />
-                                                                        <span>{new Date(job.createdAt).toLocaleDateString()}</span>
-                                                                    </div>
-                                                                    {resumeData && resumeData.technicalSkills?.slice(0, 3).map((skill: string) => (
-                                                                        job.description.toLowerCase().includes(skill.toLowerCase()) && (
-                                                                            <Badge key={skill} variant="outline" className="bg-blue-50 text-blue-600 border-blue-100 text-[8px] font-black uppercase py-0 px-1 shadow-none">
-                                                                                Matched: {skill}
-                                                                            </Badge>
-                                                                        )
-                                                                    ))}
+                                                            
+                                                            <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <Clock className="w-3.5 h-3.5" />
+                                                                    {new Date(job.createdAt).toLocaleDateString()}
                                                                 </div>
-                                                                
-                                                                <div className="flex items-center gap-3">
-                                                                    {matchScore > 0 && (
-                                                                        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black border border-emerald-100">
-                                                                            <CheckCircle2 className="w-3 h-3" />
-                                                                            {matchScore}% Profile Sync
-                                                                        </div>
-                                                                    )}
-                                                                    <div className="h-10 w-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white group-hover:bg-blue-600 transition-all duration-300">
-                                                                        <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                                                {matchScore > 0 && (
+                                                                    <div className="flex items-center gap-1.5 text-emerald-600 font-medium">
+                                                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                                                        {matchScore}% Match
                                                                     </div>
-                                                                </div>
+                                                                )}
                                                             </div>
+                                                        </div>
+                                                        <div className="hidden md:flex h-10 w-10 shrink-0 rounded-full bg-slate-50 items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                                            <ChevronRight className="w-5 h-5" />
                                                         </div>
                                                     </div>
                                                 </CardContent>

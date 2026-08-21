@@ -133,7 +133,7 @@ export default function PayrollDashboard() {
                                             <TableCell>{staff.totalHours} hrs</TableCell>
                                             <TableCell>
                                                 {staff.payrollStatus === 'PAID' && <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">Paid</Badge>}
-                                                {staff.payrollStatus === 'PENDING' && <Badge className="bg-amber-100 text-amber-800 border-amber-200">Pending</Badge>}
+                                                {staff.payrollStatus === 'PENDING' && <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">Pending</Badge>}
                                                 {staff.payrollStatus === 'UNPROCESSED' && <Badge variant="outline" className="text-slate-500">Unprocessed</Badge>}
                                             </TableCell>
                                             <TableCell className="font-semibold text-slate-700">
@@ -155,7 +155,7 @@ export default function PayrollDashboard() {
                                                         setIsDialogOpen(open)
                                                     }}>
                                                         <DialogTrigger asChild>
-                                                            <Button size="sm" className="bg-indigo-600">
+                                                            <Button size="sm" className="bg-sky-600">
                                                                 <Calculator className="w-4 h-4 mr-2" /> Process
                                                             </Button>
                                                         </DialogTrigger>
@@ -191,7 +191,7 @@ export default function PayrollDashboard() {
                                                             </div>
                                                             <DialogFooter>
                                                                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                                                                <Button onClick={processPayroll} disabled={isProcessing} className="bg-indigo-600">
+                                                                <Button onClick={processPayroll} disabled={isProcessing} className="bg-sky-600">
                                                                     {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                                                                     Save & Generate Slip
                                                                 </Button>

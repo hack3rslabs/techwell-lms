@@ -42,9 +42,9 @@ export function StudentLogs() {
 
         if (act.includes('LOGIN') || act.includes('LOGOUT') || ent === 'AUTH') return <ShieldCheck className="w-4 h-4 text-emerald-500" />
         if (act.includes('UPDATE') || ent === 'PROFILE') return <Settings className="w-4 h-4 text-blue-500" />
-        if (ent === 'COURSE' || ent === 'LESSON') return <BookOpen className="w-4 h-4 text-purple-500" />
-        if (ent === 'PAYMENT' || ent === 'ORDER') return <Star className="w-4 h-4 text-yellow-500" />
-        if (ent === 'APPLICATION' || ent === 'RESUME') return <FileText className="w-4 h-4 text-pink-500" />
+        if (ent === 'COURSE' || ent === 'LESSON') return <BookOpen className="w-4 h-4 text-sky-500" />
+        if (ent === 'PAYMENT' || ent === 'ORDER') return <Star className="w-4 h-4 text-sky-500" />
+        if (ent === 'APPLICATION' || ent === 'RESUME') return <FileText className="w-4 h-4 text-emerald-500" />
         
         return <Monitor className="w-4 h-4 text-slate-500" />
     }

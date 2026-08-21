@@ -38,96 +38,96 @@ const websiteJsonLd = {
 }
 
 export default function Home() {
-  const businessPillars = [
-    {
-      title: "IT & Corporate Training",
-      icon: <GraduationCap className="h-8 w-8 text-indigo-400" />,
-      desc: "Accelerate your career with expert-led tech training, rigorous coding bootcamps, and corporate RTraining programs.",
-      href: "/courses",
-      actionText: "Explore Curriculum",
-      bgColor: "bg-indigo-500/10",
-      borderColor: "border-indigo-500/20",
-      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.3)]",
-      bullets: ["Industry-Curated Syllabus", "Live Coding Sessions", "Corporate RTraining", "Capstone Projects"]
-    },
-    {
-      title: "Job Consultancy & Assistance",
-      icon: <Briefcase className="h-8 w-8 text-emerald-400" />,
-      desc: "Comprehensive career guidance, AI resume building, and direct interview scheduling with top MNCs.",
-      href: "/consultancy",
-      actionText: "Get Job Assistance",
-      bgColor: "bg-emerald-500/10",
-      borderColor: "border-emerald-500/20",
-      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]",
-      bullets: ["AI Resume Builder", "Mock Interviews", "Dedicated Career Coach", "Guaranteed Referrals"]
-    },
-    {
-      title: "Campus Placement Drives",
-      icon: <Users className="h-8 w-8 text-purple-400" />,
-      desc: "Bridging the gap between colleges and tech companies through organized mass hiring events and assessments.",
-      href: "/campus-to-career",
-      actionText: "Host a Drive",
-      bgColor: "bg-purple-500/10",
-      borderColor: "border-purple-500/20",
-      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]",
-      bullets: ["Bulk Candidate Screening", "On-Campus Interviews", "Skill Gap Bridging", "Corporate Tie-ups"]
-    },
-    {
-      title: "Custom Software Solutions",
-      icon: <Code2 className="h-8 w-8 text-sky-400" />,
-      desc: "Bespoke SaaS engineering, enterprise ERPs, and high-performance digital products engineered for scale.",
-      href: "/products",
-      actionText: "Discover Products",
-      bgColor: "bg-sky-500/10",
-      borderColor: "border-sky-500/20",
-      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]",
-      bullets: ["Web & Mobile Apps", "Scalable Architectures", "Modern UI/UX Design", "E-commerce & CRMs"]
-    },
-    {
-      title: "Cyber Security Solutions",
-      icon: <ShieldCheck className="h-8 w-8 text-red-400" />,
-      desc: "Robust protection for your enterprise data. We conduct audits, pentesting, and implement zero-trust architectures.",
-      href: "/services/cyber-security",
-      actionText: "Secure Your Business",
-      bgColor: "bg-red-500/10",
-      borderColor: "border-red-500/20",
-      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)]",
-      bullets: ["Vulnerability Audits", "Firewall Management", "Data Encryption", "Compliance (GDPR)"]
-    },
-    {
-      title: "Managed IT Solutions",
-      icon: <Server className="h-8 w-8 text-amber-400" />,
-      desc: "End-to-end IT infrastructure consulting, cloud managed services, and networking for modern enterprises.",
-      href: "/services",
-      actionText: "Request Consultation",
-      bgColor: "bg-amber-500/10",
-      borderColor: "border-amber-500/20",
-      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)]",
-      bullets: ["Cloud Migration", "Maintenance Support", "Network Architecture", "Disaster Recovery"]
-    },
-    {
-      title: "IT & Business Consulting",
-      icon: <TrendingUp className="h-8 w-8 text-teal-400" />,
-      desc: "Strategic guidance to accelerate your digital transformation, optimize workflows, and scale operations globally.",
-      href: "/consultancy",
-      actionText: "Book Strategy Call",
-      bgColor: "bg-teal-500/10",
-      borderColor: "border-teal-500/20",
-      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(20,184,166,0.3)]",
-      bullets: ["Digital Transformation", "Operational Scaling", "Process Automation", "Market Strategy"]
-    },
-    {
-      title: "Franchise Opportunities",
-      icon: <Building2 className="h-8 w-8 text-orange-400" />,
-      desc: "Start your own successful IT training and consulting branch with our proven, high-ROI franchise model.",
-      href: "/franchise-request",
-      actionText: "Become a Partner",
-      bgColor: "bg-orange-500/10",
-      borderColor: "border-orange-500/20",
-      glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(249,115,22,0.3)]",
-      bullets: ["Brand Association", "Turnkey Setup", "Marketing Support", "Curriculum Access"]
-    }
-  ];
+    const businessPillars = [
+      {
+        title: "IT & Corporate Training",
+        icon: <GraduationCap className="h-8 w-8 text-sky-400" />,
+        desc: "Accelerate your career with expert-led tech training, rigorous coding bootcamps, and corporate RTraining programs.",
+        href: "/courses",
+        actionText: "Explore Curriculum",
+        bgColor: "bg-sky-500/10",
+        borderColor: "border-sky-500/20",
+        glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]",
+        bullets: ["Industry-Curated Syllabus", "Live Coding Sessions", "Corporate RTraining", "Capstone Projects"]
+      },
+      {
+        title: "Job Consultancy & Assistance",
+        icon: <Briefcase className="h-8 w-8 text-emerald-400" />,
+        desc: "Comprehensive career guidance, AI resume building, and direct interview scheduling with top MNCs.",
+        href: "/consultancy",
+        actionText: "Get Job Assistance",
+        bgColor: "bg-emerald-500/10",
+        borderColor: "border-emerald-500/20",
+        glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]",
+        bullets: ["AI Resume Builder", "Mock Interviews", "Dedicated Career Coach", "Guaranteed Referrals"]
+      },
+      {
+        title: "Campus Placement Drives",
+        icon: <Users className="h-8 w-8 text-sky-400" />,
+        desc: "Bridging the gap between colleges and tech companies through organized mass hiring events and assessments.",
+        href: "/campus-to-career",
+        actionText: "Host a Drive",
+        bgColor: "bg-sky-500/10",
+        borderColor: "border-sky-500/20",
+        glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]",
+        bullets: ["Bulk Candidate Screening", "On-Campus Interviews", "Skill Gap Bridging", "Corporate Tie-ups"]
+      },
+      {
+        title: "Custom Software Solutions",
+        icon: <Code2 className="h-8 w-8 text-emerald-400" />,
+        desc: "Bespoke SaaS engineering, enterprise ERPs, and high-performance digital products engineered for scale.",
+        href: "/products",
+        actionText: "Discover Products",
+        bgColor: "bg-emerald-500/10",
+        borderColor: "border-emerald-500/20",
+        glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]",
+        bullets: ["Web & Mobile Apps", "Scalable Architectures", "Modern UI/UX Design", "E-commerce & CRMs"]
+      },
+      {
+        title: "Cyber Security Solutions",
+        icon: <ShieldCheck className="h-8 w-8 text-sky-400" />,
+        desc: "Robust protection for your enterprise data. We conduct audits, pentesting, and implement zero-trust architectures.",
+        href: "/services/cyber-security",
+        actionText: "Secure Your Business",
+        bgColor: "bg-sky-500/10",
+        borderColor: "border-sky-500/20",
+        glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]",
+        bullets: ["Vulnerability Audits", "Firewall Management", "Data Encryption", "Compliance (GDPR)"]
+      },
+      {
+        title: "Managed IT Solutions",
+        icon: <Server className="h-8 w-8 text-emerald-400" />,
+        desc: "End-to-end IT infrastructure consulting, cloud managed services, and networking for modern enterprises.",
+        href: "/services",
+        actionText: "Request Consultation",
+        bgColor: "bg-emerald-500/10",
+        borderColor: "border-emerald-500/20",
+        glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]",
+        bullets: ["Cloud Migration", "Maintenance Support", "Network Architecture", "Disaster Recovery"]
+      },
+      {
+        title: "IT & Business Consulting",
+        icon: <TrendingUp className="h-8 w-8 text-sky-400" />,
+        desc: "Strategic guidance to accelerate your digital transformation, optimize workflows, and scale operations globally.",
+        href: "/consultancy",
+        actionText: "Book Strategy Call",
+        bgColor: "bg-sky-500/10",
+        borderColor: "border-sky-500/20",
+        glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]",
+        bullets: ["Digital Transformation", "Operational Scaling", "Process Automation", "Market Strategy"]
+      },
+      {
+        title: "Franchise Opportunities",
+        icon: <Building2 className="h-8 w-8 text-emerald-400" />,
+        desc: "Start your own successful IT training and consulting branch with our proven, high-ROI franchise model.",
+        href: "/franchise-request",
+        actionText: "Become a Partner",
+        bgColor: "bg-emerald-500/10",
+        borderColor: "border-emerald-500/20",
+        glowColor: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]",
+        bullets: ["Brand Association", "Turnkey Setup", "Marketing Support", "Curriculum Access"]
+      }
+    ];
 
   return (
     <>
@@ -137,15 +137,15 @@ export default function Home() {
 dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
       
-      <div className="flex flex-col gap-0 overflow-x-hidden bg-slate-50 dark:bg-[#030712] font-sans selection:bg-indigo-500/30">
+      <div className="flex flex-col gap-0 overflow-x-hidden bg-slate-50 dark:bg-[#030712] font-sans selection:bg-sky-500/30">
         
         {/* ULTRA-PREMIUM HERO SECTION SLIDER */}
         <HeroSlider />
 
         {/* EVENTS & WEBINARS HIGHLIGHT BANNER */}
-        <section className="bg-indigo-600 relative overflow-hidden">
+        <section className="bg-sky-600 relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-          <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-indigo-500/50 to-transparent pointer-events-none"></div>
+          <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-sky-500/50 to-transparent pointer-events-none"></div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="bg-white/20 p-2 rounded-lg">
@@ -153,10 +153,10 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
               </div>
               <div>
                 <h4 className="text-white font-bold text-lg">Upcoming: Future of Cyber Security & AI</h4>
-                <p className="text-indigo-200 text-sm">Join our exclusive live corporate webinar. Limited seats available!</p>
+                <p className="text-sky-200 text-sm">Join our exclusive live corporate webinar. Limited seats available!</p>
               </div>
             </div>
-            <Button asChild variant="secondary" className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold whitespace-nowrap">
+            <Button asChild variant="secondary" className="bg-white text-sky-600 hover:bg-sky-50 font-bold whitespace-nowrap">
               <Link href="/events">
                 Register Now
                 <ChevronRight className="w-4 h-4 ml-1" />
@@ -168,9 +168,9 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         {/* 8 CORE PILLARS SECTION - BENTO GRID STYLE */}
         <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto space-y-6 mb-16">
-            <h2 className="text-sm font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">Our Expertise</h2>
+            <h2 className="text-sm font-bold tracking-widest text-sky-600 dark:text-sky-400 uppercase">Our Expertise</h2>
             <h3 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
-              End-to-End <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-teal-400">IT Excellence</span>
+              End-to-End <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-emerald-400">IT Excellence</span>
             </h3>
             <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
               From molding the next generation of software developers and providing top-tier job consultancy, to engineering mission-critical cyber security solutions for enterprises.
@@ -205,7 +205,7 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
                 </ul>
 
                 <div className="absolute bottom-8 left-8 right-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-                  <Link href={pillar.href} className="inline-flex items-center text-sm font-bold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group/link">
+                  <Link href={pillar.href} className="inline-flex items-center text-sm font-bold text-slate-900 dark:text-white hover:text-sky-600 dark:hover:text-sky-400 transition-colors group/link">
                     {pillar.actionText}
                     <ChevronRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
                   </Link>
@@ -224,29 +224,29 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
               
               {/* For Students Block */}
               <div className="space-y-8 bg-white/5 backdrop-blur-sm border border-white/10 p-10 rounded-3xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 blur-[80px] rounded-full group-hover:bg-indigo-500/30 transition-colors duration-700"></div>
-                <Badge className="bg-indigo-500 text-white border-none font-bold tracking-widest uppercase mb-4">For Individuals</Badge>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 blur-[80px] rounded-full group-hover:bg-emerald-500/30 transition-colors duration-700"></div>
+                <Badge className="bg-emerald-500 text-white border-none font-bold tracking-widest uppercase mb-4">For Individuals</Badge>
                 <h3 className="text-3xl md:text-4xl font-black leading-tight">Master Code.<br/>Secure Placements.</h3>
                 <p className="text-slate-300 text-lg leading-relaxed">
                   Join the ultimate Career Hub. Our intensive IT Training Institute prepares you for the industry, while our Placement Assistance team ensures you land your dream job.
                 </p>
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 bg-black/20 p-4 rounded-xl border border-white/5">
-                    <div className="bg-indigo-500/20 p-3 rounded-lg"><Rocket className="w-6 h-6 text-indigo-400" /></div>
+                    <div className="bg-emerald-500/20 p-3 rounded-lg"><Rocket className="w-6 h-6 text-emerald-400" /></div>
                     <div>
                       <h5 className="font-bold">Guaranteed Interviews</h5>
                       <p className="text-sm text-slate-400">Direct referrals to our 500+ hiring partners.</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 bg-black/20 p-4 rounded-xl border border-white/5">
-                    <div className="bg-indigo-500/20 p-3 rounded-lg"><Laptop className="w-6 h-6 text-indigo-400" /></div>
+                    <div className="bg-emerald-500/20 p-3 rounded-lg"><Laptop className="w-6 h-6 text-emerald-400" /></div>
                     <div>
                       <h5 className="font-bold">Real-World Projects</h5>
                       <p className="text-sm text-slate-400">Build software that actually matters.</p>
                     </div>
                   </div>
                 </div>
-                <Button asChild className="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-600 text-white font-bold h-12 px-8 rounded-xl mt-4">
+                <Button asChild className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-12 px-8 rounded-xl mt-4">
                   <Link href="/courses">Explore IT Training</Link>
                 </Button>
               </div>

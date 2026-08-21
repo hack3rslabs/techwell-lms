@@ -285,7 +285,7 @@ export default function SettingsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-indigo-500" />
+                            <Shield className="h-5 w-5 text-sky-500" />
                             Security Settings
                         </CardTitle>
                         <CardDescription>Secure your account with Two-Factor Authentication.</CardDescription>
@@ -434,7 +434,7 @@ export default function SettingsPage() {
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle className="flex items-center gap-2">
-                                    <MapPin className="h-5 w-5 text-indigo-500" />
+                                    <MapPin className="h-5 w-5 text-sky-500" />
                                     Locations Management
                                 </CardTitle>
                                 <CardDescription>Manage your business & consultation workspaces globally.</CardDescription>

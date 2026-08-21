@@ -182,7 +182,7 @@ export default function AdminProjectsDashboard() {
                                     </div>
                                     <div className={`text-xs font-medium px-2 py-1 rounded-full ${
                                         req.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                                        req.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
+                                        req.status === 'PENDING' ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 text-gray-700'
                                     }`}>
                                         {req.status}
                                     </div>

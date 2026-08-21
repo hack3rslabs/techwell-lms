@@ -16,7 +16,7 @@ const INTERVIEW_PANELS = [
     title: "Human Resources",
     focus: "Culture fit, behavioral, HR questions",
     emoji: "👩‍💼",
-    color: "from-violet-500 to-purple-600",
+    color: "from-violet-500 to-sky-600",
     borderColor: "border-violet-400",
     bgColor: "bg-violet-50",
   },
@@ -26,7 +26,7 @@ const INTERVIEW_PANELS = [
     title: "Engineering Lead",
     focus: "Technical deep-dive, problem solving, code",
     emoji: "👨‍💻",
-    color: "from-blue-500 to-indigo-600",
+    color: "from-blue-500 to-sky-600",
     borderColor: "border-blue-400",
     bgColor: "bg-blue-50",
   },
@@ -36,9 +36,9 @@ const INTERVIEW_PANELS = [
     title: "Chief Technology Officer",
     focus: "System design, architecture, leadership",
     emoji: "🧠",
-    color: "from-orange-500 to-red-600",
-    borderColor: "border-orange-400",
-    bgColor: "bg-orange-50",
+    color: "from-sky-500 to-red-600",
+    borderColor: "border-sky-400",
+    bgColor: "bg-sky-50",
   },
   {
     id: "product_manager",
@@ -216,16 +216,16 @@ export default function PreInterviewPage({ params }: { params: { id: string } })
             </div>
 
             {/* Instructions */}
-            <div className="p-5 border rounded-xl border-amber-300 bg-amber-50 dark:bg-amber-900/20">
-              <h2 className="flex gap-2 items-center text-amber-700 dark:text-amber-400 mb-3 font-bold">
+            <div className="p-5 border rounded-xl border-emerald-300 bg-emerald-50 dark:bg-emerald-900/20">
+              <h2 className="flex gap-2 items-center text-emerald-700 dark:text-emerald-400 mb-3 font-bold">
                 <Lightbulb className="h-5 w-5" /> Interview Pattern
               </h2>
-              <ul className="space-y-2 text-sm text-amber-800 dark:text-amber-300">
+              <ul className="space-y-2 text-sm text-emerald-800 dark:text-emerald-300">
                 <li className="flex gap-2"><span className="font-bold shrink-0">Start →</span> Self Intro &amp; Opening HR Questions</li>
                 <li className="flex gap-2"><span className="font-bold shrink-0">Middle →</span> Technical / Domain / Skills based on your Role &amp; Resume</li>
                 <li className="flex gap-2"><span className="font-bold shrink-0">End →</span> Behavioral &amp; Closing HR Questions (Salary, Notice Period)</li>
               </ul>
-              <div className="mt-3 pt-3 border-t border-amber-200 text-xs text-amber-700 dark:text-amber-400 space-y-1">
+              <div className="mt-3 pt-3 border-t border-emerald-200 text-xs text-emerald-700 dark:text-emerald-400 space-y-1">
                 <p>✅ Enable WebCam &amp; Microphone for a real interview feel.</p>
                 <p>✅ Video is NOT stored — it&apos;s only for your simulated environment.</p>
                 <p>✅ Click the 🔊 icon to have the question read aloud to you.</p>

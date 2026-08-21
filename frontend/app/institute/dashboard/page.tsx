@@ -111,7 +111,7 @@ export default function InstituteDashboard() {
                 <Card className="bg-white border border-gray-200 shadow-sm rounded-xl">
                     <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4">
                         <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-                            <UploadCloud className="h-4 w-4 text-indigo-600" /> Bulk Student Upload
+                            <UploadCloud className="h-4 w-4 text-sky-600" /> Bulk Student Upload
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
@@ -122,12 +122,12 @@ export default function InstituteDashboard() {
                                     rows={5}
                                     value={csvContent}
                                     onChange={e => setCsvContent(e.target.value)}
-                                    className="block w-full border border-gray-300 rounded-md p-2 font-mono text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="block w-full border border-gray-300 rounded-md p-2 font-mono text-sm focus:ring-sky-500 focus:border-sky-500"
                                     placeholder="name,email,phone,password\nJohn Doe,john@test.com,1234567890,pass123"
                                     required
                                 />
                             </div>
-                            <Button type="submit" disabled={uploading} className="bg-indigo-600 text-white hover:bg-indigo-700">
+                            <Button type="submit" disabled={uploading} className="bg-sky-600 text-white hover:bg-sky-700">
                                 {uploading ? 'Processing...' : 'Upload Data'}
                             </Button>
                         </form>
@@ -140,10 +140,10 @@ export default function InstituteDashboard() {
                 <Card className="bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-indigo-50 rounded-xl">
-                                <GraduationCap className="h-6 w-6 text-indigo-600" />
+                            <div className="p-3 bg-sky-50 rounded-xl">
+                                <GraduationCap className="h-6 w-6 text-sky-600" />
                             </div>
-                            <Badge variant="outline" className="text-indigo-600 bg-indigo-50 border-indigo-100 font-medium">Students</Badge>
+                            <Badge variant="outline" className="text-sky-600 bg-sky-50 border-sky-100 font-medium">Students</Badge>
                         </div>
                         <h3 className="text-3xl font-bold text-gray-900">2,450</h3>
                         <p className="text-sm font-medium text-gray-500 mt-1">Total Enrolled</p>
@@ -183,7 +183,7 @@ export default function InstituteDashboard() {
                             <div>
                                 <CardTitle className="text-base font-bold text-gray-900">Recent Campus Drives</CardTitle>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                            <Button variant="ghost" size="sm" className="text-xs font-medium text-sky-600 hover:text-sky-700 hover:bg-sky-50">
                                 View All <ArrowRight className="ml-1.5 h-3 w-3" />
                             </Button>
                         </div>
@@ -205,11 +205,11 @@ export default function InstituteDashboard() {
                                         </TableRow>
                                     ) : (
                                         drives.slice(0, 5).map(drive => (
-                                            <TableRow key={drive.id} className="hover:bg-indigo-50/30">
+                                            <TableRow key={drive.id} className="hover:bg-sky-50/30">
                                                 <TableCell className="pl-6 py-4 font-bold text-sm text-gray-900">{drive.employer.name || drive.employer.companyName || drive.employer.email}</TableCell>
                                                 <TableCell className="text-sm text-gray-500">{drive.jobRole}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant="secondary" className="bg-indigo-50 text-indigo-700">{drive.instituteLinkStatus || drive.status}</Badge>
+                                                    <Badge variant="secondary" className="bg-sky-50 text-sky-700">{drive.instituteLinkStatus || drive.status}</Badge>
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -224,7 +224,7 @@ export default function InstituteDashboard() {
                 <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
                     <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4">
                         <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-                            <Activity className="h-4 w-4 text-indigo-600" /> Upload History
+                            <Activity className="h-4 w-4 text-sky-600" /> Upload History
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">

@@ -266,7 +266,7 @@ export default function AdminCoursesPage() {
                                         </Badge>
                                         <Badge className={course.isPublished
                                             ? "bg-green-100 text-green-700 hover:bg-green-100"
-                                            : "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
+                                            : "bg-sky-100 text-sky-700 hover:bg-sky-100"
                                         }>
                                             {course.isPublished ? "Published" : "Draft"}
                                         </Badge>

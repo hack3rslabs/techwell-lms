@@ -106,7 +106,7 @@ export default function TalentPoolCandidatePage() {
                             <Card className="glass-card">
                                 <CardHeader>
                                     <CardTitle className="text-base flex items-center gap-2">
-                                        <Zap className="h-4 w-4 text-amber-500" /> Core Skills
+                                        <Zap className="h-4 w-4 text-emerald-500" /> Core Skills
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -184,11 +184,11 @@ export default function TalentPoolCandidatePage() {
                                 <CardHeader className="pb-4 border-b mb-4">
                                     <div className="flex justify-between items-center">
                                         <CardTitle className="text-base flex items-center gap-2">
-                                            <Zap className="h-4 w-4 text-amber-500" /> AI Mock Interviews
+                                            <Zap className="h-4 w-4 text-emerald-500" /> AI Mock Interviews
                                         </CardTitle>
                                         <div className="text-right">
                                             <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Average Score</p>
-                                            <p className={`text-2xl font-black ${avgScore >= 75 ? 'text-green-600' : avgScore >= 50 ? 'text-amber-500' : 'text-slate-400'}`}>
+                                            <p className={`text-2xl font-black ${avgScore >= 75 ? 'text-green-600' : avgScore >= 50 ? 'text-emerald-500' : 'text-slate-400'}`}>
                                                 {avgScore}%
                                             </p>
                                         </div>

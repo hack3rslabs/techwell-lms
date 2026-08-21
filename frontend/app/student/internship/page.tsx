@@ -84,7 +84,7 @@ export default function StudentInternshipPortal() {
                     <h1 className="text-3xl font-bold tracking-tight mb-2">Internship Dashboard</h1>
                     <p className="text-slate-500">Manage your daily tasks and track your performance.</p>
                 </div>
-                <Badge className={internship.status === 'ACTIVE' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}>
+                <Badge className={internship.status === 'ACTIVE' ? 'bg-emerald-500 text-white' : 'bg-emerald-500 text-white'}>
                     {internship.status}
                 </Badge>
             </div>
@@ -93,7 +93,7 @@ export default function StudentInternshipPortal() {
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-indigo-500" />
+                            <FileText className="w-5 h-5 text-sky-500" />
                             Submit Daily Work Log
                         </CardTitle>
                     </CardHeader>
@@ -113,7 +113,7 @@ export default function StudentInternshipPortal() {
                                 <label className="text-sm font-medium">Blockers / Need Help? (Optional)</label>
                                 <Textarea value={blockers} onChange={e => setBlockers(e.target.value)} placeholder="Any issues blocking your progress?" rows={2} />
                             </div>
-                            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700">Submit Daily Log</Button>
+                            <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700">Submit Daily Log</Button>
                         </form>
                     </CardContent>
                 </Card>
@@ -147,7 +147,7 @@ export default function StudentInternshipPortal() {
                             <div className="space-y-4">
                                 {internship.dailyLogs?.length === 0 && <p className="text-sm text-slate-500">No logs submitted yet.</p>}
                                 {internship.dailyLogs?.map((log: any) => (
-                                    <div key={log.id} className="border-l-2 border-indigo-500 pl-4 py-1">
+                                    <div key={log.id} className="border-l-2 border-sky-500 pl-4 py-1">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-xs font-bold text-slate-400">{new Date(log.date).toLocaleDateString()}</span>
                                             <span className="text-xs font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{log.hoursLogged} hrs</span>

@@ -37,7 +37,7 @@ interface Offer {
 
 const OFFER_STATUS = ["PENDING", "ACCEPTED", "DECLINED", "JOINED", "WITHDRAWN"]
 const STATUS_COLORS: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-700",
+    PENDING: "bg-sky-100 text-sky-700",
     ACCEPTED: "bg-emerald-100 text-emerald-700",
     DECLINED: "bg-red-100 text-red-700",
     JOINED: "bg-blue-100 text-blue-700",
@@ -130,10 +130,10 @@ export default function CHMSOffersPage() {
             {/* KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                    { label: "Total Offers", value: stats.total, icon: Award, color: "text-purple-600 bg-purple-100" },
+                    { label: "Total Offers", value: stats.total, icon: Award, color: "text-sky-600 bg-sky-100" },
                     { label: "Accepted", value: stats.accepted, icon: CheckCircle, color: "text-emerald-600 bg-emerald-100" },
                     { label: "Joined", value: stats.joined, icon: CheckCircle, color: "text-blue-600 bg-blue-100" },
-                    { label: "Pending", value: stats.pending, icon: Clock, color: "text-yellow-600 bg-yellow-100" },
+                    { label: "Pending", value: stats.pending, icon: Clock, color: "text-sky-600 bg-sky-100" },
                 ].map(s => (
                     <Card key={s.label} className="border-0 shadow-sm">
                         <CardContent className="p-4 flex items-center gap-3">

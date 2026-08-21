@@ -9,9 +9,9 @@ import OfferDialog from "./OfferDialog";
 
 const STAGES = [
     { id: "APPLIED", title: "New Applicants", color: "border-blue-200 bg-blue-50" },
-    { id: "SCREENING", title: "Screening", color: "border-yellow-200 bg-yellow-50" },
-    { id: "SHORTLISTED", title: "Shortlisted", color: "border-purple-200 bg-purple-50" },
-    { id: "INTERVIEW_SCHEDULED", title: "Interview", color: "border-orange-200 bg-orange-50" },
+    { id: "SCREENING", title: "Screening", color: "border-sky-200 bg-sky-50" },
+    { id: "SHORTLISTED", title: "Shortlisted", color: "border-sky-200 bg-sky-50" },
+    { id: "INTERVIEW_SCHEDULED", title: "Interview", color: "border-sky-200 bg-sky-50" },
     { id: "OFFER_RELEASED", title: "Offered", color: "border-emerald-200 bg-emerald-50" },
 ];
 

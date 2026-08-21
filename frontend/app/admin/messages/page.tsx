@@ -387,8 +387,8 @@ export default function AdminMessagesPage() {
                             <span className="hidden md:inline">Student</span>
                         </TabsTrigger>
                         <TabsTrigger value="send-staff" className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-purple-600" />
-                            <span className="hidden md:inline font-semibold text-purple-700">Internal Team</span>
+                            <Users className="w-4 h-4 text-sky-600" />
+                            <span className="hidden md:inline font-semibold text-sky-700">Internal Team</span>
                         </TabsTrigger>
                         <TabsTrigger value="history" className="flex items-center gap-2">
                             <Eye className="w-4 h-4" />
@@ -744,10 +744,10 @@ export default function AdminMessagesPage() {
 
                     {/* Send to Staff Tab */}
                     <TabsContent value="send-staff" className="space-y-4">
-                        <Card className="border-purple-200 shadow-sm">
-                            <CardHeader className="bg-purple-50/50 rounded-t-lg border-b border-purple-100">
-                                <CardTitle className="text-purple-900">Internal Team Communication</CardTitle>
-                                <CardDescription className="text-purple-700/70">Send announcements or direct messages to staff members and admins</CardDescription>
+                        <Card className="border-sky-200 shadow-sm">
+                            <CardHeader className="bg-sky-50/50 rounded-t-lg border-b border-sky-100">
+                                <CardTitle className="text-sky-900">Internal Team Communication</CardTitle>
+                                <CardDescription className="text-sky-700/70">Send announcements or direct messages to staff members and admins</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6">
                                 <form onSubmit={handleSendToStaff} className="space-y-4">
@@ -756,11 +756,11 @@ export default function AdminMessagesPage() {
                                             Select Recipient
                                         </label>
                                         <Select value={selectedStaff} onValueChange={setSelectedStaff}>
-                                            <SelectTrigger className="border-purple-200 focus:ring-purple-500">
+                                            <SelectTrigger className="border-sky-200 focus:ring-sky-500">
                                                 <SelectValue placeholder="Choose a team member" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="ALL" className="font-bold text-purple-700">Everyone (All Staff & Admins)</SelectItem>
+                                                <SelectItem value="ALL" className="font-bold text-sky-700">Everyone (All Staff & Admins)</SelectItem>
                                                 {staff.map((member) => (
                                                     <SelectItem key={member.id} value={member.id}>
                                                         {member.name} ({member.email})
@@ -779,7 +779,7 @@ export default function AdminMessagesPage() {
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
                                             required
-                                            className="border-purple-200 focus:ring-purple-500"
+                                            className="border-sky-200 focus:ring-sky-500"
                                         />
                                     </div>
 
@@ -793,7 +793,7 @@ export default function AdminMessagesPage() {
                                             onChange={(e) => setContent(e.target.value)}
                                             rows={6}
                                             required
-                                            className="border-purple-200 focus:ring-purple-500"
+                                            className="border-sky-200 focus:ring-sky-500"
                                         />
                                     </div>
 
@@ -802,7 +802,7 @@ export default function AdminMessagesPage() {
                                             Priority
                                         </label>
                                         <Select value={priority} onValueChange={setPriority}>
-                                            <SelectTrigger className="border-purple-200 focus:ring-purple-500">
+                                            <SelectTrigger className="border-sky-200 focus:ring-sky-500">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -817,7 +817,7 @@ export default function AdminMessagesPage() {
                                     <Button
                                         type="submit"
                                         disabled={messageLoading || !selectedStaff}
-                                        className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                                        className="w-full bg-sky-600 hover:bg-sky-700 text-white"
                                     >
                                         {messageLoading ? (
                                             <>

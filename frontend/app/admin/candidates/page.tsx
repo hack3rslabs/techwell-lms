@@ -48,17 +48,17 @@ const CATEGORIES = [
 
 const STATUSES = [
     { value: 'ALL', label: 'All Statuses' },
-    { value: 'SCREENING', label: 'Screening', color: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+    { value: 'SCREENING', label: 'Screening', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
     { value: 'TRAINING', label: 'Training Recommended', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
     { value: 'INTERVIEW_READY', label: 'Interview Ready', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-    { value: 'PLACED', label: 'Placed', color: 'bg-purple-500/10 text-purple-500 border-purple-500/20' }
+    { value: 'PLACED', label: 'Placed', color: 'bg-sky-500/10 text-sky-500 border-sky-500/20' }
 ]
 
 const PAYMENT_TIERS = [
     { value: 'UNPAID', label: 'Free Tier', color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
-    { value: 'BASIC', label: 'Basic Paid', color: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' },
-    { value: 'PROFESSIONAL', label: 'Professional', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
-    { value: 'PREMIUM', label: 'Premium VIP', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.3)]' }
+    { value: 'BASIC', label: 'Basic Paid', color: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
+    { value: 'PROFESSIONAL', label: 'Professional', color: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
+    { value: 'PREMIUM', label: 'Premium VIP', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(244,63,94,0.3)]' }
 ]
 
 export default function CandidatesPage() {
@@ -219,15 +219,15 @@ export default function CandidatesPage() {
     }
 
     return (
-        <div className="space-y-8 p-6 md:p-8 min-h-screen bg-slate-50 dark:bg-[#020817] text-slate-900 dark:text-slate-50 selection:bg-indigo-500/30">
+        <div className="space-y-8 p-6 md:p-8 min-h-screen bg-slate-50 dark:bg-[#020817] text-slate-900 dark:text-slate-50 selection:bg-sky-500/30">
             {/* Header */}
             <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                 <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-sm font-medium mb-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-sm font-medium mb-2">
                         <Briefcase className="w-4 h-4" /> CRM Directory
                     </div>
                     <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                        Talent <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-cyan-500 dark:from-indigo-400 dark:to-cyan-400">Pipeline</span>
+                        Talent <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-sky-500 dark:from-sky-400 dark:to-sky-400">Pipeline</span>
                     </h1>
                     <p className="text-slate-600 dark:text-slate-400 max-w-2xl text-base">
                         Manage your candidate leads, upgrade payment tiers, and track interview readiness through our AI-powered recruitment engine.
@@ -237,14 +237,14 @@ export default function CandidatesPage() {
                 <div className="flex items-center gap-3">
                     <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white shadow-lg shadow-indigo-500/20 border-0">
+                            <Button className="bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 text-white shadow-lg shadow-sky-500/20 border-0">
                                 <Upload className="h-4 w-4 mr-2" /> Resume Parser
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:max-w-md">
                             <DialogHeader>
-                                <DialogTitle className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5 text-indigo-400" /> AI Resume Parser
+                                <DialogTitle className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-sky-400 flex items-center gap-2">
+                                    <Sparkles className="h-5 w-5 text-sky-400" /> AI Resume Parser
                                 </DialogTitle>
                                 <DialogDescription className="text-slate-400">
                                     Upload a PDF resume. Gemini AI will auto-extract skills, education, contact details, and classify the candidate.
@@ -252,7 +252,7 @@ export default function CandidatesPage() {
                             </DialogHeader>
 
                             <form onSubmit={handleParseUpload} className="space-y-4 mt-4">
-                                <div className="border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-xl p-8 bg-slate-950/50 text-center cursor-pointer transition-colors group">
+                                <div className="border-2 border-dashed border-slate-800 hover:border-sky-500/50 rounded-xl p-8 bg-slate-950/50 text-center cursor-pointer transition-colors group">
                                     <input
                                         type="file"
                                         accept=".pdf"
@@ -262,8 +262,8 @@ export default function CandidatesPage() {
                                         required
                                     />
                                     <label htmlFor="resume-file-input" className="cursor-pointer space-y-4 flex flex-col items-center">
-                                        <div className="p-4 bg-indigo-500/10 rounded-full group-hover:bg-indigo-500/20 transition-colors">
-                                            <FileText className="h-8 w-8 text-indigo-400" />
+                                        <div className="p-4 bg-sky-500/10 rounded-full group-hover:bg-sky-500/20 transition-colors">
+                                            <FileText className="h-8 w-8 text-sky-400" />
                                         </div>
                                         <span className="text-sm text-slate-300 font-medium">
                                             {uploadFile ? uploadFile.name : 'Click to select PDF Resume (Max 5MB)'}
@@ -275,7 +275,7 @@ export default function CandidatesPage() {
                                     <Button type="button" variant="outline" onClick={() => setIsUploadOpen(false)} className="border-slate-800 bg-transparent text-slate-300 hover:bg-slate-800">
                                         Cancel
                                     </Button>
-                                    <Button type="submit" disabled={isParsing || !uploadFile} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+                                    <Button type="submit" disabled={isParsing || !uploadFile} className="bg-sky-600 hover:bg-sky-500 text-white">
                                         {isParsing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                                         {isParsing ? 'Extracting Data...' : 'Parse & Save Lead'}
                                     </Button>
@@ -303,7 +303,7 @@ export default function CandidatesPage() {
                             placeholder="Search by name, skills, or role..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="pl-9 bg-slate-950/50 border-slate-800 text-slate-100 placeholder:text-slate-500 h-11 rounded-lg focus-visible:ring-indigo-500/50"
+                            className="pl-9 bg-slate-950/50 border-slate-800 text-slate-100 placeholder:text-slate-500 h-11 rounded-lg focus-visible:ring-sky-500/50"
                         />
                     </div>
                     <div className="w-full md:w-56">
@@ -337,14 +337,14 @@ export default function CandidatesPage() {
                     
                     <Sheet>
                         <SheetTrigger asChild>
-                            <Button variant="outline" className="border-slate-800 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300 h-11">
+                            <Button variant="outline" className="border-slate-800 bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 hover:text-sky-300 h-11">
                                 <Filter className="h-4 w-4 mr-2" /> Advanced
                             </Button>
                         </SheetTrigger>
                         <SheetContent className="bg-slate-950 border-l border-slate-800 text-slate-100 w-[400px] sm:max-w-[500px] overflow-y-auto">
                             <SheetHeader className="mb-6">
                                 <SheetTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                                    <Filter className="h-5 w-5 text-indigo-400" /> Advanced Filters
+                                    <Filter className="h-5 w-5 text-sky-400" /> Advanced Filters
                                 </SheetTitle>
                                 <SheetDescription className="text-slate-400">
                                     Filter the candidate pipeline by deep demographics and professional details.
@@ -353,7 +353,7 @@ export default function CandidatesPage() {
                             
                             <div className="space-y-6">
                                 <div className="space-y-4 border-b border-slate-800 pb-6">
-                                    <h4 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider">Demographics</h4>
+                                    <h4 className="text-sm font-semibold text-sky-400 uppercase tracking-wider">Demographics</h4>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-xs text-slate-400 font-medium">State</label>
@@ -371,7 +371,7 @@ export default function CandidatesPage() {
                                 </div>
                                 
                                 <div className="space-y-4 border-b border-slate-800 pb-6">
-                                    <h4 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider">Education</h4>
+                                    <h4 className="text-sm font-semibold text-sky-400 uppercase tracking-wider">Education</h4>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-xs text-slate-400 font-medium">Highest Degree</label>
@@ -389,7 +389,7 @@ export default function CandidatesPage() {
                                 </div>
                                 
                                 <div className="space-y-4">
-                                    <h4 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider">Professional</h4>
+                                    <h4 className="text-sm font-semibold text-sky-400 uppercase tracking-wider">Professional</h4>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-xs text-slate-400 font-medium">Experience Level</label>
@@ -421,7 +421,7 @@ export default function CandidatesPage() {
                                 
                                 <div className="pt-6">
                                     <Button 
-                                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg"
+                                        className="w-full bg-sky-600 hover:bg-sky-500 text-white shadow-lg"
                                         onClick={fetchCandidates}
                                     >
                                         Apply Advanced Filters
@@ -473,7 +473,7 @@ export default function CandidatesPage() {
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="h-64 text-center">
-                                        <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
+                                        <Loader2 className="h-8 w-8 animate-spin text-sky-500 mx-auto" />
                                         <p className="text-slate-400 mt-4 text-sm">Loading talent pipeline...</p>
                                     </TableCell>
                                 </TableRow>
@@ -496,7 +496,7 @@ export default function CandidatesPage() {
                                         <TableRow key={candidate.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors group">
                                             <TableCell className="px-4 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300 font-bold border border-indigo-500/30">
+                                                    <div className="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-300 font-bold border border-sky-500/30">
                                                         {candidate.name.charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
@@ -527,7 +527,7 @@ export default function CandidatesPage() {
                                                         </Badge>
                                                     )}
                                                     {candidate.experienceLevel === 'EXPERIENCED' && (
-                                                        <Badge variant="outline" className="text-[10px] bg-amber-500/10 border-amber-500/20 text-amber-400 font-normal px-1.5 rounded">
+                                                        <Badge variant="outline" className="text-[10px] bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-normal px-1.5 rounded">
                                                             Exp
                                                         </Badge>
                                                     )}
@@ -539,16 +539,16 @@ export default function CandidatesPage() {
                                                     <div className="flex items-center gap-2 text-xs w-24">
                                                         <span className="text-slate-500 w-8 text-right">ATS:</span>
                                                         <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                                            <div className="h-full bg-cyan-400 rounded-full" style={{ width: `${candidate.atsScore}%` }} />
+                                                            <div className="h-full bg-sky-400 rounded-full" style={{ width: `${candidate.atsScore}%` }} />
                                                         </div>
-                                                        <span className="font-medium text-cyan-400 w-6">{candidate.atsScore}</span>
+                                                        <span className="font-medium text-sky-400 w-6">{candidate.atsScore}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-xs w-24">
                                                         <span className="text-slate-500 w-8 text-right">Read:</span>
                                                         <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                                            <div className="h-full bg-indigo-400 rounded-full" style={{ width: `${candidate.readinessScore}%` }} />
+                                                            <div className="h-full bg-sky-400 rounded-full" style={{ width: `${candidate.readinessScore}%` }} />
                                                         </div>
-                                                        <span className="font-medium text-indigo-400 w-6">{candidate.readinessScore}</span>
+                                                        <span className="font-medium text-sky-400 w-6">{candidate.readinessScore}</span>
                                                     </div>
                                                 </div>
                                             </TableCell>
@@ -611,7 +611,7 @@ export default function CandidatesPage() {
                                                 <Button 
                                                     variant="ghost" 
                                                     size="sm" 
-                                                    className="h-8 px-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-500/10"
+                                                    className="h-8 px-2 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-500/10"
                                                     onClick={() => setSelectedCandidate(candidate)}
                                                 >
                                                     <ExternalLink className="h-4 w-4 mr-1" /> View
@@ -658,7 +658,7 @@ export default function CandidatesPage() {
                 <SheetContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 sm:max-w-xl overflow-y-auto w-[400px] sm:w-[540px]">
                     <SheetHeader className="border-b border-slate-100 dark:border-slate-800 pb-6 mb-6">
                         <div className="flex items-start gap-4">
-                            <div className="w-16 h-16 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-2xl font-bold border border-indigo-500/30 shrink-0">
+                            <div className="w-16 h-16 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 text-2xl font-bold border border-sky-500/30 shrink-0">
                                 {selectedCandidate?.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -684,17 +684,17 @@ export default function CandidatesPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">ATS Match Score</div>
-                                <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{selectedCandidate?.atsScore}%</div>
+                                <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">{selectedCandidate?.atsScore}%</div>
                             </div>
                             <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Interview Readiness</div>
-                                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{selectedCandidate?.readinessScore}/100</div>
+                                <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">{selectedCandidate?.readinessScore}/100</div>
                             </div>
                         </div>
 
                         <div>
                             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-200 mb-3 flex items-center gap-2">
-                                <Award className="h-4 w-4 text-indigo-500" /> Extracted Skills
+                                <Award className="h-4 w-4 text-sky-500" /> Extracted Skills
                             </h3>
                             <div className="flex flex-wrap gap-2">
                                 {Array.isArray(selectedCandidate?.skills) && selectedCandidate.skills.map((skill, idx) => (

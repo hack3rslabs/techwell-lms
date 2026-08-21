@@ -267,7 +267,7 @@ export default function ConsultingDashboard({ type: initialType = 'ALL' }: { typ
                                         <div
                                             {...provided.droppableProps}
                                             ref={provided.innerRef}
-                                            className={`bg-slate-100/50 dark:bg-slate-800/30 rounded-xl p-4 min-h-[500px] border ${snapshot.isDraggingOver ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20' : 'border-transparent'}`}
+                                            className={`bg-slate-100/50 dark:bg-slate-800/30 rounded-xl p-4 min-h-[500px] border ${snapshot.isDraggingOver ? 'border-sky-500 bg-sky-50/50 dark:bg-sky-900/20' : 'border-transparent'}`}
                                         >
                                             <div className="flex justify-between items-center mb-4">
                                                 <h4 className="font-semibold text-slate-700 dark:text-slate-200">{column.title}</h4>
@@ -368,9 +368,9 @@ export default function ConsultingDashboard({ type: initialType = 'ALL' }: { typ
                                                 <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
                                                     project.status === 'EXECUTION' ? 'bg-green-100 text-green-700' :
                                                     project.status === 'DELIVERY' ? 'bg-blue-100 text-blue-700' :
-                                                    project.status === 'ONBOARDING' ? 'bg-purple-100 text-purple-700' :
-                                                    project.status === 'PLANNING' ? 'bg-indigo-100 text-indigo-700' :
-                                                    project.status === 'REVIEW' ? 'bg-yellow-100 text-yellow-700' :
+                                                    project.status === 'ONBOARDING' ? 'bg-sky-100 text-sky-700' :
+                                                    project.status === 'PLANNING' ? 'bg-sky-100 text-sky-700' :
+                                                    project.status === 'REVIEW' ? 'bg-sky-100 text-sky-700' :
                                                     'bg-slate-100 text-slate-700'
                                                 }`}>
                                                     {project.status.replace('_', ' ')}

@@ -325,7 +325,7 @@ export default function MockInterviewDashboard() {
                                     {interview.status === 'COMPLETED' ? (
                                         <div className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-semibold">Score: {interview.evaluation?.overallScore || 0}%</div>
                                     ) : (
-                                        <div className="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full font-semibold">Pending</div>
+                                        <div className="bg-sky-100 text-sky-700 text-xs px-2 py-1 rounded-full font-semibold">Pending</div>
                                     )}
                                 </div>
                                 <CardDescription>{interview.domain}</CardDescription>

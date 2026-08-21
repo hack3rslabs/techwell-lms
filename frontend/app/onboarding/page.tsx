@@ -88,7 +88,7 @@ export default function OnboardingPage() {
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5 py-12">
             <Card className="w-full max-w-2xl border-muted shadow-xl backdrop-blur-sm bg-background/80 overflow-y-auto max-h-[90vh]">
                 <CardHeader className="text-center pt-8 border-b pb-6">
-                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
+                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-sky-500 bg-clip-text text-transparent">
                         Complete Your Profile
                     </CardTitle>
                     <CardDescription className="text-base mt-2">

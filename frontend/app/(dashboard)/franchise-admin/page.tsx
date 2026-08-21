@@ -89,8 +89,8 @@ export default function FranchiseAdminDashboard() {
     const getLeadStatusColor = (status: string) => {
         switch (status) {
             case 'NEW': return 'bg-blue-100 text-blue-700 border-blue-200';
-            case 'CONTACTED': return 'bg-amber-100 text-amber-700 border-amber-200';
-            case 'QUALIFIED': return 'bg-purple-100 text-purple-700 border-purple-200';
+            case 'CONTACTED': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            case 'QUALIFIED': return 'bg-sky-100 text-sky-700 border-sky-200';
             case 'CONVERTED': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
             case 'LOST': return 'bg-red-100 text-red-700 border-red-200';
             default: return 'bg-slate-100 text-slate-700 border-slate-200';
@@ -100,7 +100,7 @@ export default function FranchiseAdminDashboard() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="h-10 w-10 rounded-full border-2 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent animate-spin" />
+                <div className="h-10 w-10 rounded-full border-2 border-t-sky-600 border-r-sky-600 border-b-transparent border-l-transparent animate-spin" />
             </div>
         );
     }
@@ -112,19 +112,19 @@ export default function FranchiseAdminDashboard() {
     return (
         <div className="space-y-8 p-6 max-w-[1400px] mx-auto">
             {/* Hero Header */}
-            <div className="relative bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white overflow-hidden border border-slate-700 shadow-xl">
-                <div className="absolute top-0 right-0 -mt-16 -mr-16 w-72 h-72 bg-indigo-500/20 rounded-full filter blur-3xl" />
+            <div className="relative bg-gradient-to-br from-slate-900 via-sky-950 to-slate-900 rounded-3xl p-8 text-white overflow-hidden border border-slate-700 shadow-xl">
+                <div className="absolute top-0 right-0 -mt-16 -mr-16 w-72 h-72 bg-sky-500/20 rounded-full filter blur-3xl" />
                 <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-72 h-72 bg-blue-500/20 rounded-full filter blur-3xl" />
                 <div className="relative z-10">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <p className="text-indigo-300 text-sm font-semibold uppercase tracking-widest mb-1">Franchise Portal</p>
+                            <p className="text-sky-300 text-sm font-semibold uppercase tracking-widest mb-1">Franchise Portal</p>
                             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                                Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">{user?.name?.split(' ')[0]}</span>
+                                Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-300">{user?.name?.split(' ')[0]}</span>
                             </h1>
                             {stats.territory && (
                                 <div className="flex items-center gap-2 mt-2 text-slate-300">
-                                    <MapPin className="w-4 h-4 text-indigo-400" />
+                                    <MapPin className="w-4 h-4 text-sky-400" />
                                     <span className="text-sm">{stats.territory.district}, {stats.territory.state}</span>
                                     {stats.territory.pincodes?.length > 0 && (
                                         <span className="text-xs text-slate-400">| {stats.territory.pincodes.length} Pincodes</span>
@@ -135,7 +135,7 @@ export default function FranchiseAdminDashboard() {
                         {stats.performance && (
                             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 text-center">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+                                    <Star className="w-5 h-5 text-emerald-400 fill-emerald-400" />
                                     <span className="text-2xl font-bold">{stats.performance.rating?.toFixed(1)}</span>
                                 </div>
                                 <p className="text-xs text-slate-300">Rank #{stats.performance.rank} of {stats.performance.totalFranchises}</p>
@@ -151,7 +151,7 @@ export default function FranchiseAdminDashboard() {
                     {
                         label: 'Net Revenue', value: `₹${stats.revenue.toLocaleString()}`, icon: IndianRupee,
                         iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-600 dark:text-emerald-400',
-                        cardBg: 'from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20',
+                        cardBg: 'from-emerald-50 to-emerald-50 dark:from-emerald-950/20 dark:to-emerald-950/20',
                         badge: 'Revenue Share', badgeColor: 'bg-emerald-100 text-emerald-700',
                         href: '/franchise-admin/finance'
                     },
@@ -165,15 +165,15 @@ export default function FranchiseAdminDashboard() {
                     {
                         label: 'Active Leads', value: stats.activeLeads ?? 0, icon: Activity,
                         iconBg: 'bg-violet-100 dark:bg-violet-900/30', iconColor: 'text-violet-600 dark:text-violet-400',
-                        cardBg: 'from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20',
+                        cardBg: 'from-violet-50 to-sky-50 dark:from-violet-950/20 dark:to-sky-950/20',
                         badge: `${conversionRate}% CVR`, badgeColor: 'bg-violet-100 text-violet-700',
                         href: '/franchise-admin/leads'
                     },
                     {
                         label: 'Certificates Issued', value: stats.certificatesIssued, icon: GraduationCap,
-                        iconBg: 'bg-amber-100 dark:bg-amber-900/30', iconColor: 'text-amber-600 dark:text-amber-400',
-                        cardBg: 'from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20',
-                        badge: 'This Month', badgeColor: 'bg-amber-100 text-amber-700',
+                        iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-600 dark:text-emerald-400',
+                        cardBg: 'from-emerald-50 to-sky-50 dark:from-emerald-950/20 dark:to-sky-950/20',
+                        badge: 'This Month', badgeColor: 'bg-emerald-100 text-emerald-700',
                         href: '/franchise-admin/certificates'
                     },
                 ].map((kpi) => (
@@ -204,13 +204,13 @@ export default function FranchiseAdminDashboard() {
                         <CardHeader className="flex flex-row items-center justify-between pb-3">
                             <div>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <ClipboardList className="w-5 h-5 text-indigo-500" />
+                                    <ClipboardList className="w-5 h-5 text-sky-500" />
                                     Recent Leads
                                 </CardTitle>
                                 <CardDescription>Latest enquiries from your territory</CardDescription>
                             </div>
                             <Link href="/franchise-admin/leads">
-                                <Button variant="ghost" size="sm" className="gap-1 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                                <Button variant="ghost" size="sm" className="gap-1 text-sky-600 hover:text-sky-700 hover:bg-sky-50">
                                     View All <ChevronRight className="w-4 h-4" />
                                 </Button>
                             </Link>
@@ -226,7 +226,7 @@ export default function FranchiseAdminDashboard() {
                                     {recentLeads.map((lead) => (
                                         <div key={lead.id} className="flex items-center justify-between px-6 py-3 hover:bg-muted/20 transition-colors">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                                                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white text-sm font-bold">
                                                     {lead.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
@@ -256,17 +256,17 @@ export default function FranchiseAdminDashboard() {
                     <Card className="shadow-md border">
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base flex items-center gap-2">
-                                <BarChart3 className="w-4 h-4 text-indigo-500" /> Quick Actions
+                                <BarChart3 className="w-4 h-4 text-sky-500" /> Quick Actions
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             {[
                                 { label: 'Add New Lead', href: '/franchise-admin/leads', icon: Phone, color: 'text-blue-600' },
-                                { label: 'Manage Students', href: '/franchise-admin/students', icon: Users, color: 'text-purple-600' },
-                                { label: 'View Batches', href: '/franchise-admin/batches', icon: Briefcase, color: 'text-amber-600' },
+                                { label: 'Manage Students', href: '/franchise-admin/students', icon: Users, color: 'text-sky-600' },
+                                { label: 'View Batches', href: '/franchise-admin/batches', icon: Briefcase, color: 'text-emerald-600' },
                                 { label: 'Issue Certificate', href: '/franchise-admin/certificates', icon: GraduationCap, color: 'text-emerald-600' },
-                                { label: 'Revenue & Ledger', href: '/franchise-admin/finance', icon: IndianRupee, color: 'text-indigo-600' },
-                                { label: 'Staff Management', href: '/franchise-admin/staff', icon: CheckCircle2, color: 'text-rose-600' },
+                                { label: 'Revenue & Ledger', href: '/franchise-admin/finance', icon: IndianRupee, color: 'text-sky-600' },
+                                { label: 'Staff Management', href: '/franchise-admin/staff', icon: CheckCircle2, color: 'text-emerald-600' },
                             ].map((action) => (
                                 <Link key={action.href} href={action.href}>
                                     <div className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors group cursor-pointer">
@@ -285,7 +285,7 @@ export default function FranchiseAdminDashboard() {
                     <Card className="shadow-md border">
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-indigo-500" /> Resources
+                                <FileText className="w-4 h-4 text-sky-500" /> Resources
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -297,7 +297,7 @@ export default function FranchiseAdminDashboard() {
                                                 href={r.fileUrl}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
+                                                className="flex items-center gap-2 text-sm text-sky-600 hover:text-sky-800 hover:underline"
                                             >
                                                 <FileText className="w-3.5 h-3.5 shrink-0" />
                                                 <span className="truncate">{r.title}</span>

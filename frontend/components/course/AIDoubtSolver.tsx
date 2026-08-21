@@ -112,7 +112,7 @@ export function AIDoubtSolver({ courseTitle, lessonTitle, lessonContent }: AIDou
                 isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none"
             )}>
                 {/* Header */}
-                <div className="p-4 bg-gradient-to-r from-indigo-600 to-primary text-white flex justify-between items-center shrink-0">
+                <div className="p-4 bg-gradient-to-r from-sky-600 to-primary text-white flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="bg-white/20 p-1.5 rounded-lg">
                             <Bot className="h-5 w-5" />

@@ -191,9 +191,9 @@ export default function AdminSupportPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'OPEN': return 'bg-yellow-100 text-yellow-800'
+            case 'OPEN': return 'bg-sky-100 text-sky-800'
             case 'IN_PROGRESS': return 'bg-blue-100 text-blue-800'
-            case 'WAITING_FOR_USER': return 'bg-purple-100 text-purple-800'
+            case 'WAITING_FOR_USER': return 'bg-sky-100 text-sky-800'
             case 'RESOLVED': return 'bg-green-100 text-green-800'
             case 'CLOSED': return 'bg-gray-100 text-gray-800'
             default: return 'bg-gray-100'
@@ -203,7 +203,7 @@ export default function AdminSupportPage() {
     const getPriorityColor = (priority: string) => {
         switch (priority) {
             case 'URGENT': return 'text-red-600 font-bold'
-            case 'HIGH': return 'text-orange-500 font-semibold'
+            case 'HIGH': return 'text-sky-500 font-semibold'
             default: return 'text-muted-foreground'
         }
     }
@@ -230,7 +230,7 @@ export default function AdminSupportPage() {
                             <p className="text-sm font-medium text-muted-foreground">Pending</p>
                             <h3 className="text-2xl font-bold mt-1">{stats.pending}</h3>
                         </div>
-                        <div className="h-10 w-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
+                        <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
                             <Clock className="h-5 w-5" />
                         </div>
                     </CardContent>
@@ -469,7 +469,7 @@ export default function AdminSupportPage() {
                             </>
                         ) : (
                             <div className="flex-1 p-4 flex flex-col gap-4">
-                                <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-md text-sm text-yellow-800">
+                                <div className="bg-sky-50 border border-sky-200 p-4 rounded-md text-sm text-sky-800">
                                     <h4 className="font-semibold flex items-center gap-2"><Lock className="h-4 w-4" /> Confidential</h4>
                                     <p>These notes are only visible to staff members.</p>
                                 </div>

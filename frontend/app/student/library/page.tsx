@@ -188,7 +188,7 @@ export default function StudentLibraryPage() {
                     {filteredResources.map((resource) => (
                         <Card key={resource.id} className="group relative flex flex-col h-full hover:shadow-xl transition-all duration-300 border-primary/10">
                             {resource.isPaid && (
-                                <div className="absolute top-3 right-3 z-10 bg-yellow-400 text-yellow-950 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm uppercase tracking-wider">
+                                <div className="absolute top-3 right-3 z-10 bg-sky-400 text-sky-950 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm uppercase tracking-wider">
                                     PRO
                                 </div>
                             )}
@@ -220,7 +220,7 @@ export default function StudentLibraryPage() {
                             </CardContent>
                             <div className="p-4 pt-0">
                                 {resource.isPaid ? (
-                                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 font-bold" size="sm">
+                                    <Button className="w-full bg-sky-500 hover:bg-sky-600 font-bold" size="sm">
                                         Unlock Full Access 🔓
                                     </Button>
                                 ) : (

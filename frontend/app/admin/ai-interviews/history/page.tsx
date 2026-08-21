@@ -98,7 +98,7 @@ export default function AdminInterviewHistoryPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 {interview.evaluation?.overallScore ? (
-                                                    <span className={`font-bold ${interview.evaluation.overallScore >= 70 ? 'text-green-600' : interview.evaluation.overallScore >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                                    <span className={`font-bold ${interview.evaluation.overallScore >= 70 ? 'text-green-600' : interview.evaluation.overallScore >= 40 ? 'text-sky-600' : 'text-red-600'}`}>
                                                         {interview.evaluation.overallScore}/100
                                                     </span>
                                                 ) : (

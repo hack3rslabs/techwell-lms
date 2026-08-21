@@ -54,14 +54,14 @@ Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].`
                     <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white" onClick={() => router.push('/dashboard')}>
                         <ArrowLeft className="h-4 w-4 mr-2" /> Dashboard
                     </Button>
-                    <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                    <div className="flex items-center gap-2 text-sky-400 font-bold">
                         <Code2 className="h-5 w-5" />
                         AI Coding Arena
                     </div>
                 </div>
                 <div>
                     <Button 
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20"
+                        className="bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-500/20"
                         onClick={handleEvaluate}
                         disabled={loading}
                     >
@@ -89,9 +89,9 @@ Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].`
                         </pre>
                     </div>
 
-                    <div className="mt-8 p-4 bg-indigo-950/30 rounded-xl border border-indigo-900/50">
-                        <h4 className="flex items-center gap-2 font-semibold text-indigo-300 mb-2">
-                            <AlertTriangle className="h-4 w-4 text-amber-400" /> AI Coach Tip
+                    <div className="mt-8 p-4 bg-sky-950/30 rounded-xl border border-sky-900/50">
+                        <h4 className="flex items-center gap-2 font-semibold text-sky-300 mb-2">
+                            <AlertTriangle className="h-4 w-4 text-emerald-400" /> AI Coach Tip
                         </h4>
                         <p className="text-sm text-slate-400">
                             A brute force approach is O(N^2). Can you do it in O(N) time? Think about data structures that offer O(1) lookups.

@@ -69,12 +69,12 @@ export default function LeadAnalytics() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Target className="w-5 h-5 text-indigo-500" />
+                            <Target className="w-5 h-5 text-sky-500" />
                             Global Lead Score
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center py-8">
-                        <div className="text-6xl font-black text-indigo-600 mb-2">{avgScore}</div>
+                        <div className="text-6xl font-black text-sky-600 mb-2">{avgScore}</div>
                         <p className="text-slate-500 font-medium text-center">Average AI Readiness Score<br/>across {leads.length} total leads.</p>
                         
                         <div className="mt-8 w-full bg-slate-50 p-4 rounded-lg border">
@@ -93,7 +93,7 @@ export default function LeadAnalytics() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <AlertTriangle className="w-5 h-5 text-rose-500" />
+                            <AlertTriangle className="w-5 h-5 text-emerald-500" />
                             Lost Lead Analysis
                         </CardTitle>
                     </CardHeader>
@@ -128,31 +128,31 @@ export default function LeadAnalytics() {
                 </Card>
 
                 {readinessData && (
-                    <Card className="md:col-span-2 border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-purple-50/50">
+                    <Card className="md:col-span-2 border-sky-200 bg-gradient-to-br from-sky-50/50 to-sky-50/50">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-indigo-900">
-                                <Target className="w-5 h-5 text-indigo-600" />
+                            <CardTitle className="flex items-center gap-2 text-sky-900">
+                                <Target className="w-5 h-5 text-sky-600" />
                                 Predictive Placement Readiness
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                <div className="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm text-center">
+                                <div className="bg-white p-4 rounded-xl border border-sky-100 shadow-sm text-center">
                                     <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Hot Candidates (80%+)</h4>
                                     <div className="text-4xl font-black text-emerald-600">{readinessData.summary.hot}</div>
                                 </div>
-                                <div className="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm text-center">
+                                <div className="bg-white p-4 rounded-xl border border-sky-100 shadow-sm text-center">
                                     <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Warm (60-79%)</h4>
-                                    <div className="text-4xl font-black text-amber-500">{readinessData.summary.warm}</div>
+                                    <div className="text-4xl font-black text-emerald-500">{readinessData.summary.warm}</div>
                                 </div>
-                                <div className="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm text-center">
+                                <div className="bg-white p-4 rounded-xl border border-sky-100 shadow-sm text-center">
                                     <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">At Risk (&lt;60%)</h4>
-                                    <div className="text-4xl font-black text-rose-500">{readinessData.summary.atRisk}</div>
+                                    <div className="text-4xl font-black text-emerald-500">{readinessData.summary.atRisk}</div>
                                 </div>
                             </div>
                             
                             <h4 className="font-semibold text-slate-800 mb-3">Top 5 Ready Candidates</h4>
-                            <div className="bg-white rounded-xl border border-indigo-100 shadow-sm overflow-hidden">
+                            <div className="bg-white rounded-xl border border-sky-100 shadow-sm overflow-hidden">
                                 <table className="w-full text-sm text-left">
                                     <thead className="bg-slate-50 text-slate-500 font-medium">
                                         <tr>

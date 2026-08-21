@@ -162,7 +162,7 @@ export default function PostsDashboard() {
                     label="Total Clicks (CTR)"
                     value={analytics?.topPosts?.reduce((sum: number, p: any) => sum + (p.ctr || 0), 0) ?? 0}
                     sub="Link & CTA clicks"
-                    color="bg-amber-50 dark:bg-amber-950/30 text-amber-600"
+                    color="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600"
                 />
                 <StatCard
                     icon={TrendingUp}
@@ -178,7 +178,7 @@ export default function PostsDashboard() {
                 <Card className="border-none shadow-sm lg:col-span-2">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
-                            <Flame className="h-4 w-4 text-orange-500" /> Top Performing Posts
+                            <Flame className="h-4 w-4 text-sky-500" /> Top Performing Posts
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -187,7 +187,7 @@ export default function PostsDashboard() {
                         ) : analytics?.topPosts && analytics.topPosts.length > 0 ? (
                             analytics.topPosts.map((post, i) => (
                                 <div key={post.id} className="flex items-center gap-3 group">
-                                    <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${i === 0 ? 'bg-amber-400 text-white' : i === 1 ? 'bg-slate-300 text-slate-700' : i === 2 ? 'bg-orange-300 text-white' : 'bg-muted text-muted-foreground'}`}>
+                                    <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${i === 0 ? 'bg-emerald-400 text-white' : i === 1 ? 'bg-slate-300 text-slate-700' : i === 2 ? 'bg-sky-300 text-white' : 'bg-muted text-muted-foreground'}`}>
                                         {i + 1}
                                     </span>
                                     <div className="flex-1 min-w-0">
@@ -333,7 +333,7 @@ export default function PostsDashboard() {
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 text-center">
-                                                <span className="font-semibold text-sm text-amber-600">
+                                                <span className="font-semibold text-sm text-emerald-600">
                                                     {Math.round(post.ctr || 0).toLocaleString()}
                                                 </span>
                                             </td>

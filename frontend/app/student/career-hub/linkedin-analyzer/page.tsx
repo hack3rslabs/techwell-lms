@@ -59,7 +59,7 @@ export default function LinkedinAnalyzer() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Target className="w-5 h-5 text-indigo-500" />
+                                <Target className="w-5 h-5 text-sky-500" />
                                 Target Role
                             </CardTitle>
                         </CardHeader>

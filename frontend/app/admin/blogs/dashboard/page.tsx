@@ -46,13 +46,13 @@ export default function BlogDashboardPage() {
 
     const STAT_CARDS = [
         { title: 'Total Views', value: stats.totalViews.toLocaleString(), icon: Eye, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-        { title: 'Unique Visitors', value: stats.uniqueVisitors.toLocaleString(), icon: Users, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
+        { title: 'Unique Visitors', value: stats.uniqueVisitors.toLocaleString(), icon: Users, color: 'text-sky-500', bg: 'bg-sky-50 dark:bg-sky-900/20' },
         { title: 'Avg Reading Time', value: `${stats.avgReadingTime}m`, icon: BarChart3, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
         { title: 'Click-Through Rate', value: `${stats.ctr}%`, icon: MousePointerClick, color: 'text-violet-500', bg: 'bg-violet-50 dark:bg-violet-900/20' },
-        { title: 'Leads Generated', value: stats.leadsGenerated, icon: UserPlus, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' },
-        { title: 'Total Comments', value: stats.totalComments, icon: MessageSquare, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+        { title: 'Leads Generated', value: stats.leadsGenerated, icon: UserPlus, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+        { title: 'Total Comments', value: stats.totalComments, icon: MessageSquare, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
         { title: 'Published Articles', value: stats.totalPublished, icon: FileText, color: 'text-slate-500', bg: 'bg-slate-50 dark:bg-slate-900/20' },
-        { title: 'Growth (MoM)', value: '+14%', icon: TrendingUp, color: 'text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20' },
+        { title: 'Growth (MoM)', value: '+14%', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
     ]
 
     return (
@@ -64,7 +64,7 @@ export default function BlogDashboardPage() {
                     <p className="text-slate-500 mt-1">Here's how your content marketing is performing today.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 px-4 py-2 rounded-xl font-medium text-sm">
+                    <button className="flex items-center gap-2 bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 px-4 py-2 rounded-xl font-medium text-sm">
                         <Sparkles className="h-4 w-4" /> AI Insights
                     </button>
                 </div>
@@ -128,11 +128,11 @@ export default function BlogDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
-                                <Sparkles className="h-6 w-6 mb-3 text-indigo-200" />
+                            <div className="p-4 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-lg">
+                                <Sparkles className="h-6 w-6 mb-3 text-sky-200" />
                                 <h4 className="font-bold mb-1">AI Recommendation</h4>
-                                <p className="text-sm text-indigo-100 mb-4 opacity-90">Articles about "AI in Healthcare" are trending. Consider writing a piece targeting this keyword.</p>
-                                <button className="w-full bg-white text-indigo-600 font-bold text-sm py-2 rounded-lg hover:bg-slate-50 transition-colors">Generate Outline</button>
+                                <p className="text-sm text-sky-100 mb-4 opacity-90">Articles about "AI in Healthcare" are trending. Consider writing a piece targeting this keyword.</p>
+                                <button className="w-full bg-white text-sky-600 font-bold text-sm py-2 rounded-lg hover:bg-slate-50 transition-colors">Generate Outline</button>
                             </div>
                         </div>
                     </CardContent>

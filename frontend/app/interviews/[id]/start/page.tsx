@@ -299,7 +299,7 @@ export default function InterviewStartPage() {
                 <Card className="mt-6">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Lightbulb className="h-5 w-5 text-yellow-500" />
+                            <Lightbulb className="h-5 w-5 text-sky-500" />
                             Tips for a Great Interview
                         </CardTitle>
                     </CardHeader>

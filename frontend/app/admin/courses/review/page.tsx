@@ -132,7 +132,7 @@ export default function CourseReviewPage() {
     const getCourseTypeIcon = (type: string) => {
         switch (type) {
             case 'LIVE': return <Users className="h-4 w-4 text-green-600" />
-            case 'HYBRID': return <Video className="h-4 w-4 text-orange-600" />
+            case 'HYBRID': return <Video className="h-4 w-4 text-sky-600" />
             default: return <BookOpen className="h-4 w-4 text-blue-600" />
         }
     }

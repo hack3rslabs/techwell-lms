@@ -130,7 +130,7 @@ export default function DocumentsPage() {
         <div className="p-6 space-y-6 animate-in fade-in zoom-in duration-500 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
                         Internal Business Documents
                     </h1>
                     <p className="text-muted-foreground mt-1">
@@ -163,7 +163,7 @@ export default function DocumentsPage() {
                             <SelectItem value="GENERAL">General</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Button onClick={() => setIsUploadModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+                    <Button onClick={() => setIsUploadModalOpen(true)} className="bg-sky-600 hover:bg-sky-700 shadow-lg shadow-sky-200">
                         <Plus className="mr-2 h-4 w-4" /> Upload Document
                     </Button>
                 </div>
@@ -191,7 +191,7 @@ export default function DocumentsPage() {
                             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg text-indigo-600 dark:text-indigo-300">
+                                        <div className="p-2 bg-sky-100 dark:bg-sky-900 rounded-lg text-sky-600 dark:text-sky-300">
                                             <FileText className="h-5 w-5" />
                                         </div>
                                         <div>

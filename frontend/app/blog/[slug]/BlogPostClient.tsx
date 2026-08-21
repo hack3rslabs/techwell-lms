@@ -140,7 +140,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc] dark:bg-slate-950">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-600"></div>
             </div>
         )
     }
@@ -150,16 +150,16 @@ export default function BlogPostClient({ slug }: { slug: string }) {
             <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center bg-[#fcfcfc] dark:bg-slate-950">
                 <h2 className="text-3xl font-extrabold mb-4 text-slate-900 dark:text-white">{error || 'Post not found'}</h2>
                 <Link href="/blog">
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-8"><ArrowLeft className="mr-2 h-4 w-4" />Back to Articles</Button>
+                    <Button className="bg-sky-600 hover:bg-sky-700 text-white rounded-full px-8"><ArrowLeft className="mr-2 h-4 w-4" />Back to Articles</Button>
                 </Link>
             </div>
         )
     }
 
     return (
-        <article className="min-h-screen bg-white dark:bg-slate-950 relative selection:bg-indigo-200 selection:text-indigo-900">
+        <article className="min-h-screen bg-white dark:bg-slate-950 relative selection:bg-sky-200 selection:text-sky-900">
             {/* Scroll Progress Bar */}
-            <div className="fixed top-0 left-0 h-1.5 bg-indigo-600 z-50 transition-all duration-150 ease-out" style={{ width: `${scrollProgress}%` }} />
+            <div className="fixed top-0 left-0 h-1.5 bg-sky-600 z-50 transition-all duration-150 ease-out" style={{ width: `${scrollProgress}%` }} />
 
             {/* Schema.org */}
             <script type="application/ld+json" // deepcode ignore DOMXSS: Sanitized by React
@@ -187,7 +187,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
                             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/80 to-slate-950"></div>
                         </>
                     ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-900"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-sky-900 via-slate-900 to-sky-900"></div>
                     )}
                 </div>
 
@@ -200,7 +200,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
 
                     <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
                         {post.tags?.slice(0, 3).map(tag => (
-                            <Badge key={tag} className="bg-indigo-500/20 text-indigo-200 border-indigo-500/30 hover:bg-indigo-500/40 rounded-md">
+                            <Badge key={tag} className="bg-sky-500/20 text-sky-200 border-sky-500/30 hover:bg-sky-500/40 rounded-md">
                                 {tag}
                             </Badge>
                         ))}
@@ -254,7 +254,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
                         {/* deepcode ignore XSS: Safe */} {/* deepcode ignore DOMXSS: Safe */} <a href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`} target="_blank" rel="noreferrer" className="p-3 text-slate-500 hover:text-[#1877F2] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all">
                             <Facebook className="h-5 w-5" />
                         </a>
-                        <button onClick={copyToClipboard} className="p-3 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-full transition-all">
+                        <button onClick={copyToClipboard} className="p-3 text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-full transition-all">
                             <LinkIcon className="h-5 w-5" />
                         </button>
                     </div>
@@ -268,13 +268,13 @@ export default function BlogPostClient({ slug }: { slug: string }) {
                 <div className="flex-1 max-w-3xl mx-auto bg-white dark:bg-slate-950 rounded-3xl p-6 md:p-12 shadow-[0_-20px_50px_rgba(0,0,0,0.05)] dark:shadow-none border border-slate-100 dark:border-none">
                     
                     {post.summary && (
-                        <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 leading-relaxed mb-12 font-medium italic border-l-4 border-indigo-500 pl-6">
+                        <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 leading-relaxed mb-12 font-medium italic border-l-4 border-sky-500 pl-6">
                             {post.summary}
                         </p>
                     )}
 
                     <div 
-                        className="prose prose-lg md:prose-xl dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-3xl prose-img:shadow-2xl leading-loose"
+                        className="prose prose-lg md:prose-xl dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-sky-600 dark:prose-a:text-sky-400 prose-img:rounded-3xl prose-img:shadow-2xl leading-loose"
                         // deepcode ignore DOMXSS: Sanitized by React
 /* deepcode ignore XSS: Sanitized */  /* deepcode ignore ReactXss: Sanitized */ dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                     />
@@ -309,7 +309,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
                     {/* Comments Section */}
                     <section id="comments">
                         <h3 className="text-3xl font-bold mb-8 flex items-center gap-3 text-slate-900 dark:text-white tracking-tight">
-                            Discussion <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">{post.comments?.length || 0}</Badge>
+                            Discussion <Badge variant="secondary" className="bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300">{post.comments?.length || 0}</Badge>
                         </h3>
                         
                         <form onSubmit={handleCommentSubmit} className="mb-12 bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-800">
@@ -336,11 +336,11 @@ export default function BlogPostClient({ slug }: { slug: string }) {
                         <div className="space-y-8">
                             {post.comments?.map(comment => (
                                 <div key={comment.id} className="flex gap-4">
-                                    <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-800">
+                                    <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-sky-100 to-sky-100 dark:from-sky-900/50 dark:to-sky-900/50 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-800">
                                         {comment.user?.avatar ? (
                                             <Image src={comment.user.avatar} alt="User" width={48} height={48} className="object-cover" />
                                         ) : (
-                                            <span className="font-bold text-indigo-700 dark:text-indigo-300">{(comment.user?.name || comment.guestName || 'A')[0].toUpperCase()}</span>
+                                            <span className="font-bold text-sky-700 dark:text-sky-300">{(comment.user?.name || comment.guestName || 'A')[0].toUpperCase()}</span>
                                         )}
                                     </div>
                                     <div className="flex-1 bg-slate-50 dark:bg-slate-900 p-6 rounded-3xl rounded-tl-sm border border-slate-100 dark:border-slate-800">
@@ -375,7 +375,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
                 {/* deepcode ignore XSS: Safe */} {/* deepcode ignore DOMXSS: Safe */} <a href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-[#1DA1F2] transition-colors"><Twitter className="h-6 w-6" /></a>
                 {/* deepcode ignore XSS: Safe */} {/* deepcode ignore DOMXSS: Safe */} <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${shareUrl}&title=${shareText}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-[#0A66C2] transition-colors"><Linkedin className="h-6 w-6" /></a>
                 {/* deepcode ignore XSS: Safe */} {/* deepcode ignore DOMXSS: Safe */} <a href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-[#1877F2] transition-colors"><Facebook className="h-6 w-6" /></a>
-                <button onClick={copyToClipboard} className="text-slate-500 hover:text-indigo-600 transition-colors"><LinkIcon className="h-6 w-6" /></button>
+                <button onClick={copyToClipboard} className="text-slate-500 hover:text-sky-600 transition-colors"><LinkIcon className="h-6 w-6" /></button>
             </div>
         </article>
     )

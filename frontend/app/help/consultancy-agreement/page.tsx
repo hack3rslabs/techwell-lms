@@ -21,7 +21,7 @@ export default function ConsultancyAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-500 text-sm font-bold">1</span>
+                                <span className="h-8 w-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-500 text-sm font-bold">1</span>
                                 Consultancy Services
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">
@@ -33,7 +33,7 @@ export default function ConsultancyAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-500 text-sm font-bold">2</span>
+                                <span className="h-8 w-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-500 text-sm font-bold">2</span>
                                 Fee Structure (If Applicable)
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">

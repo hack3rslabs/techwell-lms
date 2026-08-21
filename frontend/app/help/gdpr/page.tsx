@@ -41,11 +41,11 @@ export default function GDPRPage() {
                                     <p className="text-sm text-muted-foreground">Request copies of your data</p>
                                 </div>
                                 <div className="bg-muted/50 rounded-xl p-4 border">
-                                    <h4 className="font-bold text-purple-500 mb-1">Rectification</h4>
+                                    <h4 className="font-bold text-sky-500 mb-1">Rectification</h4>
                                     <p className="text-sm text-muted-foreground">Correct inaccurate data</p>
                                 </div>
                                 <div className="bg-muted/50 rounded-xl p-4 border">
-                                    <h4 className="font-bold text-orange-500 mb-1">Erasure</h4>
+                                    <h4 className="font-bold text-sky-500 mb-1">Erasure</h4>
                                     <p className="text-sm text-muted-foreground">Request deletion of data</p>
                                 </div>
                                 <div className="bg-muted/50 rounded-xl p-4 border">
@@ -113,8 +113,8 @@ export default function GDPRPage() {
                             <p className="text-muted-foreground mb-4">
                             If you have questions about these rights or wish to exercise them, please contact us at:
                             <br />
-                            <Link href="mailto:info@techwell.co.in" className="text-primary hover:underline font-medium">
-                                info@techwell.co.in
+                            <Link href="mailto:support@techwell.co.in" className="text-primary hover:underline font-medium">
+                                support@techwell.co.in
                             </Link>
                         </p>
                             <p className="text-sm text-muted-foreground mt-4">

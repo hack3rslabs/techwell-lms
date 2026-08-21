@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
-import { Menu, User, LogOut, ChevronDown, ArrowUpRight, GraduationCap, Laptop, Sparkles, Building2, Briefcase, Home } from "lucide-react"
+import { Menu, User, LogOut, ChevronDown, ArrowUpRight, GraduationCap, Laptop, Sparkles, Building2, Briefcase, Home, ShoppingCart } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 
 import { Button } from "@/components/ui/button"
@@ -35,12 +35,62 @@ export function Header() {
     const router = useRouter()
     const pathname = usePathname()
 
+    const [storeEnabled, setStoreEnabled] = React.useState(true)
+    const [cartCount, setCartCount] = React.useState(0)
+
+    React.useEffect(() => {
+        const fetchStoreSettings = async () => {
+            try {
+                // Use the public unauthenticated endpoint for the shop status
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/shop/settings/status`)
+                if (res.ok) {
+                    const data = await res.json()
+                    if (data?.data) {
+                        setStoreEnabled(data.data.isStoreEnabled)
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch store settings:", err)
+            }
+        }
+        fetchStoreSettings()
+
+        const handleSettingsChange = () => fetchStoreSettings()
+        window.addEventListener('store-settings-changed', handleSettingsChange)
+        return () => window.removeEventListener('store-settings-changed', handleSettingsChange)
+    }, [])
+
+    const fetchCartCount = async () => {
+        if (!isAuthenticated) return
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/shop/cart`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (res.ok) {
+                const data = await res.json()
+                if (data?.data?.cart?.items) {
+                    const count = data.data.cart.items.reduce((acc: number, item: any) => acc + item.quantity, 0)
+                    setCartCount(count)
+                }
+            }
+        } catch (err) {
+            console.error("Failed to fetch cart count:", err)
+        }
+    }
+
+    React.useEffect(() => {
+        fetchCartCount()
+        window.addEventListener('cart-updated', fetchCartCount)
+        return () => window.removeEventListener('cart-updated', fetchCartCount)
+    }, [isAuthenticated])
 
     const navigationConfig = [
         {
             name: "Training",
             href: "/courses",
-            icon: <GraduationCap className="h-4 w-4 text-indigo-500" />
+            icon: <GraduationCap className="h-4 w-4 text-sky-500" />
         },
         {
             name: "Services",
@@ -57,7 +107,7 @@ export function Header() {
         {
             name: "Products",
             href: "/products",
-            icon: <Sparkles className="h-4 w-4 text-amber-500" />,
+            icon: <Sparkles className="h-4 w-4 text-emerald-500" />,
             items: [
                 { name: "Ledger Book (Billing)", href: "https://ledger.twiis.in", desc: "GST-compliant invoicing app.", external: true }
             ]
@@ -83,6 +133,14 @@ export function Header() {
         }
     ]
 
+    if (storeEnabled) {
+        navigationConfig.splice(2, 0, {
+            name: "Shop",
+            href: "/shop",
+            icon: <ShoppingCart className="h-4 w-4 text-sky-500" />
+        })
+    }
+
     const handleLogout = () => {
         logout()
         router.push("/")
@@ -91,7 +149,7 @@ export function Header() {
     return (
         <>
             {/* FIXED NAVBAR */}
-            <header className="fixed top-0 left-0 w-full z-[100] border-b border-border/60 bg-background/88 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
+            <header className="fixed top-0 left-0 w-full z-[100] border-b border-border/60 bg-white dark:bg-zinc-950">
                 <div className="container flex h-18 min-h-[4.5rem] items-center justify-between gap-4">
 
                     {/* Logo + Search */}
@@ -200,20 +258,45 @@ export function Header() {
                             <div className="h-9 w-20 bg-muted animate-pulse rounded" />
                         ) : isAuthenticated ? (
                             <>
-                                <Link href="/dashboard">
-                                    <Button variant="ghost" size="sm" className="gap-2">
-                                        <User className="h-4 w-4" />
-                                        {user?.name?.split(" ")[0]}
-                                    </Button>
-                                </Link>
-
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleLogout}
-                                >
-                                    <LogOut className="h-4 w-4" />
-                                </Button>
+                                {storeEnabled && (
+                                    <Link href="/shop/cart">
+                                        <Button variant="ghost" size="sm" className="px-2 relative">
+                                            <ShoppingCart className="h-5 w-5" />
+                                            {cartCount > 0 && (
+                                                <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                                                    {cartCount}
+                                                </span>
+                                            )}
+                                        </Button>
+                                    </Link>
+                                )}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="gap-2">
+                                            <User className="h-4 w-4" />
+                                            {user?.name?.split(" ")[0]}
+                                            <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-48">
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/dashboard" className="w-full cursor-pointer">Dashboard</Link>
+                                        </DropdownMenuItem>
+                                        {storeEnabled && (
+                                            <>
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/shop/orders" className="w-full cursor-pointer">My Orders</Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/shop/wishlist" className="w-full cursor-pointer">Wishlist</Link>
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
+                                        <DropdownMenuItem onClick={handleLogout} className="text-red-500 cursor-pointer">
+                                            Logout
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </>
                         ) : (
                             <>

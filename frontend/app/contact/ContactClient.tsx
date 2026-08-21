@@ -1,337 +1,189 @@
 "use client"
 
 import * as React from 'react'
-import Link from 'next/link'
-import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2, Instagram, ExternalLink, Building2, GraduationCap, Users } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from 'lucide-react'
 import { leadApi } from '@/lib/api'
 
 const defaultLocations = [
     {
         id: 'vijayawada',
         city: 'Vijayawada',
-        title: 'Techwell – Business & Consultation Workspace',
+        title: 'Business & Consultation Workspace',
         address: 'Flat No. F.F.A, Mallika Apartments, M.G. Road, Opp. D.V. Manor, Beside Sundaram Honda, Vijayawada – 520010, Andhra Pradesh.',
         phone: '+91 79974 73473',
         email: 'support@techwell.co.in',
-        googleMapsUrl: 'https://maps.google.com/?q=Mallika+Apartments,M.G.+Road,Vijayawada'
     },
     {
         id: 'srikakulam',
         city: 'Srikakulam',
-        title: 'Techwell – Business & Consultation Workspace',
+        title: 'Business & Consultation Workspace',
         address: 'Opp. SBI, Arasavalli Road, Ambedkar Junction, Srikakulam – 532001, Andhra Pradesh.',
         phone: '+91 79974 73473',
         email: 'support@techwell.co.in',
-        googleMapsUrl: 'https://maps.google.com/?q=Techwell,Opp.+SBI,Arasavalli+Road,Srikakulam'
     }
+]
+
+const inquiryTypes = [
+    { value: 'it-solutions', label: 'Software & IT Solutions' },
+    { value: 'training', label: 'Course & Corporate Training' },
+    { value: 'ai-interview-prep', label: 'AI Interview & Placements' },
+    { value: 'general', label: 'General Enquiry' },
 ]
 
 export default function ContactClient() {
     const [formData, setFormData] = React.useState({
-        name: '',
-        email: '',
-        phone: '',
-        inquiryType: 'it-solutions',
-        subject: '',
-        message: '',
+        name: '', email: '', phone: '',
+        inquiryType: 'general', subject: '', message: '',
     })
     const [isSubmitting, setIsSubmitting] = React.useState(false)
     const [isSubmitted, setIsSubmitted] = React.useState(false)
-
-    // Listen to query parameters to pre-fill inquiry type if needed
-    React.useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams(window.location.search);
-            const type = params.get('type');
-            if (type === 'it-solutions' || type === 'training' || type === 'ai-interview-prep' || type === 'general') {
-                setFormData(prev => ({ ...prev, inquiryType: type }));
-            }
-        }
-    }, [])
-
     const [locations, setLocations] = React.useState(defaultLocations)
-    
+
     React.useEffect(() => {
-        // Fetch public settings for locations
         const fetchSettings = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/settings/public`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/settings/public`)
                 if (res.ok) {
-                    const data = await res.json();
+                    const data = await res.json()
                     if (data.address) {
                         try {
-                            const parsed = JSON.parse(data.address);
-                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                setLocations(parsed);
-                            }
-                        } catch (e) {
-                            // Keep default locations if JSON parsing fails
-                        }
+                            const parsed = JSON.parse(data.address)
+                            if (Array.isArray(parsed) && parsed.length > 0) setLocations(parsed)
+                        } catch (e) {}
                     }
                 }
-            } catch (err) {
-                console.error("Failed to fetch settings", err);
-            }
+            } catch (err) {}
         }
-        fetchSettings();
+        fetchSettings()
     }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
-
         try {
             await leadApi.capture(formData)
             setIsSubmitted(true)
-            setFormData({ name: '', email: '', phone: '', inquiryType: 'it-solutions', subject: '', message: '' })
-        } catch (error) {
-            console.error('Failed to submit lead:', error)
-            alert('Failed to submit inquiry. Please try again or reach us via email.')
+            setFormData({ name: '', email: '', phone: '', inquiryType: 'general', subject: '', message: '' })
+        } catch {
+            alert('Failed to submit. Please try again or reach us directly via email.')
         } finally {
             setIsSubmitting(false)
         }
     }
 
     return (
-        <div className="min-h-screen py-20 bg-background text-foreground">
-            <div className="container">
-                {/* Header */}
-                <div className="text-center mb-16 max-w-2xl mx-auto">
-                    <h1 className="text-4xl font-extrabold mb-4 tracking-tight">Contact Techwell IT Solutions</h1>
-                    <p className="text-lg text-muted-foreground">
-                        Have questions about our enterprise Software & IT Solutions, live training batch options, or our AI placement preparation tools? Get in touch with our team.
+        <div className="min-h-screen font-sans py-12 lg:py-24" style={{ backgroundColor: '#0d1b3e', backgroundImage: 'radial-gradient(circle at top right, #1469E2 0%, transparent 40%)' }}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                
+                <div className="text-center max-w-2xl mx-auto mb-16">
+                    <h1 className="text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4">
+                        Contact Us
+                    </h1>
+                    <p className="text-blue-100 text-lg">
+                        Have a question or need assistance? Select a service below and fill out the form. Our specialists will reach out shortly!
                     </p>
                 </div>
 
-                {/* Core Pillars Quick Info Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-5xl mx-auto">
-                    <Card className="bg-card/50 border-white/10 backdrop-blur-sm">
-                        <CardHeader className="pb-2">
-                            <div className="h-10 w-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center mb-2">
-                                <Building2 className="h-5 w-5" />
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
+                    {/* Left: Contact Form */}
+                    <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 md:p-10 text-white">
+                        <h2 className="text-2xl font-bold mb-6">Send a Message</h2>
+                        {isSubmitted ? (
+                            <div className="text-center py-12">
+                                <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
+                                    <CheckCircle2 className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-2">Message Received!</h3>
+                                <p className="text-blue-100">Thank you for reaching out. Our team will get back to you shortly.</p>
+                                <button 
+                                    onClick={() => setIsSubmitted(false)}
+                                    className="mt-6 text-blue-400 font-semibold hover:text-blue-300 transition-colors"
+                                >
+                                    Send another message
+                                </button>
                             </div>
-                            <CardTitle className="text-lg">Software & IT Solutions</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">Enterprise software engineering, customized CRM/ERP developments, and expert corporate technical consulting.</p>
-                        </CardContent>
-                    </Card>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="space-y-5">
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-semibold text-blue-100">Service Required *</label>
+                                    <select required value={formData.inquiryType} onChange={e => setFormData({ ...formData, inquiryType: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all text-white [&>option]:text-slate-900">
+                                        {inquiryTypes.map(t => (
+                                            <option key={t.value} value={t.value}>{t.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                    <Card className="bg-card/50 border-white/10 backdrop-blur-sm">
-                        <CardHeader className="pb-2">
-                            <div className="h-10 w-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center mb-2">
-                                <GraduationCap className="h-5 w-5" />
+                                <div className="grid md:grid-cols-2 gap-5">
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-semibold text-blue-100">Full Name *</label>
+                                        <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all text-white placeholder-blue-100/50"
+                                            placeholder="John Doe" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-semibold text-blue-100">Email Address *</label>
+                                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                            className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all text-white placeholder-blue-100/50"
+                                            placeholder="john@example.com" />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-semibold text-blue-100">Phone Number (Optional)</label>
+                                    <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all text-white placeholder-blue-100/50"
+                                        placeholder="+91 98765 43210" />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-semibold text-blue-100">Message *</label>
+                                    <textarea required rows={4} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all resize-none text-white placeholder-blue-100/50"
+                                        placeholder="How can we help you?" />
+                                </div>
+                                <button type="submit" disabled={isSubmitting}
+                                    className="w-full flex items-center justify-center gap-2 bg-[#1469E2] hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed border border-blue-500">
+                                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                                </button>
+                            </form>
+                        )}
+                    </div>
+
+                    {/* Right: Contact Details */}
+                    <div className="space-y-10 text-white pt-4">
+                        <div>
+                            <h2 className="text-2xl font-bold mb-8">Our Offices</h2>
+                            <div className="space-y-8">
+                                {locations.map(loc => (
+                                    <div key={loc.id} className="flex gap-4">
+                                        <div className="w-12 h-12 bg-white/10 text-blue-400 rounded-xl flex items-center justify-center shrink-0 border border-white/10">
+                                            <MapPin className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg mb-1">{loc.city}</h3>
+                                            <p className="text-blue-100 text-sm mb-4 leading-relaxed">{loc.address}</p>
+                                            <div className="space-y-3">
+                                                {loc.phone && (
+                                                    <a href={`tel:${loc.phone.replace(/\s+/g, '')}`} className="flex items-center gap-3 text-sm text-blue-100 hover:text-white transition-colors font-medium">
+                                                        <Phone className="w-4 h-4 text-blue-400" />
+                                                        {loc.phone}
+                                                    </a>
+                                                )}
+                                                {loc.email && (
+                                                    <a href={`mailto:${loc.email}`} className="flex items-center gap-3 text-sm text-blue-100 hover:text-white transition-colors font-medium">
+                                                        <Mail className="w-4 h-4 text-blue-400" />
+                                                        {loc.email}
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                            <CardTitle className="text-lg">Course & Corporate Training</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">Live trainer-led courses, custom corporate upskilling programs, skills upgrades, and placement assistance.</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-card/50 border-white/10 backdrop-blur-sm">
-                        <CardHeader className="pb-2">
-                            <div className="h-10 w-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-2">
-                                <Users className="h-5 w-5" />
-                            </div>
-                            <CardTitle className="text-lg">AI Interview Prep & Placements</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">Adaptive AI mock interview preparation, automated ATS resume building, and placement pipelines for students and developers.</p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
-                    {/* Contact Form */}
-                    <Card className="border-white/10 shadow-xl">
-                        <CardHeader>
-                            <CardTitle>Inquiry & Request Form</CardTitle>
-                            <CardDescription>Fill out the form and our expert team will contact you within 24 hours.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {isSubmitted ? (
-                                <div className="text-center py-8">
-                                    <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                                    <h3 className="text-lg font-medium mb-2">Request Submitted Successfully!</h3>
-                                    <p className="text-muted-foreground mb-6">
-                                        Thank you for reaching out. A representative from the respective division will connect with you shortly.
-                                    </p>
-                                    <Button variant="outline" onClick={() => setIsSubmitted(false)}>
-                                        Submit Another Request
-                                    </Button>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Name</label>
-                                            <Input
-                                                placeholder="Your name"
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Email</label>
-                                            <Input
-                                                type="email"
-                                                placeholder="you@example.com"
-                                                value={formData.email}
-                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Phone Number</label>
-                                            <Input
-                                                type="tel"
-                                                placeholder="+91 98765 43210"
-                                                value={formData.phone}
-                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Inquiry Type</label>
-                                            <select
-                                                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                                value={formData.inquiryType}
-                                                onChange={(e) => setFormData({ ...formData, inquiryType: e.target.value })}
-                                            >
-                                                <option value="training">Course & Corporate Training (Trainer-Led, Skills Upgrade)</option>
-                                                <option value="it-solutions">Software & IT Solutions (Custom CRM/ERP, App Development)</option>
-                                                <option value="ai-interview-prep">AI Interview Preparation & Placement Assistance</option>
-                                                <option value="general">General Support / Other Inquiry</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Subject</label>
-                                        <Input
-                                            placeholder="What is this inquiry regarding?"
-                                            value={formData.subject}
-                                            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Message / Project Requirements</label>
-                                        <textarea
-                                            className="w-full min-h-[150px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                                            placeholder="Please describe your requirements, questions, or project description..."
-                                            value={formData.message}
-                                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                        {isSubmitting ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Submitting Request...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send Inquiry
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Contact Info */}
-                    <div className="space-y-6">
-                        <Card className="border-white/10">
-                            <CardHeader>
-                                <CardTitle>Global Contacts</CardTitle>
-                                <CardDescription>Reach out to Techwell IT Solutions directly.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <Mail className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium">Business Support</p>
-                                        <a href="mailto:support@techwell.co.in" className="text-sm text-muted-foreground hover:text-primary transition-colors">support@techwell.co.in</a>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <Mail className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium">Recruitment & Careers</p>
-                                        <a href="mailto:hr@techwell.co.in" className="text-sm text-muted-foreground hover:text-primary transition-colors">hr@techwell.co.in</a>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <Phone className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium">Phone</p>
-                                        <a href="tel:+917997473473" className="text-sm text-muted-foreground hover:text-primary transition-colors">+91 79974 73473</a>
-                                    </div>
-                                </div>
-                                <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
-                                    <p className="text-sm font-medium text-center text-primary">Visits are available by prior appointment.</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {locations.map((loc) => (
-                            <Card key={loc.id} className="border-white/10">
-                                <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <MapPin className="h-5 w-5 text-primary" />
-                                        {loc.city}
-                                    </CardTitle>
-                                    <CardDescription className="font-medium text-foreground">{loc.title}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <p className="text-sm text-muted-foreground leading-relaxed">{loc.address}</p>
-                                    <div className="flex flex-wrap gap-3">
-                                        {loc.googleMapsUrl && (
-                                            <Button variant="outline" size="sm" asChild className="flex-1">
-                                                <a href={loc.googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                                                    <MapPin className="w-4 h-4 mr-2" />
-                                                    Get Directions
-                                                </a>
-                                            </Button>
-                                        )}
-                                        {loc.phone && (
-                                            <Button variant="outline" size="sm" asChild>
-                                                <a href={`tel:${loc.phone}`}>
-                                                    <Phone className="w-4 h-4" />
-                                                </a>
-                                            </Button>
-                                        )}
-                                        {loc.email && (
-                                            <Button variant="outline" size="sm" asChild>
-                                                <a href={`mailto:${loc.email}`}>
-                                                    <Mail className="w-4 h-4" />
-                                                </a>
-                                            </Button>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     )

@@ -93,23 +93,23 @@ export default function EmployerCampusDrives() {
 
     return (
         <div className="p-8 space-y-6">
-            <div className="mb-10 relative bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-800 rounded-3xl p-8 md:p-12 text-white shadow-2xl overflow-hidden border border-indigo-500/30">
-                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-                <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+            <div className="mb-10 relative bg-gradient-to-br from-sky-950 via-slate-900 to-sky-800 rounded-3xl p-8 md:p-12 text-white shadow-2xl overflow-hidden border border-sky-500/30">
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-sky-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
+                <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
                 
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h1 className="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight text-white drop-shadow-md">
-                            Campus <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-300">Drives</span>
+                            Campus <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-300">Drives</span>
                         </h1>
-                        <p className="text-indigo-100/80 text-lg max-w-xl leading-relaxed">
+                        <p className="text-sky-100/80 text-lg max-w-xl leading-relaxed">
                             Request and manage recruitment drives with top institutions. Source the best early-career talent efficiently.
                         </p>
                     </div>
                     <div className="shrink-0">
                         <button 
                             onClick={() => setShowForm(!showForm)}
-                            className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-transform hover:scale-105"
+                            className="bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-transform hover:scale-105"
                         >
                             {showForm ? 'Cancel Request' : 'Request New Drive'}
                         </button>
@@ -130,7 +130,7 @@ export default function EmployerCampusDrives() {
                                         <label key={inst.id} className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-200 rounded transition-colors">
                                             <input 
                                                 type="checkbox" 
-                                                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
                                                 checked={formData.instituteIds.includes(inst.id)}
                                                 onChange={(e) => {
                                                     if (e.target.checked) {
@@ -187,7 +187,7 @@ export default function EmployerCampusDrives() {
                             <label className="block text-sm font-medium">Job Description</label>
                             <textarea required rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="mt-1 block w-full p-2 border rounded-md"></textarea>
                         </div>
-                        <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Submit Request</button>
+                        <button type="submit" className="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-700">Submit Request</button>
                     </form>
                 </div>
             )}
@@ -201,7 +201,7 @@ export default function EmployerCampusDrives() {
                             <li key={drive.id} className="p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h3 className="text-lg font-medium text-indigo-600">{drive.title}</h3>
+                                        <h3 className="text-lg font-medium text-sky-600">{drive.title}</h3>
                                         <p className="text-sm text-gray-500">
                                             Institutes: {drive.institutes?.length > 0 
                                                 ? drive.institutes.map((link: any) => link.institute?.name).join(', ') 
@@ -216,7 +216,7 @@ export default function EmployerCampusDrives() {
                                     <div>
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                             ${drive.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 
-                                              drive.status === 'REQUESTED' ? 'bg-yellow-100 text-yellow-800' : 
+                                              drive.status === 'REQUESTED' ? 'bg-sky-100 text-sky-800' : 
                                               drive.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
                                             {drive.status}
                                         </span>

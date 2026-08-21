@@ -39,26 +39,18 @@ export default function Loading() {
 
                 {/* Logo */}
                 <div className="absolute inset-0 flex items-center justify-center animate-[pulse_2s_ease-in-out_infinite]">
-                    {/* Only show the 'T' or crop the logo if it's too wide, but we'll show the whole thing scaled down */}
-                    <div className="relative w-20 h-8">
+                    <div className="relative w-16 h-16">
                         <Image
-                            src="/logo-light.png"
+                            src="/logo-new.png"
                             alt="Techwell Loading"
                             fill
-                            className="object-contain dark:hidden"
-                            priority
-                        />
-                        <Image
-                            src="/logo-dark.png"
-                            alt="Techwell Loading"
-                            fill
-                            className="hidden object-contain dark:block"
+                            className="object-contain"
                             priority
                         />
                     </div>
                 </div>
             </div>
-            <h2 className="mt-8 text-sm font-semibold tracking-widest uppercase bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse">
+            <h2 className="mt-8 text-sm font-semibold tracking-widest uppercase bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-sky-600 animate-pulse">
                 Loading Techwell Experience...
             </h2>
         </div>

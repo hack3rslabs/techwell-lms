@@ -92,7 +92,7 @@ export default function UpgradeHubPage() {
         <div className="min-h-screen bg-background relative overflow-hidden">
             {/* Background Decor */}
             <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-[20%] right-[-5%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-[20%] right-[-5%] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
             <div className="container py-12 relative z-10 max-w-4xl mx-auto">
                 <Button variant="ghost" onClick={() => router.back()} className="mb-8">
@@ -107,7 +107,7 @@ export default function UpgradeHubPage() {
                 </div>
 
                 <div className="bg-card border border-border rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 opacity-50 pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-sky-500/5 opacity-50 pointer-events-none"></div>
                     
                     <div className="flex flex-col md:flex-row gap-12 relative z-10">
                         <div className="flex-1">
@@ -144,7 +144,7 @@ export default function UpgradeHubPage() {
                             </div>
                             <Button 
                                 size="lg" 
-                                className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                                className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-primary to-sky-600 hover:from-primary/90 hover:to-sky-600/90"
                                 onClick={handleUpgrade}
                                 disabled={isUpgrading}
                             >

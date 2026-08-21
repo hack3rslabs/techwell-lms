@@ -145,9 +145,9 @@ export default function FranchiseLeadsPage() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'NEW': return 'bg-blue-100 text-blue-700'
-            case 'CONTACTED': return 'bg-yellow-100 text-yellow-700'
-            case 'INTERESTED': return 'bg-orange-100 text-orange-700'
-            case 'QUALIFIED': return 'bg-purple-100 text-purple-700'
+            case 'CONTACTED': return 'bg-sky-100 text-sky-700'
+            case 'INTERESTED': return 'bg-sky-100 text-sky-700'
+            case 'QUALIFIED': return 'bg-sky-100 text-sky-700'
             case 'CONVERTED': return 'bg-green-100 text-green-700'
             case 'LOST': return 'bg-red-100 text-red-700'
             default: return 'bg-gray-100 text-gray-700'

@@ -151,8 +151,8 @@ export default function Customer360Profile({ params }: { params: { id: string } 
                   {timeline.map((item, idx) => (
                     <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                       <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-200 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                        {item.type === 'LEAD_CREATED' && <Sparkles className="w-4 h-4 text-orange-500" />}
-                        {item.type === 'TASK' && <AlertTriangle className="w-4 h-4 text-purple-500" />}
+                        {item.type === 'LEAD_CREATED' && <Sparkles className="w-4 h-4 text-sky-500" />}
+                        {item.type === 'TASK' && <AlertTriangle className="w-4 h-4 text-sky-500" />}
                         {item.type === 'COMMUNICATION' && <Phone className="w-4 h-4 text-green-500" />}
                         {item.type === 'ENROLLMENT' && <Sparkles className="w-4 h-4 text-blue-500" />}
                       </div>
@@ -221,7 +221,7 @@ export default function Customer360Profile({ params }: { params: { id: string } 
               <div className="space-x-2">
                 <button onClick={() => handleSendComm('EMAIL')} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">Send Email</button>
                 <button onClick={() => handleSendComm('WHATSAPP')} className="px-3 py-1 bg-green-600 text-white rounded text-sm">WhatsApp</button>
-                <button onClick={() => handleSendComm('CALL')} className="px-3 py-1 bg-orange-600 text-white rounded text-sm">Log Call</button>
+                <button onClick={() => handleSendComm('CALL')} className="px-3 py-1 bg-sky-600 text-white rounded text-sm">Log Call</button>
               </div>
             </CardHeader>
             <CardContent>

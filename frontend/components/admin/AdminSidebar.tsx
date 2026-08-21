@@ -40,6 +40,8 @@ import {
     UserCheck,
     Inbox,
     PenLine,
+    ShoppingCart,
+    Package,
     type LucideIcon
 } from "lucide-react"
 
@@ -56,6 +58,7 @@ interface RouteConfig {
     showLeadCounts?: boolean
     customContent?: React.ReactNode
     group?: string
+    keywords?: string[]
     subRoutes?: { label: string; href: string }[]
 }
 
@@ -79,119 +82,83 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
 
     const routes: RouteConfig[] = [
         // --- 1. Sales & Revenue (CRM) ---
-        { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Sales & Revenue (CRM)" },
-        { 
-            label: "CRM & Leads", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)", showLeadCounts: true, subRoutes: [
-                { label: "Lead Management", href: "/admin/leads" },
-                { label: "Client Agreements", href: "/admin/crm/agreements" },
-                { label: "Referrals", href: "/admin/referrals" }
+        { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "DASHBOARD", group: "Sales & Revenue (CRM)", keywords: ["home", "main", "analytics", "stats", "reports"] },
+        { label: "Consulting Hub", icon: Briefcase, href: "/admin/consulting", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)", keywords: ["b2b", "corporate", "sales", "hub"] },
+        { label: "Consultancy", icon: Briefcase, href: "/admin/consultancy", permission: "CONSULTANCY", group: "Sales & Revenue (CRM)", keywords: ["consulting", "services", "sales", "clients"] },
+        { label: "Client Agreements", icon: FileText, href: "/admin/crm/agreements", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)", keywords: ["contracts", "documents", "legal", "clients", "sign"] },
+        {
+            label: "Lead Management", icon: Magnet, href: "/admin/leads", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)", showLeadCounts: true, keywords: ["leads", "inquiries", "prospects", "sales", "marketing"], subRoutes: [
+                { label: "Overview", href: "/admin/leads" },
+                { label: "Newsletters", href: "/admin/leads/newsletters" }
             ]
         },
-        { 
-            label: "Consulting", icon: Briefcase, href: "/admin/consulting", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)", subRoutes: [
-                { label: "Consulting Hub", href: "/admin/consulting" },
-                { label: "Consultancy", href: "/admin/consultancy" }
-            ]
-        },
-        { 
-            label: "Marketing & SEO", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Sales & Revenue (CRM)", subRoutes: [
-                { label: "Marketing Hub", href: "/admin/marketing" },
-                { label: "Ads Manager", href: "/admin/marketing/ads" },
-                { label: "SEO Manager", href: "/admin/seo" }
-            ]
-        },
+        { label: "CRM Dashboard", icon: LayoutDashboard, href: "/admin/crm/dashboard", permission: "CENTRAL_CRM", group: "Sales & Revenue (CRM)", keywords: ["crm", "sales", "analytics", "leads", "revenue"] },
+
+        { label: "Referrals", icon: Users, href: "/admin/referrals", permission: "ADMIN", group: "Sales & Revenue (CRM)", keywords: ["affiliates", "rewards", "invites", "refer", "bonus"] },
+        { label: "Marketing Hub", icon: Megaphone, href: "/admin/marketing", permission: "MARKETING_HUB", group: "Sales & Revenue (CRM)", keywords: ["ads", "campaigns", "promo", "social", "email"] },
+        { label: "Ads Manager", icon: Megaphone, href: "/admin/marketing/ads", permission: "ADS_MANAGER", group: "Sales & Revenue (CRM)", keywords: ["facebook", "google", "meta", "advertising", "spend"] },
+        { label: "SEO Manager", icon: Globe, href: "/admin/seo", permission: "ADMIN", group: "Sales & Revenue (CRM)", keywords: ["search", "google", "ranking", "meta", "tags"] },
 
         // --- 2. Academics & Training (LMS) ---
+        { label: "Training Manager", icon: BookOpen, href: "/admin/training", permission: "COURSES", group: "Academics & Training (LMS)", keywords: ["lms", "learning", "education", "training"] },
+        { label: "Courses", icon: BookOpen, href: "/admin/courses", permission: "COURSES", group: "Academics & Training (LMS)", keywords: ["classes", "subjects", "curriculum", "syllabus", "modules"] },
         { 
-            label: "Courses & Training", icon: BookOpen, href: "/admin/courses", permission: "COURSES", group: "Academics & Training (LMS)", subRoutes: [
-                { label: "All Courses", href: "/admin/courses" },
-                { label: "Training Manager", href: "/admin/training" }
-            ]
+            label: "Projects Manager", icon: BookOpen, href: "/admin/projects", permission: "COURSES", group: "Academics & Training (LMS)", keywords: ["assignments", "tasks", "work", "projects"], subRoutes: [
+                { label: "All Projects", href: "/admin/projects" },
+                { label: "Project Requests", href: "/admin/projects/requests" }
+            ] 
         },
-        { 
-            label: "Batches & Live Sessions", icon: VideoIcon, href: "/admin/batches", permission: "BATCHES", group: "Academics & Training (LMS)", subRoutes: [
-                { label: "Batches", href: "/admin/batches" },
-                { label: "Live Classes", href: "/admin/live-classes" },
-                { label: "Skillcasts", href: "/admin/skillcasts" }
-            ]
-        },
-        { 
-            label: "Projects & Assessments", icon: PenLine, href: "/admin/projects", permission: "COURSES", group: "Academics & Training (LMS)", subRoutes: [
-                { label: "Projects Manager", href: "/admin/projects" },
-                { label: "Assessments", href: "/admin/assessments" }
-            ]
-        },
-        { 
-            label: "Student Resources", icon: Award, href: "/admin/library", permission: "LIBRARY", group: "Academics & Training (LMS)", subRoutes: [
-                { label: "Library", href: "/admin/library" },
-                { label: "Certificates", href: "/admin/certificates" },
-                { label: "Reviews", href: "/admin/reviews" }
-            ]
-        },
+        { label: "Batches", icon: Users, href: "/admin/batches", permission: "BATCHES", group: "Academics & Training (LMS)", keywords: ["groups", "classes", "cohorts", "sessions"] },
+        { label: "Live Classes", icon: VideoIcon, href: "/admin/live-classes", permission: "LIVE_CLASSES", group: "Academics & Training (LMS)", keywords: ["zoom", "meet", "webinar", "video", "online"] },
+        { label: "Skillcasts", icon: VideoIcon, href: "/admin/skillcasts", permission: "SKILLCASTS", group: "Academics & Training (LMS)", keywords: ["podcasts", "videos", "recordings", "tutorials"] },
+        { label: "Assessments", icon: PenLine, href: "/admin/assessments", permission: "TRAINING", group: "Academics & Training (LMS)", keywords: ["exams", "tests", "quizzes", "evaluations", "marks"] },
+        { label: "Library", icon: BookOpen, href: "/admin/library", permission: "LIBRARY", group: "Academics & Training (LMS)", keywords: ["books", "resources", "files", "materials", "pdf"] },
+        { label: "Certificates", icon: Award, href: "/admin/certificates", permission: "CERTIFICATES", group: "Academics & Training (LMS)", keywords: ["awards", "diplomas", "completion", "generate", "verify"] },
+        { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "REVIEWS", group: "Academics & Training (LMS)", keywords: ["feedback", "ratings", "testimonials", "comments"] },
 
-        // --- 3. Campus & Careers (Placements) ---
-        { 
-            label: "Placement Dashboard", icon: LayoutDashboard, href: "/admin/chms/dashboard", permission: "CHMS", group: "Campus & Careers (Placements)", subRoutes: [
-                { label: "CHMS Dashboard", href: "/admin/chms/dashboard" },
-                { label: "Master Drives", href: "/admin/campus-drives" }
-            ]
-        },
-        { label: "Jobs & Opportunities", icon: Briefcase, href: "/admin/jobs", permission: "JOBS", group: "Campus & Careers (Placements)" },
-        { 
-            label: "Partners", icon: Building2, href: "/admin/companies", permission: "COMPANIES", group: "Campus & Careers (Placements)", subRoutes: [
-                { label: "Companies", href: "/admin/companies" },
-                { label: "Institutes", href: "/admin/institutes" }
-            ]
-        },
-        { 
-            label: "Interviews", icon: Users, href: "/admin/interviews", permission: "INTERVIEWS", group: "Campus & Careers (Placements)", subRoutes: [
-                { label: "Standard Interviews", href: "/admin/interviews" },
-                { label: "AI Interviews", href: "/admin/ai-interviews" }
-            ]
-        },
+        { label: "Jobs & Internships", icon: Briefcase, href: "/admin/jobs", group: "Campus & Careers (Placements)", keywords: ["careers", "vacancies", "openings", "recruit"] },
+        { label: "Master Drives", icon: Briefcase, href: "/admin/campus-drives", group: "Campus & Careers (Placements)", keywords: ["campus", "hiring", "events", "recruitment", "college"] },
+        { label: "CHMS Dashboard", icon: LayoutDashboard, href: "/admin/chms/dashboard", group: "Campus & Careers (Placements)", keywords: ["campus", "hiring", "stats", "analytics"] },
+        { label: "Companies", icon: Building2, href: "/admin/companies", group: "Campus & Careers (Placements)", keywords: ["employers", "corporate", "recruiters", "partners"] },
+        { label: "Institutes", icon: GraduationCap, href: "/admin/institutes", group: "Campus & Careers (Placements)", keywords: ["colleges", "universities", "schools", "academic"] },
+        { label: "Interviews", icon: Users, href: "/admin/interviews", group: "Campus & Careers (Placements)", keywords: ["meetings", "screening", "selection", "candidates"] },
+        { label: "AI Interviews", icon: Video, href: "/admin/ai-interviews", permission: "AI_INTERVIEWS", group: "Campus & Careers (Placements)", keywords: ["mock", "video", "ai", "bot", "practice"] },
 
         // --- 4. Operations & Automations ---
-        { 
-            label: "Operations Center", icon: ListTodo, href: "/admin/operations", permission: "ADMIN", group: "Operations & Automations", subRoutes: [
-                { label: "Operations Center", href: "/admin/operations" },
-                { label: "Approval Center", href: "/admin/approvals" },
-                { label: "Tasks", href: "/admin/tasks" },
-                { label: "Meetings", href: "/admin/meetings" }
-            ]
-        },
-        { 
-            label: "Support & Comms", icon: Inbox, href: "/admin/support", permission: "TICKETS", group: "Operations & Automations", subRoutes: [
-                { label: "Support Tickets", href: "/admin/support" },
-                { label: "Messages", href: "/admin/messages" }
-            ]
-        },
-        { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS", group: "Operations & Automations" },
+        { label: "Staff Portal", icon: LayoutDashboard, href: "/admin/staff/dashboard", permission: "STAFF_PORTAL", group: "Operations & Automations", keywords: ["employees", "team", "hr", "attendance", "portal"] },
+        { label: "Approval Center", icon: Inbox, href: "/admin/approvals", permission: "ADMIN", group: "Operations & Automations", keywords: ["requests", "pending", "authorize", "verify"] },
+        { label: "Operations Center", icon: ListTodo, href: "/admin/operations", permission: "ADMIN", group: "Operations & Automations", keywords: ["ops", "daily", "management", "tasks"] },
+        { label: "Tasks", icon: ListTodo, href: "/admin/tasks", permission: "TASKS", group: "Operations & Automations", keywords: ["todo", "assignments", "work", "progress"] },
+        { label: "Meetings", icon: Calendar, href: "/admin/meetings", permission: "MEETINGS", group: "Operations & Automations", keywords: ["calendar", "schedule", "zoom", "events", "appointments"] },
+        { label: "System Logs", icon: FileText, href: "/admin/audit-logs", permission: "SYSTEM_LOGS", group: "Operations & Automations", keywords: ["audit", "errors", "tracking", "history", "logs"] },
+        { label: "Support Tickets", icon: Inbox, href: "/admin/support", permission: "TICKETS", group: "Operations & Automations", keywords: ["helpdesk", "issues", "complaints", "queries", "chat"] },
+        { label: "Messages", icon: MessageSquare, href: "/admin/messages", permission: "MESSAGES", group: "Operations & Automations", keywords: ["chat", "sms", "whatsapp", "email", "communication"] },
         {
             label: "Automation Studio", icon: Bot, href: "/admin/automation-studio", group: "Operations & Automations", customContent: (
                 <div className="space-y-1 mt-2">
                     <Link
                         href="/admin/automation-studio"
-                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio" ? "bg-primary/10 text-primary shadow-sm font-medium" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground")}
+                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio" ? "bg-gradient-to-r from-blue-500 to-sky-600 text-white shadow-md" : "text-gray-600 hover:bg-blue-50/50 hover:text-blue-600")}
                     >
-                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground group-hover:text-primary")}>
+                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio" ? "bg-white/20" : "bg-blue-100 text-blue-600 group-hover:bg-blue-200")}>
                             <Workflow className="w-4 h-4" />
                         </div>
                         <span className="font-medium text-sm">Workflows</span>
                     </Link>
                     <Link
                         href="/admin/automation-studio/knowledge"
-                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/knowledge" ? "bg-primary/10 text-primary shadow-sm font-medium" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground")}
+                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/knowledge" ? "bg-gradient-to-r from-sky-500 to-emerald-600 text-white shadow-md" : "text-gray-600 hover:bg-sky-50/50 hover:text-sky-600")}
                     >
-                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/knowledge" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground group-hover:text-primary")}>
+                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/knowledge" ? "bg-white/20" : "bg-sky-100 text-sky-600 group-hover:bg-sky-200")}>
                             <Database className="w-4 h-4" />
                         </div>
                         <span className="font-medium text-sm">AI Knowledge</span>
                     </Link>
                     <Link
                         href="/admin/automation-studio/integrations"
-                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/integrations" ? "bg-primary/10 text-primary shadow-sm font-medium" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground")}
+                        className={cn("flex items-center space-x-3 px-3 py-2 rounded-xl transition-all duration-200 group", pathname === "/admin/automation-studio/integrations" ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md" : "text-gray-600 hover:bg-emerald-50/50 hover:text-emerald-600")}
                     >
-                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/integrations" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground group-hover:text-primary")}>
+                        <div className={cn("p-1.5 rounded-lg", pathname === "/admin/automation-studio/integrations" ? "bg-white/20" : "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200")}>
                             <Key className="w-4 h-4" />
                         </div>
                         <span className="font-medium text-sm">Integrations</span>
@@ -200,57 +167,52 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
             ), permission: "AUTOMATION_STUDIO"
         },
 
+        // --- 4.5 Store / E-Commerce ---
+        { label: "Products", icon: Package, href: "/admin/store/products", permission: "ADMIN", group: "Store / E-Commerce", keywords: ["items", "inventory", "stock", "shop", "ecommerce"] },
+        { label: "Orders", icon: ShoppingCart, href: "/admin/store/orders", permission: "ADMIN", group: "Store / E-Commerce", keywords: ["sales", "purchases", "invoices", "shipping", "cart"] },
+        { label: "Banners", icon: ImageIcon, href: "/admin/store/banners", permission: "ADMIN", group: "Store / E-Commerce", keywords: ["images", "sliders", "hero", "promos", "ads"] },
+        { label: "Settings", icon: Settings, href: "/admin/store/settings", permission: "ADMIN", group: "Store / E-Commerce", keywords: ["config", "options", "store", "ecommerce"] },
+
+
         // --- 5. Finance & Administration ---
+        { label: "Reports & Analytics", icon: LayoutDashboard, href: "/admin/reports", permission: "REPORTS", group: "Finance & Administration", keywords: ["stats", "graphs", "data", "metrics", "performance"] },
+        { label: "Transactions", icon: CreditCard, href: "/admin/transactions", permission: "TRANSACTIONS", group: "Finance & Administration", keywords: ["payments", "money", "history", "receipts", "fees"] },
+        { label: "Coupons", icon: Ticket, href: "/admin/coupons", permission: "COUPONS", group: "Finance & Administration", keywords: ["discounts", "promo", "codes", "vouchers", "offers"] },
+        { label: "Revenue Center", icon: CreditCard, href: "/admin/revenue", permission: "FINANCE", group: "Finance & Administration", keywords: ["finance", "income", "earnings", "money", "profit"] },
+        { label: "Users & Roles", icon: Users, href: "/admin/roles", permission: "USERS_ROLES", group: "Finance & Administration", keywords: ["permissions", "access", "staff", "admins", "security"] },
+        { label: "All Users", icon: Users, href: "/admin/users", permission: "ADMIN", group: "Finance & Administration", keywords: ["people", "accounts", "members", "directory"] },
+        { label: "Students", icon: GraduationCap, href: "/admin/students", permission: "STUDENTS", group: "Finance & Administration", keywords: ["learners", "pupils", "candidates", "enrollments"] },
         { 
-            label: "Finance & Revenue", icon: CreditCard, href: "/admin/transactions", permission: "FINANCE", group: "Finance & Administration", subRoutes: [
-                { label: "Transactions", href: "/admin/transactions" },
-                { label: "Revenue Center", href: "/admin/revenue" },
-                { label: "Coupons", href: "/admin/coupons" }
-            ]
-        },
-        { 
-            label: "User Management", icon: Users, href: "/admin/users", permission: "ADMIN", group: "Finance & Administration", subRoutes: [
-                { label: "All Users", href: "/admin/users" },
-                { label: "Students", href: "/admin/students" },
-                { label: "Users & Roles", href: "/admin/roles" }
-            ]
-        },
-        { 
-            label: "Franchise Network", 
+            label: "Franchise Management", 
             icon: Building2, 
             href: user?.role === 'FRANCHISE_ADMIN' && user?.instituteId 
                 ? `/admin/franchise/${user.instituteId}` 
                 : (user as any)?.franchiseId ? `/admin/franchise/${(user as any).franchiseId}` : "/admin/franchise", 
             permission: "ADMIN", 
             group: "Finance & Administration",
-            subRoutes: [
-                { label: "Franchise Management", href: user?.role === 'FRANCHISE_ADMIN' && user?.instituteId ? `/admin/franchise/${user.instituteId}` : (user as any)?.franchiseId ? `/admin/franchise/${(user as any).franchiseId}` : "/admin/franchise" },
-                { label: "Franchise Resources", href: "/admin/franchise/resources" }
-            ]
+            keywords: ["branches", "centers", "partners", "institutes"]
         },
-        { 
-            label: "CMS & Website Builder", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Finance & Administration", subRoutes: [
-                { label: "CMS Manager", href: "/admin/cms" },
-                { label: "Page Builder", href: "/admin/cms/pages" },
-                { label: "Blogs", href: "/admin/blogs/dashboard" },
-                { label: "Events & Webinars", href: "/admin/events" },
-                { label: "Gallery", href: "/admin/gallery" },
-                { label: "Success Stories", href: "/admin/success-stories" }
-            ]
-        },
-        { 
-            label: "Settings & Compliance", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Finance & Administration", subRoutes: [
-                { label: "System Settings", href: "/admin/settings" },
-                { label: "Documents", href: "/admin/documents" },
-                { label: "GDPR & Compliance", href: "/admin/compliance" }
-            ]
-        }
+        { label: "Franchise Resources", icon: Megaphone, href: "/admin/franchise/resources", permission: "ADMIN", group: "Finance & Administration", keywords: ["assets", "files", "marketing", "downloads"] },
+        { label: "CMS Manager", icon: Globe, href: "/admin/cms", permission: "CMS_MANAGER", group: "Finance & Administration", keywords: ["website", "pages", "content", "edit"] },
+        { label: "Main Banners", icon: ImageIcon, href: "/admin/main-banners", permission: "CMS_MANAGER", group: "Finance & Administration", keywords: ["sliders", "images", "hero", "website"] },
+        { label: "Blogs", icon: PenLine, href: "/admin/blogs/dashboard", permission: "BLOGS", group: "Finance & Administration", keywords: ["articles", "posts", "news", "updates", "writing"] },
+        { label: "Page Builder", icon: FileCode2, href: "/admin/cms/pages", permission: "PAGE_BUILDER", group: "Finance & Administration", keywords: ["design", "website", "builder", "layout", "editor"] },
+        { label: "Gallery", icon: ImageIcon, href: "/admin/gallery", permission: "GALLERY", group: "Finance & Administration", keywords: ["photos", "images", "pictures", "media", "album"] },
+        { label: "Events & Webinars", icon: Calendar, href: "/admin/events", permission: "EVENTS", group: "Finance & Administration", keywords: ["workshops", "sessions", "live", "schedule"] },
+        { label: "Success Stories", icon: Star, href: "/admin/success-stories", permission: "ADMIN", group: "Finance & Administration", keywords: ["placements", "alumni", "testimonials", "reviews", "results"] },
+        { label: "GDPR & Compliance", icon: ShieldCheck, href: "/admin/compliance", permission: "ADMIN", group: "Finance & Administration", keywords: ["privacy", "legal", "terms", "policies", "rules"] },
+        { label: "System Settings", icon: Settings, href: "/admin/settings", permission: "SETTINGS", group: "Finance & Administration", keywords: ["config", "options", "preferences", "setup", "global"] },
+        { label: "Documents", icon: FileText, href: "/admin/documents", permission: "ADMIN", group: "Finance & Administration", keywords: ["files", "pdfs", "drive", "storage", "attachments"] },
     ]
 
     const availableRoutes = routes.filter(route => {
         if (route.permission && !hasPermission(route.permission)) return false
         if (searchQuery) {
-            return route.label.toLowerCase().includes(searchQuery.toLowerCase())
+            const query = searchQuery.toLowerCase()
+            const matchLabel = route.label.toLowerCase().includes(query)
+            const matchGroup = route.group?.toLowerCase().includes(query)
+            const matchKeywords = route.keywords?.some(kw => kw.toLowerCase().includes(query))
+            return matchLabel || matchGroup || matchKeywords
         }
         return true
     })
@@ -316,8 +278,9 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                     className
                 )}
             >
+
                 {/* Header */}
-                <div className={cn("px-4 py-4 border-b border-border flex flex-shrink-0 items-center h-16 bg-card", isCollapsed ? "justify-center" : "justify-between")}>
+                <div className={cn("px-4 py-4 border-b flex flex-shrink-0 items-center h-16 bg-gradient-to-b from-muted/30 to-transparent", isCollapsed ? "justify-center" : "justify-between")}>
                     {!isCollapsed && (
                         <div className="overflow-hidden">
                             <h2 className="text-xl font-bold text-primary truncate">Admin Panel</h2>
@@ -341,15 +304,15 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
 
                 {/* Search Bar - Frozen at Top */}
                 {!isCollapsed && (
-                    <div className="p-3 flex-shrink-0 bg-card border-b border-border/50">
+                    <div className="p-3 border-b flex-shrink-0 bg-muted/20">
                         <div className="relative">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <input
                                 type="text"
                                 placeholder="Search menus..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="h-9 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 pl-9 pr-8 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-slate-500"
+                                className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-8 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             />
                             {searchQuery && (
                                 <button 
@@ -374,32 +337,31 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                 return acc
                             }, {} as Record<string, RouteConfig[]>)
                         ).map(([group, groupRoutes]) => (
-                            <div key={group} className="mb-5">
+                            <div key={group} className="mb-4">
                                 {!isCollapsed && (
-                                    <h3 className="px-3 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2.5">
+                                    <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                                         {group}
                                     </h3>
                                 )}
                                 {groupRoutes.map((route) => {
                                     const isActive =
                                         pathname === route.href ||
-                                        (route.href !== "/admin" && pathname.startsWith(route.href + "/")) ||
-                                        (route.subRoutes && route.subRoutes.some(subRoute => pathname === subRoute.href || pathname.startsWith(subRoute.href + "/")))
+                                        (route.href !== "/admin" && pathname.startsWith(route.href + "/"))
 
                                     return (
                                         <div key={route.href}>
                                             <Link
                                                 href={route.href}
                                                 className={cn(
-                                                    "text-sm flex items-center justify-between gap-3 px-3 py-2.5 rounded-md transition-all duration-200 group relative",
+                                                    "text-sm flex items-center justify-between gap-3 p-3 rounded-xl transition-all duration-200 group relative overflow-hidden",
                                                     isActive && !route.customContent
-                                                        ? "text-primary bg-primary/10 font-semibold"
-                                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+                                                        ? "text-primary shadow-sm bg-primary/10 font-medium border-l-4 border-l-primary"
+                                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                                                 )}
                                             >
                                                 <span className="flex min-w-0 items-center relative z-10">
-                                                    {route.icon && <route.icon className={cn("h-4 w-4 flex-shrink-0 transition-colors duration-200", isCollapsed ? "mx-auto" : "mr-3", isActive && !route.customContent ? "text-primary" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300")} />}
-                                                    {!isCollapsed && <span className="truncate tracking-tight">{route.label}</span>}
+                                                    {route.icon && <route.icon className={cn("h-5 w-5 flex-shrink-0 transition-colors duration-200", isCollapsed ? "mx-auto" : "mr-3", isActive && !route.customContent ? "text-primary" : "group-hover:text-primary")} />}
+                                                    {!isCollapsed && <span className="truncate">{route.label}</span>}
                                                 </span>
 
                                                 {route.showLeadCounts && canViewLeads && !isCollapsed && leadCounts.unreadCount > 0 && (
@@ -412,26 +374,6 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
                                             </Link>
 
 
-
-                                            {/* Sub Routes Rendering */}
-                                            {route.subRoutes && route.subRoutes.length > 0 && isActive && !isCollapsed && (
-                                                <div className="ml-8 mt-1 mb-3 space-y-0.5 border-l border-slate-200 dark:border-slate-800 pl-3 py-1">
-                                                    {route.subRoutes.map(subRoute => (
-                                                        <Link
-                                                            key={subRoute.href}
-                                                            href={subRoute.href}
-                                                            className={cn(
-                                                                "block text-[13px] py-1.5 px-2 rounded-md transition-colors duration-200",
-                                                                pathname === subRoute.href 
-                                                                    ? "text-primary font-medium bg-primary/5" 
-                                                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
-                                                            )}
-                                                        >
-                                                            {subRoute.label}
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                            )}
 
                                             {route.customContent && isActive && !isCollapsed && (
                                                 <div className="ml-8 mt-1 space-y-1">
@@ -448,19 +390,19 @@ export function AdminSidebar({ className, isCollapsed = false, onToggleCollapse 
 
                 {/* Smart Footer Toggle */}
                 {onToggleCollapse && (
-                    <div className="border-t border-border p-3 flex-shrink-0 bg-card hidden md:block">
+                    <div className="border-t p-3 flex-shrink-0 bg-background hidden md:block">
                         <Button 
-                            variant="ghost" 
-                            className={cn("w-full flex items-center text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100", isCollapsed ? "justify-center px-0" : "justify-start px-2")}
+                            variant="outline" 
+                            className={cn("w-full flex items-center text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all shadow-sm", isCollapsed ? "justify-center px-0" : "justify-start px-2")}
                             onClick={onToggleCollapse} 
                             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                         >
                             {isCollapsed ? (
-                                <ChevronRight className="h-4 w-4" />
+                                <ChevronRight className="h-5 w-5" />
                             ) : (
                                 <>
-                                    <ChevronLeft className="h-4 w-4 mr-2" />
-                                    <span className="font-medium text-sm">Collapse Sidebar</span>
+                                    <ChevronLeft className="h-5 w-5 mr-2" />
+                                    <span className="font-medium">Collapse Menu</span>
                                 </>
                             )}
                         </Button>

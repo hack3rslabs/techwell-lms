@@ -629,3 +629,21 @@ export const cmdbApi = {
     update: (id: string, data: any) => api.put(`/cmdb/${id}`, data),
     delete: (id: string) => api.delete(`/cmdb/${id}`),
 };
+
+// Store API
+export const storeApi = {
+    getProducts: (params?: any) => api.get('/shop/products', { params }),
+    getProduct: (slug: string) => api.get(`/shop/products/${slug}`),
+    getCategories: () => api.get('/shop/categories'),
+    getCart: () => api.get('/shop/cart'),
+    addToCart: (productId: string, quantity: number = 1) => api.post('/shop/cart', { productId, quantity }),
+    updateCartItem: (itemId: string, quantity: number) => api.put(`/shop/cart/${itemId}`, { quantity }),
+    removeFromCart: (itemId: string) => api.delete(`/shop/cart/${itemId}`),
+    getWishlist: () => api.get('/shop/wishlist'),
+    toggleWishlist: (productId: string) => api.post('/shop/wishlist', { productId }),
+    createOrder: (addressId: string, paymentMethod: string = 'COD', applyStudentDiscount = false, specificItems?: string[]) => api.post('/shop/orders', { addressId, paymentMethod, applyStudentDiscount, specificItems }),
+    getMyOrders: () => api.get('/shop/orders'),
+    getOrder: (id: string) => api.get(`/shop/orders/${id}`),
+    getAddresses: () => api.get('/shop/addresses'),
+    addAddress: (data: any) => api.post('/shop/addresses', data)
+};

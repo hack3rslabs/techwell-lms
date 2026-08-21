@@ -41,7 +41,7 @@ export default function ConsultancyRevenueDashboard() {
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Consultancy & Placement Analytics</h1>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white rounded-lg shadow p-6 border-t-4 border-indigo-500">
+                <div className="bg-white rounded-lg shadow p-6 border-t-4 border-sky-500">
                     <p className="text-sm text-gray-500 font-medium uppercase">Total Revenue</p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">${analytics?.totalRevenue?.toLocaleString() || 0}</p>
                 </div>
@@ -53,7 +53,7 @@ export default function ConsultancyRevenueDashboard() {
                     <p className="text-sm text-gray-500 font-medium uppercase">Total Drives</p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">{analytics?.totalDrives || 0}</p>
                 </div>
-                <div className="bg-white rounded-lg shadow p-6 border-t-4 border-yellow-500">
+                <div className="bg-white rounded-lg shadow p-6 border-t-4 border-sky-500">
                     <p className="text-sm text-gray-500 font-medium uppercase">Pending Drives</p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">{analytics?.pendingDrives || 0}</p>
                 </div>

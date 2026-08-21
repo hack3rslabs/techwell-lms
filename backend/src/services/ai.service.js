@@ -456,7 +456,9 @@ Return ONLY a valid JSON object:
                         const idx = ((indexInPhase || 0) % bank.length);
                         fallbackQuestion = bank[idx];
                     }
-                } catch(e) {}
+                } catch(e) {
+                    // Ignore fallback errors
+                }
             }
 
             return {

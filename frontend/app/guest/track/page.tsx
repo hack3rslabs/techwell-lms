@@ -66,13 +66,13 @@ export default function GuestTrackerPage() {
                         <div className="mt-8 space-y-4 border-t pt-6">
                             <h3 className="font-semibold text-slate-800 text-center mb-4">Application Status</h3>
                             <div className="bg-white border rounded-xl p-4 shadow-sm relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
+                                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
                                 <div className="flex justify-between items-start mb-2">
                                     <div>
                                         <div className="font-bold text-slate-800">{status.jobTitle}</div>
                                         <div className="text-xs text-slate-500">{status.company}</div>
                                     </div>
-                                    <div className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                                    <div className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
                                         <Clock className="w-3 h-3 mr-1" /> {status.status}
                                     </div>
                                 </div>

@@ -98,26 +98,33 @@ model User {
   blogComments                BlogComment[]
   customerId                  String?
   customer                    Customer?                 @relation(fields: [customerId], references: [id])
-  
-  // Gamification
-  xp                          Int                       @default(0)
-  currentStreak               Int                       @default(0)
-  lastLoginDate               DateTime?
-  badges                      UserBadge[]
 
-  createdAssessments          Assessment[]
-  assessmentAttempts          AssessmentAttempt[]
-  assignedLeads               Lead[]                    @relation("AssignedLeads")
-  assignedCustomers           Customer[]                @relation("AssignedCustomers")
-  consultingResources         ConsultingResource[]
-  consultingProjects          ConsultingProject[]
-  BlogReaction                BlogReaction[]
-  franchiseId                 String?
-  franchise                   Franchise?                @relation(fields: [franchiseId], references: [id])
-  approvedFranchises          Franchise[]               @relation("FranchiseApprover")
-  department                  String?
-  projectRequests             ProjectRequest[]
-  communicationLogs           CommunicationLog[]
+  // Gamification
+  xp            Int         @default(0)
+  currentStreak Int         @default(0)
+  lastLoginDate DateTime?
+  badges        UserBadge[]
+
+  createdAssessments  Assessment[]
+  assessmentAttempts  AssessmentAttempt[]
+  assignedLeads       Lead[]               @relation("AssignedLeads")
+  assignedCustomers   Customer[]           @relation("AssignedCustomers")
+  consultingResources ConsultingResource[]
+  consultingProjects  ConsultingProject[]
+  BlogReaction        BlogReaction[]
+  franchiseId         String?
+  franchise           Franchise?           @relation(fields: [franchiseId], references: [id])
+  approvedFranchises  Franchise[]          @relation("FranchiseApprover")
+  department          String?
+  projectRequests     ProjectRequest[]
+  communicationLogs   CommunicationLog[]
+
+  // E-Commerce
+  cart        Cart?
+  wishlist    Wishlist?
+  storeOrders StoreOrder[]
+  addresses   Address[]
+  storeReviews StoreReview[]
 }
 
 model SystemRole {
@@ -321,17 +328,17 @@ model Batch {
 }
 
 model Attendance {
-  id        String   @id @default(cuid())
-  batchId   String
-  userId    String
-  date      DateTime
-  status    String
-  notes     String?
-  minutesSpent Int @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  batch     Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  batchId      String
+  userId       String
+  date         DateTime
+  status       String
+  notes        String?
+  minutesSpent Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  batch        Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([batchId, userId, date])
 }
@@ -639,17 +646,17 @@ model Payment {
 }
 
 model Installment {
-  id           String      @id @default(cuid())
+  id           String    @id @default(cuid())
   enrollmentId String
   amount       Float
   dueDate      DateTime
-  status       String      @default("PENDING") // PENDING, PAID, OVERDUE
+  status       String    @default("PENDING") // PENDING, PAID, OVERDUE
   paidDate     DateTime?
-  paymentId    String?     @unique
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  
-  enrollment   Enrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  paymentId    String?   @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 }
 
 model ForumCategory {
@@ -1302,54 +1309,54 @@ model EmployerRequest {
 }
 
 model Job {
-  id            String           @id @default(cuid())
-  title         String
-  description   String
-  requirements  String?
-  location      String
-  type          JobType          @default(FULL_TIME)
-  experience    String?
-  salary        String?
-  employerId    String
-  status        JobStatus        @default(DRAFT)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  clientName    String?
-  shift         String?
-  skills        String?
-  domain        String?
-  expiresAt     DateTime?
-  publishedAt   DateTime?
-  qualification String?
+  id             String           @id @default(cuid())
+  title          String
+  description    String
+  requirements   String?
+  location       String
+  type           JobType          @default(FULL_TIME)
+  experience     String?
+  salary         String?
+  employerId     String
+  status         JobStatus        @default(DRAFT)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  clientName     String?
+  shift          String?
+  skills         String?
+  domain         String?
+  expiresAt      DateTime?
+  publishedAt    DateTime?
+  qualification  String?
   linkedCourseId String?
-  employer      User             @relation(fields: [employerId], references: [id])
-  applications  JobApplication[]
+  employer       User             @relation(fields: [employerId], references: [id])
+  applications   JobApplication[]
 }
 
 model JobApplication {
-  id               String            @id @default(cuid())
-  jobId            String
-  applicantId      String?
-  resumeUrl        String?
-  coverLetter      String?
-  status           ApplicationStatus @default(APPLIED)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  atsScore         Float             @default(0)
-  externalEmail    String?
-  externalName     String?
-  externalPhone    String?
-  resumeParsedText String?
-  source           CandidateSource   @default(INTERNAL)
-  statusHistory    Json?
-  auditLogs        AuditLog[]
-  emailLogs        EmailLog[]
-  applicant        User?             @relation(fields: [applicantId], references: [id])
-  job              Job               @relation(fields: [jobId], references: [id])
-  interviews       JobInterview[]
-  offers           JobOffer[]
+  id                String            @id @default(cuid())
+  jobId             String
+  applicantId       String?
+  resumeUrl         String?
+  coverLetter       String?
+  status            ApplicationStatus @default(APPLIED)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  atsScore          Float             @default(0)
+  externalEmail     String?
+  externalName      String?
+  externalPhone     String?
+  resumeParsedText  String?
+  source            CandidateSource   @default(INTERNAL)
+  statusHistory     Json?
+  auditLogs         AuditLog[]
+  emailLogs         EmailLog[]
+  applicant         User?             @relation(fields: [applicantId], references: [id])
+  job               Job               @relation(fields: [jobId], references: [id])
+  interviews        JobInterview[]
+  offers            JobOffer[]
   linkedInterviewId String?
-  linkedInterview  Interview?        @relation(fields: [linkedInterviewId], references: [id])
+  linkedInterview   Interview?        @relation(fields: [linkedInterviewId], references: [id])
 
   @@unique([jobId, applicantId])
 }
@@ -1439,7 +1446,7 @@ model SavedFilter {
 }
 
 model Project {
-  id            String   @id @default(cuid())
+  id            String           @id @default(cuid())
   title         String
   description   String
   price         String
@@ -1450,24 +1457,24 @@ model Project {
   features      Json?
   capex         String?
   roi           String?
-  projectType   String   @default("ACADEMIC")
+  projectType   String           @default("ACADEMIC")
   demoLink      String?
   reportLink    String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  isPublished   Boolean  @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  isPublished   Boolean          @default(true)
   requests      ProjectRequest[]
 }
 
 model ProjectRequest {
-  id            String   @id @default(cuid())
-  userId        String
-  projectId     String
-  status        String   @default("PENDING") // PENDING, APPROVED, CONTACTED
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  status    String   @default("PENDING") // PENDING, APPROVED, CONTACTED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, projectId])
 }
@@ -3293,65 +3300,65 @@ model FranchiseResource {
 }
 
 model Assessment {
-  id            String               @id @default(cuid())
-  title         String
-  description   String?
-  type          String               @default("MCQ") // MCQ, CODING, MIXED
-  duration      Int                  @default(60) // in minutes
-  passingScore  Int                  @default(50)
-  employerId    String
-  courseId      String?
-  isPublished   Boolean              @default(false)
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  type         String   @default("MCQ") // MCQ, CODING, MIXED
+  duration     Int      @default(60) // in minutes
+  passingScore Int      @default(50)
+  employerId   String
+  courseId     String?
+  isPublished  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  employer      User                 @relation(fields: [employerId], references: [id])
-  course        Course?              @relation(fields: [courseId], references: [id])
-  questions     AssessmentQuestion[]
-  attempts      AssessmentAttempt[]
+  employer  User                 @relation(fields: [employerId], references: [id])
+  course    Course?              @relation(fields: [courseId], references: [id])
+  questions AssessmentQuestion[]
+  attempts  AssessmentAttempt[]
 }
 
 model AssessmentQuestion {
-  id           String     @id @default(cuid())
-  assessmentId String
-  text         String
-  type         String     @default("MCQ") // MCQ, CODING
-  options      Json?      // e.g. ["A", "B", "C", "D"]
+  id            String   @id @default(cuid())
+  assessmentId  String
+  text          String
+  type          String   @default("MCQ") // MCQ, CODING
+  options       Json? // e.g. ["A", "B", "C", "D"]
   correctAnswer String?
-  marks        Int        @default(1)
-  order        Int        @default(0)
-  createdAt    DateTime   @default(now())
+  marks         Int      @default(1)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
 
-  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 }
 
 model AssessmentAttempt {
-  id           String     @id @default(cuid())
+  id           String    @id @default(cuid())
   assessmentId String
   userId       String
-  score        Float      @default(0)
-  status       String     @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, ABANDONED
-  responses    Json?      // Map of questionId -> user response
-  startedAt    DateTime   @default(now())
+  score        Float     @default(0)
+  status       String    @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, ABANDONED
+  responses    Json? // Map of questionId -> user response
+  startedAt    DateTime  @default(now())
   completedAt  DateTime?
-  proctorLogs  Json?      // Array of tab switches, warnings
+  proctorLogs  Json? // Array of tab switches, warnings
 
-  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([assessmentId, userId])
 }
 
 // Gamification Models
 model Badge {
-  id          String      @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
   description String
-  iconUrl     String?     // URL or lucide icon name
-  xpRequired  Int         @default(0)
-  createdAt   DateTime    @default(now())
+  iconUrl     String? // URL or lucide icon name
+  xpRequired  Int      @default(0)
+  createdAt   DateTime @default(now())
 
-  users       UserBadge[]
+  users UserBadge[]
 }
 
 model UserBadge {
@@ -3360,8 +3367,8 @@ model UserBadge {
   badgeId   String
   awardedAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
 }
@@ -3372,12 +3379,12 @@ model UserBadge {
 
 model SystemApprovalRequest {
   id                String   @id @default(cuid())
-  entityType        String   // 'EMPLOYER', 'COMPANY', 'COLLEGE', 'INSTITUTE', 'FRANCHISE', 'STAFF'
-  entityId          String?  // Links to the specific table if already created
+  entityType        String // 'EMPLOYER', 'COMPANY', 'COLLEGE', 'INSTITUTE', 'FRANCHISE', 'STAFF'
+  entityId          String? // Links to the specific table if already created
   requesterName     String
   requesterEmail    String
   requesterPhone    String
-  payload           Json     // Stores all specific form data submitted by the user
+  payload           Json // Stores all specific form data submitted by the user
   status            String   @default("PENDING") // PENDING, APPROVED, REJECTED
   adminNotes        String?
   rejectionReason   String?
@@ -3387,15 +3394,249 @@ model SystemApprovalRequest {
 }
 
 model SystemRevenueLog {
+  id            String   @id @default(cuid())
+  sourceType    String // 'COURSE', 'CONSULTANCY', 'CAMPUS', 'PROJECT', 'JOB_POSTING', 'RESUME_BUILDER', 'AI_INTERVIEW', 'FRANCHISE_FEE'
+  sourceId      String? // ID of the specific item bought
+  userId        String? // Who paid (if applicable)
+  amount        Float
+  currency      String   @default("INR")
+  paymentMethod String   @default("ONLINE") // 'ONLINE', 'OFFLINE', 'BANK_TRANSFER'
+  transactionId String? // Razorpay/Stripe ID if online
+  status        String   @default("COMPLETED")
+  description   String?
+  createdAt     DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// E-COMMERCE & STOREFRONT
+// -----------------------------------------------------------------------------
+
+model StoreSettings {
+  id             String   @id @default(cuid())
+  isStoreEnabled Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+}
+
+model StoreCategory {
+  id            String             @id @default(cuid())
+  name          String             @unique
+  slug          String             @unique
+  description   String?
+  icon          String?
+  isActive      Boolean            @default(true)
+  products      StoreProduct[]
+  subcategories StoreSubcategory[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+model StoreSubcategory {
+  id          String         @id @default(cuid())
+  categoryId  String
+  name        String         @unique
+  slug        String         @unique
+  description String?
+  isActive    Boolean        @default(true)
+  products    StoreProduct[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  category StoreCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model StoreProduct {
   id              String   @id @default(cuid())
-  sourceType      String   // 'COURSE', 'CONSULTANCY', 'CAMPUS', 'PROJECT', 'JOB_POSTING', 'RESUME_BUILDER', 'AI_INTERVIEW', 'FRANCHISE_FEE'
-  sourceId        String?  // ID of the specific item bought
-  userId          String?  // Who paid (if applicable)
-  amount          Float
-  currency        String   @default("INR")
-  paymentMethod   String   @default("ONLINE") // 'ONLINE', 'OFFLINE', 'BANK_TRANSFER'
-  transactionId   String?  // Razorpay/Stripe ID if online
-  status          String   @default("COMPLETED")
+  categoryId      String
+  subcategoryId   String?
+  sku             String?  @unique
+  brand           String?
+  name            String
+  slug            String   @unique
+  shortDescription String?
   description     String?
+  price           Float
+  discountPrice   Float?
+  condition       String   @default("NEW") // NEW, REFURBISHED, SPARE
+  stock           Int      @default(0)
+  images          String[]
+  videos          String[]
+  isFeatured      Boolean  @default(false)
+  studentDiscount Float?
+  studentDiscountType String? // PERCENTAGE, FIXED
+  seoTitle        String?
+  seoDescription  String?
+  seoKeywords     String?
+  isAffiliate     Boolean  @default(false)
+  affiliateUrl    String?
+  affiliateSource String? // AMAZON, FLIPKART, MEESHO
+  commission      Float?
+  isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category      StoreCategory    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subcategory   StoreSubcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  orderItems    StoreOrderItem[]
+  reviews       StoreReview[]
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?    @unique
+  sessionId String?    @unique // For guest checkout
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart         @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product StoreProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+}
+
+model Wishlist {
+  id        String         @id @default(cuid())
+  userId    String         @unique
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  items     WishlistItem[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  productId  String
+  createdAt  DateTime @default(now())
+
+  wishlist Wishlist     @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product  StoreProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistId, productId])
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  fullName  String
+  phone     String
+  street    String
+  city      String
+  state     String
+  zipCode   String
+  country   String   @default("India")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders StoreOrder[]
+}
+
+model StoreOrder {
+  id            String           @id @default(cuid())
+  orderId       String           @unique // Razorpay Order ID or Custom
+  userId        String?
+  addressId     String?
+  totalAmount   Float
+  status        String           @default("PENDING") // PENDING, PAID, SHIPPED, DELIVERED, CANCELLED
+  paymentMethod String           @default("ONLINE")
+  paymentId     String?          @unique
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  items         StoreOrderItem[]
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  address Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
+}
+
+model StoreOrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float // Price at time of purchase
+  createdAt DateTime @default(now())
+
+  order   StoreOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product StoreProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model StoreReview {
+  id                 String   @id @default(cuid())
+  userId             String
+  productId          String
+  rating             Int
+  reviewText         String?
+  mediaUrls          String[]
+  isVerifiedPurchase Boolean  @default(false)
+  isApproved         Boolean  @default(true) // Admin moderation
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product StoreProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model StoreBanner {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  imageUrl     String
+  ctaText      String?
+  targetUrl    String?
+  position     String    @default("HERO") // HERO, OFFER, SIDEBAR
+  displayOrder Int       @default(0)
+  startDate    DateTime?
+  endDate      DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model MainBanner {
+  id                   String    @id @default(cuid())
+  badgeText            String?
+  badgeIcon            String?   // e.g. "Sparkles", "Target"
+  titleLine1           String
+  titleLine1Highlight  String?
+  titleLine2           String?
+  titleLine2Highlight  String?
+  description          String?
+  primaryCtaText       String?
+  primaryCtaLink       String?
+  secondaryCtaText     String?
+  secondaryCtaLink     String?
+  image                String    
+  displayOrder         Int       @default(0)
+  isActive             Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @db.Text
+  category  String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

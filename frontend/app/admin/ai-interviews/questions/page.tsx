@@ -283,7 +283,7 @@ export default function QuestionsPage() {
     const getDifficultyColor = (difficulty: string) => {
         switch (difficulty) {
             case 'BEGINNER': return 'bg-green-100 text-green-800'
-            case 'INTERMEDIATE': return 'bg-yellow-100 text-yellow-800'
+            case 'INTERMEDIATE': return 'bg-sky-100 text-sky-800'
             case 'ADVANCED': return 'bg-red-100 text-red-800'
             default: return 'bg-gray-100 text-gray-800'
         }
@@ -455,7 +455,7 @@ export default function QuestionsPage() {
                 <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
                     <DialogTrigger asChild>
                         <Button variant="outline" className="ml-2 gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10">
-                            <BookOpen className="h-4 w-4 text-purple-600" />
+                            <BookOpen className="h-4 w-4 text-sky-600" />
                             Generate with AI
                         </Button>
                     </DialogTrigger>
@@ -616,7 +616,7 @@ export default function QuestionsPage() {
                         <CardTitle className="text-sm font-medium">Intermediate</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600">
+                        <div className="text-2xl font-bold text-sky-600">
                             {entries.filter(e => e.difficulty === 'INTERMEDIATE').length}
                         </div>
                     </CardContent>

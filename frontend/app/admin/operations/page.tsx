@@ -87,9 +87,9 @@ export default function OperationsCommandCenter() {
         {
             title: "In Training (Students)",
             icon: BookOpen,
-            color: "text-amber-500",
-            bg: "bg-amber-500/10",
-            border: "border-amber-200",
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10",
+            border: "border-emerald-200",
             items: data.students
         },
         {
@@ -103,9 +103,9 @@ export default function OperationsCommandCenter() {
         {
             title: "Hired / Placed",
             icon: Briefcase,
-            color: "text-purple-500",
-            bg: "bg-purple-500/10",
-            border: "border-purple-200",
+            color: "text-sky-500",
+            bg: "bg-sky-500/10",
+            border: "border-sky-200",
             items: data.hired
         }
     ]
@@ -119,16 +119,16 @@ export default function OperationsCommandCenter() {
 
             {/* KPI Metrics Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-lg border-none">
+                <Card className="bg-gradient-to-br from-sky-500 to-sky-700 text-white shadow-lg border-none">
                     <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-indigo-100 text-sm font-medium">Total Active Leads</p>
+                                <p className="text-sky-100 text-sm font-medium">Total Active Leads</p>
                                 <h3 className="text-3xl font-bold mt-2">{kpis.totalLeads}</h3>
                             </div>
                             <div className="p-2 bg-white/20 rounded-lg"><Users className="h-5 w-5 text-white" /></div>
                         </div>
-                        <div className="mt-4 flex items-center text-indigo-100 text-sm">
+                        <div className="mt-4 flex items-center text-sky-100 text-sm">
                             <TrendingUp className="h-4 w-4 mr-1" /> +12% from last month
                         </div>
                     </CardContent>
@@ -149,31 +149,31 @@ export default function OperationsCommandCenter() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg border-none">
+                <Card className="bg-gradient-to-br from-emerald-500 to-sky-600 text-white shadow-lg border-none">
                     <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-amber-100 text-sm font-medium">Active Students</p>
+                                <p className="text-emerald-100 text-sm font-medium">Active Students</p>
                                 <h3 className="text-3xl font-bold mt-2">{kpis.activeStudents}</h3>
                             </div>
                             <div className="p-2 bg-white/20 rounded-lg"><BookOpen className="h-5 w-5 text-white" /></div>
                         </div>
-                        <div className="mt-4 flex items-center text-amber-100 text-sm">
+                        <div className="mt-4 flex items-center text-emerald-100 text-sm">
                             Across {kpis.activeBatches} active batches
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-violet-600 to-purple-800 text-white shadow-lg border-none">
+                <Card className="bg-gradient-to-br from-violet-600 to-sky-800 text-white shadow-lg border-none">
                     <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-purple-100 text-sm font-medium">Estimated Revenue</p>
+                                <p className="text-sky-100 text-sm font-medium">Estimated Revenue</p>
                                 <h3 className="text-3xl font-bold mt-2">{kpis.monthlyRevenue}</h3>
                             </div>
                             <div className="p-2 bg-white/20 rounded-lg"><TrendingUp className="h-5 w-5 text-white" /></div>
                         </div>
-                        <div className="mt-4 flex items-center text-purple-100 text-sm">
+                        <div className="mt-4 flex items-center text-sky-100 text-sm">
                             Projected for this month
                         </div>
                     </CardContent>
@@ -221,7 +221,7 @@ export default function OperationsCommandCenter() {
                                         
                                         {/* Action Link (Always Visible) */}
                                         <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
-                                            <Link href={item.type === 'LEAD' ? '/admin/leads' : item.type === 'STUDENT' ? '/admin/students' : '/admin/operations'} className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:underline">
+                                            <Link href={item.type === 'LEAD' ? '/admin/leads' : item.type === 'STUDENT' ? '/admin/students' : '/admin/operations'} className="text-xs font-bold text-sky-600 flex items-center gap-1 hover:underline">
                                                 Manage <ArrowRight className="h-3 w-3" />
                                             </Link>
                                         </div>

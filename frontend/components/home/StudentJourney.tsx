@@ -22,9 +22,9 @@ const steps = [
         title: "Learn & Practice",
         description: "Attend live classes, complete assignments, and work on real projects",
         icon: BookOpen,
-        color: "text-purple-600",
-        bgColor: "bg-purple-100 dark:bg-purple-900/30",
-        borderColor: "border-purple-200 dark:border-purple-800",
+        color: "text-sky-600",
+        bgColor: "bg-sky-100 dark:bg-sky-900/30",
+        borderColor: "border-sky-200 dark:border-sky-800",
         href: "/interviews"
     },
     {
@@ -32,9 +32,9 @@ const steps = [
         title: "Get Certified",
         description: "Complete assessments and receive industry-recognized certification",
         icon: Award,
-        color: "text-orange-600",
-        bgColor: "bg-orange-100 dark:bg-orange-900/30",
-        borderColor: "border-orange-200 dark:border-orange-800",
+        color: "text-sky-600",
+        bgColor: "bg-sky-100 dark:bg-sky-900/30",
+        borderColor: "border-sky-200 dark:border-sky-800",
         href: "/dashboard?tab=certificates",
         protected: true
     },

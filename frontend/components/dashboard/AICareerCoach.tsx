@@ -34,10 +34,10 @@ export function AICareerCoach() {
 
     if (loading) {
         return (
-            <Card className="border-indigo-100 bg-indigo-50/30">
+            <Card className="border-sky-100 bg-sky-50/30">
                 <CardContent className="flex justify-center items-center py-10">
-                    <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
-                    <span className="ml-2 text-indigo-600 font-medium">AI Career Coach is analyzing your profile...</span>
+                    <Loader2 className="h-6 w-6 animate-spin text-sky-500" />
+                    <span className="ml-2 text-sky-600 font-medium">AI Career Coach is analyzing your profile...</span>
                 </CardContent>
             </Card>
         )
@@ -57,12 +57,12 @@ export function AICareerCoach() {
     }
 
     return (
-        <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-200/40 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <Card className="border-sky-200 bg-gradient-to-br from-sky-50 to-sky-50 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-sky-200/40 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
             <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-indigo-900">
-                    <div className="p-2 bg-indigo-100 rounded-lg">
-                        <Sparkles className="h-5 w-5 text-indigo-600" />
+                <CardTitle className="flex items-center gap-2 text-sky-900">
+                    <div className="p-2 bg-sky-100 rounded-lg">
+                        <Sparkles className="h-5 w-5 text-sky-600" />
                     </div>
                     AI Career Coach Insights
                 </CardTitle>
@@ -70,30 +70,30 @@ export function AICareerCoach() {
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                     <div>
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-2">
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-sky-400 mb-3 flex items-center gap-2">
                             <AlertCircle className="h-4 w-4" /> Identified Skill Gaps
                         </h4>
                         <div className="flex flex-wrap gap-2">
                             {data.skillGaps.map((gap, i) => (
-                                <span key={i} className="px-3 py-1 bg-white border border-rose-100 text-rose-600 rounded-full text-sm font-medium shadow-sm">
+                                <span key={i} className="px-3 py-1 bg-white border border-emerald-100 text-emerald-600 rounded-full text-sm font-medium shadow-sm">
                                     {gap}
                                 </span>
                             ))}
                         </div>
-                        <p className="text-xs text-indigo-500 mt-4 leading-relaxed">
+                        <p className="text-xs text-sky-500 mt-4 leading-relaxed">
                             Based on your ATS Resume and Mock Interview scores, improving these areas will significantly boost your placement probability for Senior/Mid roles.
                         </p>
                     </div>
 
                     <div>
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-purple-400 mb-3 flex items-center gap-2">
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-sky-400 mb-3 flex items-center gap-2">
                             <TrendingUp className="h-4 w-4" /> Recommended Micro-Learning
                         </h4>
                         <div className="space-y-3">
                             {data.recommendations.map((rec, i) => (
-                                <div key={i} className="bg-white p-3 rounded-xl border border-purple-100 shadow-sm flex items-start gap-3">
-                                    <div className="mt-0.5 p-1.5 bg-purple-50 rounded-md">
-                                        <BookOpen className="h-4 w-4 text-purple-600" />
+                                <div key={i} className="bg-white p-3 rounded-xl border border-sky-100 shadow-sm flex items-start gap-3">
+                                    <div className="mt-0.5 p-1.5 bg-sky-50 rounded-md">
+                                        <BookOpen className="h-4 w-4 text-sky-600" />
                                     </div>
                                     <div>
                                         <h5 className="font-semibold text-slate-800 text-sm">{rec.title}</h5>

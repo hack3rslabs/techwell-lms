@@ -62,7 +62,7 @@ export default function RegisterInstitute() {
                         <p className="text-gray-500 mb-6">
                             Your institute registration has been successfully submitted. Our team will review your application and contact you shortly.
                         </p>
-                        <Link href="/" className="text-indigo-600 hover:text-indigo-500 font-medium">
+                        <Link href="/" className="text-sky-600 hover:text-sky-500 font-medium">
                             Return to Homepage
                         </Link>
                     </div>
@@ -80,7 +80,7 @@ export default function RegisterInstitute() {
                             className="absolute inset-0 bg-cover bg-center" 
                             style={{ backgroundImage: 'url(/images/institute-bg.jpg)' }} 
                         />
-                        <div className="absolute inset-0 bg-indigo-900/60 mix-blend-multiply" />
+                        <div className="absolute inset-0 bg-sky-900/60 mix-blend-multiply" />
                     </div>
                     
                     <div className="relative z-10 flex flex-col h-full justify-between">
@@ -115,11 +115,11 @@ export default function RegisterInstitute() {
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Institute Name</label>
-                                <input type="text" name="name" required value={formData.name} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border" />
+                                <input type="text" name="name" required value={formData.name} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Institute Type</label>
-                                <select name="type" value={formData.type} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border">
+                                <select name="type" value={formData.type} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border">
                                     <option value="COLLEGE">College</option>
                                     <option value="UNIVERSITY">University</option>
                                     <option value="TRAINING_INSTITUTE">Training Institute</option>
@@ -131,37 +131,37 @@ export default function RegisterInstitute() {
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Contact Person Name</label>
-                                <input type="text" name="contactPerson" required value={formData.contactPerson} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border" />
+                                <input type="text" name="contactPerson" required value={formData.contactPerson} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Official Email</label>
-                                <input type="email" name="email" required value={formData.email} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border" />
+                                <input type="email" name="email" required value={formData.email} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                                <input type="text" name="phone" required value={formData.phone} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border" />
+                                <input type="text" name="phone" required value={formData.phone} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Website URL</label>
-                                <input type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border" />
+                                <input type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">State</label>
-                                <input type="text" name="state" value={formData.state} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border" />
+                                <input type="text" name="state" value={formData.state} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">District</label>
-                                <input type="text" name="district" value={formData.district} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border" />
+                                <input type="text" name="district" value={formData.district} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">City</label>
-                                <input type="text" name="city" value={formData.city} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border" />
+                                <input type="text" name="city" value={formData.city} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm p-2 border" />
                             </div>
                         </div>
 
@@ -169,7 +169,7 @@ export default function RegisterInstitute() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 disabled:opacity-50"
                             >
                                 {loading ? 'Submitting...' : 'Submit Registration'}
                             </button>
@@ -178,7 +178,7 @@ export default function RegisterInstitute() {
 
                     <div className="text-center text-sm">
                         Already have an account?{" "}
-                        <Link href="/login" className="underline underline-offset-4 hover:text-indigo-600">
+                        <Link href="/login" className="underline underline-offset-4 hover:text-sky-600">
                             Login here
                         </Link>
                     </div>

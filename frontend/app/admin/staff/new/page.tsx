@@ -204,7 +204,7 @@ export default function CreateStaffPage() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <CardTitle className="flex items-center gap-2">
-                                        <Shield className="h-5 w-5 text-orange-600" />
+                                        <Shield className="h-5 w-5 text-sky-600" />
                                         Access Matrix Configuration
                                     </CardTitle>
                                     <CardDescription>
@@ -212,7 +212,7 @@ export default function CreateStaffPage() {
                                     </CardDescription>
                                 </div>
                                 <div className="flex items-center gap-2 border px-3 py-2 rounded-md bg-muted/20">
-                                    <Label htmlFor="allWizard" className="text-sm font-semibold text-orange-600 cursor-pointer">God-Mode Bypass</Label>
+                                    <Label htmlFor="allWizard" className="text-sm font-semibold text-sky-600 cursor-pointer">God-Mode Bypass</Label>
                                     <Switch id="allWizard" checked={formData.permissions.includes('ALL')} onCheckedChange={handleAllWildcard} />
                                 </div>
                             </div>
@@ -226,7 +226,7 @@ export default function CreateStaffPage() {
                                 <div className="divide-y relative">
                                     {formData.permissions.includes('ALL') && (
                                         <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                                            <Badge variant="outline" className="bg-background text-orange-600 py-1.5 px-3 border-orange-200">
+                                            <Badge variant="outline" className="bg-background text-sky-600 py-1.5 px-3 border-sky-200">
                                                 ALL PERMISSIONS INHERITED
                                             </Badge>
                                         </div>

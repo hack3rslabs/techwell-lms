@@ -102,7 +102,7 @@ function AIInterviewList({ userId }: { userId: string }) {
                     </div>
                     <div className="flex items-center gap-3">
                         {interview.evaluation ? (
-                            <Badge variant={interview.evaluation.overallScore >= 70 ? 'default' : 'secondary'} className={interview.evaluation.overallScore >= 70 ? 'bg-green-600' : 'bg-amber-500'}>
+                            <Badge variant={interview.evaluation.overallScore >= 70 ? 'default' : 'secondary'} className={interview.evaluation.overallScore >= 70 ? 'bg-green-600' : 'bg-emerald-500'}>
                                 {interview.evaluation.overallScore}%
                             </Badge>
                         ) : (
@@ -265,7 +265,7 @@ export default function CandidateProfilePage() {
         switch (s) {
             case 'APPLIED': case 'VIEWED': return 'bg-gray-400'
             case 'SCREENED': return 'bg-blue-500'
-            case 'SHORTLISTED': return 'bg-purple-500'
+            case 'SHORTLISTED': return 'bg-sky-500'
             case 'INTERVIEW_SCHEDULED': case 'INTERVIEW_PENDING': return 'bg-violet-500'
             case 'SELECTED': case 'APPOINTED': case 'HIRED': return 'bg-green-500'
             case 'REJECTED': return 'bg-red-500'
@@ -303,7 +303,7 @@ export default function CandidateProfilePage() {
                                 >
                                     <Star
                                         className={`h-5 w-5 transition-colors ${(hoverRating || selectedRating) >= star
-                                            ? 'fill-amber-400 text-amber-400'
+                                            ? 'fill-emerald-400 text-emerald-400'
                                             : 'text-gray-300'
                                             }`}
                                     />
@@ -364,7 +364,7 @@ export default function CandidateProfilePage() {
                                     <Zap className="h-5 w-5 text-primary" /> ATS Analysis
                                 </span>
                                 {score ? (
-                                    <Badge variant={score >= 80 ? 'default' : 'secondary'} className={`text-base px-3 py-1 ${score >= 80 ? 'bg-green-600' : score >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}>
+                                    <Badge variant={score >= 80 ? 'default' : 'secondary'} className={`text-base px-3 py-1 ${score >= 80 ? 'bg-green-600' : score >= 60 ? 'bg-emerald-500' : 'bg-red-500'}`}>
                                         {score}% Match
                                     </Badge>
                                 ) : (
@@ -379,7 +379,7 @@ export default function CandidateProfilePage() {
                                 <div className="mb-3">
                                     <div className="h-3 bg-muted rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full rounded-full transition-all duration-1000 ${score >= 80 ? 'bg-green-500' : score >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}
+                                            className={`h-full rounded-full transition-all duration-1000 ${score >= 80 ? 'bg-green-500' : score >= 60 ? 'bg-emerald-500' : 'bg-red-500'}`}
                                             style={{ width: `${score}%` }}
                                         />
                                     </div>
@@ -389,7 +389,7 @@ export default function CandidateProfilePage() {
                                 {score && score >= 80 ? (
                                     <><CheckCircle2 className="h-4 w-4 text-green-500" /> Strong match! Recommended for interview.</>
                                 ) : score && score >= 60 ? (
-                                    <><AlertTriangle className="h-4 w-4 text-amber-500" /> Good match. Review experience details.</>
+                                    <><AlertTriangle className="h-4 w-4 text-emerald-500" /> Good match. Review experience details.</>
                                 ) : score ? (
                                     <><XCircle className="h-4 w-4 text-red-500" /> Low match. Check resume manually.</>
                                 ) : (
@@ -569,7 +569,7 @@ export default function CandidateProfilePage() {
                             <Card className="glass-card">
                                 <CardHeader>
                                     <CardTitle className="text-base flex items-center gap-2">
-                                        <Zap className="h-4 w-4 text-amber-500" /> AI Interview Results
+                                        <Zap className="h-4 w-4 text-emerald-500" /> AI Interview Results
                                     </CardTitle>
                                     <CardDescription>
                                         Performance in practice interviews on Techwell.
@@ -595,7 +595,7 @@ export default function CandidateProfilePage() {
                         </CardHeader>
                         <CardContent className="flex gap-2 flex-wrap">
                             <Button size="sm" variant="outline" onClick={() => handleStatusUpdate('SCREENED')}>Screen</Button>
-                            <Button size="sm" variant="outline" onClick={() => handleStatusUpdate('SHORTLISTED')} className="border-purple-200 text-purple-700 hover:bg-purple-50">
+                            <Button size="sm" variant="outline" onClick={() => handleStatusUpdate('SHORTLISTED')} className="border-sky-200 text-sky-700 hover:bg-sky-50">
                                 Shortlist
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => handleStatusUpdate('INTERVIEW_SCHEDULED')} className="border-blue-200 text-blue-700 hover:bg-blue-50">

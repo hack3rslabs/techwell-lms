@@ -37,9 +37,9 @@ interface Application {
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     APPLIED: { label: 'Applied', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-    UNDER_REVIEW: { label: 'Under Review', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+    UNDER_REVIEW: { label: 'Under Review', className: 'bg-sky-50 text-sky-700 border-sky-200' },
     SHORTLISTED: { label: 'Shortlisted', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    INTERVIEW: { label: 'Interview', className: 'bg-purple-50 text-purple-700 border-purple-200' },
+    INTERVIEW: { label: 'Interview', className: 'bg-sky-50 text-sky-700 border-sky-200' },
     OFFERED: { label: 'Offered', className: 'bg-green-50 text-green-700 border-green-200' },
     HIRED: { label: 'Hired', className: 'bg-green-50 text-green-800 border-green-300' },
     REJECTED: { label: 'Rejected', className: 'bg-red-50 text-red-700 border-red-200' },

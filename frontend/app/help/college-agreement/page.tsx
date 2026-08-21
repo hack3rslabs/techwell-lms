@@ -9,8 +9,8 @@ export default function CollegeAgreementPage() {
         <div className="min-h-screen py-20">
             <div className="container max-w-4xl">
                 <div className="flex items-center gap-4 mb-12">
-                    <div className="h-14 w-14 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                        <Building className="h-7 w-7 text-purple-500" />
+                    <div className="h-14 w-14 rounded-xl bg-sky-500/20 flex items-center justify-center">
+                        <Building className="h-7 w-7 text-sky-500" />
                     </div>
                     <div>
                         <h1 className="text-4xl font-bold">Institute / College Agreement</h1>
@@ -22,7 +22,7 @@ export default function CollegeAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-500 text-sm font-bold">1</span>
+                                <span className="h-8 w-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-500 text-sm font-bold">1</span>
                                 Partnership Scope
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">
@@ -34,7 +34,7 @@ export default function CollegeAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-500 text-sm font-bold">2</span>
+                                <span className="h-8 w-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-500 text-sm font-bold">2</span>
                                 Data Privacy & Compliance
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">

@@ -89,7 +89,7 @@ export default function IntegrationsManager() {
     <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600">
+          <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-sky-600">
             Integrations Manager
           </h1>
           <p className="text-gray-500 mt-2 text-lg">Securely connect your communication APIs.</p>
@@ -98,7 +98,7 @@ export default function IntegrationsManager() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-bl-full opacity-50 group-hover:scale-110 transition-transform"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-sky-100 rounded-bl-full opacity-50 group-hover:scale-110 transition-transform"></div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Add New Connection</h2>
             
             <div className="space-y-6 relative z-10">
@@ -224,7 +224,7 @@ export default function IntegrationsManager() {
                   <div className="pt-4">
                     <button 
                       onClick={handleSave}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+                      className="w-full bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
                     >
                       Connect & Save Configuration
                     </button>

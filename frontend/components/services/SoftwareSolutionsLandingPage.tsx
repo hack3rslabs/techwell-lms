@@ -22,10 +22,10 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-purple-500/30">
+    <div className="min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-sky-500/30">
       
       {/* 1. IMMERSIVE HERO SECTION */}
-      <section className="relative w-full h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden border-b border-purple-900/30">
+      <section className="relative w-full h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden border-b border-sky-900/30">
         <Image 
           src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=2000" // Code / Dark tech
           alt="Enterprise Software Development"
@@ -44,13 +44,13 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
           className="relative z-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center"
         >
           <motion.div variants={itemVariants}>
-            <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20 font-bold tracking-[0.2em] uppercase mb-8 px-5 py-2 shadow-sm backdrop-blur-md">
+            <Badge className="bg-sky-500/10 text-sky-400 border-sky-500/20 hover:bg-sky-500/20 font-bold tracking-[0.2em] uppercase mb-8 px-5 py-2 shadow-sm backdrop-blur-md">
               <Code2 className="w-4 h-4 mr-2 inline" /> Scalable Architectures
             </Badge>
           </motion.div>
           
           <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-8 text-white drop-shadow-xl leading-tight">
-            Custom Engineered <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">Software.</span>
+            Custom Engineered <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-sky-600">Software.</span>
           </motion.h1>
           
           <motion.p variants={itemVariants} className="text-slate-400 text-lg md:text-2xl max-w-3xl mx-auto leading-relaxed font-light mb-12">
@@ -58,7 +58,7 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
           </motion.p>
 
           <motion.div variants={itemVariants}>
-            <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-lg h-16 px-10 rounded-full shadow-[0_0_40px_-10px_rgba(168,85,247,0.5)] transition-all duration-300 group">
+            <Button asChild size="lg" className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-lg h-16 px-10 rounded-full shadow-[0_0_40px_-10px_rgba(168,85,247,0.5)] transition-all duration-300 group">
               <Link href={`/contact?service=Software Solutions`}>
                 Discuss Your Project
                 <ArrowUpRight className="ml-2 w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -71,20 +71,20 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
       {/* STATS STRIP */}
       <motion.section 
         initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
-        className="border-b border-purple-900/30 bg-[#040f24]/50 backdrop-blur-xl relative z-20 -mt-8 mx-4 md:mx-auto max-w-6xl rounded-3xl p-8 shadow-2xl"
+        className="border-b border-sky-900/30 bg-[#040f24]/50 backdrop-blur-xl relative z-20 -mt-8 mx-4 md:mx-auto max-w-6xl rounded-3xl p-8 shadow-2xl"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-purple-900/50">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-sky-900/50">
           <div className="px-4">
             <div className="text-4xl font-black text-white mb-2">10+ Years</div>
-            <div className="text-purple-400 font-medium tracking-wide uppercase text-sm">Development Expertise</div>
+            <div className="text-sky-400 font-medium tracking-wide uppercase text-sm">Development Expertise</div>
           </div>
           <div className="px-4 pt-8 md:pt-0">
             <div className="text-4xl font-black text-white mb-2">Zero</div>
-            <div className="text-purple-400 font-medium tracking-wide uppercase text-sm">Off-the-shelf Compromises</div>
+            <div className="text-sky-400 font-medium tracking-wide uppercase text-sm">Off-the-shelf Compromises</div>
           </div>
           <div className="px-4 pt-8 md:pt-0">
             <div className="text-4xl font-black text-white mb-2">100%</div>
-            <div className="text-purple-400 font-medium tracking-wide uppercase text-sm">Bespoke Solutions</div>
+            <div className="text-sky-400 font-medium tracking-wide uppercase text-sm">Bespoke Solutions</div>
           </div>
         </div>
       </motion.section>
@@ -106,7 +106,7 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
           {/* 1. ERP SOLUTIONS */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }}
-            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-purple-900/30 flex flex-col group hover:border-purple-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]"
+            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-sky-900/30 flex flex-col group hover:border-sky-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]"
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
@@ -119,17 +119,17 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
             </div>
             <div className="p-8 flex flex-col flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
                 <Network className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">ERP Solutions</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-base">
                 We engineer comprehensive Enterprise Resource Planning systems that unify fragmented corporate departments into a single, cohesive, highly efficient operational engine.
               </p>
-              <ul className="space-y-3 mt-auto pt-6 border-t border-purple-900/30">
+              <ul className="space-y-3 mt-auto pt-6 border-t border-sky-900/30">
                 {['Workflow Automation', 'Department Unification', 'Data Centralization', 'Custom Reporting'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-purple-500 shrink-0" /> {item}
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>
@@ -139,7 +139,7 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
           {/* 2. CUSTOM SOFTWARE */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-purple-900/30 flex flex-col group hover:border-purple-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]"
+            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-sky-900/30 flex flex-col group hover:border-sky-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]"
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
@@ -152,17 +152,17 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
             </div>
             <div className="p-8 flex flex-col flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
                 <Code2 className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Custom Software</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-base">
                 Generic, off-the-shelf software consistently fails to address highly nuanced business demands. We engineer completely bespoke software tailored to eliminate bottlenecks.
               </p>
-              <ul className="space-y-3 mt-auto pt-6 border-t border-purple-900/30">
+              <ul className="space-y-3 mt-auto pt-6 border-t border-sky-900/30">
                 {['Bespoke Architecture', 'Legacy Modernization', 'API Integrations', 'Problem-solving Tools'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-purple-500 shrink-0" /> {item}
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>
@@ -172,7 +172,7 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
           {/* 3. WEB DEVELOPMENT */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3 }}
-            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-purple-900/30 flex flex-col group hover:border-purple-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]"
+            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-sky-900/30 flex flex-col group hover:border-sky-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]"
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
@@ -185,17 +185,17 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
             </div>
             <div className="p-8 flex flex-col flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
                 <Layout className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Web Development</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-base">
                 Our portfolio includes robust web development projects that create deeply engaging digital storefronts, incredibly high-performance SaaS platforms, and dynamic portals.
               </p>
-              <ul className="space-y-3 mt-auto pt-6 border-t border-purple-900/30">
+              <ul className="space-y-3 mt-auto pt-6 border-t border-sky-900/30">
                 {['Enterprise Web Portals', 'SaaS Platform Dev', 'React / Next.js', 'Responsive UI/UX'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-purple-500 shrink-0" /> {item}
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>
@@ -205,7 +205,7 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
           {/* 4. APPLICATION DEVELOPMENT */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-purple-900/30 flex flex-col group hover:border-purple-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]"
+            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-sky-900/30 flex flex-col group hover:border-sky-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]"
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
@@ -218,17 +218,17 @@ export default function SoftwareSolutionsLandingPage({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
             </div>
             <div className="p-8 flex flex-col flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
                 <Smartphone className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Application Development</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-base">
                 We build powerful native and cross-platform mobile applications that deliver seamless user experiences, flawless backend integrations, and unmatched performance.
               </p>
-              <ul className="space-y-3 mt-auto pt-6 border-t border-purple-900/30">
+              <ul className="space-y-3 mt-auto pt-6 border-t border-sky-900/30">
                 {['iOS / Android Apps', 'Cross-Platform', 'Mobile UI/UX Design', 'API Backends'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-purple-500 shrink-0" /> {item}
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>

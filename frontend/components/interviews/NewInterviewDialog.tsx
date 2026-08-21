@@ -142,8 +142,8 @@ export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange
                 {!hasAccess ? (
                     // LOCKED STATE
                     <div className="flex flex-col items-center text-center py-6 space-y-6">
-                        <div className="h-20 w-20 bg-amber-100 rounded-full flex items-center justify-center mb-2">
-                            <Crown className="h-10 w-10 text-amber-600" />
+                        <div className="h-20 w-20 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
+                            <Crown className="h-10 w-10 text-emerald-600" />
                         </div>
                         <div className="space-y-2">
                             <DialogTitle className="text-2xl font-bold">Unlock Unlimited Interviews</DialogTitle>
@@ -171,7 +171,7 @@ export function NewInterviewDialog({ trigger, open: controlledOpen, onOpenChange
                             </div>
                         </div>
 
-                        <Button size="lg" onClick={handleUpgrade} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl shadow-orange-500/20">
+                        <Button size="lg" onClick={handleUpgrade} className="w-full bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-600 hover:to-sky-600 text-white shadow-xl shadow-sky-500/20">
                             Upgrade to Pro <Sparkles className="ml-2 h-4 w-4" />
                         </Button>
                         <p className="text-xs text-muted-foreground">Starting at just $9.99/mo</p>

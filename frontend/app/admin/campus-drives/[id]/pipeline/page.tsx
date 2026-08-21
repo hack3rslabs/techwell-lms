@@ -16,13 +16,13 @@ import Link from "next/link"
 const PIPELINE_STAGES = [
     { id: 'ELIGIBLE', label: 'Eligible', color: 'bg-slate-100' },
     { id: 'INVITED', label: 'Invited', color: 'bg-blue-50' },
-    { id: 'APPLIED', label: 'Applied', color: 'bg-indigo-50' },
-    { id: 'SHORTLISTED', label: 'Shortlisted', color: 'bg-purple-50' },
-    { id: 'TECH_INTERVIEW', label: 'Tech Interview', color: 'bg-orange-50' },
-    { id: 'HR_INTERVIEW', label: 'HR Interview', color: 'bg-amber-50' },
+    { id: 'APPLIED', label: 'Applied', color: 'bg-sky-50' },
+    { id: 'SHORTLISTED', label: 'Shortlisted', color: 'bg-sky-50' },
+    { id: 'TECH_INTERVIEW', label: 'Tech Interview', color: 'bg-sky-50' },
+    { id: 'HR_INTERVIEW', label: 'HR Interview', color: 'bg-emerald-50' },
     { id: 'SELECTED', label: 'Selected', color: 'bg-green-50' },
     { id: 'OFFERED', label: 'Offered', color: 'bg-emerald-50' },
-    { id: 'JOINED', label: 'Joined', color: 'bg-teal-50' },
+    { id: 'JOINED', label: 'Joined', color: 'bg-emerald-50' },
     { id: 'REJECTED', label: 'Rejected', color: 'bg-red-50' },
 ]
 

@@ -38,80 +38,80 @@ const features = [
         icon: Calendar,
         title: "10+ Years Experience",
         description: "A decade of excellence in professional training and industry leadership.",
-        color: "text-orange-500",
-        bg: "bg-orange-50 dark:bg-orange-900/10",
+        color: "text-sky-500",
+        bg: "bg-sky-50 dark:bg-sky-900/10",
         tag: "Legacy"
     },
     {
         icon: Users,
         title: "Global Community",
         description: "Join a vibrant ecosystem of learners and mentors for lifelong networking.",
-        color: "text-purple-500",
-        bg: "bg-purple-50 dark:bg-purple-900/10",
+        color: "text-sky-500",
+        bg: "bg-sky-50 dark:bg-sky-900/10",
         tag: "Network"
     },
     {
         icon: UserCheck,
         title: "Expert HR Training",
         description: "Learn from expert HRs on how to successfully crack complex interviews.",
-        color: "text-indigo-500",
-        bg: "bg-indigo-50 dark:bg-indigo-900/10",
+        color: "text-sky-500",
+        bg: "bg-sky-50 dark:bg-sky-900/10",
         tag: "Placement"
     },
     {
         icon: LifeBuoy,
         title: "Dedicated Support",
         description: "End-to-end support from our team and HRs until you get successfully hired.",
-        color: "text-pink-500",
-        bg: "bg-pink-50 dark:bg-pink-900/10",
+        color: "text-emerald-500",
+        bg: "bg-emerald-50 dark:bg-emerald-900/10",
         tag: "Support"
     },
     {
         icon: Zap,
         title: "Skill Optimization",
         description: "Master technical, communication, and corporate skills for global competence.",
-        color: "text-amber-500",
-        bg: "bg-amber-50 dark:bg-amber-900/10",
+        color: "text-emerald-500",
+        bg: "bg-emerald-50 dark:bg-emerald-900/10",
         tag: "Growth"
     },
     {
         icon: Globe,
         title: "World Wide Presence",
         description: "Our reach is global, connecting professionals and students across continents.",
-        color: "text-cyan-500",
-        bg: "bg-cyan-50 dark:bg-cyan-900/10",
+        color: "text-sky-500",
+        bg: "bg-sky-50 dark:bg-sky-900/10",
         tag: "Global"
     },
     {
         icon: Cpu,
         title: "Proprietary AI Engine",
         description: "Experience the future of learning with our real-time AI behavioral analysis.",
-        color: "text-purple-500",
-        bg: "bg-purple-50 dark:bg-purple-900/10",
+        color: "text-sky-500",
+        bg: "bg-sky-50 dark:bg-sky-900/10",
         tag: "Innovation"
     },
     {
         icon: Briefcase,
         title: "Direct Placement",
         description: "Zero brokerage placement cell connecting you with 500+ hiring partners.",
-        color: "text-indigo-500",
-        bg: "bg-indigo-50 dark:bg-indigo-900/10",
+        color: "text-sky-500",
+        bg: "bg-sky-50 dark:bg-sky-900/10",
         tag: "Career"
     },
     {
         icon: Video,
         title: "High-Fidelity Training",
         description: "High-production masterclasses from industry veterans on corporate trends.",
-        color: "text-amber-500",
-        bg: "bg-amber-50 dark:bg-amber-900/10",
+        color: "text-emerald-500",
+        bg: "bg-emerald-50 dark:bg-emerald-900/10",
         tag: "Learning"
     },
     {
         icon: Rocket,
         title: "Project-First Approach",
         description: "Master theory by building 10+ real-world projects for your portfolio.",
-        color: "text-cyan-500",
-        bg: "bg-cyan-50 dark:bg-cyan-900/10",
+        color: "text-sky-500",
+        bg: "bg-sky-50 dark:bg-sky-900/10",
         tag: "Practical"
     }
 ]

@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
                         y: [0, -50, 50, -20, 0]
                     }} 
                     transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    className="absolute -top-[10%] -right-[5%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-br from-indigo-500/40 via-purple-500/20 to-transparent blur-[120px] opacity-80 mix-blend-screen"
+                    className="absolute -top-[10%] -right-[5%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-br from-sky-500/40 via-sky-500/20 to-transparent blur-[120px] opacity-80 mix-blend-screen"
                 />
                 <motion.div 
                     animate={{ 
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
                         y: [0, 60, -40, 30, 0]
                     }} 
                     transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                    className="absolute -bottom-[10%] -left-[5%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-cyan-500/30 via-emerald-500/20 to-transparent blur-[120px] opacity-80 mix-blend-screen"
+                    className="absolute -bottom-[10%] -left-[5%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-500/20 to-transparent blur-[120px] opacity-80 mix-blend-screen"
                 />
             </div>
 
@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
                     <div className="bg-[#0f172a]/60 backdrop-blur-[40px] p-8 sm:p-12 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.2)] border border-slate-700/50 relative overflow-hidden group">
                         
                         {/* Dynamic border gradient */}
-                        <div className="absolute -inset-[1px] bg-gradient-to-br from-indigo-500/30 via-purple-500/0 to-cyan-500/30 rounded-[2.5rem] -z-10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="absolute -inset-[1px] bg-gradient-to-br from-sky-500/30 via-sky-500/0 to-sky-500/30 rounded-[2.5rem] -z-10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                         {/* Mobile Logo */}
                         <div className="flex justify-center mb-10">
@@ -107,16 +107,16 @@ export default function ForgotPasswordPage() {
                             {success ? (
                                 <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-7 relative z-10">
                                     <div className="text-center space-y-3 mb-8">
-                                        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 rounded-3xl flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(52,211,153,0.2)] border border-emerald-400/30">
+                                        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-emerald-400/20 to-sky-400/20 rounded-3xl flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(52,211,153,0.2)] border border-emerald-400/30">
                                             <MailCheck className="w-10 h-10 text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
                                         </div>
                                         <h2 className="text-3xl font-black tracking-tight text-white">Check Your Email</h2>
-                                        <p className="text-indigo-200/70 text-sm font-medium px-4">
+                                        <p className="text-sky-200/70 text-sm font-medium px-4">
                                             We've sent password reset instructions to <br/><strong className="text-white">{email}</strong>
                                         </p>
                                     </div>
                                     <motion.div variants={itemVariants} className="pt-2 text-center">
-                                        <Link href="/login" className="text-sm font-semibold text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-wider">
+                                        <Link href="/login" className="text-sm font-semibold text-sky-400 hover:text-sky-300 transition-colors uppercase tracking-wider">
                                             Back to Login
                                         </Link>
                                     </motion.div>
@@ -125,11 +125,11 @@ export default function ForgotPasswordPage() {
                                 <motion.div key="forgot" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-7 relative z-10">
                                     <div className="text-center space-y-3 mb-8">
                                         <h2 className="text-3xl font-black tracking-tight text-white drop-shadow-md">Reset Password</h2>
-                                        <p className="text-indigo-200/70 text-sm font-medium">Enter your email to receive reset instructions.</p>
+                                        <p className="text-sky-200/70 text-sm font-medium">Enter your email to receive reset instructions.</p>
                                     </div>
 
                                     {error && (
-                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="p-4 text-sm font-bold text-rose-200 bg-rose-500/20 backdrop-blur-xl rounded-2xl border border-rose-500/40 text-center shadow-[0_0_20px_rgba(244,63,94,0.2)] flex items-center gap-2">
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="p-4 text-sm font-bold text-emerald-200 bg-emerald-500/20 backdrop-blur-xl rounded-2xl border border-emerald-500/40 text-center shadow-[0_0_20px_rgba(244,63,94,0.2)] flex items-center gap-2">
                                             <AlertCircle className="w-4 h-4 shrink-0" />
                                             <span className="flex-1 text-left">{error}</span>
                                         </motion.div>
@@ -137,8 +137,8 @@ export default function ForgotPasswordPage() {
 
                                     <form onSubmit={handleSubmit} className="space-y-5">
                                         <motion.div variants={itemVariants} className="space-y-2 relative group/input">
-                                            <label htmlFor="email" className="text-sm font-bold text-indigo-100/90 pl-1 uppercase tracking-wider text-[11px]">Work Email</label>
-                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-20 group-focus-within/input:opacity-50 transition duration-500"></div>
+                                            <label htmlFor="email" className="text-sm font-bold text-sky-100/90 pl-1 uppercase tracking-wider text-[11px]">Work Email</label>
+                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500 to-sky-500 rounded-2xl blur opacity-20 group-focus-within/input:opacity-50 transition duration-500"></div>
                                             <Input
                                                 id="email"
                                                 type="email"
@@ -147,7 +147,7 @@ export default function ForgotPasswordPage() {
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
                                                 disabled={isLoading}
-                                                className="relative h-14 rounded-2xl bg-slate-900/80 border-slate-700/50 text-white focus-visible:ring-indigo-500/50 shadow-inner px-4 text-base placeholder:text-slate-500 transition-all font-medium"
+                                                className="relative h-14 rounded-2xl bg-slate-900/80 border-slate-700/50 text-white focus-visible:ring-sky-500/50 shadow-inner px-4 text-base placeholder:text-slate-500 transition-all font-medium"
                                             />
                                         </motion.div>
 
@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
                                             <Button type="submit" className="relative w-full h-14 text-lg font-black rounded-2xl bg-white hover:bg-slate-100 text-slate-900 shadow-[0_10px_30px_-10px_rgba(255,255,255,0.3)] transition-all group active:scale-[0.98] border-none overflow-hidden" disabled={isLoading}>
                                                 <span className="relative z-10 flex items-center justify-center">
                                                     {isLoading ? (
-                                                        <Loader2 className="mr-2 h-6 w-6 animate-spin text-indigo-600" />
+                                                        <Loader2 className="mr-2 h-6 w-6 animate-spin text-sky-600" />
                                                     ) : (
                                                         <>
                                                             Send Reset Link
@@ -163,14 +163,14 @@ export default function ForgotPasswordPage() {
                                                         </>
                                                     )}
                                                 </span>
-                                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-100 to-cyan-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                <div className="absolute inset-0 bg-gradient-to-r from-sky-100 to-sky-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             </Button>
                                         </motion.div>
                                     </form>
 
                                     <motion.div variants={itemVariants} className="pt-6 text-center text-[12px] font-semibold text-slate-400 uppercase tracking-wider">
                                         Remember your password?{' '}
-                                        <Link href="/login" className="text-indigo-400 font-black hover:text-white transition-colors ml-1">
+                                        <Link href="/login" className="text-sky-400 font-black hover:text-white transition-colors ml-1">
                                             Login Here
                                         </Link>
                                     </motion.div>

@@ -70,7 +70,7 @@ export default function FranchiseDashboard() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
-                        <Users className="h-4 w-4 text-yellow-500" />
+                        <Users className="h-4 w-4 text-sky-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.pending}</div>
@@ -97,7 +97,7 @@ export default function FranchiseDashboard() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Upcoming Renewals</CardTitle>
-                        <Activity className="h-4 w-4 text-orange-500" />
+                        <Activity className="h-4 w-4 text-sky-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.upcomingRenewal}</div>
@@ -137,7 +137,7 @@ export default function FranchiseDashboard() {
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                                 f.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
-                                                f.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                                                f.status === 'PENDING' ? 'bg-sky-100 text-sky-700' :
                                                 'bg-red-100 text-red-700'
                                             }`}>
                                                 {f.status}

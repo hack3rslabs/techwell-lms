@@ -38,7 +38,7 @@ export function TeamSection() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     {team.map((member) => (
                         <div key={member.id} className="text-center bg-card p-6 rounded-2xl border hover:shadow-xl transition-all duration-300">
-                            <div className="h-28 w-28 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 mx-auto mb-4 flex items-center justify-center overflow-hidden border-4 border-background shadow-md">
+                            <div className="h-28 w-28 rounded-full bg-gradient-to-br from-primary/20 to-sky-500/20 mx-auto mb-4 flex items-center justify-center overflow-hidden border-4 border-background shadow-md">
                                 {member.photoUrl ? (
                                     <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover" />
                                 ) : (

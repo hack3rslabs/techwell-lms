@@ -10,6 +10,7 @@ import {
     BrainCircuit, FileText, Users, RefreshCcw, BarChart3, Loader2
 } from "lucide-react"
 import api from "@/lib/api"
+import Link from "next/link"
 
 type RevenueBreakdown = {
     payments: number
@@ -51,7 +52,7 @@ const SOURCE_CONFIG = [
         key: "payments" as keyof RevenueBreakdown,
         label: "Course Payments",
         icon: BookOpen,
-        color: "from-blue-500 to-indigo-600",
+        color: "from-blue-500 to-sky-600",
         bg: "bg-blue-500/10",
         text: "text-blue-400",
         description: "Online / offline course enrollments"
@@ -60,36 +61,36 @@ const SOURCE_CONFIG = [
         key: "consulting" as keyof RevenueBreakdown,
         label: "Consultancy",
         icon: Briefcase,
-        color: "from-purple-500 to-violet-600",
-        bg: "bg-purple-500/10",
-        text: "text-purple-400",
+        color: "from-sky-500 to-violet-600",
+        bg: "bg-sky-500/10",
+        text: "text-sky-400",
         description: "IT & career consulting services"
     },
     {
         key: "franchise" as keyof RevenueBreakdown,
         label: "Franchise Fees",
         icon: Building2,
-        color: "from-orange-500 to-amber-600",
-        bg: "bg-orange-500/10",
-        text: "text-orange-400",
+        color: "from-sky-500 to-emerald-600",
+        bg: "bg-sky-500/10",
+        text: "text-sky-400",
         description: "Franchise registration & royalties"
     },
     {
         key: "leads" as keyof RevenueBreakdown,
         label: "Lead Conversions",
         icon: Users,
-        color: "from-teal-500 to-emerald-600",
-        bg: "bg-teal-500/10",
-        text: "text-teal-400",
+        color: "from-emerald-500 to-emerald-600",
+        bg: "bg-emerald-500/10",
+        text: "text-emerald-400",
         description: "Revenue from enrolled CRM leads"
     },
     {
         key: "universalLog" as keyof RevenueBreakdown,
         label: "Other Services",
         icon: BrainCircuit,
-        color: "from-pink-500 to-rose-600",
-        bg: "bg-pink-500/10",
-        text: "text-pink-400",
+        color: "from-emerald-500 to-emerald-600",
+        bg: "bg-emerald-500/10",
+        text: "text-emerald-400",
         description: "AI Interviews, Resume Builder, Jobs, Campus, Projects"
     },
 ]
@@ -144,7 +145,7 @@ export default function RevenueCenterPage() {
             ) : (
                 <>
                     {/* Total Revenue Hero */}
-                    <Card className="bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 text-white border-0 shadow-2xl relative overflow-hidden">
+                    <Card className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-sky-700 text-white border-0 shadow-2xl relative overflow-hidden">
                         <div className="absolute inset-0 bg-grid-white/10 opacity-30" />
                         <div className="absolute top-0 right-0 p-8 opacity-10">
                             <IndianRupee className="w-40 h-40" />
@@ -228,7 +229,7 @@ export default function RevenueCenterPage() {
 
                             {/* Platform Resources Card */}
                             <Card className="glass-card border-white/10 relative overflow-hidden">
-                                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-violet-500 to-purple-600" />
+                                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-violet-500 to-sky-600" />
                                 <CardContent className="pt-6 pb-6">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400">
@@ -301,9 +302,9 @@ export default function RevenueCenterPage() {
                     <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10 text-sm text-muted-foreground">
                         <FileText className="w-4 h-4 shrink-0" />
                         <span>Need detailed consultancy breakdown?</span>
-                        <a href="/admin/consultancy-revenue" className="text-primary font-bold underline underline-offset-2 hover:text-primary/80">
+                        <Link href="/admin/consultancy-revenue" className="text-primary font-bold underline underline-offset-2 hover:text-primary/80">
                             Open Consultancy Revenue →
-                        </a>
+                        </Link>
                     </div>
                 </>
             )}

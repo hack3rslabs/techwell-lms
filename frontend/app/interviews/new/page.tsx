@@ -470,7 +470,7 @@ export default function NewInterviewPage() {
                                                 <CardContent className="flex items-center gap-4 p-4">
                                                     <div className={`w-14 h-14 rounded-full flex items-center justify-center ${avatar.role.includes('Technical') || avatar.role.includes('Engineer')
                                                         ? 'bg-blue-100 text-blue-600'
-                                                        : 'bg-purple-100 text-purple-600'
+                                                        : 'bg-sky-100 text-sky-600'
                                                         }`}>
                                                         {avatar.role.includes('Technical') || avatar.role.includes('Engineer') ? (
                                                             <Bot className="h-7 w-7" />
@@ -560,7 +560,7 @@ export default function NewInterviewPage() {
                                     </div>
                                     <div className="flex items-center justify-between p-4 border rounded-lg bg-background/50">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-purple-100 text-purple-600 rounded-full">
+                                            <div className="p-2 bg-sky-100 text-sky-600 rounded-full">
                                                 <Clock className="h-5 w-5" />
                                             </div>
                                             <div>
@@ -572,7 +572,7 @@ export default function NewInterviewPage() {
                                     </div>
                                     <div className="flex items-center justify-between p-4 border rounded-lg bg-background/50">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-orange-100 text-orange-600 rounded-full">
+                                            <div className="p-2 bg-sky-100 text-sky-600 rounded-full">
                                                 <Sparkles className="h-5 w-5" />
                                             </div>
                                             <div>

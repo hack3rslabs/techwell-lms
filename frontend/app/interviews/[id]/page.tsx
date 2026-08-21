@@ -87,13 +87,13 @@ interface AvatarConfig {
 }
 
 const AVATARS: Record<string, AvatarConfig> = {
-    'tech-1': { name: "suman singh", role: "Technical Lead", color: "from-blue-500/20 to-cyan-500/20", icon: Bot, imageUrl: "https://assets.isu.pub/document-structure/240312171651-9775bf30331c563f0c3e285d730b03c0/v1/1ffb01b0184d05f1f53084337d8047fb.jpeg" },
-    'tech-2': { name: "Sarah Johnson", role: "Senior Engineer", color: "from-indigo-500/20 to-blue-500/20", icon: Bot, imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" },
-    'hr-1': { name: "Emma Williams", role: "HR Manager", color: "from-purple-500/20 to-pink-500/20", icon: Briefcase, imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop" },
+    'tech-1': { name: "suman singh", role: "Technical Lead", color: "from-blue-500/20 to-sky-500/20", icon: Bot, imageUrl: "https://assets.isu.pub/document-structure/240312171651-9775bf30331c563f0c3e285d730b03c0/v1/1ffb01b0184d05f1f53084337d8047fb.jpeg" },
+    'tech-2': { name: "Sarah Johnson", role: "Senior Engineer", color: "from-sky-500/20 to-blue-500/20", icon: Bot, imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" },
+    'hr-1': { name: "Emma Williams", role: "HR Manager", color: "from-sky-500/20 to-emerald-500/20", icon: Briefcase, imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop" },
     'hr-2': { name: "David Smith", role: "Talent Acquisition", color: "from-slate-500/20 to-gray-500/20", icon: Briefcase },
     // Fallbacks
-    'Technical': { name: "AI Interviewer", role: "Technical", color: "from-blue-500/20 to-cyan-500/20", icon: Bot },
-    'HR': { name: "AI Recruiter", role: "HR", color: "from-purple-500/20 to-pink-500/20", icon: Briefcase }
+    'Technical': { name: "AI Interviewer", role: "Technical", color: "from-blue-500/20 to-sky-500/20", icon: Bot },
+    'HR': { name: "AI Recruiter", role: "HR", color: "from-sky-500/20 to-emerald-500/20", icon: Briefcase }
 }
 
 // Success Overlay Component
@@ -782,7 +782,7 @@ export default function InterviewRoomPage() {
             return AVATARS[primaryAvatarId]
         }
         // 3. Fallback
-        return AVATARS['tech-1'] || AVATARS['Technical'] || { name: "AI Interviewer", role: "Specialist", color: "from-blue-500/20 to-cyan-500/20", icon: Bot }
+        return AVATARS['tech-1'] || AVATARS['Technical'] || { name: "AI Interviewer", role: "Specialist", color: "from-blue-500/20 to-sky-500/20", icon: Bot }
     }
 
     const activeAvatar = getActiveAvatar()

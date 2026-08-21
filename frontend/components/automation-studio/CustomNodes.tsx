@@ -47,14 +47,14 @@ export const AiReasonNode = memo(({ id, data, isConnectable }: any) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border-2 border-purple-500 rounded-lg shadow-sm w-64">
+    <div className="bg-white dark:bg-slate-900 border-2 border-sky-500 rounded-lg shadow-sm w-64">
       <Handle
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="w-3 h-3 bg-purple-500"
+        className="w-3 h-3 bg-sky-500"
       />
-      <div className="bg-purple-500 text-white px-3 py-2 rounded-t-sm flex items-center gap-2 font-medium text-sm">
+      <div className="bg-sky-500 text-white px-3 py-2 rounded-t-sm flex items-center gap-2 font-medium text-sm">
         <BrainCircuit className="w-4 h-4" /> AI Reasoning (RAG)
       </div>
       <div className="p-4 flex flex-col gap-2 text-sm text-slate-700 dark:text-slate-300 nodrag">
@@ -66,7 +66,7 @@ export const AiReasonNode = memo(({ id, data, isConnectable }: any) => {
           value={data.systemPrompt || ''}
           onChange={onTextChange}
         />
-        <div className="text-[10px] text-purple-500 font-medium mt-1">
+        <div className="text-[10px] text-sky-500 font-medium mt-1">
           ✓ RAG Vector DB Connected
         </div>
       </div>
@@ -74,7 +74,7 @@ export const AiReasonNode = memo(({ id, data, isConnectable }: any) => {
         type="source"
         position={Position.Bottom}
         isConnectable={isConnectable}
-        className="w-3 h-3 bg-purple-500"
+        className="w-3 h-3 bg-sky-500"
       />
     </div>
   );

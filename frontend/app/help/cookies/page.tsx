@@ -10,8 +10,8 @@ export default function CookiesPage() {
             <div className="container max-w-4xl">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-12">
-                    <div className="h-14 w-14 rounded-xl bg-orange-500/20 flex items-center justify-center">
-                        <Cookie className="h-7 w-7 text-orange-500" />
+                    <div className="h-14 w-14 rounded-xl bg-sky-500/20 flex items-center justify-center">
+                        <Cookie className="h-7 w-7 text-sky-500" />
                     </div>
                     <div>
                         <h1 className="text-4xl font-bold">Cookie Policy</h1>
@@ -23,7 +23,7 @@ export default function CookiesPage() {
                     {/* What Are Cookies */}
                     <Card>
                         <CardContent className="pt-6">
-                            <h2 className="text-xl font-bold text-orange-500 mb-3">What Are Cookies?</h2>
+                            <h2 className="text-xl font-bold text-sky-500 mb-3">What Are Cookies?</h2>
                             <p className="text-muted-foreground">
                                 Cookies are small text files stored on your device when you visit our
                                 website to improve your experience.
@@ -34,7 +34,7 @@ export default function CookiesPage() {
                     {/* Types We Use */}
                     <Card>
                         <CardContent className="pt-6">
-                            <h2 className="text-xl font-bold text-orange-500 mb-4">Types We Use</h2>
+                            <h2 className="text-xl font-bold text-sky-500 mb-4">Types We Use</h2>
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3 p-4 bg-green-500/10 rounded-lg border border-green-500/20">
                                     <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
@@ -50,8 +50,8 @@ export default function CookiesPage() {
                                         <span className="text-muted-foreground ml-2">Remember your preferences</span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
-                                    <BarChart3 className="h-5 w-5 text-purple-500 shrink-0" />
+                                <div className="flex items-center gap-3 p-4 bg-sky-500/10 rounded-lg border border-sky-500/20">
+                                    <BarChart3 className="h-5 w-5 text-sky-500 shrink-0" />
                                     <div>
                                         <span className="font-bold">Analytics:</span>
                                         <span className="text-muted-foreground ml-2">Understand usage patterns</span>
@@ -64,7 +64,7 @@ export default function CookiesPage() {
                     {/* Cookie Details Table */}
                     <Card>
                         <CardContent className="pt-6">
-                            <h2 className="text-xl font-bold text-orange-500 mb-4">Cookie Details</h2>
+                            <h2 className="text-xl font-bold text-sky-500 mb-4">Cookie Details</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
@@ -104,7 +104,7 @@ export default function CookiesPage() {
                     {/* Managing Cookies */}
                     <Card>
                         <CardContent className="pt-6">
-                            <h2 className="text-xl font-bold text-orange-500 mb-3">Managing Cookies</h2>
+                            <h2 className="text-xl font-bold text-sky-500 mb-3">Managing Cookies</h2>
                             <p className="text-muted-foreground mb-4">
                                 Control cookies via our cookie banner or browser settings. Blocking
                                 essential cookies may affect functionality.

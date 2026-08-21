@@ -80,7 +80,7 @@ export default function EmployerJobsPage() {
             case 'CLOSED':
                 return <Badge className="bg-red-50 text-red-700 border-red-200 hover:bg-red-50 shadow-none font-medium text-[11px]">Closed</Badge>
             case 'PAUSED':
-                return <Badge className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50 shadow-none font-medium text-[11px]">Paused</Badge>
+                return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50 shadow-none font-medium text-[11px]">Paused</Badge>
             default:
                 return <Badge className="bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-50 shadow-none font-medium text-[11px]">{status}</Badge>
         }
@@ -242,7 +242,7 @@ export default function EmployerJobsPage() {
                                                                 fetchJobs()
                                                             } catch { toast.error('Failed to close job') }
                                                         }}
-                                                        className="cursor-pointer text-amber-700 rounded-lg focus:bg-amber-50 font-medium"
+                                                        className="cursor-pointer text-emerald-700 rounded-lg focus:bg-emerald-50 font-medium"
                                                     >
                                                         <Briefcase className="mr-2 h-4 w-4" /> Close Job
                                                     </DropdownMenuItem>

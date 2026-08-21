@@ -33,11 +33,11 @@ export default async function TeamPage() {
       <Header />
       
       <main className="pt-24 pb-20">
-        <section className="py-20 bg-gradient-to-b from-indigo-50/50 to-white dark:from-slate-900 dark:to-slate-950">
+        <section className="py-20 bg-gradient-to-b from-sky-50/50 to-white dark:from-slate-900 dark:to-slate-950">
           <div className="container max-w-7xl mx-auto px-6">
             <div className="max-w-3xl mx-auto text-center mb-16">
               <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6">
-                Meet the <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-cyan-500">Experts</span>
+                Meet the <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-sky-500">Experts</span>
               </h1>
               <p className="text-lg text-slate-600 dark:text-slate-400">
                 We are a passionate team of technologists, educators, and innovators dedicated to empowering your digital journey.
@@ -48,7 +48,7 @@ export default async function TeamPage() {
               {team.map((member: any) => (
                 <div key={member.id} className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none dark:border dark:border-slate-800 hover:-translate-y-1 transition-transform duration-300">
                   <div className="flex flex-col items-center text-center">
-                    <div className="w-32 h-32 rounded-full overflow-hidden mb-6 border-4 border-indigo-50 dark:border-slate-800 shadow-inner">
+                    <div className="w-32 h-32 rounded-full overflow-hidden mb-6 border-4 border-sky-50 dark:border-slate-800 shadow-inner">
                       {member.photoUrl ? (
                         <img 
                           src={member.photoUrl} 
@@ -56,7 +56,7 @@ export default async function TeamPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-indigo-100 dark:bg-slate-800 flex items-center justify-center text-indigo-500 dark:text-indigo-400 text-4xl font-bold">
+                        <div className="w-full h-full bg-sky-100 dark:bg-slate-800 flex items-center justify-center text-sky-500 dark:text-sky-400 text-4xl font-bold">
                           {member.name.charAt(0)}
                         </div>
                       )}
@@ -65,7 +65,7 @@ export default async function TeamPage() {
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
                       {member.name}
                     </h3>
-                    <p className="text-indigo-600 dark:text-indigo-400 font-medium mb-4">
+                    <p className="text-sky-600 dark:text-sky-400 font-medium mb-4">
                       {member.designation}
                     </p>
                     

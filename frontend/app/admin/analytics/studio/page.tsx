@@ -54,7 +54,7 @@ export default function AnalyticsStudioPage() {
             {/* Top Toolbar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-900 p-6 rounded-xl border shadow-sm">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">
                         Techwell BI Studio
                     </h1>
                     <p className="text-muted-foreground mt-1 text-sm">

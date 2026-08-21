@@ -133,7 +133,7 @@ export default function AssessmentsPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'PENDING':
-                return <Badge variant="secondary" className="bg-amber-100 text-amber-700">Pending Review</Badge>
+                return <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">Pending Review</Badge>
             case 'GRADED':
                 return <Badge className="bg-green-100 text-green-700">Graded</Badge>
             case 'REJECTED':
@@ -155,8 +155,8 @@ export default function AssessmentsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="border-none shadow-sm">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-amber-100">
-                            <Clock className="h-5 w-5 text-amber-600" />
+                        <div className="p-3 rounded-xl bg-emerald-100">
+                            <Clock className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
                             <p className="text-2xl font-bold">{pendingCount}</p>

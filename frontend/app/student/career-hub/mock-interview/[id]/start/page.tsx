@@ -18,9 +18,9 @@ import { Progress } from "@/components/ui/progress";
 
 // ─── Avatar Config ─────────────────────────────────────────────────────────
 const AVATAR_CONFIG = {
-    "hr-manager": { emoji: "👩‍💼", name: "Priya Sharma", title: "HR Manager", color: "from-violet-500 to-purple-700", badge: "bg-violet-100 text-violet-700" },
-    "tech-lead":  { emoji: "👨‍💻", name: "Rahul Mehta",  title: "Tech Lead",   color: "from-blue-500 to-indigo-700",  badge: "bg-blue-100 text-blue-700" },
-    "cto":        { emoji: "🧠", name: "Arvind Kumar", title: "CTO",         color: "from-orange-500 to-red-700",    badge: "bg-orange-100 text-orange-700" },
+    "hr-manager": { emoji: "👩‍💼", name: "Priya Sharma", title: "HR Manager", color: "from-violet-500 to-sky-700", badge: "bg-violet-100 text-violet-700" },
+    "tech-lead":  { emoji: "👨‍💻", name: "Rahul Mehta",  title: "Tech Lead",   color: "from-blue-500 to-sky-700",  badge: "bg-blue-100 text-blue-700" },
+    "cto":        { emoji: "🧠", name: "Arvind Kumar", title: "CTO",         color: "from-sky-500 to-red-700",    badge: "bg-sky-100 text-sky-700" },
     "product_manager": { emoji: "📊", name: "Sneha Patel", title: "Product Manager", color: "from-emerald-500 to-green-700", badge: "bg-emerald-100 text-emerald-700" },
 };
 
@@ -427,7 +427,7 @@ export default function ActiveInterviewPage({ params }: { params: { id: string }
                                     {currentQuestion?.type || "QUESTION"}
                                 </span>
                                 {currentQuestion?.isFollowUp && (
-                                    <span className="bg-purple-600/90 text-white text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1 animate-in fade-in zoom-in duration-300">
+                                    <span className="bg-sky-600/90 text-white text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1 animate-in fade-in zoom-in duration-300">
                                         ↳ Follow-up
                                     </span>
                                 )}
@@ -472,9 +472,9 @@ export default function ActiveInterviewPage({ params }: { params: { id: string }
 
                     {/* Tip for HR questions */}
                     {currentQuestion?.type === 'HR' && (
-                        <div className="flex gap-3 bg-amber-500/20 border border-amber-400/30 rounded-xl p-4">
-                            <Lightbulb className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                            <div className="text-sm text-amber-200">
+                        <div className="flex gap-3 bg-emerald-500/20 border border-emerald-400/30 rounded-xl p-4">
+                            <Lightbulb className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                            <div className="text-sm text-emerald-200">
                                 <strong>Tip:</strong> Use the STAR method (Situation, Task, Action, Result) for behavioral questions. Keep answers concise and specific — 1 to 2 minutes is ideal.
                             </div>
                         </div>
@@ -503,7 +503,7 @@ export default function ActiveInterviewPage({ params }: { params: { id: string }
                                                 : (q.score || 0) >= 70
                                                 ? "bg-green-600 text-white"
                                                 : (q.score || 0) >= 40
-                                                ? "bg-yellow-600 text-white"
+                                                ? "bg-sky-600 text-white"
                                                 : "bg-red-700 text-white"
                                         )}
                                         title={q.question?.substring(0, 60)}

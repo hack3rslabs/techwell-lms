@@ -5,10 +5,10 @@ import { Server, Laptop, Shield } from 'lucide-react'
 export function CmdbWidget() {
     return (
         <Card className="h-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-sky-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <CardHeader className="pb-2 relative z-10">
                 <CardTitle className="text-sm font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase flex items-center gap-2">
-                    <Server className="h-4 w-4 text-indigo-500" />
+                    <Server className="h-4 w-4 text-sky-500" />
                     CMDB Status
                 </CardTitle>
             </CardHeader>

@@ -332,7 +332,7 @@ function formatStatus(status: FilterStatus) {
 
 function StatusBadge({ status }: { status: RequestStatus }) {
     const styles: Record<RequestStatus, string> = {
-        PENDING: "border-yellow-300 bg-yellow-50 text-yellow-800",
+        PENDING: "border-sky-300 bg-sky-50 text-sky-800",
         APPROVED: "border-green-300 bg-green-50 text-green-800",
         REJECTED: "border-red-300 bg-red-50 text-red-800",
         CANCELLED_APPROVAL: "border-slate-300 bg-slate-100 text-slate-700",

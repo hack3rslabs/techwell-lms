@@ -87,7 +87,7 @@ export default function FranchiseMarketingPage() {
                                                 <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-red-500 border-b-8 border-b-transparent ml-1"></div>
                                             </div>
                                         ) : (
-                                            <FileText className="w-16 h-16 text-purple-400 group-hover:scale-110 transition-transform" />
+                                            <FileText className="w-16 h-16 text-sky-400 group-hover:scale-110 transition-transform" />
                                         )}
                                     </div>
                                     <div className="p-4 bg-white dark:bg-gray-950">

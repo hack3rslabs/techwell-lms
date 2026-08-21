@@ -72,7 +72,7 @@ export default function AutomationStudio() {
         {activeTab === 'workflows' && (
           <button 
             onClick={createWorkflow}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors"
+            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md transition-colors"
           >
             <Plus className="w-4 h-4" /> New Workflow
           </button>
@@ -82,19 +82,19 @@ export default function AutomationStudio() {
       <div className="flex border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => setActiveTab('workflows')}
-          className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'workflows' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'workflows' ? 'border-sky-600 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
         >
           <Share2 className="w-4 h-4" /> Workflows
         </button>
         <button
           onClick={() => setActiveTab('agents')}
-          className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'agents' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'agents' ? 'border-sky-600 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
         >
           <Bot className="w-4 h-4" /> AI Agents
         </button>
         <button
           onClick={() => setActiveTab('logs')}
-          className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'logs' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${activeTab === 'logs' ? 'border-sky-600 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
         >
           <Activity className="w-4 h-4" /> Execution Logs
         </button>
@@ -126,7 +126,7 @@ export default function AutomationStudio() {
                     <p className="text-slate-500 text-sm mb-6 line-clamp-2">{wf.description || 'No description provided.'}</p>
                     <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-4">
                       <span className="text-xs text-slate-400">Trigger: {wf.triggerType}</span>
-                      <Link href={`/admin/automation-studio/builder/${wf.id}`} className="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                      <Link href={`/admin/automation-studio/builder/${wf.id}`} className="text-sky-600 hover:text-sky-700 text-sm font-medium flex items-center gap-1">
                         <Settings className="w-4 h-4" /> Build
                       </Link>
                     </div>
@@ -145,7 +145,7 @@ export default function AutomationStudio() {
                 {agents.map(agent => (
                   <div key={agent.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
+                      <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600">
                         <Bot className="w-5 h-5" />
                       </div>
                       <div>
@@ -184,7 +184,7 @@ export default function AutomationStudio() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             log.status === 'SUCCESS' ? 'bg-green-100 text-green-800' : 
-                            log.status === 'FAILED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                            log.status === 'FAILED' ? 'bg-red-100 text-red-800' : 'bg-sky-100 text-sky-800'
                           }`}>
                             {log.status}
                           </span>

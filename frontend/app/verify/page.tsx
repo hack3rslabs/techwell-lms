@@ -40,11 +40,11 @@ export default function VerificationPortal() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-16 px-4 flex flex-col items-center selection:bg-amber-200">
+        <div className="min-h-screen bg-slate-50 py-16 px-4 flex flex-col items-center selection:bg-emerald-200">
             
             <div className="text-center mb-12">
                 <div className="w-16 h-16 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-xl border border-slate-700">
-                    <Award className="w-8 h-8 text-amber-500" />
+                    <Award className="w-8 h-8 text-emerald-500" />
                 </div>
                 <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-3">Credential Verification</h1>
                 <p className="text-slate-500 max-w-lg mx-auto">
@@ -101,7 +101,7 @@ export default function VerificationPortal() {
                                     <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Course Completed</p>
                                     <p className="text-lg font-medium text-slate-800">{result.certificate.courseName}</p>
                                     {result.certificate.courseCategory && (
-                                        <span className="inline-block mt-2 text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">
+                                        <span className="inline-block mt-2 text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
                                             {result.certificate.courseCategory}
                                         </span>
                                     )}
@@ -134,7 +134,7 @@ export default function VerificationPortal() {
 
                     {result && !result.verified && !error && (
                         <div className="p-8 text-center">
-                            <ShieldAlert className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+                            <ShieldAlert className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
                             <h3 className="text-xl font-bold text-slate-900 mb-2">Certificate Invalid</h3>
                             <p className="text-slate-600">
                                 {result.isRevoked ? "This certificate has been revoked by the issuer." : "This certificate has expired."}

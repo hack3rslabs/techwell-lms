@@ -154,9 +154,9 @@ export default function FranchiseResourcesPage() {
 
     const getFileIcon = (url: string) => {
         if (!url) return <LinkIcon className="w-5 h-5 text-blue-500" />
-        if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) return <ImageIcon className="w-5 h-5 text-pink-500" />
-        if (url.match(/\.(zip|rar|7z)$/i)) return <FileArchive className="w-5 h-5 text-orange-500" />
-        return <FileText className="w-5 h-5 text-indigo-500" />
+        if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) return <ImageIcon className="w-5 h-5 text-emerald-500" />
+        if (url.match(/\.(zip|rar|7z)$/i)) return <FileArchive className="w-5 h-5 text-sky-500" />
+        return <FileText className="w-5 h-5 text-sky-500" />
     }
 
     const getFullUrl = (path: string) => {

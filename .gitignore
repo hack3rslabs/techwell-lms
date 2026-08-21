@@ -20,7 +20,6 @@ out/
 # Misc
 .DS_Store
 *.pem
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -49,20 +48,37 @@ replace_emails.js
 # Backend debug/test scripts (not for production)
 backend/check_features.js
 backend/fix-pass.js
+backend/fix-schema2.js
 backend/test_ai_interview.js
 backend/test_ai_service.js
 backend/test_rbac_api.js
+backend/src/diagnose_*.js
+backend/src/fix_*.js
+backend/src/audit_*.js
+backend/src/grant_*.js
+backend/src/upgrade_*.js
+backend/src/check-*.js
+backend/src/seed-store.js
+backend/prisma/fix-*.js
 
-# Root setup/helper scripts
-setup-everything.bat
-start-local.bat
+# Temp/one-off scripts at root
+temp_sidebar.tsx
+replace-colors.js
 fix_security.py
 
-# Log files at root
+# Root setup/helper scripts (optional dev tools)
+setup-everything.bat
+start-local.bat
+
+# Log files (always generated, never track)
 *.log
+*.log.*
 backend-install.log
 frontend-install.log
 docker-db.log
+backend-dev.log
+frontend-dev.log
+backend-db.log
 
 # Playwright
 /test-results/
@@ -74,3 +90,7 @@ docker-db.log
 # Snyk scan results (may contain secrets)
 snyk-code-results.json
 **/snyk-code-results.json
+
+# Temp data files in source
+backend/src/*.txt
+backend/src/image-paths*.txt

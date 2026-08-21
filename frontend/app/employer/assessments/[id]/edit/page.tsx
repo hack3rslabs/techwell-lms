@@ -120,7 +120,7 @@ export default function AssessmentEditorPage() {
     }
 
     if (isLoading) {
-        return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-600" /></div>
+        return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-sky-600" /></div>
     }
 
     return (
@@ -143,14 +143,14 @@ export default function AssessmentEditorPage() {
                             <CardTitle>Add Questions</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <Button className="w-full bg-indigo-600 hover:bg-indigo-700" onClick={() => setIsManualOpen(true)}>
+                            <Button className="w-full bg-sky-600 hover:bg-sky-700" onClick={() => setIsManualOpen(true)}>
                                 <Plus className="w-4 h-4 mr-2" /> Manual Add
                             </Button>
-                            <Button className="w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50" variant="outline" onClick={() => {
+                            <Button className="w-full border-sky-200 text-sky-700 hover:bg-sky-50" variant="outline" onClick={() => {
                                 setAiForm({ topic: assessment?.title || '', count: 5 })
                                 setIsAiOpen(true)
                             }}>
-                                <Sparkles className="w-4 h-4 mr-2 text-indigo-500" /> AI Generate
+                                <Sparkles className="w-4 h-4 mr-2 text-sky-500" /> AI Generate
                             </Button>
                         </CardContent>
                     </Card>
@@ -169,7 +169,7 @@ export default function AssessmentEditorPage() {
                                     <div className="flex items-start justify-between">
                                         <div className="space-y-4 w-full">
                                             <div className="font-semibold text-lg flex gap-2">
-                                                <span className="text-indigo-600">Q{i+1}.</span> {q.text}
+                                                <span className="text-sky-600">Q{i+1}.</span> {q.text}
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                                                 {q.options.map((opt: string, idx: number) => (
@@ -253,7 +253,7 @@ export default function AssessmentEditorPage() {
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-indigo-500" /> AI Question Generator
+                            <Sparkles className="w-5 h-5 text-sky-500" /> AI Question Generator
                         </DialogTitle>
                         <DialogDescription>
                             Generate multiple choice questions instantly using Google Gemini.
@@ -278,7 +278,7 @@ export default function AssessmentEditorPage() {
                         </div>
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setIsAiOpen(false)}>Cancel</Button>
-                            <Button type="submit" disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700">
+                            <Button type="submit" disabled={isSaving} className="bg-sky-600 hover:bg-sky-700">
                                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Generate
                             </Button>
                         </DialogFooter>

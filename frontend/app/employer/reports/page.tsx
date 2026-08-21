@@ -97,8 +97,8 @@ export default function EmployerReportsPage() {
                 <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-indigo-50 rounded-xl">
-                                <Users className="h-6 w-6 text-indigo-600" />
+                            <div className="p-3 bg-sky-50 rounded-xl">
+                                <Users className="h-6 w-6 text-sky-600" />
                             </div>
                             <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">+24%</span>
                         </div>
@@ -125,8 +125,8 @@ export default function EmployerReportsPage() {
                 <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-amber-50 rounded-xl">
-                                <TrendingUp className="h-6 w-6 text-amber-600" />
+                            <div className="p-3 bg-emerald-50 rounded-xl">
+                                <TrendingUp className="h-6 w-6 text-emerald-600" />
                             </div>
                             <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">-2 days</span>
                         </div>
@@ -158,14 +158,14 @@ export default function EmployerReportsPage() {
                                 <span>Interviewed ({Math.round(stats.totalApplicants * 0.35)})</span>
                                 <span>{stats.interviewRate}%</span>
                             </div>
-                            <Progress value={stats.interviewRate} className="h-3 bg-indigo-100" indicatorClassName="bg-indigo-600" />
+                            <Progress value={stats.interviewRate} className="h-3 bg-sky-100" indicatorClassName="bg-sky-600" />
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm font-medium text-gray-700">
                                 <span>Offers Made ({Math.round(stats.totalApplicants * 0.12)})</span>
                                 <span>{stats.offerRate}%</span>
                             </div>
-                            <Progress value={stats.offerRate} className="h-3 bg-purple-100" indicatorClassName="bg-purple-600" />
+                            <Progress value={stats.offerRate} className="h-3 bg-sky-100" indicatorClassName="bg-sky-600" />
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm font-medium text-gray-700">

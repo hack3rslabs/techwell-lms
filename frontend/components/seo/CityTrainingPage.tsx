@@ -21,7 +21,7 @@ export type CityTrainingContent = {
 export function CityTrainingPage({ content }: { content: CityTrainingContent }) {
   return (
     <div className="min-h-screen">
-      <section className="bg-gradient-to-br from-primary/10 via-background to-purple-500/10 py-20">
+      <section className="bg-gradient-to-br from-primary/10 via-background to-sky-500/10 py-20">
         <div className="container px-4">
           <div className="mx-auto max-w-4xl text-center">
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border bg-background px-4 py-2 text-sm font-semibold text-primary">

@@ -62,7 +62,7 @@ export function AdminCharts({ stats }: AdminChartsProps) {
                                 <Bar
                                     dataKey="total"
                                     radius={[6, 6, 0, 0]}
-                                    className="fill-indigo-500"
+                                    className="fill-sky-500"
                                     barSize={32}
                                 />
                             </BarChart>

@@ -316,13 +316,13 @@ export default function User360Page() {
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <CardTitle className="flex items-center gap-2">
-                                                <Shield className="h-5 w-5 text-orange-600" />
+                                                <Shield className="h-5 w-5 text-sky-600" />
                                                 RBAC Security Matrix
                                             </CardTitle>
                                             <CardDescription>Granular Read/Write overrides.</CardDescription>
                                         </div>
                                         {isProtectedSuperAdmin ? (
-                                            <Badge variant="outline" className="border-orange-200 text-orange-600">Protected</Badge>
+                                            <Badge variant="outline" className="border-sky-200 text-sky-600">Protected</Badge>
                                         ) : (
                                             <Button onClick={saveRBAC} disabled={isSavingObject} className="gap-2">
                                                 {isSavingObject ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

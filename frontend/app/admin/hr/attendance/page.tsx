@@ -53,13 +53,13 @@ export default function AttendanceDashboard() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="bg-indigo-50 border-indigo-100">
+                <Card className="bg-sky-50 border-sky-100">
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-indigo-600">Total Staff</p>
-                            <h3 className="text-3xl font-bold text-indigo-900">{totalStaff}</h3>
+                            <p className="text-sm font-medium text-sky-600">Total Staff</p>
+                            <h3 className="text-3xl font-bold text-sky-900">{totalStaff}</h3>
                         </div>
-                        <Users className="w-8 h-8 text-indigo-300" />
+                        <Users className="w-8 h-8 text-sky-300" />
                     </CardContent>
                 </Card>
                 <Card className="bg-emerald-50 border-emerald-100">
@@ -71,13 +71,13 @@ export default function AttendanceDashboard() {
                         <Clock className="w-8 h-8 text-emerald-300" />
                     </CardContent>
                 </Card>
-                <Card className="bg-rose-50 border-rose-100">
+                <Card className="bg-emerald-50 border-emerald-100">
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-rose-600">Absent / Leave</p>
-                            <h3 className="text-3xl font-bold text-rose-900">{absentToday}</h3>
+                            <p className="text-sm font-medium text-emerald-600">Absent / Leave</p>
+                            <h3 className="text-3xl font-bold text-emerald-900">{absentToday}</h3>
                         </div>
-                        <MapPin className="w-8 h-8 text-rose-300" />
+                        <MapPin className="w-8 h-8 text-emerald-300" />
                     </CardContent>
                 </Card>
             </div>
@@ -113,7 +113,7 @@ export default function AttendanceDashboard() {
                                                 {staff.daysPresent > 0 ? (
                                                     <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">Present</Badge>
                                                 ) : (
-                                                    <Badge className="bg-rose-100 text-rose-800 border-rose-200">Absent</Badge>
+                                                    <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">Absent</Badge>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-slate-500 text-sm">

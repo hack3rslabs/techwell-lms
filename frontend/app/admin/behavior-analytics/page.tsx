@@ -88,9 +88,9 @@ export default function BehaviorAnalyticsPage() {
     const getIntentColor = (intent: string) => {
         const colors: Record<string, string> = {
             'INTERVIEW_FOCUSED': 'bg-blue-500',
-            'COURSE_FOCUSED': 'bg-purple-500',
+            'COURSE_FOCUSED': 'bg-sky-500',
             'JOB_FOCUSED': 'bg-green-500',
-            'BROWSING': 'bg-orange-500'
+            'BROWSING': 'bg-sky-500'
         };
         return colors[intent] || 'bg-gray-500';
     };

@@ -25,14 +25,14 @@ const intentOptions: IntentOption[] = [
         label: 'Interview Prep',
         icon: <Code className="h-5 w-5" />,
         description: 'AI-powered mock interviews',
-        color: 'from-blue-500 to-cyan-500'
+        color: 'from-blue-500 to-sky-500'
     },
     {
         id: 'courses',
         label: 'Courses',
         icon: <GraduationCap className="h-5 w-5" />,
         description: 'Learn new skills',
-        color: 'from-purple-500 to-pink-500'
+        color: 'from-sky-500 to-emerald-500'
     },
     {
         id: 'jobs',
@@ -46,7 +46,7 @@ const intentOptions: IntentOption[] = [
         label: 'Just Exploring',
         icon: <Sparkles className="h-5 w-5" />,
         description: 'Browse around',
-        color: 'from-orange-500 to-yellow-500'
+        color: 'from-sky-500 to-sky-500'
     }
 ];
 

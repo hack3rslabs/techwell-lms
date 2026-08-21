@@ -65,7 +65,7 @@ export default function ProjectsPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-4xl md:text-5xl font-bold mb-6 tracking-tight"
                         >
-                            Final Year <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">Projects</span> Marketplace
+                            Final Year <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-sky-600">Projects</span> Marketplace
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}

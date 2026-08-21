@@ -1,0 +1,16 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Techwell",
+  "name_for_model": "techwell",
+  "description_for_human": "Techwell — IT Training, Career Development, Placement Assistance & Campus Hiring. Based in Andhra Pradesh, India.",
+  "description_for_model": "Techwell (techwell.co.in) provides IT training (Networking, Cloud, DevOps, Cyber Security, AI/ML, Full Stack), career guidance, job assistance, placement assistance, campus hiring, recruitment consultancy, IT consulting, and software development services in Srikakulam and Visakhapatnam, Andhra Pradesh, India. Related platform eLearnStack (elearnstack.com) provides online assessments and test series.",
+  "auth": { "type": "none" },
+  "api": {
+    "type": "openapi",
+    "url": "https://techwell.co.in/.well-known/openapi.yaml",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://techwell.co.in/logo-dark.png",
+  "contact_email": "support@techwell.co.in",
+  "legal_info_url": "https://techwell.co.in/help/terms"
+}

@@ -280,9 +280,9 @@ export default function DashboardPage() {
     const getStatusBadge = (status: string) => {
         const statusMap: Record<string, { label: string; className: string }> = {
             APPLIED: { label: 'Applied', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-            UNDER_REVIEW: { label: 'Under Review', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+            UNDER_REVIEW: { label: 'Under Review', className: 'bg-sky-50 text-sky-700 border-sky-200' },
             SHORTLISTED: { label: 'Shortlisted', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-            INTERVIEW: { label: 'Interview', className: 'bg-purple-50 text-purple-700 border-purple-200' },
+            INTERVIEW: { label: 'Interview', className: 'bg-sky-50 text-sky-700 border-sky-200' },
             OFFERED: { label: 'Offered', className: 'bg-green-50 text-green-700 border-green-200' },
             HIRED: { label: 'Hired', className: 'bg-green-50 text-green-800 border-green-300' },
             REJECTED: { label: 'Rejected', className: 'bg-red-50 text-red-700 border-red-200' },
@@ -301,7 +301,7 @@ export default function DashboardPage() {
             <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background relative overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-primary/5 rounded-full blur-[100px] opacity-40 animate-pulse" />
-                    <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px] opacity-40" />
+                    <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-sky-500/5 rounded-full blur-[100px] opacity-40" />
                 </div>
                 <Loader2 className="h-8 w-8 animate-spin text-primary relative z-10" />
             </div>
@@ -313,7 +313,7 @@ export default function DashboardPage() {
             {/* Background Decor */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px]" />
-                <div className="absolute bottom-[20%] right-[-5%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[20%] right-[-5%] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px]" />
             </div>
 
             <div className="container py-8 relative z-10">
@@ -496,19 +496,19 @@ export default function DashboardPage() {
                             <div className="space-y-8">
                                 {/* Gamification Widget */}
                                 {user?.role === 'STUDENT' && (
-                                    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                                    <div className="bg-gradient-to-r from-sky-500 via-sky-500 to-emerald-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
                                         <div className="absolute top-0 right-0 p-8 opacity-20 transform rotate-12">
                                             <Award className="w-32 h-32" />
                                         </div>
                                         <h3 className="text-xl font-bold mb-1">Your Gamification Stats</h3>
-                                        <p className="text-indigo-100 text-sm mb-6">Keep learning and applying for jobs to earn more XP!</p>
+                                        <p className="text-sky-100 text-sm mb-6">Keep learning and applying for jobs to earn more XP!</p>
                                         <div className="flex gap-8 relative z-10">
                                             <div>
-                                                <div className="text-indigo-100 text-sm font-medium mb-1 uppercase tracking-wider">Total XP</div>
+                                                <div className="text-sky-100 text-sm font-medium mb-1 uppercase tracking-wider">Total XP</div>
                                                 <div className="text-4xl font-black">{user.xp || 0} <span className="text-xl font-medium opacity-80">XP</span></div>
                                             </div>
                                             <div>
-                                                <div className="text-indigo-100 text-sm font-medium mb-1 uppercase tracking-wider">Current Streak</div>
+                                                <div className="text-sky-100 text-sm font-medium mb-1 uppercase tracking-wider">Current Streak</div>
                                                 <div className="text-4xl font-black">{user.currentStreak || 0} <span className="text-xl font-medium opacity-80">Days</span></div>
                                             </div>
                                         </div>
@@ -519,8 +519,8 @@ export default function DashboardPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                     {[
                                         { label: 'Enrolled Courses', value: stats?.enrollments || 0, icon: GraduationCap, bgClass: 'bg-blue-500/10 text-blue-600', gradientClass: 'via-blue-500' },
-                                        { label: 'Total Interviews', value: stats?.interviews.total || 0, icon: Video, bgClass: 'bg-purple-500/10 text-purple-600', gradientClass: 'via-purple-500' },
-                                        { label: 'Completed', value: stats?.interviews.completed || 0, icon: CheckCircle2, bgClass: 'bg-teal-500/10 text-teal-600', gradientClass: 'via-teal-500' },
+                                        { label: 'Total Interviews', value: stats?.interviews.total || 0, icon: Video, bgClass: 'bg-sky-500/10 text-sky-600', gradientClass: 'via-sky-500' },
+                                        { label: 'Completed', value: stats?.interviews.completed || 0, icon: CheckCircle2, bgClass: 'bg-emerald-500/10 text-emerald-600', gradientClass: 'via-emerald-500' },
                                         { label: 'Avg Score', value: `${Math.round(stats?.interviews.averageScore || 0)}%`, icon: TrendingUp, bgClass: 'bg-green-500/10 text-green-600', gradientClass: 'via-green-500' },
                                     ].map((stat) => (
                                         <div key={stat.label} className="bg-card border border-border p-6 rounded-2xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-300 hover:shadow-md">
@@ -723,7 +723,7 @@ export default function DashboardPage() {
                                     {user?.hasAiInterviewAccess ? (
                                         <NewInterviewDialog />
                                     ) : (
-                                        <Button variant="outline" className="border-yellow-500/50 text-yellow-600 hover:bg-yellow-50" onClick={() => router.push('/upgrade?module=interview')}>
+                                        <Button variant="outline" className="border-sky-500/50 text-sky-600 hover:bg-sky-50" onClick={() => router.push('/upgrade?module=interview')}>
                                             <Lock className="mr-2 h-4 w-4" /> Unlock AI Mock Interviews
                                         </Button>
                                     )}
@@ -919,12 +919,12 @@ export default function DashboardPage() {
                         {activeTab === 'certificates' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {certificates.map((cert) => (
-                                    <div key={cert.id} className="bg-card border border-border p-6 rounded-2xl border-l-[6px] border-l-yellow-500 relative overflow-hidden group hover:shadow-md transition-all">
+                                    <div key={cert.id} className="bg-card border border-border p-6 rounded-2xl border-l-[6px] border-l-sky-500 relative overflow-hidden group hover:shadow-md transition-all">
                                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                             <Award className="w-24 h-24" />
                                         </div>
-                                        <div className="h-12 w-12 bg-yellow-50 rounded-full flex items-center justify-center mb-4">
-                                            <Award className="h-6 w-6 text-yellow-600" />
+                                        <div className="h-12 w-12 bg-sky-50 rounded-full flex items-center justify-center mb-4">
+                                            <Award className="h-6 w-6 text-sky-600" />
                                         </div>
                                         <h3 className="text-lg font-bold mb-1 text-foreground">{cert.courseName}</h3>
                                         <p className="text-sm text-muted-foreground mb-4">Certificate of Completion</p>
@@ -968,7 +968,7 @@ export default function DashboardPage() {
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 {user?.hasResumeAccess ? (
                                     <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
-                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-50 pointer-events-none"></div>
+                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-sky-500/10 opacity-50 pointer-events-none"></div>
                                          <FileText className="h-16 w-16 text-primary mx-auto mb-6 relative z-10" />
                                          <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">AI Resume Expert</h2>
                                          <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Create a professional, ATS-optimized resume. Our AI expert will analyze your content for clarity, use industry-relevant keywords, and transform your responsibilities into impactful bullet points.</p>
@@ -978,13 +978,13 @@ export default function DashboardPage() {
                                     </div>
                                 ) : (
                                     <div className="bg-card border border-border rounded-2xl p-8 text-center relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 opacity-50 pointer-events-none"></div>
-                                        <div className="mx-auto w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6 relative z-10">
-                                            <Lock className="h-8 w-8 text-yellow-600" />
+                                        <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 to-sky-500/10 opacity-50 pointer-events-none"></div>
+                                        <div className="mx-auto w-16 h-16 bg-sky-500/10 rounded-full flex items-center justify-center mb-6 relative z-10">
+                                            <Lock className="h-8 w-8 text-sky-600" />
                                         </div>
                                         <h2 className="text-3xl font-bold text-foreground mb-4 relative z-10">Unlock AI Resume Builder</h2>
                                         <p className="text-muted-foreground max-w-xl mx-auto mb-8 relative z-10">Get access to our AI-powered ATS resume builder. Craft perfect resumes that pass ATS screenings and land you more interviews.</p>
-                                        <Button size="lg" className="relative z-10 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0" onClick={() => router.push('/upgrade?module=resume')}>
+                                        <Button size="lg" className="relative z-10 bg-gradient-to-r from-sky-500 to-sky-500 hover:from-sky-600 hover:to-sky-600 text-white border-0" onClick={() => router.push('/upgrade?module=resume')}>
                                             <Lock className="mr-2 h-4 w-4" /> Upgrade Now
                                         </Button>
                                     </div>

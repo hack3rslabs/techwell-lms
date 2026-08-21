@@ -109,7 +109,7 @@ export default function SupportPage() {
 
     const getStatusBadge = (status: string) => {
         const styles: Record<string, string> = {
-            OPEN: 'bg-yellow-100 text-yellow-700',
+            OPEN: 'bg-sky-100 text-sky-700',
             IN_PROGRESS: 'bg-blue-100 text-blue-700',
             RESOLVED: 'bg-green-100 text-green-700',
             CLOSED: 'bg-gray-100 text-gray-700'

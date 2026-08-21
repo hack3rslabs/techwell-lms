@@ -107,7 +107,7 @@ export default function StaffDashboardPage() {
                                 const percent = Math.min(100, Math.round((goal.achievedValue / goal.targetValue) * 100))
                                 let color = "bg-blue-500"
                                 if (percent >= 100) color = "bg-green-500"
-                                else if (percent > 50) color = "bg-yellow-500"
+                                else if (percent > 50) color = "bg-sky-500"
                                 else color = "bg-red-500"
                                 
                                 return (
@@ -163,14 +163,14 @@ export default function StaffDashboardPage() {
                 {/* Assigned Leads */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><PhoneCall className="h-5 w-5 text-indigo-500"/> Leads to Call Today</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><PhoneCall className="h-5 w-5 text-sky-500"/> Leads to Call Today</CardTitle>
                         <CardDescription>Recently assigned leads waiting for outreach</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar">
                         {calendarData.assignedLeads.map((l: any, i: number) => (
                             <div key={`al-${i}`} className="flex justify-between items-center p-3 border rounded-md hover:bg-slate-50 transition">
                                 <div>
-                                    <Link href={`/admin/leads?id=${l.id}`} className="font-medium text-sm text-indigo-700 hover:underline">{l.name}</Link>
+                                    <Link href={`/admin/leads?id=${l.id}`} className="font-medium text-sm text-sky-700 hover:underline">{l.name}</Link>
                                     <p className="text-xs text-muted-foreground">{l.phone}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -208,8 +208,8 @@ export default function StaffDashboardPage() {
                             </div>
                         ))}
                         {calendarData.todayReminders.map((r: any, i: number) => (
-                            <div key={`tr-${i}`} className="p-3 bg-orange-50 border-l-4 border-orange-500 rounded-md text-sm">
-                                <p className="text-[10px] font-bold text-orange-600 uppercase">Follow-up</p>
+                            <div key={`tr-${i}`} className="p-3 bg-sky-50 border-l-4 border-sky-500 rounded-md text-sm">
+                                <p className="text-[10px] font-bold text-sky-600 uppercase">Follow-up</p>
                                 <p className="font-medium">{r.lead?.name}</p>
                                 <p className="text-muted-foreground text-xs">{new Date(r.reminderDate).toLocaleTimeString()}</p>
                             </div>
@@ -256,9 +256,9 @@ export default function StaffDashboardPage() {
                                 <h4 className="text-sm font-bold text-slate-600 mb-3 border-b pb-2">Admin Assigned Tasks</h4>
                                 <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
                                     {calendarData.adminAssignedTasks.map((t: any, i: number) => (
-                                        <div key={`aat-${i}`} className="p-2 border rounded text-sm bg-purple-50 border-purple-100">
-                                            <p className="font-medium text-purple-800">{t.title}</p>
-                                            <p className="text-xs text-purple-600 mt-1">Assigned by {t.creator?.name || 'Admin'}</p>
+                                        <div key={`aat-${i}`} className="p-2 border rounded text-sm bg-sky-50 border-sky-100">
+                                            <p className="font-medium text-sky-800">{t.title}</p>
+                                            <p className="text-xs text-sky-600 mt-1">Assigned by {t.creator?.name || 'Admin'}</p>
                                         </div>
                                     ))}
                                     {calendarData.adminAssignedTasks.length === 0 && <p className="text-xs text-muted-foreground">No tasks assigned by Admin.</p>}

@@ -86,7 +86,7 @@ export default function CareerGuidePage() {
             <div className="container max-w-6xl">
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center mx-auto mb-6">
+                    <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary to-sky-500 flex items-center justify-center mx-auto mb-6">
                         <Compass className="h-10 w-10 text-white" />
                     </div>
                     <h1 className="text-5xl font-bold mb-4">Career Guide</h1>

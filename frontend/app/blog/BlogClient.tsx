@@ -133,7 +133,7 @@ export default function BlogClient() {
                       style={{ backgroundImage: `url(${getFullImageUrl(post.coverImage)})` }}
                     />
                   ) : (
-                    <div className="h-48 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-t-lg" />
+                    <div className="h-48 bg-gradient-to-br from-primary/20 to-sky-500/20 rounded-t-lg" />
                   )}
                   <CardHeader>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-2">

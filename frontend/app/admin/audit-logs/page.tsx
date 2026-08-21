@@ -97,7 +97,7 @@ export default function GlobalAuditLogsPage() {
         const severity = getSeverity(action)
         switch (severity) {
             case 'Info': return 'bg-gray-500 hover:bg-gray-600'
-            case 'Medium': return 'bg-orange-500 hover:bg-orange-600'
+            case 'Medium': return 'bg-sky-500 hover:bg-sky-600'
             case 'Low': return 'bg-blue-500 hover:bg-blue-600'
             case 'Critical': return 'bg-red-500 hover:bg-red-600'
             default: return 'bg-gray-500 hover:bg-gray-600'
@@ -122,7 +122,7 @@ export default function GlobalAuditLogsPage() {
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                        <ShieldAlert className="h-8 w-8 text-orange-600" />
+                        <ShieldAlert className="h-8 w-8 text-sky-600" />
                         System Audit Logs
                     </h1>
                     <p className="text-muted-foreground mt-2">
@@ -193,7 +193,7 @@ export default function GlobalAuditLogsPage() {
                         <Button 
                             variant={severityFilter === "Medium" ? "default" : "outline"} 
                             size="sm" 
-                            className={`h-7 text-xs rounded-full ${severityFilter === "Medium" ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-500' : 'text-orange-600 border-orange-200 hover:bg-orange-50'}`}
+                            className={`h-7 text-xs rounded-full ${severityFilter === "Medium" ? 'bg-sky-500 hover:bg-sky-600 text-white border-sky-500' : 'text-sky-600 border-sky-200 hover:bg-sky-50'}`}
                             onClick={() => setSeverityFilter("Medium")}
                         >
                             Medium ({counts.Medium})

@@ -460,9 +460,9 @@ export default function ConsultancyInvitations() {
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         ${inv.status === 'INVITED' ? 'bg-gray-100 text-gray-800' :
                                         inv.status === 'OPENED' ? 'bg-blue-100 text-blue-800' :
-                                        inv.status === 'STARTED' ? 'bg-indigo-100 text-indigo-800' :
-                                        inv.status === 'SUBMITTED' ? 'bg-purple-100 text-purple-800' :
-                                        inv.status === 'PENDING_ACCEPTANCE' ? 'bg-yellow-100 text-yellow-800' :
+                                        inv.status === 'STARTED' ? 'bg-sky-100 text-sky-800' :
+                                        inv.status === 'SUBMITTED' ? 'bg-sky-100 text-sky-800' :
+                                        inv.status === 'PENDING_ACCEPTANCE' ? 'bg-sky-100 text-sky-800' :
                                         inv.status === 'AGREEMENT_ACCEPTED' ? 'bg-green-100 text-green-800' :
                                         inv.status === 'EXPIRED' ? 'bg-red-100 text-red-800' :
                                         'bg-slate-100 text-slate-800'}`}>

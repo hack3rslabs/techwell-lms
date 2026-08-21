@@ -1,11 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Scale, Users, BookOpen, Briefcase, FileSignature, ShieldAlert, Zap, Building, GraduationCap, Server } from "lucide-react";
 
 export default function TermsAndConditionsPage() {
   const [activeTab, setActiveTab] = useState("general");
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash === '#fraud' || hash === '#cyber-fraud-alert') {
+        setActiveTab('fraud');
+      }
+    }
+  }, []);
 
   const categories = [
     { id: "general", label: "General Terms", icon: FileSignature },
@@ -15,14 +24,15 @@ export default function TermsAndConditionsPage() {
     { id: "campus", label: "Campus Drives", icon: Building },
     { id: "career", label: "Career Hub & Mentorship", icon: GraduationCap },
     { id: "ai", label: "AI & Data Privacy", icon: Zap },
+    { id: "fraud", label: "Cyber & Fraud Alert", icon: ShieldAlert },
   ];
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
       <div className="max-w-7xl mx-auto mb-16 text-center space-y-6">
-        <div className="inline-flex items-center justify-center p-5 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl shadow-inner mb-4">
-          <Scale className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
+        <div className="inline-flex items-center justify-center p-5 bg-sky-100 dark:bg-sky-900/50 rounded-2xl shadow-inner mb-4">
+          <Scale className="w-10 h-10 text-sky-600 dark:text-sky-400" />
         </div>
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Master Terms of Service
@@ -47,11 +57,11 @@ export default function TermsAndConditionsPage() {
                   onClick={() => setActiveTab(category.id)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left w-full ${
                     isActive 
-                      ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm" 
+                      ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 font-bold shadow-sm" 
                       : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? "text-sky-600 dark:text-sky-400" : "text-slate-400"}`} />
                   <span className="text-sm">{category.label}</span>
                 </button>
               );
@@ -62,7 +72,7 @@ export default function TermsAndConditionsPage() {
         {/* Content Area */}
         <div className="lg:w-3/4">
           <Card className="p-8 md:p-12 shadow-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl min-h-[600px]">
-            <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-h2:text-indigo-600 dark:prose-h2:text-indigo-400 text-justify text-sm md:text-base leading-loose">
+            <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-h2:text-sky-600 dark:prose-h2:text-sky-400 text-justify text-sm md:text-base leading-loose">
               
               {activeTab === "general" && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
@@ -80,12 +90,12 @@ export default function TermsAndConditionsPage() {
                   </div>
                   <div>
                     <h3>1.2 Strict Refund & Cancellation Policy</h3>
-                    <div className="bg-rose-50 dark:bg-rose-950/30 p-6 rounded-2xl border border-rose-200 dark:border-rose-900 mt-6 shadow-sm">
+                    <div className="bg-emerald-50 dark:bg-emerald-950/30 p-6 rounded-2xl border border-emerald-200 dark:border-emerald-900 mt-6 shadow-sm">
                       <div className="flex gap-4 items-start">
-                        <ShieldAlert className="w-8 h-8 text-rose-600 dark:text-rose-400 shrink-0 mt-1" />
+                        <ShieldAlert className="w-8 h-8 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
                         <div>
-                          <h4 className="text-rose-800 dark:text-rose-200 font-bold text-lg mt-0 mb-2">Non-Refundable Clause</h4>
-                          <p className="text-rose-700 dark:text-rose-300 m-0">
+                          <h4 className="text-emerald-800 dark:text-emerald-200 font-bold text-lg mt-0 mb-2">Non-Refundable Clause</h4>
+                          <p className="text-emerald-700 dark:text-emerald-300 m-0">
                             ALL PAYMENTS, FEES, RETAINERS, AND DEPOSITS MADE TO TECHWELL FOR ANY SERVICE (COURSES, CONSULTANCY, SOFTWARE) ARE STRICTLY AND CATEGORICALLY NON-REFUNDABLE UNDER ANY CIRCUMSTANCES. No pro-rated refunds or credit notes will be issued. Techwell vigorously disputes all unauthorized credit card chargebacks.
                           </p>
                         </div>
@@ -233,7 +243,66 @@ export default function TermsAndConditionsPage() {
                 </div>
               )}
 
-
+              {activeTab === "fraud" && (
+                <div id="cyber-fraud-alert" className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                  <div>
+                    <h2 className="text-3xl border-b pb-4 mb-6 text-red-600 dark:text-red-400">8. Fraud & Safety Notice</h2>
+                    <div className="p-5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-xl mb-6 shadow-sm">
+                      <p className="m-0 font-semibold text-red-800 dark:text-red-200">
+                        <span className="text-lg mr-2">⚠️</span> <strong>Short Website Alert:</strong> Beware of fake persons, job offers, invoices, payment requests and AI-generated messages or videos using the Techwell name. Always verify before making a payment or sharing sensitive information. Use the official Techwell portal for online payments and contact <a href="mailto:support@techwell.co.in" className="underline font-bold hover:text-red-900 dark:hover:text-white">support@techwell.co.in</a> if you are unsure.
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <h3>8.1 Official Communication</h3>
+                    <p>Always verify important communication through Techwell's official channels. Official support email: <a href="mailto:support@techwell.co.in" className="text-sky-600 hover:underline">support@techwell.co.in</a></p>
+                  </div>
+                  <div>
+                    <h3>8.2 Fake Representatives</h3>
+                    <p>Some people may falsely claim to be Techwell employees, recruiters, trainers, consultants or associates. Please verify before trusting them.</p>
+                  </div>
+                  <div>
+                    <h3>8.3 Payment Safety</h3>
+                    <p>Make online payments only through the official Techwell portal/payment gateway. For authorized offline payments, always collect an official receipt.</p>
+                  </div>
+                  <div>
+                    <h3>8.4 Fake Payment Requests</h3>
+                    <p>Do not pay to personal UPI IDs, bank accounts, QR codes or unknown payment links without verification.</p>
+                  </div>
+                  <div>
+                    <h3>8.5 Fake Invoices & Receipts</h3>
+                    <p>Fraudsters may create fake invoices, quotations, receipts or documents using Techwell's name and logo. Verify them before making payment.</p>
+                  </div>
+                  <div>
+                    <h3>8.6 Fake Job Offers</h3>
+                    <p>Be careful with anyone promising guaranteed jobs, selection or placement in exchange for unauthorized payments.</p>
+                  </div>
+                  <div>
+                    <h3>8.7 AI & Deepfake Fraud</h3>
+                    <p>Today, fake voices, videos, images and documents can be created using AI. Do not trust a message, voice or video only because it appears genuine.</p>
+                  </div>
+                  <div>
+                    <h3>8.8 WhatsApp & Social Media</h3>
+                    <p>Be careful with unknown WhatsApp, LinkedIn, Telegram or other social-media accounts claiming to represent Techwell.</p>
+                  </div>
+                  <div>
+                    <h3>8.9 Personal Information</h3>
+                    <p>Never share passwords, OTPs, banking details or other sensitive information with unknown persons.</p>
+                  </div>
+                  <div>
+                    <h3>8.10 Verify Before Payment</h3>
+                    <p>If you receive any unusual payment request, stop and verify it with <a href="mailto:support@techwell.co.in" className="text-sky-600 hover:underline">support@techwell.co.in</a> before paying.</p>
+                  </div>
+                  <div>
+                    <h3>8.11 Report Fraud</h3>
+                    <p>If you suspect fraud or impersonation, save the messages, numbers, documents and payment details and report the matter to Techwell and the appropriate cybercrime/law-enforcement authority.</p>
+                  </div>
+                  <div>
+                    <h3>8.12 Techwell Cooperation</h3>
+                    <p>Techwell will cooperate with appropriate authorities regarding fraud, impersonation, forged documents and unauthorized payment activities.</p>
+                  </div>
+                </div>
+              )}
 
             </div>
           </Card>

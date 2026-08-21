@@ -32,8 +32,8 @@ export function SystemStatusManager() {
         return (
             <div className="fixed inset-0 z-[99999] bg-slate-50 flex flex-col items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center space-y-6 border border-slate-200">
-                    <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto">
-                        <Wrench className="w-10 h-10 text-indigo-600" />
+                    <div className="w-20 h-20 bg-sky-50 rounded-full flex items-center justify-center mx-auto">
+                        <Wrench className="w-10 h-10 text-sky-600" />
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">We'll be back soon!</h1>

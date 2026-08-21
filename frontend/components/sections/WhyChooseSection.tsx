@@ -30,10 +30,10 @@ const features = [
         icon: Award,
         title: "Fortune 500 Mentors",
         description: "Learn directly from seniors at Google, Microsoft, and Amazon who guide your career path.",
-        color: "text-purple-500",
-        bgColor: "bg-purple-500/10",
-        borderColor: "group-hover:border-purple-500/50",
-        gradient: "from-purple-500/20 to-transparent",
+        color: "text-sky-500",
+        bgColor: "bg-sky-500/10",
+        borderColor: "group-hover:border-sky-500/50",
+        gradient: "from-sky-500/20 to-transparent",
         colSpan: "md:col-span-1",
         delay: 0.2
     },
@@ -41,10 +41,10 @@ const features = [
         icon: BarChart3,
         title: "Instant AI Feedback",
         description: "Get actionable code reviews and speech analysis instantly to improve faster.",
-        color: "text-pink-500",
-        bgColor: "bg-pink-500/10",
-        borderColor: "group-hover:border-pink-500/50",
-        gradient: "from-pink-500/20 to-transparent",
+        color: "text-emerald-500",
+        bgColor: "bg-emerald-500/10",
+        borderColor: "group-hover:border-emerald-500/50",
+        gradient: "from-emerald-500/20 to-transparent",
         colSpan: "md:col-span-1",
         delay: 0.3
     },
@@ -52,10 +52,10 @@ const features = [
         icon: Trophy,
         title: "95% Placement Rate",
         description: "Our dedicated placement cell works 24/7 to connect you with 500+ hiring partners until you sign that offer letter.",
-        color: "text-yellow-500",
-        bgColor: "bg-yellow-500/10",
-        borderColor: "group-hover:border-yellow-500/50",
-        gradient: "from-yellow-500/20 to-transparent",
+        color: "text-sky-500",
+        bgColor: "bg-sky-500/10",
+        borderColor: "group-hover:border-sky-500/50",
+        gradient: "from-sky-500/20 to-transparent",
         colSpan: "md:col-span-2",
         delay: 0.4
     },
@@ -63,10 +63,10 @@ const features = [
         icon: GraduationCap,
         title: "Global Certification",
         description: "Resume-boosting credentials recognized worldwide upon course completion.",
-        color: "text-orange-500",
-        bgColor: "bg-orange-500/10",
-        borderColor: "group-hover:border-orange-500/50",
-        gradient: "from-orange-500/20 to-transparent",
+        color: "text-sky-500",
+        bgColor: "bg-sky-500/10",
+        borderColor: "group-hover:border-sky-500/50",
+        gradient: "from-sky-500/20 to-transparent",
         colSpan: "md:col-span-1",
         delay: 0.5
     },
@@ -85,10 +85,10 @@ const features = [
         icon: Target,
         title: "Focused Learning Paths",
         description: "Curated learning paths designed to help you master specific skills and technologies.",
-        color: "text-cyan-500",
-        bgColor: "bg-cyan-500/10",
-        borderColor: "group-hover:border-cyan-500/50",
-        gradient: "from-cyan-500/20 to-transparent",
+        color: "text-sky-500",
+        bgColor: "bg-sky-500/10",
+        borderColor: "group-hover:border-sky-500/50",
+        gradient: "from-sky-500/20 to-transparent",
         colSpan: "md:col-span-1",
         delay: 0.7
     }
@@ -102,7 +102,7 @@ export function WhyChooseSection() {
         <section className="py-32 relative overflow-hidden bg-background">
             {/* Ambient Background */}
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-sky-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
             <div className="container relative z-10 mx-auto px-4" ref={containerRef}>
                 <div className="text-center mb-20 max-w-3xl mx-auto">
@@ -112,7 +112,7 @@ export function WhyChooseSection() {
                         transition={{ duration: 0.6 }}
                     >
                         <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
-                            Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">Techwell?</span>
+                            Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-sky-600">Techwell?</span>
                         </h2>
                         <p className="text-xl text-muted-foreground leading-relaxed">
                             We don&apos;t just teach technology; we build your entire career ecosystem with AI-driven personalization and industry-leading mentorship.

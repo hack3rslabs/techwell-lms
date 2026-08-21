@@ -175,7 +175,7 @@ function BlogEditorContent() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
             </div>
         )
     }
@@ -209,7 +209,7 @@ function BlogEditorContent() {
                         <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-0">
                             <SheetHeader className="p-6 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
                                 <SheetTitle className="flex items-center gap-2">
-                                    <Layout className="h-5 w-5 text-indigo-600" /> Post Settings
+                                    <Layout className="h-5 w-5 text-sky-600" /> Post Settings
                                 </SheetTitle>
                                 <SheetDescription>
                                     Manage SEO, category, and metadata for this post.
@@ -302,7 +302,7 @@ function BlogEditorContent() {
                                         <div className="space-y-2">
                                             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Summary / Excerpt</label>
                                             <textarea 
-                                                className="w-full min-h-[100px] p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                                className="w-full min-h-[100px] p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                                                 placeholder="Brief summary for cards and feeds..."
                                                 value={formData.excerpt}
                                                 onChange={e => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
@@ -343,7 +343,7 @@ function BlogEditorContent() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Meta Description</label>
-                                            <textarea className="w-full min-h-[80px] p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20" value={formData.metaDescription} onChange={e => setFormData(prev => ({ ...prev, metaDescription: e.target.value }))} placeholder="SEO Description" />
+                                            <textarea className="w-full min-h-[80px] p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sky-500/20" value={formData.metaDescription} onChange={e => setFormData(prev => ({ ...prev, metaDescription: e.target.value }))} placeholder="SEO Description" />
                                         </div>
                                     </div>
                                 </div>
@@ -355,7 +355,7 @@ function BlogEditorContent() {
                         {isSaving && formData.status === 'DRAFT' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Save Draft
                     </Button>
-                    <Button size="sm" onClick={() => handleSave('PUBLISHED')} disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm font-medium">
+                    <Button size="sm" onClick={() => handleSave('PUBLISHED')} disabled={isSaving} className="bg-sky-600 hover:bg-sky-700 text-white shadow-sm font-medium">
                         {isSaving && formData.status === 'PUBLISHED' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Publish Now"}
                     </Button>
                 </div>
@@ -366,18 +366,18 @@ function BlogEditorContent() {
                 
                 {/* AI Assistant Banner */}
                 {showAiPanel && (
-                    <div className="mb-12 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/30">
+                    <div className="mb-12 bg-gradient-to-r from-sky-500/10 to-sky-500/10 dark:from-sky-900/20 dark:to-sky-900/20 rounded-2xl p-6 border border-sky-100 dark:border-sky-900/30">
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/50">
-                                <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            <div className="p-2 rounded-lg bg-sky-100 dark:bg-sky-900/50">
+                                <Sparkles className="h-5 w-5 text-sky-600 dark:text-sky-400" />
                             </div>
-                            <h3 className="font-bold text-indigo-900 dark:text-indigo-200">AI Assistant</h3>
-                            <Button variant="ghost" size="sm" className="ml-auto text-indigo-600/50 hover:text-indigo-600" onClick={() => setShowAiPanel(false)}>Dismiss</Button>
+                            <h3 className="font-bold text-sky-900 dark:text-sky-200">AI Assistant</h3>
+                            <Button variant="ghost" size="sm" className="ml-auto text-sky-600/50 hover:text-sky-600" onClick={() => setShowAiPanel(false)}>Dismiss</Button>
                         </div>
                         <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto]">
                             <Input placeholder="What do you want to write about?" value={aiTopic} onChange={e => setAiTopic(e.target.value)} className="bg-white dark:bg-slate-950 border-0 shadow-sm" />
                             <Input placeholder="Keywords (optional)" value={aiKeywords} onChange={e => setAiKeywords(e.target.value)} className="bg-white dark:bg-slate-950 border-0 shadow-sm" />
-                            <Button onClick={handleAiGenerate} disabled={isGeneratingAi} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                            <Button onClick={handleAiGenerate} disabled={isGeneratingAi} className="bg-sky-600 hover:bg-sky-700 text-white">
                                 {isGeneratingAi ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</> : "Generate Draft"}
                             </Button>
                         </div>
@@ -385,7 +385,7 @@ function BlogEditorContent() {
                 )}
                 {!showAiPanel && (
                     <div className="mb-12">
-                        <Button variant="ghost" size="sm" onClick={() => setShowAiPanel(true)} className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full">
+                        <Button variant="ghost" size="sm" onClick={() => setShowAiPanel(true)} className="text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-full">
                             <Sparkles className="h-4 w-4 mr-2" /> Use AI Assistant
                         </Button>
                     </div>
@@ -406,7 +406,7 @@ function BlogEditorContent() {
                 />
 
                 {/* Rich Text Area */}
-                <div className="prose prose-xl prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 dark:prose-a:text-indigo-400">
+                <div className="prose prose-xl prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-sky-600 dark:prose-a:text-sky-400">
                     <RichTextEditor
                         value={formData.content}
                         onChange={(content) => setFormData(prev => ({ ...prev, content }))}
@@ -453,7 +453,7 @@ export default function BlogEditorPage() {
     return (
         <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
             </div>
         }>
             <BlogEditorContent />

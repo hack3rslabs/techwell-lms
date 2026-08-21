@@ -24,7 +24,7 @@ export default function StudentAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-500 text-sm font-bold">1</span>
+                                <span className="h-8 w-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-500 text-sm font-bold">1</span>
                                 General Responsibilities
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">
@@ -37,7 +37,7 @@ export default function StudentAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-500 text-sm font-bold">2</span>
+                                <span className="h-8 w-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-500 text-sm font-bold">2</span>
                                 Academic Integrity & AI Use
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">
@@ -50,7 +50,7 @@ export default function StudentAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-500 text-sm font-bold">3</span>
+                                <span className="h-8 w-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-500 text-sm font-bold">3</span>
                                 Placement Assistance 
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">

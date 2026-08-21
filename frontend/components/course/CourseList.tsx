@@ -125,8 +125,8 @@ export default function CourseList() {
     const getDifficultyColor = (diff: string) => {
         switch (diff) {
             case 'BEGINNER': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-            case 'INTERMEDIATE': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-            case 'ADVANCED': return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
+            case 'INTERMEDIATE': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+            case 'ADVANCED': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
             default: return 'bg-muted text-muted-foreground'
         }
     }
@@ -134,7 +134,7 @@ export default function CourseList() {
     const getTypeColor = (type?: string) => {
         switch (type) {
             case 'LIVE': return 'bg-red-500 text-white'
-            case 'HYBRID': return 'bg-purple-500 text-white'
+            case 'HYBRID': return 'bg-sky-500 text-white'
             default: return 'bg-blue-500 text-white'
         }
     }
@@ -143,16 +143,16 @@ export default function CourseList() {
         <div className="container py-8">
 
             {/* Events & Webinars — Compact Ribbon */}
-            <div className="mb-8 flex items-center justify-between gap-4 bg-gradient-to-r from-indigo-950 to-indigo-800 rounded-2xl px-5 py-3 border border-indigo-700/50 shadow-sm overflow-hidden relative">
+            <div className="mb-8 flex items-center justify-between gap-4 bg-gradient-to-r from-sky-950 to-sky-800 rounded-2xl px-5 py-3 border border-sky-700/50 shadow-sm overflow-hidden relative">
                 <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_70%_50%,rgba(99,102,241,0.8),transparent_60%)]" />
                 <div className="flex items-center gap-3 z-10">
-                    <span className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 bg-indigo-600 rounded-lg">
+                    <span className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 bg-sky-600 rounded-lg">
                         <span className="text-xs">📅</span>
                     </span>
                     <div className="flex items-center gap-2 flex-wrap">
-                        <span className="flex h-2 w-2 rounded-full bg-teal-400 animate-pulse"></span>
+                        <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span className="text-white font-semibold text-sm">Upcoming Events &amp; Webinars</span>
-                        <span className="text-indigo-300 text-xs hidden sm:inline">— Free masterclasses on AI, Cloud &amp; Tech Careers</span>
+                        <span className="text-sky-300 text-xs hidden sm:inline">— Free masterclasses on AI, Cloud &amp; Tech Careers</span>
                     </div>
                 </div>
                 <Button
@@ -170,7 +170,7 @@ export default function CourseList() {
                 <Button 
                     variant="outline" 
                     size="sm" 
-                    className="h-8 rounded-full text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800"
+                    className="h-8 rounded-full text-xs bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 border-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800"
                     onClick={() => { setSearch('High Demand'); setCategory(''); }}
                 >
                     🚀 High Demand
@@ -333,7 +333,7 @@ export default function CourseList() {
                                 onClick={() => router.push(`/courses/${course.id}`)}
                             >
                                 {/* Thumbnail */}
-                                <div className="h-44 relative bg-gradient-to-br from-primary/10 via-purple-500/5 to-blue-500/10 flex items-center justify-center overflow-hidden">
+                                <div className="h-44 relative bg-gradient-to-br from-primary/10 via-sky-500/5 to-blue-500/10 flex items-center justify-center overflow-hidden">
                                     <GraduationCap className="h-14 w-14 text-primary/10 absolute z-0" />
                                     {(course.bannerUrl || course.thumbnail) && (
                                         <Image
@@ -372,8 +372,8 @@ export default function CourseList() {
                                             <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                                                 {course.duration || 0}h
                                             </span>
-                                            <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded-md">
-                                                <Star className="h-3 w-3 fill-amber-500" />
+                                            <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded-md">
+                                                <Star className="h-3 w-3 fill-emerald-500" />
                                                 {course.fakeRating || course.averageRating || 4.5}
                                             </span>
                                         </div>

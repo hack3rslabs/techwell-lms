@@ -10,7 +10,8 @@ import {
     CheckSquare, 
     BrainCircuit, 
     LifeBuoy,
-    TrendingUp
+    TrendingUp,
+    ShoppingCart
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -25,6 +26,7 @@ export type WidgetId =
     | 'activeTasks'
     | 'consulting'
     | 'supportTickets'
+    | 'store'
 
 export const DEFAULT_LAYOUT: WidgetId[] = [
     'upcomingFees',
@@ -36,6 +38,7 @@ export const DEFAULT_LAYOUT: WidgetId[] = [
     'campusDrives',
     'activeTasks',
     'consulting',
+    'store',
     'supportTickets'
 ]
 
@@ -104,8 +107,20 @@ export function WidgetRenderer({ id, stats }: WidgetRegistryProps) {
                     value={stats.certificates || 0}
                     icon={GraduationCap}
                     colorScheme="sky"
-                    subtitle="Total verified"
+                    subtitle={`${stats.enrollments || 0} active`}
                     onClick={() => router.push('/admin/certificates')}
+                />
+            )
+        case 'store':
+            return (
+                <MetricWidget 
+                    id="store"
+                    title="Store Orders"
+                    value={stats.storeOrders || 0}
+                    icon={ShoppingCart}
+                    colorScheme="emerald"
+                    subtitle={`₹${(stats.storeRevenue || 0).toLocaleString()} revenue`}
+                    onClick={() => router.push('/admin/store')}
                 />
             )
         case 'leads':

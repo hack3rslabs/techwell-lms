@@ -180,9 +180,9 @@ export default function AdminUsersPage() {
 
     const getRoleBadgeColor = (role: string) => {
         switch (role) {
-            case 'SUPER_ADMIN': return 'bg-purple-500/10 text-purple-600 border-purple-200'
+            case 'SUPER_ADMIN': return 'bg-sky-500/10 text-sky-600 border-sky-200'
             case 'ADMIN': return 'bg-blue-500/10 text-blue-600 border-blue-200'
-            case 'EMPLOYER': return 'bg-orange-500/10 text-orange-600 border-orange-200'
+            case 'EMPLOYER': return 'bg-sky-500/10 text-sky-600 border-sky-200'
             case 'STUDENT': return 'bg-green-500/10 text-green-600 border-green-200'
             default: return 'bg-gray-500/10 text-gray-600 border-gray-200'
         }

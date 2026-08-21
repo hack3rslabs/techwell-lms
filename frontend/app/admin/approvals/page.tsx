@@ -30,15 +30,15 @@ type ApprovalRequest = {
 
 const ENTITY_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
     EMPLOYER: { label: "Employer", icon: Briefcase, color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-    COMPANY: { label: "Company", icon: Building2, color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
-    COLLEGE: { label: "College", icon: GraduationCap, color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
+    COMPANY: { label: "Company", icon: Building2, color: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
+    COLLEGE: { label: "College", icon: GraduationCap, color: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
     INSTITUTE: { label: "Institute", icon: GraduationCap, color: "bg-violet-500/10 text-violet-400 border-violet-500/20" },
-    FRANCHISE: { label: "Franchise", icon: Building2, color: "bg-orange-500/10 text-orange-400 border-orange-500/20" },
-    STAFF: { label: "Staff", icon: UserCog, color: "bg-teal-500/10 text-teal-400 border-teal-500/20" },
+    FRANCHISE: { label: "Franchise", icon: Building2, color: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
+    STAFF: { label: "Staff", icon: UserCog, color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-    PENDING: { label: "Pending", color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+    PENDING: { label: "Pending", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
     APPROVED: { label: "Approved", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
     REJECTED: { label: "Rejected", color: "bg-red-500/10 text-red-400 border-red-500/20" },
 }
@@ -142,7 +142,7 @@ export default function ApprovalCenterPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                     { label: "Total", count: counts.all, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
-                    { label: "Pending", count: counts.pending, icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10" },
+                    { label: "Pending", count: counts.pending, icon: Clock, color: "text-emerald-400", bg: "bg-emerald-500/10" },
                     { label: "Approved", count: counts.approved, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
                     { label: "Rejected", count: counts.rejected, icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
                 ].map(({ label, count, icon: Icon, color, bg }) => (

@@ -170,7 +170,7 @@ export default function CHMSReportsPage() {
                                     </div>
                                     <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full"
+                                            className="h-full bg-gradient-to-r from-primary to-sky-500 rounded-full"
                                             style={{ width: `${(c.offers / (data?.topCompanies[0]?.offers || 1)) * 100}%` }}
                                         />
                                     </div>
@@ -200,7 +200,7 @@ export default function CHMSReportsPage() {
                                     </div>
                                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500"
+                                            className="h-full bg-gradient-to-r from-blue-500 to-sky-500 rounded-full transition-all duration-500"
                                             style={{ width: `${rate}%` }}
                                         />
                                     </div>

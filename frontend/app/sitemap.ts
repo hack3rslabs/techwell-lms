@@ -1,7 +1,25 @@
 import { MetadataRoute } from 'next';
 
-const SERVICES: string[] = ['consulting', 'training', 'development']; 
-const CITIES: string[] = ['hyderabad', 'bangalore', 'pune', 'chennai'];
+// These are the dynamic SEO landing pages handled by app/(seo-pages)/[slug]/page.tsx
+// Do NOT add pages that already have a real app directory route (e.g. /jobs, /courses)
+const SEO_PAGES: string[] = [
+  // Career & Jobs
+  'career-hub', 'freshers-jobs', 'campus-hiring', 'campus-recruitment',
+  'campus-to-career', 'job-assistance', 'placement-assistance',
+  'job-consultancy', 'recruitment', 'resume-builder',
+  'ai-mock-interview', 'interview-training',
+  // IT Services
+  'it-consulting', 'software-development',
+  // IT Training — Hub
+  'it-training',
+  // IT Training — Domain Pages
+  'networking', 'desktop-support', 'windows-server', 'linux',
+  'cloud-computing', 'devops', 'devsecops', 'application-security',
+  'cyber-security', 'endpoint-management', 'site-reliability-engineering',
+  'it-service-management',
+  // Technology
+  'ai-ml', 'full-stack-development', 'vibe-coding',
+];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techwell.co.in';
@@ -15,7 +33,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/placements`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/consultancy`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
     { url: `${baseUrl}/services`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${baseUrl}/campus-to-career`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${baseUrl}/franchise-request`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${baseUrl}/about`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
@@ -23,26 +40,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
   ];
 
-  // Dynamic Service Routes
-  const serviceRoutes: MetadataRoute.Sitemap = SERVICES.map((service) => ({
-    url: `${baseUrl}/services/${service}`,
+  // Primary SEO Landing Pages
+  const seoRoutes: MetadataRoute.Sitemap = SEO_PAGES.map((page) => ({
+    url: `${baseUrl}/${page}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
-
-  // Dynamic Service + Location Routes
-  const localRoutes: MetadataRoute.Sitemap = [];
-  SERVICES.forEach((service) => {
-    CITIES.forEach((city) => {
-      localRoutes.push({
-        url: `${baseUrl}/services/${service}/${city}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      });
-    });
-  });
 
   // Fetch dynamic entities gracefully
   const dynamicRoutes: MetadataRoute.Sitemap = [];
@@ -82,5 +86,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("Sitemap: Could not fetch dynamic routes, falling back to static only", error);
   }
 
-  return [...staticRoutes, ...serviceRoutes, ...localRoutes, ...dynamicRoutes];
+  return [...staticRoutes, ...seoRoutes, ...dynamicRoutes];
 }

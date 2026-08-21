@@ -71,7 +71,7 @@ export default function WorkflowBuilderPage() {
   if (isLoading) {
     return (
       <div className="h-[calc(100vh-4rem)] w-full flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
       </div>
     );
   }

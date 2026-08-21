@@ -11,7 +11,7 @@ export default function MarketingHubPage() {
         <div className="space-y-8">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
-                    <Megaphone className="h-8 w-8 text-indigo-600" />
+                    <Megaphone className="h-8 w-8 text-sky-600" />
                     Marketing Hub
                 </h1>
                 <p className="text-muted-foreground mt-2">
@@ -21,7 +21,7 @@ export default function MarketingHubPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Meta Integration */}
-                <Card className="hover:shadow-lg transition-shadow border-indigo-100 dark:border-indigo-900/50">
+                <Card className="hover:shadow-lg transition-shadow border-sky-100 dark:border-sky-900/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-xl">
                             <Facebook className="h-6 w-6 text-blue-600" />
@@ -70,10 +70,10 @@ export default function MarketingHubPage() {
                     </CardContent>
                 </Card>
                 {/* Landing Pages */}
-                <Card className="hover:shadow-lg transition-shadow border-indigo-100 dark:border-indigo-900/50">
+                <Card className="hover:shadow-lg transition-shadow border-sky-100 dark:border-sky-900/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-xl">
-                            <FileText className="h-6 w-6 text-indigo-600" />
+                            <FileText className="h-6 w-6 text-sky-600" />
                             Landing Pages
                         </CardTitle>
                         <CardDescription>
@@ -87,7 +87,7 @@ export default function MarketingHubPage() {
                             <li>✓ Publish / Draft controls</li>
                         </ul>
                         <Link href="/admin/marketing/landing-pages">
-                            <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                            <Button className="w-full bg-sky-600 hover:bg-sky-700">
                                 Manage Pages <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </Link>
@@ -95,10 +95,10 @@ export default function MarketingHubPage() {
                 </Card>
 
                 {/* Lead Gen Forms */}
-                <Card className="hover:shadow-lg transition-shadow border-orange-100 dark:border-orange-900/50">
+                <Card className="hover:shadow-lg transition-shadow border-sky-100 dark:border-sky-900/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-xl">
-                            <FormInput className="h-6 w-6 text-orange-600" />
+                            <FormInput className="h-6 w-6 text-sky-600" />
                             Lead Gen Forms
                         </CardTitle>
                         <CardDescription>
@@ -112,7 +112,7 @@ export default function MarketingHubPage() {
                             <li>✓ Embeddable on any page</li>
                         </ul>
                         <Link href="/admin/marketing/forms">
-                            <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                            <Button className="w-full bg-sky-600 hover:bg-sky-700">
                                 Manage Forms <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </Link>

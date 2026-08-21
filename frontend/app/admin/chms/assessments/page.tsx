@@ -97,13 +97,13 @@ export default function CHMSAssessmentsPage() {
 
     const difficultyColor: Record<string, string> = {
         EASY: "bg-green-100 text-green-700",
-        INTERMEDIATE: "bg-yellow-100 text-yellow-700",
+        INTERMEDIATE: "bg-sky-100 text-sky-700",
         HARD: "bg-red-100 text-red-700"
     }
     const statusColor: Record<string, string> = {
         PUBLISHED: "bg-emerald-100 text-emerald-700",
         DRAFT: "bg-slate-100 text-slate-700",
-        ARCHIVED: "bg-orange-100 text-orange-700"
+        ARCHIVED: "bg-sky-100 text-sky-700"
     }
 
     return (
@@ -123,7 +123,7 @@ export default function CHMSAssessmentsPage() {
                 {[
                     { label: "Total", value: assessments.length, icon: PenLine, color: "text-blue-600 bg-blue-100" },
                     { label: "Published", value: assessments.filter(a => a.status === 'PUBLISHED').length, icon: CheckCircle, color: "text-emerald-600 bg-emerald-100" },
-                    { label: "Drafts", value: assessments.filter(a => a.status === 'DRAFT').length, icon: Clock, color: "text-orange-600 bg-orange-100" },
+                    { label: "Drafts", value: assessments.filter(a => a.status === 'DRAFT').length, icon: Clock, color: "text-sky-600 bg-sky-100" },
                     { label: "Archived", value: assessments.filter(a => a.status === 'ARCHIVED').length, icon: XCircle, color: "text-slate-600 bg-slate-100" },
                 ].map(s => (
                     <Card key={s.label} className="border-0 shadow-sm">

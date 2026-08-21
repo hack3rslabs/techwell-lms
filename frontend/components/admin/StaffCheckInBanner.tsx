@@ -112,7 +112,7 @@ export function StaffCheckInBanner() {
     const isOvertime = pendingSeconds < 0;
 
     return (
-        <Card className={`mb-8 border-2 shadow-sm ${!isCheckedIn ? 'border-red-400 bg-red-50' : isCheckedOut ? 'border-green-400 bg-green-50' : 'border-indigo-400 bg-indigo-50'}`}>
+        <Card className={`mb-8 border-2 shadow-sm ${!isCheckedIn ? 'border-red-400 bg-red-50' : isCheckedOut ? 'border-green-400 bg-green-50' : 'border-sky-400 bg-sky-50'}`}>
             <CardContent className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     {!isCheckedIn ? (
@@ -124,12 +124,12 @@ export function StaffCheckInBanner() {
                             <CheckCircle2 className="h-6 w-6" />
                         </div>
                     ) : (
-                        <div className="p-3 bg-indigo-100 text-indigo-600 rounded-full animate-pulse">
+                        <div className="p-3 bg-sky-100 text-sky-600 rounded-full animate-pulse">
                             <Clock className="h-6 w-6" />
                         </div>
                     )}
                     <div>
-                        <h3 className={`font-bold text-lg ${!isCheckedIn ? 'text-red-700' : isCheckedOut ? 'text-orange-700' : 'text-indigo-700'}`}>
+                        <h3 className={`font-bold text-lg ${!isCheckedIn ? 'text-red-700' : isCheckedOut ? 'text-sky-700' : 'text-sky-700'}`}>
                             {!isCheckedIn ? 'Attendance Required' : isCheckedOut ? 'On Break / Checked Out' : 'Currently Checked In'}
                         </h3>
                         <p className="text-sm text-slate-600">
@@ -144,7 +144,7 @@ export function StaffCheckInBanner() {
                         <div className="flex gap-4 items-center">
                             <div className="text-center">
                                 <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Worked</p>
-                                <p className={`text-xl font-black ${isOvertime ? 'text-orange-600' : 'text-slate-800'}`}>{formatTime(elapsedSeconds)}</p>
+                                <p className={`text-xl font-black ${isOvertime ? 'text-sky-600' : 'text-slate-800'}`}>{formatTime(elapsedSeconds)}</p>
                             </div>
                             <div className="h-8 w-px bg-slate-300"></div>
                             <div className="text-center">
@@ -158,11 +158,11 @@ export function StaffCheckInBanner() {
 
                     {/* Actions */}
                     {!isCheckedIn || isCheckedOut ? (
-                        <Button onClick={handleCheckIn} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shrink-0">
+                        <Button onClick={handleCheckIn} className="bg-sky-600 hover:bg-sky-700 text-white shadow-lg shrink-0">
                             <MapPin className="mr-2 h-4 w-4" /> {isCheckedOut ? 'Resume Shift (End Break)' : 'Check In Now'}
                         </Button>
                     ) : (
-                        <Button onClick={handleCheckOut} variant="outline" className="border-indigo-600 text-indigo-600 hover:bg-indigo-50 shrink-0">
+                        <Button onClick={handleCheckOut} variant="outline" className="border-sky-600 text-sky-600 hover:bg-sky-50 shrink-0">
                             <LogOut className="mr-2 h-4 w-4" /> Take Break / Check Out
                         </Button>
                     )}

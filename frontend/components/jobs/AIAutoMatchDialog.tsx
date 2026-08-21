@@ -36,13 +36,13 @@ export default function AIAutoMatchDialog({ jobId }: { jobId: string }) {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
+                <Button className="bg-sky-600 hover:bg-sky-700 text-white shadow-md">
                     <Sparkles className="mr-2 h-4 w-4" /> AI Auto-Match
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-xl text-indigo-700">
+                    <DialogTitle className="flex items-center gap-2 text-xl text-sky-700">
                         <Sparkles className="h-6 w-6" /> AI Candidate Matcher
                     </DialogTitle>
                     <DialogDescription>
@@ -52,13 +52,13 @@ export default function AIAutoMatchDialog({ jobId }: { jobId: string }) {
 
                 {!hasRun && !isLoading && (
                     <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                        <div className="p-4 bg-indigo-50 rounded-full">
-                            <UserCheck className="h-10 w-10 text-indigo-600" />
+                        <div className="p-4 bg-sky-50 rounded-full">
+                            <UserCheck className="h-10 w-10 text-sky-600" />
                         </div>
                         <p className="text-center text-muted-foreground max-w-sm">
                             Ready to find your next great hire? Let Gemini AI do the heavy lifting.
                         </p>
-                        <Button size="lg" onClick={runAutoMatch} className="mt-4 bg-indigo-600 hover:bg-indigo-700">
+                        <Button size="lg" onClick={runAutoMatch} className="mt-4 bg-sky-600 hover:bg-sky-700">
                             Run Analysis Now
                         </Button>
                     </div>
@@ -66,8 +66,8 @@ export default function AIAutoMatchDialog({ jobId }: { jobId: string }) {
 
                 {isLoading && (
                     <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                        <Loader2 className="h-12 w-12 text-indigo-600 animate-spin" />
-                        <p className="text-indigo-800 font-medium">Scanning thousands of profiles...</p>
+                        <Loader2 className="h-12 w-12 text-sky-600 animate-spin" />
+                        <p className="text-sky-800 font-medium">Scanning thousands of profiles...</p>
                         <p className="text-sm text-muted-foreground">Analyzing skills, experience, and ATS scores...</p>
                     </div>
                 )}
@@ -84,10 +84,10 @@ export default function AIAutoMatchDialog({ jobId }: { jobId: string }) {
                         ) : (
                             <div className="space-y-3">
                                 {matches.map((match, i) => (
-                                    <Card key={i} className="border border-indigo-100 overflow-hidden shadow-sm">
-                                        <div className="h-1 w-full bg-indigo-100">
+                                    <Card key={i} className="border border-sky-100 overflow-hidden shadow-sm">
+                                        <div className="h-1 w-full bg-sky-100">
                                             <div 
-                                                className={`h-full ${match.matchPercentage >= 90 ? 'bg-green-500' : match.matchPercentage >= 75 ? 'bg-indigo-500' : 'bg-orange-400'}`} 
+                                                className={`h-full ${match.matchPercentage >= 90 ? 'bg-green-500' : match.matchPercentage >= 75 ? 'bg-sky-500' : 'bg-sky-400'}`} 
                                                 style={{ width: `${match.matchPercentage}%` }}
                                             />
                                         </div>
@@ -97,13 +97,13 @@ export default function AIAutoMatchDialog({ jobId }: { jobId: string }) {
                                                     <h4 className="font-bold text-lg">{match.name}</h4>
                                                     <p className="text-sm text-muted-foreground">{match.email}</p>
                                                 </div>
-                                                <Badge variant="outline" className={`font-bold text-sm ${match.matchPercentage >= 90 ? 'text-green-700 border-green-200 bg-green-50' : 'text-indigo-700 border-indigo-200 bg-indigo-50'}`}>
+                                                <Badge variant="outline" className={`font-bold text-sm ${match.matchPercentage >= 90 ? 'text-green-700 border-green-200 bg-green-50' : 'text-sky-700 border-sky-200 bg-sky-50'}`}>
                                                     {match.matchPercentage}% Match
                                                 </Badge>
                                             </div>
                                             
                                             <div className="bg-slate-50 p-3 rounded-md text-sm text-slate-700 mb-3 border border-slate-100">
-                                                <p><span className="font-semibold text-indigo-900">AI Rationale:</span> {match.rationale}</p>
+                                                <p><span className="font-semibold text-sky-900">AI Rationale:</span> {match.rationale}</p>
                                             </div>
 
                                             <div className="flex justify-between items-center mt-2">

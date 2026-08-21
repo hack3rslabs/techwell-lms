@@ -24,10 +24,10 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-sky-500/30">
       
       {/* 1. IMMERSIVE HERO SECTION */}
-      <section className="relative w-full h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden border-b border-indigo-900/30">
+      <section className="relative w-full h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden border-b border-sky-900/30">
         <Image 
           src="https://images.unsplash.com/photo-1649364947471-4043b4684a0d?auto=format&fit=crop&q=80&w=2000" // Modern IT Data Center
           alt="Enterprise IT Infrastructure"
@@ -46,13 +46,13 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
           className="relative z-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center"
         >
           <motion.div variants={itemVariants}>
-            <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/20 font-bold tracking-[0.2em] uppercase mb-8 px-5 py-2 shadow-sm backdrop-blur-md">
+            <Badge className="bg-sky-500/10 text-sky-400 border-sky-500/20 hover:bg-sky-500/20 font-bold tracking-[0.2em] uppercase mb-8 px-5 py-2 shadow-sm backdrop-blur-md">
               <Zap className="w-4 h-4 mr-2 inline" /> Enterprise Grade
             </Badge>
           </motion.div>
           
           <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-8 text-white drop-shadow-xl leading-tight">
-            Unshakeable <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600">IT Foundations.</span>
+            Unshakeable <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-sky-600">IT Foundations.</span>
           </motion.h1>
           
           <motion.p variants={itemVariants} className="text-slate-400 text-lg md:text-2xl max-w-3xl mx-auto leading-relaxed font-light mb-12">
@@ -60,7 +60,7 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
           </motion.p>
 
           <motion.div variants={itemVariants}>
-            <Button asChild size="lg" className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-lg h-16 px-10 rounded-full shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)] transition-all duration-300 group">
+            <Button asChild size="lg" className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-lg h-16 px-10 rounded-full shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)] transition-all duration-300 group">
               <Link href={`/contact?service=IT Solutions`}>
                 Optimize Your Infrastructure
                 <ArrowUpRight className="ml-2 w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -73,20 +73,20 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
       {/* STATS STRIP */}
       <motion.section 
         initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
-        className="border-b border-indigo-900/30 bg-[#040f24]/50 backdrop-blur-xl relative z-20 -mt-8 mx-4 md:mx-auto max-w-6xl rounded-3xl p-8 shadow-2xl"
+        className="border-b border-sky-900/30 bg-[#040f24]/50 backdrop-blur-xl relative z-20 -mt-8 mx-4 md:mx-auto max-w-6xl rounded-3xl p-8 shadow-2xl"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-indigo-900/50">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-sky-900/50">
           <div className="px-4">
             <div className="text-4xl font-black text-white mb-2">10+ Years</div>
-            <div className="text-indigo-400 font-medium tracking-wide uppercase text-sm">Market Experience</div>
+            <div className="text-sky-400 font-medium tracking-wide uppercase text-sm">Market Experience</div>
           </div>
           <div className="px-4 pt-8 md:pt-0">
             <div className="text-4xl font-black text-white mb-2">99.99%</div>
-            <div className="text-indigo-400 font-medium tracking-wide uppercase text-sm">Infrastructure Uptime</div>
+            <div className="text-sky-400 font-medium tracking-wide uppercase text-sm">Infrastructure Uptime</div>
           </div>
           <div className="px-4 pt-8 md:pt-0">
             <div className="text-4xl font-black text-white mb-2">24/7</div>
-            <div className="text-indigo-400 font-medium tracking-wide uppercase text-sm">Dedicated IT Support</div>
+            <div className="text-sky-400 font-medium tracking-wide uppercase text-sm">Dedicated IT Support</div>
           </div>
         </div>
       </motion.section>
@@ -108,7 +108,7 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
           {/* 1. NETWORKING & FIREWALL SECURITY */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }}
-            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-indigo-900/30 flex flex-col group hover:border-indigo-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]"
+            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-sky-900/30 flex flex-col group hover:border-sky-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]"
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
@@ -121,17 +121,17 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
             </div>
             <div className="p-10 flex flex-col flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
                 <Settings className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Networking & Firewall Security</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-lg">
                 Establish a rock-solid, impenetrable digital perimeter. We deploy highly secure networking infrastructure and enterprise-grade firewalls to keep your corporate data safe from modern cyber threats while ensuring maximum throughput.
               </p>
-              <ul className="space-y-4 mt-auto pt-8 border-t border-indigo-900/30">
+              <ul className="space-y-4 mt-auto pt-8 border-t border-sky-900/30">
                 {['Enterprise Networking Setup', 'Next-Gen Firewall Deployment', 'VPN & Secure Remote Access'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> {item}
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>
@@ -141,7 +141,7 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
           {/* 2. HARDWARE & SERVERS (SALES & RENTALS) */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-indigo-900/30 flex flex-col group hover:border-indigo-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]"
+            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-sky-900/30 flex flex-col group hover:border-sky-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]"
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
@@ -154,17 +154,17 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
             </div>
             <div className="p-10 flex flex-col flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
                 <Server className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Hardware & Server Deployments</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-lg">
                 From high-performance clustered servers to equipping your entire workforce, we've got you covered. We offer massive sales of refurbished desktops and laptops, as well as highly flexible corporate rental plans for any scale.
               </p>
-              <ul className="space-y-4 mt-auto pt-8 border-t border-indigo-900/30">
+              <ul className="space-y-4 mt-auto pt-8 border-t border-sky-900/30">
                 {['Server Architecture Design & Sales', 'Refurbished Desktop & Laptop Sales', 'Corporate IT Equipment Rentals'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> {item}
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>
@@ -174,7 +174,7 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
           {/* 3. ASSET AUDIT & MAINTENANCE */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3 }}
-            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-indigo-900/30 flex flex-col group hover:border-indigo-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]"
+            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-sky-900/30 flex flex-col group hover:border-sky-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]"
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
@@ -187,17 +187,17 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
             </div>
             <div className="p-10 flex flex-col flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
                 <Settings className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Installations & Asset Audit</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-lg">
                 We handle the heavy lifting. From physical infrastructure installations (cabling, rack setups) to meticulous Asset Auditing and lifecycle management, we maintain absolute control over your technology investments.
               </p>
-              <ul className="space-y-4 mt-auto pt-8 border-t border-indigo-900/30">
+              <ul className="space-y-4 mt-auto pt-8 border-t border-sky-900/30">
                 {['Physical IT Installations & Cabling', 'Comprehensive Asset Audits', 'Proactive Maintenance Contracts'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> {item}
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>
@@ -207,7 +207,7 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
           {/* 4. IT SERVICE DELIVERY */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-indigo-900/30 flex flex-col group hover:border-indigo-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]"
+            className="bg-[#0f172a] rounded-[2.5rem] overflow-hidden border border-sky-900/30 flex flex-col group hover:border-sky-500/50 transition-all duration-500 shadow-[0_0_40px_-15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]"
           >
             <div className="relative h-72 w-full overflow-hidden">
               <Image 
@@ -220,17 +220,17 @@ export default function ITSolutionsLandingPage({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
             </div>
             <div className="p-10 flex flex-col flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 -mt-16 relative z-10 backdrop-blur-md">
                 <MonitorSmartphone className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Professional IT Service Delivery</h3>
               <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-lg">
                 Our elite engineering team delivers seamless, end-to-end IT Service Delivery. We offer top-tier Helpdesk support, remote troubleshooting, and professional IT management tailored to your enterprise's unique operational needs.
               </p>
-              <ul className="space-y-4 mt-auto pt-8 border-t border-indigo-900/30">
+              <ul className="space-y-4 mt-auto pt-8 border-t border-sky-900/30">
                 {['Remote IT Troubleshooting', 'Professional Helpdesk Services', 'End-to-End Service Delivery'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> {item}
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>

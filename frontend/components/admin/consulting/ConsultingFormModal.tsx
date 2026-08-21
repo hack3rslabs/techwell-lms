@@ -184,7 +184,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
                         <div className="mt-8 flex items-center justify-between relative px-6">
                             <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 dark:bg-slate-800 -z-0 rounded-full"></div>
                             <div 
-                                className="absolute left-6 top-1/2 -translate-y-1/2 h-0.5 bg-indigo-600 -z-0 rounded-full transition-all duration-500 ease-in-out"
+                                className="absolute left-6 top-1/2 -translate-y-1/2 h-0.5 bg-sky-600 -z-0 rounded-full transition-all duration-500 ease-in-out"
                                 style={{ width: `calc(${currentStep === 0 ? 0 : currentStep === 1 ? 50 : 100}% - ${currentStep === 0 ? 0 : 3}rem)` }}
                             ></div>
                             
@@ -197,7 +197,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
                                         <div className={cn(
                                             "w-12 h-12 rounded-2xl flex items-center justify-center font-bold transition-all duration-300 shadow-lg",
                                             isCompleted ? "bg-white text-blue-600" : 
-                                            isCurrent ? "bg-white text-indigo-600 scale-110 ring-4 ring-white/30" : 
+                                            isCurrent ? "bg-white text-sky-600 scale-110 ring-4 ring-white/30" : 
                                             "bg-white/20 text-white backdrop-blur-md border border-white/30"
                                         )}>
                                             {isCompleted ? <Check className="w-6 h-6" /> : step.icon}
@@ -223,7 +223,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-3 col-span-2">
                                             <Label htmlFor="title" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Project Title *</Label>
-                                            <Input id="title" name="title" value={formData.title} onChange={handleChange} required placeholder="e.g. Enterprise Cloud Migration" className="h-12 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-lg focus-visible:ring-indigo-500" />
+                                            <Input id="title" name="title" value={formData.title} onChange={handleChange} required placeholder="e.g. Enterprise Cloud Migration" className="h-12 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-lg focus-visible:ring-sky-500" />
                                         </div>
                                         
                                         <div className="space-y-3">
@@ -297,8 +297,8 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
                             {/* STEP 2: CLIENT & CRM */}
                             {currentStep === 1 && (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
-                                    <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-5 rounded-xl border border-indigo-100 dark:border-indigo-900/50 space-y-5">
-                                        <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-2">
+                                    <div className="bg-sky-50/50 dark:bg-sky-950/20 p-5 rounded-xl border border-sky-100 dark:border-sky-900/50 space-y-5">
+                                        <h3 className="text-sm font-bold text-sky-900 dark:text-sky-300 uppercase tracking-wider flex items-center gap-2">
                                             <Users className="w-4 h-4" /> Client Details
                                         </h3>
                                         <div className="grid grid-cols-2 gap-5">
@@ -332,7 +332,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
                                     <div className="pt-2">
                                         <div className="flex items-center justify-between mb-4">
                                             <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Key Stakeholders & Contacts</Label>
-                                            <Button type="button" variant="outline" size="sm" onClick={addContact} className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900/50">
+                                            <Button type="button" variant="outline" size="sm" onClick={addContact} className="border-sky-200 text-sky-700 hover:bg-sky-50 dark:border-sky-800 dark:text-sky-300 dark:hover:bg-sky-900/50">
                                                 <Plus className="h-4 w-4 mr-1" /> Add Contact
                                             </Button>
                                         </div>
@@ -374,14 +374,14 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
                                 <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500 h-full flex flex-col">
                                     <div className="space-y-3">
                                         <Label htmlFor="commitment" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Delivery Commitment & Scope Boundaries</Label>
-                                        <Textarea id="commitment" name="commitment" value={formData.commitment} onChange={handleChange} rows={5} placeholder="Specifically outline what deliverables were promised to the client, out of scope items, and SLAs..." className="bg-slate-50 dark:bg-slate-900 resize-none text-base p-4 border-slate-200 focus-visible:ring-indigo-500 rounded-xl" />
+                                        <Textarea id="commitment" name="commitment" value={formData.commitment} onChange={handleChange} rows={5} placeholder="Specifically outline what deliverables were promised to the client, out of scope items, and SLAs..." className="bg-slate-50 dark:bg-slate-900 resize-none text-base p-4 border-slate-200 focus-visible:ring-sky-500 rounded-xl" />
                                     </div>
                                     
                                     <div className="space-y-3 mt-4">
-                                        <Label htmlFor="notes" className="text-sm font-semibold flex items-center gap-2 text-amber-700 dark:text-amber-500">
+                                        <Label htmlFor="notes" className="text-sm font-semibold flex items-center gap-2 text-emerald-700 dark:text-emerald-500">
                                             <FileText className="w-4 h-4" /> Internal Private Notes
                                         </Label>
-                                        <Textarea id="notes" name="notes" value={formData.notes} onChange={handleChange} rows={5} placeholder="Private notes for the internal delivery team. Clients will not see this." className="bg-amber-50/50 dark:bg-amber-950/20 border-amber-200/60 dark:border-amber-900/50 resize-none text-base p-4 focus-visible:ring-amber-500 rounded-xl placeholder:text-amber-900/30 dark:placeholder:text-amber-200/30" />
+                                        <Textarea id="notes" name="notes" value={formData.notes} onChange={handleChange} rows={5} placeholder="Private notes for the internal delivery team. Clients will not see this." className="bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-900/50 resize-none text-base p-4 focus-visible:ring-emerald-500 rounded-xl placeholder:text-emerald-900/30 dark:placeholder:text-emerald-200/30" />
                                     </div>
                                 </div>
                             )}
@@ -409,7 +409,7 @@ export function ConsultingFormModal({ isOpen, onClose, project, onSave }: any) {
                             </Button>
                             
                             {currentStep < steps.length - 1 ? (
-                                <Button type="button" onClick={nextStep} className="h-12 px-8 rounded-xl font-medium bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 transition-all hover:shadow-indigo-600/40">
+                                <Button type="button" onClick={nextStep} className="h-12 px-8 rounded-xl font-medium bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-600/20 transition-all hover:shadow-sky-600/40">
                                     Continue <ArrowRight className="w-4 h-4 ml-2" />
                                 </Button>
                             ) : (

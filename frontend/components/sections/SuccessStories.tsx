@@ -6,6 +6,7 @@ import { ArrowRight, Loader2, ExternalLink, ChevronRight, ChevronLeft } from "lu
 import { Badge } from "@/components/ui/badge"
 import api from "@/lib/api"
 import Image from "next/image"
+import Link from "next/link"
 
 export function SuccessStories() {
   const [stories, setStories] = useState<any[]>([])
@@ -21,7 +22,7 @@ export function SuccessStories() {
               const activeStories = res.data
                   .filter((s: any) => s.isActive)
                   .sort((a: any, b: any) => a.order - b.order)
-              setStories(activeStories)
+              setStories(activeStories.slice(0, 6))
           } catch (err) {
               console.error("Failed to fetch success stories", err)
           } finally {
@@ -45,13 +46,13 @@ export function SuccessStories() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
             <div className="max-w-2xl">
                 <Badge className="bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-slate-200 border-none font-bold tracking-widest uppercase mb-6 rounded-sm px-3 py-1">
-                    Corporate Placements
+                    Success Stories
                 </Badge>
                 <h2 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                    Where Ambition Meets <span className="text-primary">Opportunity.</span>
+                    Recent <span className="text-primary">Placements</span>
                 </h2>
                 <p className="mt-6 text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                    Explore our track record of empowering professionals and placing them in leading tech enterprises.
+                    See where our alumni are working today.
                 </p>
             </div>
             
@@ -64,10 +65,10 @@ export function SuccessStories() {
                         <ChevronRight className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                     </button>
                 </div>
-                <a href="/placements" className="hidden md:inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white hover:text-primary transition-colors group">
+                <Link href="/placements" className="hidden md:inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white hover:text-primary transition-colors group">
                     View Placement Directory 
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </a>
+                </Link>
             </div>
         </div>
 
@@ -87,14 +88,16 @@ export function SuccessStories() {
             >
                 {stories.map((story) => {
                     const imageUrl = story.imagePath?.startsWith('http') ? story.imagePath : `${backendBase}${story.imagePath}`
-                    const CardWrapper = story.url ? 'a' : 'div'
-                    const wrapperProps = story.url ? { href: story.url, target: "_blank", rel: "noopener noreferrer" } : {}
+                    const hasValidUrl = story.url && story.url.trim().length > 0;
+                    const safeUrl = hasValidUrl ? (story.url.startsWith('http') ? story.url : `https://${story.url}`) : '#';
+                    const CardWrapper = hasValidUrl ? 'a' : 'div'
+                    const wrapperProps = hasValidUrl ? { href: safeUrl, target: "_blank", rel: "noopener noreferrer" } : {}
                     
                     return (
                     <CardWrapper 
                         key={story.id} 
                         {...wrapperProps as any}
-                        className={`shrink-0 w-[280px] sm:w-[320px] lg:w-[380px] snap-start group relative bg-white dark:bg-black border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden transition-all duration-300 shadow-sm hover:shadow-2xl flex flex-col ${story.url ? 'cursor-pointer hover:border-primary/50' : ''}`}
+                        className={`shrink-0 w-[220px] sm:w-[260px] lg:w-[300px] snap-start group relative bg-white dark:bg-black border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden transition-all duration-300 shadow-sm hover:shadow-2xl flex flex-col ${hasValidUrl ? 'cursor-pointer hover:border-primary/50' : ''}`}
                     >
                         <div className="relative w-full aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-900">
                             {/* Overlay for a more premium muted look until hover */}
@@ -108,7 +111,7 @@ export function SuccessStories() {
                                 className="object-cover scale-100 group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-multiply dark:mix-blend-normal"
                             />
 
-                            {story.url && (
+                            {hasValidUrl && (
                                 <div className="absolute top-4 right-4 z-20 bg-white dark:bg-black p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
                                     <ExternalLink className="w-4 h-4 text-slate-900 dark:text-white" />
                                 </div>
@@ -120,7 +123,7 @@ export function SuccessStories() {
                                 <h3 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider truncate">
                                     {story.altText}
                                 </h3>
-                                {story.url && (
+                                {hasValidUrl && (
                                     <p className="text-xs text-primary mt-1.5 font-medium flex items-center gap-1">
                                         View Details <ArrowRight className="w-3 h-3" />
                                     </p>
@@ -141,10 +144,10 @@ export function SuccessStories() {
                     <ChevronRight className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                 </button>
             </div>
-            <a href="/placements" className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white hover:text-primary transition-colors group">
+            <Link href="/placements" className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white hover:text-primary transition-colors group">
                 Directory 
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </a>
+            </Link>
         </div>
 
       </div>

@@ -111,19 +111,19 @@ export default function InstituteCampusDrives() {
                 <div className="flex bg-slate-100 p-1 rounded-lg">
                     <button 
                         onClick={() => setActiveTab('INVITATIONS')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'INVITATIONS' ? 'bg-white shadow text-indigo-600' : 'text-slate-600 hover:text-slate-900'}`}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'INVITATIONS' ? 'bg-white shadow text-sky-600' : 'text-slate-600 hover:text-slate-900'}`}
                     >
                         Employer Invitations
                     </button>
                     <button 
                         onClick={() => setActiveTab('HOSTED')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'HOSTED' ? 'bg-white shadow text-indigo-600' : 'text-slate-600 hover:text-slate-900'}`}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'HOSTED' ? 'bg-white shadow text-sky-600' : 'text-slate-600 hover:text-slate-900'}`}
                     >
                         Hosted Events
                     </button>
                     <button 
                         onClick={() => setActiveTab('NEW')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium flex items-center transition-colors ${activeTab === 'NEW' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+                        className={`px-4 py-2 rounded-md text-sm font-medium flex items-center transition-colors ${activeTab === 'NEW' ? 'bg-sky-600 text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
                     >
                         <Plus className="w-4 h-4 mr-1" /> Host New Event
                     </button>
@@ -169,7 +169,7 @@ export default function InstituteCampusDrives() {
                             <textarea required rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="mt-1 block w-full p-2 border border-slate-300 rounded-lg shadow-sm"></textarea>
                         </div>
                         <div className="pt-4 flex justify-end">
-                            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-colors">
+                            <button type="submit" className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-colors">
                                 Create Hosted Event
                             </button>
                         </div>
@@ -194,23 +194,23 @@ export default function InstituteCampusDrives() {
                             </div>
                         ) : (
                             (activeTab === 'INVITATIONS' ? invitations : hostedDrives).map(drive => (
-                                <div key={drive.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col hover:border-indigo-300 transition-colors">
+                                <div key={drive.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col hover:border-sky-300 transition-colors">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                                            <div className="w-12 h-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
                                                 <Building2 className="w-6 h-6" />
                                             </div>
                                             <div>
                                                 <h2 className="text-lg font-bold text-slate-800 line-clamp-1">{drive.title}</h2>
-                                                <div className="text-sm font-medium text-indigo-600">
+                                                <div className="text-sm font-medium text-sky-600">
                                                     {drive.hostType === 'INSTITUTE' ? 'Hosted by your Institute' : (drive.employer?.companyName || drive.employer?.name || 'Multiple Companies')}
                                                 </div>
                                             </div>
                                         </div>
                                         <span className={`text-[10px] uppercase font-bold px-3 py-1 rounded-full whitespace-nowrap ${
                                             drive.instituteLinkStatus === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
-                                            drive.instituteLinkStatus === 'REJECTED' ? 'bg-rose-100 text-rose-700 border border-rose-200' :
-                                            'bg-amber-100 text-amber-700 border border-amber-200'
+                                            drive.instituteLinkStatus === 'REJECTED' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                                            'bg-emerald-100 text-emerald-700 border border-emerald-200'
                                         }`}>
                                             {drive.instituteLinkStatus || 'PENDING'}
                                         </span>
@@ -234,13 +234,13 @@ export default function InstituteCampusDrives() {
                                     <div className="mt-auto pt-4 border-t border-slate-100 flex gap-3">
                                         {drive.hostType === 'INSTITUTE' ? (
                                             <div className="w-full flex gap-3">
-                                                <button onClick={() => window.location.href = `/institute/campus-drives/${drive.id}/builder`} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-medium text-sm transition-colors shadow-sm">
+                                                <button onClick={() => window.location.href = `/institute/campus-drives/${drive.id}/builder`} className="flex-1 bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg font-medium text-sm transition-colors shadow-sm">
                                                     Manage Job Mela
                                                 </button>
                                             </div>
                                         ) : drive.instituteLinkStatus === 'ACCEPTED' ? (
                                             <div className="w-full flex gap-3">
-                                                <button onClick={() => alert('Add students feature')} className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 rounded-lg font-medium text-sm transition-colors border border-indigo-200">
+                                                <button onClick={() => alert('Add students feature')} className="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 py-2 rounded-lg font-medium text-sm transition-colors border border-sky-200">
                                                     Manage Students
                                                 </button>
                                             </div>

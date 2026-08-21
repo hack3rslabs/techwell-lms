@@ -9,21 +9,53 @@ import { TeamSection } from '@/components/about/TeamSection'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: 'About Techwell | Transforming Tech Education',
-    description: 'Techwell is on a mission to make world-class tech education accessible to everyone. Discover our story, values, and how we empower careers with AI.',
-    keywords: ['About Techwell', 'Techwell Story', 'Tech Education', 'AI Learning Platform'],
+    title: 'About Techwell | IT Training, Career & Placement Services',
+    description: 'Techwell is an IT training, career development, and placement services company based in Srikakulam and Visakhapatnam, Andhra Pradesh. We have supported 10,000+ students in building IT careers.',
+    keywords: [
+        'About Techwell', 'Techwell IT Solutions', 'IT Training Srikakulam',
+        'IT Training Visakhapatnam', 'Career Guidance Andhra Pradesh',
+        'Placement Assistance', 'Job Assistance', 'Campus Hiring'
+    ],
+    alternates: { canonical: 'https://techwell.co.in/about' },
     openGraph: {
-        title: 'About Techwell | Transforming Tech Education',
-        description: 'Discover how Techwell is bridging the gap between campus and corporate with AI-driven learning and placement assistance.',
-        type: 'website'
+        title: 'About Techwell | IT Training, Career & Placement Services',
+        description: 'Techwell provides IT training, career guidance, job assistance, and campus hiring services across Andhra Pradesh. Trusted by 10,000+ students and growing.',
+        type: 'website',
+        url: 'https://techwell.co.in/about',
+        images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'About Techwell' }]
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'About Techwell | IT Training & Career Services',
+        description: 'Professional IT training, career development, and placement assistance in Andhra Pradesh.'
+    }
+}
+
+// AboutPage + Entity JSON-LD — injected in component below
+const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": "https://techwell.co.in/about",
+    "name": "About Techwell",
+    "url": "https://techwell.co.in/about",
+    "description": "Techwell is a professional IT training, career development, job assistance, and placement services company based in Srikakulam and Visakhapatnam, Andhra Pradesh, India.",
+    "mainEntity": {
+        "@type": "Organization",
+        "@id": "https://techwell.co.in/#organization",
+        "name": "Techwell",
+        "alternateName": "Techwell IT Solutions",
+        "url": "https://techwell.co.in",
+        "foundingDate": "2018",
+        "description": "IT Training · Career Development · Job Assistance · Placement Assistance · Campus Hiring · Recruitment Consultancy · IT Consulting · Software Development",
+        "areaServed": ["Srikakulam", "Visakhapatnam", "Andhra Pradesh", "India"]
     }
 }
 
 const stats = [
-    { value: '10,000+', label: 'Students Trained' },
-    { value: '95%', label: 'Placement Rate' },
+    { value: '10,000+', label: 'Students & Professionals Supported' },
     { value: '500+', label: 'Partner Companies' },
-    { value: '50+', label: 'Expert Instructors' },
+    { value: '11+', label: 'IT Training Domains' },
+    { value: '50+', label: 'Industry Practitioners' },
 ]
 
 const values = [
@@ -38,8 +70,9 @@ const values = [
 export default function AboutPage() {
     return (
         <div>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSchema) }} />
             {/* Hero */}
-            <section className="bg-gradient-to-br from-primary/10 via-background to-purple-500/10 py-20">
+            <section className="bg-gradient-to-br from-primary/10 via-background to-sky-500/10 py-20">
                 <div className="container text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border shadow-sm mb-6 animate-fade-in-up">
                         <Calendar className="h-4 w-4 text-primary" />
@@ -115,7 +148,7 @@ export default function AboutPage() {
                                 </p>
                             </div>
                         </div>
-                        <div className="bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-2xl h-80 flex items-center justify-center">
+                        <div className="bg-gradient-to-br from-primary/20 to-sky-500/20 rounded-2xl h-80 flex items-center justify-center">
                             <GraduationCap className="h-32 w-32 text-primary/30" />
                         </div>
                     </div>

@@ -98,7 +98,7 @@ export default function FranchiseProjectsPage() {
                                             <TableCell>
                                                 <Badge variant="outline" className={
                                                     project.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 
-                                                    project.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'
+                                                    project.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' : 'bg-sky-100 text-sky-700'
                                                 }>
                                                     {project.status || 'PENDING'}
                                                 </Badge>

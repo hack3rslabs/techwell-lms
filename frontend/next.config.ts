@@ -1,7 +1,9 @@
+import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingRoot: path.join(__dirname, "../"),
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -61,8 +63,9 @@ const nextConfig: NextConfig = {
         hostname: "backend.techwell.co.in",
         pathname: "**",
       },
+      // HTTP backend only for local development
       {
-        protocol: "http",
+        protocol: "http" as const,
         hostname: "backend.techwell.co.in",
         pathname: "**",
       },
@@ -96,7 +99,6 @@ const nextConfig: NextConfig = {
       { source: '/college-agreement', destination: '/help/college-agreement', permanent: true },
       { source: '/consultancy-agreement', destination: '/help/consultancy-agreement', permanent: true },
       { source: '/campus-hiring-agreement', destination: '/help/campus-hiring-agreement', permanent: true },
-      { source: '/campus-to-career', destination: '/help/campus-to-career', permanent: true },
       { source: '/career-guide', destination: '/help/career-guide', permanent: true },
     ];
   },

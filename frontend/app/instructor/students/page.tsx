@@ -128,7 +128,7 @@ export default function InstructorStudentsPage() {
 
     const getProgressColor = (progress: number) => {
         if (progress >= 80) return 'text-green-600 bg-green-100'
-        if (progress >= 50) return 'text-amber-600 bg-amber-100'
+        if (progress >= 50) return 'text-emerald-600 bg-emerald-100'
         return 'text-red-600 bg-red-100'
     }
 
@@ -199,8 +199,8 @@ export default function InstructorStudentsPage() {
                 <Card className="border-none shadow-sm cursor-pointer hover:shadow-md transition-all"
                     onClick={() => setProgressFilter('on-track')}>
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-amber-100">
-                            <Target className="h-5 w-5 text-amber-600" />
+                        <div className="p-3 rounded-xl bg-emerald-100">
+                            <Target className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
                             <p className="text-2xl font-bold">

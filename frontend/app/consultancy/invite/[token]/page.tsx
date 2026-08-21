@@ -228,7 +228,7 @@ export default function ConsultancyInvitePage() {
     if (errorMsg) {
         return (
             <div className="flex flex-col items-center justify-center h-screen bg-slate-50 p-4 text-center">
-                <ShieldAlert className="w-16 h-16 text-rose-500 mb-4" />
+                <ShieldAlert className="w-16 h-16 text-emerald-500 mb-4" />
                 <h1 className="text-3xl font-bold text-slate-800 mb-2">Access Denied</h1>
                 <p className="text-lg text-slate-600 max-w-md">{errorMsg}</p>
                 <div className="mt-8 text-sm text-slate-400">&copy; 2015 to {new Date().getFullYear()} Techwell. All rights reserved.</div>
@@ -247,7 +247,7 @@ export default function ConsultancyInvitePage() {
                         <p className="text-muted-foreground mt-4 text-lg">Your Candidate Consent & Placement Consultancy Agreement has been securely recorded.</p>
                     </CardHeader>
                     <CardContent className="text-center pb-10">
-                        <div className="bg-amber-50 text-amber-800 p-4 rounded-lg text-sm border border-amber-200">
+                        <div className="bg-emerald-50 text-emerald-800 p-4 rounded-lg text-sm border border-emerald-200">
                             <p className="font-medium">This invitation link has now expired.</p>
                             <p className="mt-1">You may safely close this window.</p>
                         </div>
@@ -306,9 +306,9 @@ export default function ConsultancyInvitePage() {
                                             <li>Your educational and professional details</li>
                                         </ul>
                                     </div>
-                                    <div className="p-6 border rounded-xl bg-indigo-50/50">
-                                        <h3 className="font-bold text-indigo-900 mb-2">Fee Structure:</h3>
-                                        <div className="space-y-2 text-sm text-indigo-800">
+                                    <div className="p-6 border rounded-xl bg-sky-50/50">
+                                        <h3 className="font-bold text-sky-900 mb-2">Fee Structure:</h3>
+                                        <div className="space-y-2 text-sm text-sky-800">
                                             <p><strong>Total Fee:</strong> {invitation?.totalFee ? `₹${invitation.totalFee.toLocaleString()}` : 'Not Applicable'}</p>
                                             <p><strong>Advance Fee:</strong> {invitation?.advanceFee ? `₹${invitation.advanceFee.toLocaleString()}` : 'None'}</p>
                                             <p className="text-xs opacity-80 mt-2">*Fees are subject to the terms and conditions outlined in step 4.</p>
@@ -470,7 +470,7 @@ export default function ConsultancyInvitePage() {
                             </CardHeader>
                             <CardContent className="p-8 space-y-8">
                                 
-                                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md text-sm font-medium flex items-center gap-2">
+                                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-md text-sm font-medium flex items-center gap-2">
                                     <ShieldCheck className="w-5 h-5" />
                                     You must read and scroll to the end of the agreement to unlock the consent checkboxes.
                                 </div>

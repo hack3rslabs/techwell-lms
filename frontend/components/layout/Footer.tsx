@@ -11,35 +11,32 @@ import { toast } from "react-hot-toast"
 import api from "@/lib/api"
 
 const platformLinks = [
-    { label: 'Browse Courses', href: '/courses' },
-    { label: "AI Interview Prep", href: "/interviews" },
-    { label: "Resume Builder", href: "/resume-builder" },
-    { label: "Jobs & Placements", href: "/jobs" },
-    { label: "Career Guide", href: "/career-guide" },
-    { label: "Final Year Projects", href: "/projects" },
-    { label: "Student Verification", href: "/verify" },
-    { label: 'Employer Hiring', href: '/employer' },
+    { label: "Courses / Training", href: "/courses" },
+    { label: "Jobs", href: "/jobs" },
+    { label: "Career Guide", href: "/careers" },
+    { label: "Job Assistance", href: "/services" },
+    { label: "Placement Assistance", href: "/services" },
+    { label: "Campus Hiring", href: "/employer" },
 ]
 
 const companyLinks = [
-    { label: "About Us", href: "/about" },
-    { label: "Events & Webinars", href: "/events" },
-    { label: "Services", href: "/services" },
-    { label: "Products", href: "/products" },
-    { label: "Our Partners", href: "/our-partners" },
-    { label: "Partner Colleges", href: "/colleges" },
+    { label: "About Techwell", href: "/about" },
     { label: "Client Stories", href: "/clients" },
     { label: "Blog", href: "/blog" },
+    { label: "Partner Colleges", href: "/our-partners" },
+    { label: "Events & Webinars", href: "/events" },
     { label: "Become a Franchise", href: "/franchise-request" },
+    { label: "Contact Us", href: "/contact" },
 ]
 
 const policyLinks = [
-    { label: "Contact Us", href: "/contact" },
-    { label: "Support Center", href: "/support" },
-    { label: "Privacy Policy", href: "/help/privacy" },
+    { label: "Student Verification", href: "/verify" },
+    { label: "Student Projects", href: "/projects" },
+    { label: "FAQs", href: "/help/faq" },
     { label: "Terms & Conditions", href: "/help/terms" },
-    { label: "Cookies", href: "/help/cookies" },
-    { label: "GDPR", href: "/help/gdpr" },
+    { label: "Privacy Policy", href: "/help/privacy" },
+    { label: "Refund Policy", href: "/help/refund-policy" },
+    { label: "Fraud & Safety Notice", href: "/help/terms#cyber-fraud-alert" },
 ]
 
 export function Footer() {
@@ -101,38 +98,13 @@ export function Footer() {
     return (
         <footer className="mt-auto relative overflow-hidden bg-slate-950 text-slate-300 border-t border-white/10 pt-10 pb-8">
             {/* Ambient Glows */}
-            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
 
             <div className="container relative z-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                 
-                {/* Newsletter Subscription Banner */}
-                <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 md:p-8 mb-10">
-                    <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                        <div className="flex-1 text-center lg:text-left">
-                            <h3 className="text-xl md:text-2xl font-bold tracking-tight text-white mb-2">Subscribe to our Newsletter</h3>
-                            <p className="text-slate-400 text-sm max-w-md mx-auto lg:mx-0">Stay ahead with the latest industry insights, career tips, and exclusive offers.</p>
-                        </div>
-                        <div className="w-full max-w-md shrink-0">
-                            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 w-full">
-                                <Input 
-                                    type="email" 
-                                    placeholder="Email address" 
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="bg-black/50 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary text-white placeholder:text-slate-500 h-11 rounded-lg transition-all"
-                                    required
-                                />
-                                <Button type="submit" disabled={isSubmitting} className="h-11 bg-primary hover:bg-primary/90 text-white rounded-lg px-6 font-medium">
-                                    {isSubmitting ? "Wait..." : "Subscribe"}
-                                </Button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid gap-8 lg:grid-cols-5 md:grid-cols-3 sm:grid-cols-2 mb-10">
+                <div className="grid gap-8 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 mb-10">
                     {/* Column 1: Brand & Socials */}
                     <div className="space-y-5 lg:col-span-1">
                         <Link href="/" className="inline-block hover:opacity-90 transition-opacity">
@@ -146,7 +118,7 @@ export function Footer() {
                         </Link>
 
                         <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
-                            Techwell empowers global businesses with elite IT Services, bridging the talent gap through Corporate Training.
+                            Techwell empowers global businesses with elite IT Solutions and Custom Software Products, while bridging the talent gap through comprehensive Career Mentorship and Corporate Training.
                         </p>
 
                         <div className="flex gap-3 pt-2">
@@ -167,21 +139,21 @@ export function Footer() {
                         <h4 className="mb-1 text-sm font-bold tracking-widest text-white uppercase opacity-90">Reach Us</h4>
                         
                         <div className="grid gap-4 text-sm text-slate-300">
-                            <a href="mailto:info@techwell.co.in" className="flex items-center gap-3 hover:text-white group transition-colors">
-                                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-indigo-500/20 group-hover:border-indigo-500/50 transition-all">
-                                    <Mail className="h-3.5 w-3.5 text-indigo-400 group-hover:text-indigo-300" />
+                            <a href="mailto:support@techwell.co.in" className="flex items-center gap-3 hover:text-white group transition-colors">
+                                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-sky-500/20 group-hover:border-sky-500/50 transition-all">
+                                    <Mail className="h-3.5 w-3.5 text-sky-400 group-hover:text-sky-300" />
                                 </div>
-                                <span className="font-medium">info@techwell.co.in</span>
+                                <span className="font-medium">support@techwell.co.in</span>
                             </a>
                             <a href="tel:+917997473473" className="flex items-center gap-3 hover:text-white group transition-colors">
-                                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-teal-500/20 group-hover:border-teal-500/50 transition-all">
-                                    <Phone className="h-3.5 w-3.5 text-teal-400 group-hover:text-teal-300" />
+                                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-emerald-500/20 group-hover:border-emerald-500/50 transition-all">
+                                    <Phone className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300" />
                                 </div>
                                 <span className="font-medium">+91 7997473473</span>
                             </a>
                             <div className="flex items-start gap-3 group">
-                                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-rose-500/20 group-hover:border-rose-500/50 transition-all shrink-0">
-                                    <MapPin className="h-3.5 w-3.5 text-rose-400 group-hover:text-rose-300" />
+                                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-emerald-500/20 group-hover:border-emerald-500/50 transition-all shrink-0">
+                                    <MapPin className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300" />
                                 </div>
                                 <div className="leading-snug pt-1 font-medium space-y-1">
                                     <p>Our Workspaces:</p>
@@ -206,7 +178,7 @@ export function Footer() {
                                     </div>
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors">Google</span>
                                 </div>
-                                <div className="flex text-amber-500 drop-shadow-sm">
+                                <div className="flex text-emerald-500 drop-shadow-sm">
                                     <Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" />
                                 </div>
                             </a>
@@ -214,7 +186,7 @@ export function Footer() {
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors ml-1">Justdial</span>
                                 </div>
-                                <div className="flex text-amber-500 drop-shadow-sm">
+                                <div className="flex text-emerald-500 drop-shadow-sm">
                                     <Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" />
                                 </div>
                             </a>
@@ -225,10 +197,29 @@ export function Footer() {
                     <FooterLinkGroup title="Platform" links={platformLinks} />
                     <FooterLinkGroup title="Company" links={finalCompanyLinks} />
                     <FooterLinkGroup title="Support" links={policyLinks} />
+
+                    {/* Column 6: Newsletter */}
+                    <div className="flex flex-col h-full xl:col-span-1 lg:col-span-2">
+                        <h4 className="mb-5 text-sm font-bold tracking-widest text-white uppercase opacity-90">Newsletter</h4>
+                        <p className="text-slate-400 text-sm mb-4">Stay ahead with the latest industry insights and exclusive offers.</p>
+                        <form onSubmit={handleSubscribe} className="flex flex-col gap-3">
+                            <Input 
+                                type="email" 
+                                placeholder="Email address" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="bg-white/5 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary text-white placeholder:text-slate-500 h-10 rounded-lg transition-all"
+                                required
+                            />
+                            <Button type="submit" disabled={isSubmitting} className="h-10 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium w-full">
+                                {isSubmitting ? "Wait..." : "Subscribe"}
+                            </Button>
+                        </form>
+                    </div>
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
+                <div className="flex flex-col gap-4 border-t border-white/10 mt-8 pt-6 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
                     <p>© {new Date().getFullYear()} Techwell. All rights reserved. Crafted with precision.</p>
                     <a href="https://elearnstack.com" target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-1.5 hover:text-white transition-colors py-1 px-3 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20">
                         <span>Explore Elearnstack Platform</span>
@@ -254,7 +245,7 @@ function FooterLinkGroup({
                 {links.map((link) => (
                     <li key={link.label}>
                         <Link href={link.href} className="group inline-flex items-center text-slate-400 transition-all hover:text-white">
-                            <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-4 mr-1 group-hover:opacity-100 group-hover:ml-0 transition-all text-indigo-400" />
+                            <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-4 mr-1 group-hover:opacity-100 group-hover:ml-0 transition-all text-sky-400" />
                             <span>{link.label}</span>
                         </Link>
                     </li>

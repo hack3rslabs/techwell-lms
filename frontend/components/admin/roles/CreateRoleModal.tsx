@@ -184,7 +184,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                                     placeholder="e.g. Content Editor"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="h-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="h-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -196,7 +196,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                                     placeholder="Short description of this role"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="h-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="h-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -230,7 +230,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
 
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center py-16 gap-3">
-                                <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                                <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
                                 <p className="text-sm text-slate-500">Loading permissions...</p>
                             </div>
                         ) : (
@@ -316,7 +316,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                                                                         isEnabled
                                                                             ? 'bg-blue-50/40 dark:bg-blue-900/10'
                                                                             : idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/30'
-                                                                    } hover:bg-indigo-50 dark:hover:bg-indigo-900/10`}
+                                                                    } hover:bg-sky-50 dark:hover:bg-sky-900/10`}
                                                                 >
                                                                     <td className="px-4 py-2.5">
                                                                         <div className="flex items-center gap-2">
@@ -388,7 +388,7 @@ export function CreateRoleModal({ isOpen, onClose, onSuccess, roleToEdit }: Crea
                     <Button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 gap-2 px-6"
+                        className="bg-sky-600 hover:bg-sky-700 text-white rounded-xl shadow-lg shadow-sky-500/20 gap-2 px-6"
                     >
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
                         {roleToEdit ? "Update Role" : "Create Role"}

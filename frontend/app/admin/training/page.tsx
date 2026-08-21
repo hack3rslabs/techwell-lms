@@ -90,7 +90,7 @@ export default function TrainingManagerPage() {
                 <Card className="cursor-pointer hover:shadow-lg transition-all" onClick={() => router.push('/admin/students')}>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Enrolled</CardTitle>
-                        <GraduationCap className="h-4 w-4 text-orange-500" />
+                        <GraduationCap className="h-4 w-4 text-sky-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{stats.totalStudents}</div>
@@ -100,7 +100,7 @@ export default function TrainingManagerPage() {
                 <Card className="cursor-pointer hover:shadow-lg transition-all" onClick={() => router.push('/admin/live-classes')}>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Scheduled Live Classes</CardTitle>
-                        <VideoIcon className="h-4 w-4 text-purple-500" />
+                        <VideoIcon className="h-4 w-4 text-sky-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{stats.liveClasses}</div>

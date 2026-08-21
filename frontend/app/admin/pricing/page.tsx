@@ -73,8 +73,8 @@ export default function PricingPage() {
             {/* Plans Grid (Visual Only) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {['Free Tier', 'Pro Monthly', 'Pro Yearly'].map((plan, i) => (
-                    <Card key={plan} className={`relative ${i === 1 ? 'border-purple-500 shadow-lg' : ''}`}>
-                        {i === 1 && <Badge className="absolute -top-2 right-4 bg-purple-600">Popular</Badge>}
+                    <Card key={plan} className={`relative ${i === 1 ? 'border-sky-500 shadow-lg' : ''}`}>
+                        {i === 1 && <Badge className="absolute -top-2 right-4 bg-sky-600">Popular</Badge>}
                         <CardHeader>
                             <CardTitle>{plan}</CardTitle>
                             <CardDescription>Perfect for {i === 0 ? 'starters' : 'learners'}</CardDescription>
@@ -170,11 +170,11 @@ export default function PricingPage() {
                             onValueChange={(val) => setConfig({ ...config, activeGateway: val })}
                             className="grid grid-cols-1 md:grid-cols-3 gap-4"
                         >
-                            <div className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer ${config.activeGateway === 'RAZORPAY' ? 'border-purple-500 bg-purple-50' : ''}`}>
+                            <div className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer ${config.activeGateway === 'RAZORPAY' ? 'border-sky-500 bg-sky-50' : ''}`}>
                                 <RadioGroupItem value="RAZORPAY" id="r_razorpay" />
                                 <Label htmlFor="r_razorpay" className="flex-1 cursor-pointer">Razorpay</Label>
                             </div>
-                            <div className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer ${config.activeGateway === 'STRIPE' ? 'border-purple-500 bg-purple-50' : ''}`}>
+                            <div className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer ${config.activeGateway === 'STRIPE' ? 'border-sky-500 bg-sky-50' : ''}`}>
                                 <RadioGroupItem value="STRIPE" id="r_stripe" />
                                 <Label htmlFor="r_stripe" className="flex-1 cursor-pointer">Stripe</Label>
                             </div>

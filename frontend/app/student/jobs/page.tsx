@@ -25,10 +25,10 @@ const TYPE_LABELS: Record<string, string> = {
 
 const TYPE_COLORS: Record<string, string> = {
     FULL_TIME: 'bg-blue-100 text-blue-700',
-    PART_TIME: 'bg-purple-100 text-purple-700',
-    INTERNSHIP: 'bg-amber-100 text-amber-700',
+    PART_TIME: 'bg-sky-100 text-sky-700',
+    INTERNSHIP: 'bg-emerald-100 text-emerald-700',
     CONTRACT: 'bg-emerald-100 text-emerald-700',
-    FREELANCE: 'bg-rose-100 text-rose-700',
+    FREELANCE: 'bg-emerald-100 text-emerald-700',
 };
 
 interface Job {
@@ -172,7 +172,7 @@ export default function StudentJobsPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
             {/* Hero Header */}
-            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white px-6 py-12 relative overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-sky-700 text-white px-6 py-12 relative overflow-hidden">
                 {/* Employer Access Button */}
                 <div className="absolute top-4 right-6">
                     <Link href="/employer-register">
@@ -295,7 +295,7 @@ export default function StudentJobsPage() {
                                     <div className="p-5 flex-1">
                                         {/* Company Header */}
                                         <div className="flex items-start justify-between gap-3 mb-3">
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shrink-0">
+                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100 flex items-center justify-center shrink-0">
                                                 {job.employer?.employerProfile?.logo ? (
 
                                                     <img src={job.employer.employerProfile.logo} alt="" className="w-10 h-10 rounded-lg object-contain" />
@@ -337,7 +337,7 @@ export default function StudentJobsPage() {
                                                 {TYPE_LABELS[job.type] || job.type}
                                             </Badge>
                                             {job.linkedCourseId && (
-                                                <Badge className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full border-0 flex items-center gap-1">
+                                                <Badge className="bg-sky-100 text-sky-700 text-xs font-bold px-2 py-0.5 rounded-full border-0 flex items-center gap-1">
                                                     <BrainCircuit className="w-3 h-3" /> AI Score Required
                                                 </Badge>
                                             )}
@@ -389,7 +389,7 @@ export default function StudentJobsPage() {
                         <>
                             <DialogHeader>
                                 <div className="flex items-start gap-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shrink-0">
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-sky-100 flex items-center justify-center shrink-0">
                                         {selectedJob.employer?.employerProfile?.logo ? (
 
                                             <img src={selectedJob.employer.employerProfile.logo} alt="" className="w-12 h-12 rounded-xl object-contain" />
@@ -433,7 +433,7 @@ export default function StudentJobsPage() {
                                         Analyzing your resume against this job...
                                     </div>
                                 ) : atsMatch && atsMatch.matchScore !== null && atsMatch.matchScore !== undefined ? (
-                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4">
+                                    <div className="bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-100 rounded-xl p-4">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="font-bold text-blue-900 flex items-center gap-2">
                                                 <BrainCircuit className="w-5 h-5" />
@@ -456,10 +456,10 @@ export default function StudentJobsPage() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <span className="font-semibold text-rose-700 block mb-1">Missing Skills</span>
+                                                <span className="font-semibold text-emerald-700 block mb-1">Missing Skills</span>
                                                 <div className="flex flex-wrap gap-1">
                                                     {atsMatch.missingKeywords?.map((k: string) => (
-                                                        <span key={k} className="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">{k}</span>
+                                                        <span key={k} className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">{k}</span>
                                                     ))}
                                                     {(!atsMatch.missingKeywords || atsMatch.missingKeywords.length === 0) && <span className="text-xs text-slate-400">None missing</span>}
                                                 </div>
@@ -467,7 +467,7 @@ export default function StudentJobsPage() {
                                         </div>
                                     </div>
                                 ) : atsMatch && atsMatch.message ? (
-                                    <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
+                                    <div className="text-sm text-emerald-700 bg-emerald-50 p-3 rounded-lg border border-emerald-200">
                                         {atsMatch.message}
                                     </div>
                                 ) : null}
@@ -529,8 +529,8 @@ export default function StudentJobsPage() {
                     </DialogHeader>
 
                     {applyingJob?.linkedCourseId && (
-                        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-sm text-indigo-800 flex items-start gap-2 mt-2">
-                            <BrainCircuit className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                        <div className="bg-sky-50 border border-sky-100 rounded-lg p-3 text-sm text-sky-800 flex items-start gap-2 mt-2">
+                            <BrainCircuit className="w-5 h-5 text-sky-500 shrink-0 mt-0.5" />
                             <div>
                                 <span className="font-bold block">AI Readiness Score will be attached</span>
                                 When you apply, the system will automatically fetch your highest AI Mock Interview score and attach it to this application for the employer to review.

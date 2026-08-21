@@ -70,7 +70,7 @@ export default function InstituteApprovals() {
             <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
                 <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4">
                     <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-                        <Briefcase className="h-4 w-4 text-indigo-600" /> All Drives
+                        <Briefcase className="h-4 w-4 text-sky-600" /> All Drives
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -93,7 +93,7 @@ export default function InstituteApprovals() {
                                     </TableRow>
                                 ) : (
                                     drives.map(drive => (
-                                        <TableRow key={drive.id} className="hover:bg-indigo-50/30 group">
+                                        <TableRow key={drive.id} className="hover:bg-sky-50/30 group">
                                             <TableCell className="pl-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span className="font-bold text-gray-900 text-sm">{drive.employer?.name || drive.employer?.companyName || drive.employer?.email}</span>
@@ -113,7 +113,7 @@ export default function InstituteApprovals() {
                                                 <Badge variant="secondary" className={`font-medium ${
                                                     drive.instituteLinkStatus === 'ACCEPTED' ? 'bg-green-100 text-green-700' :
                                                     drive.instituteLinkStatus === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                                                    'bg-amber-100 text-amber-700'
+                                                    'bg-emerald-100 text-emerald-700'
                                                 }`}>
                                                     {drive.instituteLinkStatus || 'INVITED'}
                                                 </Badge>
@@ -129,7 +129,7 @@ export default function InstituteApprovals() {
                                                         </Button>
                                                     </div>
                                                 ) : drive.instituteLinkStatus === 'ACCEPTED' ? (
-                                                    <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                                    <Button size="sm" className="bg-sky-600 hover:bg-sky-700 text-white">
                                                         Invite Students
                                                     </Button>
                                                 ) : (

@@ -166,10 +166,10 @@ export default function StudentAssessmentPage() {
     // PRE-START SCREEN
     if (!started) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white flex items-center justify-center p-4">
-                <Card className="max-w-2xl w-full shadow-xl border-indigo-100">
+            <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white flex items-center justify-center p-4">
+                <Card className="max-w-2xl w-full shadow-xl border-sky-100">
                     <CardContent className="p-8">
-                        <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+                        <div className="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mb-6">
                             <ShieldAlert className="w-8 h-8" />
                         </div>
                         <h1 className="text-3xl font-black text-slate-900">{assessment.title}</h1>
@@ -186,7 +186,7 @@ export default function StudentAssessmentPage() {
                         </div>
 
                         <div className="mt-8 flex justify-end">
-                            <Button onClick={handleStart} size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 font-bold px-8">
+                            <Button onClick={handleStart} size="lg" className="bg-sky-600 hover:bg-sky-700 text-white gap-2 font-bold px-8">
                                 <Play className="w-5 h-5" /> Start Test Now
                             </Button>
                         </div>
@@ -241,10 +241,10 @@ export default function StudentAssessmentPage() {
                     <CardContent className="p-8 flex-1 flex flex-col">
                         <div className="flex justify-between items-start mb-6">
                             <h3 className="text-xl font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                <span className="text-indigo-500 mr-2">{currentQIndex + 1}.</span> 
+                                <span className="text-sky-500 mr-2">{currentQIndex + 1}.</span> 
                                 {currentQ?.text}
                             </h3>
-                            <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded whitespace-nowrap">
+                            <span className="bg-sky-50 text-sky-700 text-xs font-bold px-2 py-1 rounded whitespace-nowrap">
                                 {currentQ?.marks} Marks
                             </span>
                         </div>
@@ -257,7 +257,7 @@ export default function StudentAssessmentPage() {
                                 className="space-y-3 mt-4"
                             >
                                 {parsedOptions.map((opt, i) => (
-                                    <div key={i} className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${responses[currentQ.id] === opt ? 'bg-indigo-50 border-indigo-300' : 'bg-white hover:bg-slate-50'}`} onClick={() => setResponses(prev => ({...prev, [currentQ.id]: opt}))}>
+                                    <div key={i} className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${responses[currentQ.id] === opt ? 'bg-sky-50 border-sky-300' : 'bg-white hover:bg-slate-50'}`} onClick={() => setResponses(prev => ({...prev, [currentQ.id]: opt}))}>
                                         <RadioGroupItem value={opt} id={`opt-${i}`} />
                                         <Label htmlFor={`opt-${i}`} className="flex-1 cursor-pointer font-medium">{opt}</Label>
                                     </div>
@@ -293,7 +293,7 @@ export default function StudentAssessmentPage() {
                     
                     {currentQIndex < assessment.questions.length - 1 ? (
                         <Button 
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            className="bg-sky-600 hover:bg-sky-700 text-white"
                             onClick={() => setCurrentQIndex(prev => prev + 1)}
                         >
                             Next <ChevronRight className="w-4 h-4 ml-1" />

@@ -23,18 +23,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://techwell.co.in"),
   title: {
-    default: "Techwell | AI Career and Business Consulting",
+    default: "Techwell | Business, Technology & Career Solutions",
     template: "%s | Techwell"
   },
-  description: "Accelerate your tech career with AI-powered mock interviews, personalized adaptive courses, and direct placement support. Join 10,000+ successful students.",
+  description: "Techwell provides comprehensive business and IT consulting, full-stack software development, professional IT training, and career recruitment solutions. Join 10,000+ students and professionals shaping their careers.",
   keywords: [
-    "AI Career and Business Consulting",
-    "Tech Career Platform",
-    "AI Mock Interviews",
-    "Tailored Coding Courses",
-    "Placement Assistance India",
-    "Techwell Learning",
-    "Adaptive Learning AI"
+    "Business Consulting",
+    "IT Consulting",
+    "Software Development",
+    "IT Training",
+    "Career Development",
+    "Freshers Jobs",
+    "Campus Hiring",
+    "Placement Assistance"
   ],
   authors: [{ name: "Techwell Team", url: "https://techwell.co.in/about" }],
   creator: "Techwell",
@@ -49,21 +50,21 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: "https://techwell.co.in",
     siteName: "Techwell",
-    title: "Techwell | AI Career and Business Consulting",
-    description: "Launch your tech career with AI-mock interviews and personalized courses. Bridge the gap between campus and corporate.",
+    title: "Techwell | Business, Technology & Career Solutions",
+    description: "Launch your career with professional IT training, placement assistance, and business technology solutions. Bridge the gap between campus and corporate.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Techwell - Your Tech Career Partner",
+        alt: "Techwell - Business, Technology, Career & Recruitment",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Techwell | AI Career and Business Consulting",
-    description: "Master tech skills with AI. Ace interviews. Get placed.",
+    title: "Techwell | Business, Technology & Career Solutions",
+    description: "Master tech skills with AI. Build your career. Empower your business.",
     images: ["/og-image.png"],
     creator: "@techwell_edu",
   },
@@ -104,17 +105,131 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "Techwell",
-              "url": "https://techwell.co.in",
-              "logo": "https://techwell.co.in/logo-dark.png",
-              "sameAs": [
-                "https://www.linkedin.com/company/techwell",
-                "https://twitter.com/techwell_edu"
-              ]
-            })
+            __html: JSON.stringify([
+              // ── Organization (brand entity) ──────────────────────
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "@id": "https://techwell.co.in/#organization",
+                "name": "Techwell",
+                "alternateName": ["Techwell IT Solutions", "Techwell Career Hub"],
+                "url": "https://techwell.co.in",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://techwell.co.in/logo-dark.png",
+                  "width": 200,
+                  "height": 60
+                },
+                "description": "Techwell provides professional IT training, career development, job assistance, placement assistance, campus hiring, recruitment consultancy, IT consulting, and software development services. Based in Srikakulam and Visakhapatnam, Andhra Pradesh.",
+                "foundingDate": "2018",
+                "areaServed": ["Srikakulam", "Visakhapatnam", "Andhra Pradesh", "Telangana", "India"],
+                "serviceType": [
+                  "IT Training", "Career Guidance", "Job Assistance", "Placement Assistance",
+                  "Campus Hiring", "Recruitment Consultancy", "IT Consulting", "Software Development",
+                  "Cyber Security Training", "DevOps Training", "Cloud Computing Training",
+                  "AI ML Training", "Full Stack Development Training"
+                ],
+                "sameAs": [
+                  "https://www.linkedin.com/company/techwell",
+                  "https://twitter.com/techwell_edu",
+                  "https://elearnstack.com"
+                ],
+                "contactPoint": [
+                  {
+                    "@type": "ContactPoint",
+                    "contactType": "customer support",
+                    "email": "support@techwell.co.in",
+                    "availableLanguage": ["English", "Telugu", "Hindi"]
+                  },
+                  {
+                    "@type": "ContactPoint",
+                    "contactType": "admissions",
+                    "email": "support@techwell.co.in"
+                  }
+                ]
+              },
+              // ── LocalBusiness — Srikakulam ───────────────────────
+              {
+                "@context": "https://schema.org",
+                "@type": ["LocalBusiness", "EducationalOrganization"],
+                "@id": "https://techwell.co.in/#srikakulam",
+                "name": "Techwell — Srikakulam",
+                "url": "https://techwell.co.in",
+                "image": "https://techwell.co.in/logo-dark.png",
+                "description": "IT training, career guidance, job assistance, and placement support in Srikakulam, Andhra Pradesh.",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Srikakulam",
+                  "addressRegion": "Andhra Pradesh",
+                  "addressCountry": "IN"
+                },
+                "geo": {
+                  "@type": "GeoCoordinates",
+                  "latitude": 18.2949,
+                  "longitude": 83.8977
+                },
+                "priceRange": "₹₹",
+                "areaServed": "Srikakulam",
+                "openingHoursSpecification": [
+                  {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+                    "opens": "09:00",
+                    "closes": "18:00"
+                  }
+                ],
+                "parentOrganization": { "@id": "https://techwell.co.in/#organization" }
+              },
+              // ── LocalBusiness — Visakhapatnam ────────────────────
+              {
+                "@context": "https://schema.org",
+                "@type": ["LocalBusiness", "EducationalOrganization"],
+                "@id": "https://techwell.co.in/#visakhapatnam",
+                "name": "Techwell — Visakhapatnam",
+                "url": "https://techwell.co.in",
+                "image": "https://techwell.co.in/logo-dark.png",
+                "description": "IT training, career guidance, job assistance, and placement support in Visakhapatnam (Vizag), Andhra Pradesh.",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Visakhapatnam",
+                  "addressRegion": "Andhra Pradesh",
+                  "addressCountry": "IN"
+                },
+                "geo": {
+                  "@type": "GeoCoordinates",
+                  "latitude": 17.6868,
+                  "longitude": 83.2185
+                },
+                "priceRange": "₹₹",
+                "areaServed": "Visakhapatnam",
+                "openingHoursSpecification": [
+                  {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+                    "opens": "09:00",
+                    "closes": "18:00"
+                  }
+                ],
+                "parentOrganization": { "@id": "https://techwell.co.in/#organization" }
+              },
+              // ── WebSite + SearchAction ───────────────────────────
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "@id": "https://techwell.co.in/#website",
+                "name": "Techwell",
+                "url": "https://techwell.co.in",
+                "publisher": { "@id": "https://techwell.co.in/#organization" },
+                "potentialAction": {
+                  "@type": "SearchAction",
+                  "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "https://techwell.co.in/jobs?q={search_term_string}"
+                  },
+                  "query-input": "required name=search_term_string"
+                }
+              }
+            ])
           }}
         />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

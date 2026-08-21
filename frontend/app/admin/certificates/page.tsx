@@ -774,10 +774,10 @@ export default function CertificatesPage() {
                         <Card>
                             <CardHeader className="pb-2 flex flex-row items-center justify-between">
                                 <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
-                                <Loader2 className="h-4 w-4 text-yellow-500" />
+                                <Loader2 className="h-4 w-4 text-sky-500" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+                                <div className="text-2xl font-bold text-sky-600">{stats.pending}</div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -850,7 +850,7 @@ export default function CertificatesPage() {
                                                 <TableCell>{new Date(cert.issueDate).toLocaleDateString()}</TableCell>
                                                 <TableCell>
                                                     {cert.status === 'PENDING' ? (
-                                                        <span className="flex items-center gap-1 text-yellow-600 text-sm font-medium bg-yellow-100 w-fit px-2 py-0.5 rounded">
+                                                        <span className="flex items-center gap-1 text-sky-600 text-sm font-medium bg-sky-100 w-fit px-2 py-0.5 rounded">
                                                             Pending
                                                         </span>
                                                     ) : cert.status === 'REVOKED' ? (

@@ -109,7 +109,7 @@ export default function FranchiseCompliancePage() {
                             {isApproved ? (
                                 <Badge className="bg-green-100 text-green-800 hover:bg-green-100"><CheckCircle2 className="w-3 h-3 mr-1" /> Approved</Badge>
                             ) : isPending ? (
-                                <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100"><AlertCircle className="w-3 h-3 mr-1" /> Pending Review</Badge>
+                                <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-100"><AlertCircle className="w-3 h-3 mr-1" /> Pending Review</Badge>
                             ) : (
                                 <Badge variant="secondary">Not Submitted</Badge>
                             )}
@@ -146,7 +146,7 @@ export default function FranchiseCompliancePage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center space-x-2">
-                            <FileText className="w-5 h-5 text-purple-600" />
+                            <FileText className="w-5 h-5 text-sky-600" />
                             <span>Franchise Agreements</span>
                         </CardTitle>
                         <CardDescription>

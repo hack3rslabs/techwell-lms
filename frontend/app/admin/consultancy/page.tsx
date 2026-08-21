@@ -44,12 +44,12 @@ export default function ConsultancyDashboard() {
     const kpiCards = [
         { label: "Total Invitations", value: total, icon: Users, color: "text-blue-500" },
         { label: "Invitation Sent", value: counts.INVITED, icon: Send, color: "text-gray-500" },
-        { label: "Pending Acceptance", value: counts.PENDING_ACCEPTANCE, icon: Clock, color: "text-orange-500" },
+        { label: "Pending Acceptance", value: counts.PENDING_ACCEPTANCE, icon: Clock, color: "text-sky-500" },
         { label: "Agreement Accepted", value: counts.AGREEMENT_ACCEPTED, icon: CheckSquare, color: "text-green-500" },
-        { label: "Processing", value: counts.PROCESSING, icon: Briefcase, color: "text-purple-500" },
-        { label: "Interview Scheduled", value: counts.INTERVIEW_SCHEDULED, icon: Video, color: "text-indigo-500" },
-        { label: "Offer Released", value: counts.OFFER_RELEASED, icon: Award, color: "text-pink-500" },
-        { label: "Joined", value: counts.JOINED, icon: CheckCircle, color: "text-teal-500" },
+        { label: "Processing", value: counts.PROCESSING, icon: Briefcase, color: "text-sky-500" },
+        { label: "Interview Scheduled", value: counts.INTERVIEW_SCHEDULED, icon: Video, color: "text-sky-500" },
+        { label: "Offer Released", value: counts.OFFER_RELEASED, icon: Award, color: "text-emerald-500" },
+        { label: "Joined", value: counts.JOINED, icon: CheckCircle, color: "text-emerald-500" },
         { label: "Completed", value: counts.COMPLETED, icon: CheckCircle, color: "text-emerald-500" },
         { label: "Closed Cases", value: counts.CLOSED, icon: Users, color: "text-red-500" },
     ]

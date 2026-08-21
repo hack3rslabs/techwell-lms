@@ -44,7 +44,7 @@ export default function KnowledgeTrainer() {
     <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-600">
+          <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-emerald-600">
             AI Knowledge Trainer
           </h1>
           <p className="text-gray-500 mt-2 text-lg">Teach your AI Agents by crawling websites and building a RAG Vector Database.</p>
@@ -53,7 +53,7 @@ export default function KnowledgeTrainer() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group h-fit">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-bl-full opacity-50 group-hover:scale-110 transition-transform"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-sky-100 to-emerald-100 rounded-bl-full opacity-50 group-hover:scale-110 transition-transform"></div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Train New URL</h2>
             
             <div className="space-y-5 relative z-10">
@@ -61,7 +61,7 @@ export default function KnowledgeTrainer() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Website URL</label>
                 <input 
                   type="url"
-                  className="w-full p-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 transition-all shadow-sm bg-gray-50"
+                  className="w-full p-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all shadow-sm bg-gray-50"
                   placeholder="https://techwell.com/courses"
                   value={url} 
                   onChange={(e) => setUrl(e.target.value)}
@@ -71,7 +71,7 @@ export default function KnowledgeTrainer() {
               <button 
                 onClick={handleTrain}
                 disabled={isTraining}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 {isTraining ? (
                   <>
@@ -110,7 +110,7 @@ export default function KnowledgeTrainer() {
                   <div className="mt-3 sm:mt-0 flex items-center space-x-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
                       doc.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                      doc.status === 'TRAINING' ? 'bg-yellow-100 text-yellow-700 animate-pulse' :
+                      doc.status === 'TRAINING' ? 'bg-sky-100 text-sky-700 animate-pulse' :
                       'bg-red-100 text-red-700'
                     }`}>
                       {doc.status}

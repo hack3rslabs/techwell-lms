@@ -69,7 +69,7 @@ export default function EmployerAssessmentsPage() {
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Assessments & Quizzes</h1>
                     <p className="text-slate-500 mt-1">Create coding challenges and MCQ tests to screen candidates.</p>
                 </div>
-                <Button onClick={() => setIsCreateOpen(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+                <Button onClick={() => setIsCreateOpen(true)} className="gap-2 bg-sky-600 hover:bg-sky-700">
                     <Plus className="w-4 h-4" /> New Assessment
                 </Button>
             </div>
@@ -86,10 +86,10 @@ export default function EmployerAssessmentsPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {assessments.map(assessment => (
-                        <Card key={assessment.id} className="hover:border-indigo-200 hover:shadow-md transition-all">
+                        <Card key={assessment.id} className="hover:border-sky-200 hover:shadow-md transition-all">
                             <CardHeader className="pb-4">
                                 <div className="flex justify-between items-start">
-                                    <div className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded">
+                                    <div className="bg-sky-100 text-sky-700 text-xs font-bold px-2 py-1 rounded">
                                         {assessment.type}
                                     </div>
                                     <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2 -mr-2">
@@ -111,7 +111,7 @@ export default function EmployerAssessmentsPage() {
                                     </div>
                                 </div>
                                 <Link href={`/employer/assessments/${assessment.id}/edit`}>
-                                    <Button variant="outline" className="w-full text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                                    <Button variant="outline" className="w-full text-sky-600 border-sky-200 hover:bg-sky-50">
                                         Manage Questions
                                     </Button>
                                 </Link>
@@ -157,7 +157,7 @@ export default function EmployerAssessmentsPage() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                        <Button onClick={handleCreate} disabled={!formData.title || submitting} className="bg-indigo-600 hover:bg-indigo-700">
+                        <Button onClick={handleCreate} disabled={!formData.title || submitting} className="bg-sky-600 hover:bg-sky-700">
                             Create Assessment
                         </Button>
                     </DialogFooter>

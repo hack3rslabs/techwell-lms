@@ -88,7 +88,7 @@ export default function DataProcessingPage() {
                             <p className="text-muted-foreground mb-4">
                                 You may withdraw your consent for any of the above processing activities at any time by deleting your account or contacting us. Note that withdrawing consent may limit or prevent your use of certain features (like AI interviews).
                             </p>
-                            <Link href="mailto:info@techwell.co.in">
+                            <Link href="mailto:support@techwell.co.in">
                                 <Button variant="outline" className="gap-2">
                                     <Mail className="h-4 w-4" />
                                     Contact Data Protection Officer

@@ -87,7 +87,7 @@ export default function AdminInstitutes() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'APPROVED': return <Badge className="bg-green-500/10 text-green-600 border-none font-bold uppercase text-[10px]">Approved</Badge>;
-            case 'PENDING': return <Badge className="bg-yellow-500/10 text-yellow-600 border-none font-bold uppercase text-[10px]">Pending</Badge>;
+            case 'PENDING': return <Badge className="bg-sky-500/10 text-sky-600 border-none font-bold uppercase text-[10px]">Pending</Badge>;
             case 'REJECTED': return <Badge className="bg-red-500/10 text-red-600 border-none font-bold uppercase text-[10px]">Rejected</Badge>;
             default: return <Badge variant="outline" className="font-bold uppercase text-[10px]">{status}</Badge>;
         }
@@ -199,7 +199,7 @@ export default function AdminInstitutes() {
                                                     <Building2 className="h-5 w-5" />
                                                 </div>
                                                 <div>
-                                                    <div className="font-bold text-base text-indigo-400">{inst.name}</div>
+                                                    <div className="font-bold text-base text-sky-400">{inst.name}</div>
                                                     <div className="text-[11px] text-muted-foreground mb-1 font-medium capitalize">
                                                         {inst.type.replace(/_/g, ' ').toLowerCase()}
                                                     </div>

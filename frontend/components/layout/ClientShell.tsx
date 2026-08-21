@@ -16,6 +16,7 @@ const DASHBOARD_PREFIXES = [
     '/institute',
     '/login',
     '/register',
+    '/shop',
 ]
 
 export function ClientShell({ children }: { children: React.ReactNode }) {

@@ -79,17 +79,17 @@ export default function ServicesPageClient() {
   const getIcon = (category: string) => {
     switch (category) {
       case 'IT_INFRASTRUCTURE':
-        return <Settings className="h-6 w-6 text-indigo-500" />;
+        return <Settings className="h-6 w-6 text-sky-500" />;
       case 'CLOUD_SOLUTIONS':
         return <Cloud className="h-6 w-6 text-sky-500" />;
       case 'CYBER_SECURITY':
         return <Shield className="h-6 w-6 text-emerald-500" />;
       case 'SOFTWARE_DEVELOPMENT':
-        return <Terminal className="h-6 w-6 text-purple-500" />;
+        return <Terminal className="h-6 w-6 text-sky-500" />;
       case 'DIGITAL_SERVICES':
-        return <Megaphone className="h-6 w-6 text-amber-500" />;
+        return <Megaphone className="h-6 w-6 text-emerald-500" />;
       case 'AI_AUTOMATION':
-        return <Bot className="h-6 w-6 text-rose-500" />;
+        return <Bot className="h-6 w-6 text-emerald-500" />;
       default:
         return <Laptop className="h-6 w-6 text-zinc-500" />;
     }
@@ -99,12 +99,12 @@ export default function ServicesPageClient() {
     <div className="min-h-screen bg-slate-50/50 dark:bg-zinc-950 py-12 px-4 md:px-8">
       <div className="max-w-6xl mx-auto space-y-12">
         <div className="text-center space-y-4 max-w-2xl mx-auto animate-in fade-in duration-700">
-          <Badge className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 uppercase font-bold py-1 px-3">
+          <Badge className="bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-200 uppercase font-bold py-1 px-3">
             <Laptop className="w-3.5 h-3.5 mr-1.5" />
             10 Years of Excellence
           </Badge>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-white">
-            Enterprise <span className="text-indigo-600 dark:text-indigo-400">IT Solutions</span> & Services
+            Enterprise <span className="text-sky-600 dark:text-sky-400">IT Solutions</span> & Services
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-base leading-relaxed">
             Backed by a decade of market leadership, Techwell accelerates operational efficiency, fortifies security postures, and engineers bespoke software platforms for enterprise scale.
@@ -125,7 +125,7 @@ export default function ServicesPageClient() {
                   <Badge className="bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-100 dark:border-zinc-800 text-[9px] uppercase font-bold px-2 py-0.5 rounded-md">
                     {service.category.replace('_', ' ')}
                   </Badge>
-                  <CardTitle className="text-base font-extrabold text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <CardTitle className="text-base font-extrabold text-zinc-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
                     {service.name}
                   </CardTitle>
                 </div>
@@ -141,7 +141,7 @@ export default function ServicesPageClient() {
                   <ul className="grid gap-2">
                     {service.features.map((feat: string, i: number) => (
                       <li key={i} className="flex items-start gap-2 text-[11px] text-zinc-600 dark:text-zinc-300">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0 mt-0.5" />
                         <span>{feat}</span>
                       </li>
                     ))}
@@ -150,7 +150,7 @@ export default function ServicesPageClient() {
               </CardContent>
 
               <CardFooter className="p-6 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/30">
-                <Button asChild className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-10 text-xs font-semibold rounded-lg shadow-sm">
+                <Button asChild className="w-full bg-sky-600 hover:bg-sky-700 text-white h-10 text-xs font-semibold rounded-lg shadow-sm">
                   <Link href={`/services/${service.slug}`}>
                     Read More & Request
                     <ArrowUpRight className="w-3.5 h-3.5 ml-1.5" />
@@ -161,20 +161,20 @@ export default function ServicesPageClient() {
           ))}
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-900 to-indigo-950 text-white rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-xl border border-indigo-800/30 animate-in zoom-in duration-500">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -ml-32 -mb-32" />
+        <div className="bg-gradient-to-br from-sky-900 to-sky-950 text-white rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-xl border border-sky-800/30 animate-in zoom-in duration-500">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl -ml-32 -mb-32" />
 
           <div className="relative z-10 max-w-2xl space-y-6">
-            <Badge className="bg-indigo-500/20 text-indigo-200 border-indigo-500/30 uppercase text-[10px] font-bold">
+            <Badge className="bg-sky-500/20 text-sky-200 border-sky-500/30 uppercase text-[10px] font-bold">
               Direct Contact
             </Badge>
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">Need a customized service? Reach out immediately.</h2>
-            <p className="text-indigo-200 text-xs md:text-sm leading-relaxed">
+            <p className="text-sky-200 text-xs md:text-sm leading-relaxed">
               Techwell offers robust SLAs and customized IT projects for corporations, universities, and SMEs. We handle your technology needs so you can focus on core growth.
             </p>
             <div className="pt-2">
-              <Button asChild className="bg-white hover:bg-zinc-100 text-indigo-950 font-bold text-xs px-6 h-11 rounded-xl shadow-md">
+              <Button asChild className="bg-white hover:bg-zinc-100 text-sky-950 font-bold text-xs px-6 h-11 rounded-xl shadow-md">
                 <Link href="/contact?type=it-solutions">
                   Contact Us Now
                 </Link>

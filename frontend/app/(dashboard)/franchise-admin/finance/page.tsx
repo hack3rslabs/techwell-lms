@@ -107,7 +107,7 @@ export default function FranchiseFinancePage() {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'SETTLED': return <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
-            case 'PENDING': return <Clock className="w-4 h-4 text-amber-500" />;
+            case 'PENDING': return <Clock className="w-4 h-4 text-emerald-500" />;
             default: return <AlertCircle className="w-4 h-4 text-slate-400" />;
         }
     };
@@ -115,7 +115,7 @@ export default function FranchiseFinancePage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
             </div>
         );
     }
@@ -125,7 +125,7 @@ export default function FranchiseFinancePage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                    <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-sky-600">
                         Revenue & Royalty
                     </h1>
                     <p className="text-muted-foreground mt-1">Track collections, royalties, and settlements with HQ.</p>
@@ -157,7 +157,7 @@ export default function FranchiseFinancePage() {
                 {[
                     {
                         label: 'My Net Earnings', value: `₹${myShare.toLocaleString()}`, icon: IndianRupee,
-                        bg: 'from-emerald-50 to-teal-50 dark:from-emerald-950/20', iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
+                        bg: 'from-emerald-50 to-emerald-50 dark:from-emerald-950/20', iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
                         iconColor: 'text-emerald-600', sub: 'After royalties', subColor: 'text-emerald-600',
                     },
                     {
@@ -167,13 +167,13 @@ export default function FranchiseFinancePage() {
                     },
                     {
                         label: 'Royalties Paid (HQ)', value: `₹${techwellShare.toLocaleString()}`, icon: ArrowUpRight,
-                        bg: 'from-red-50 to-rose-50 dark:from-red-950/20', iconBg: 'bg-red-100 dark:bg-red-900/30',
+                        bg: 'from-red-50 to-emerald-50 dark:from-red-950/20', iconBg: 'bg-red-100 dark:bg-red-900/30',
                         iconColor: 'text-red-500', sub: `${royaltyRate}% royalty rate`, subColor: 'text-red-500',
                     },
                     {
                         label: 'Pending Settlement', value: `₹${pendingSettlement.toLocaleString()}`, icon: Clock,
-                        bg: 'from-amber-50 to-yellow-50 dark:from-amber-950/20', iconBg: 'bg-amber-100 dark:bg-amber-900/30',
-                        iconColor: 'text-amber-600', sub: 'Awaiting settlement', subColor: 'text-amber-600',
+                        bg: 'from-emerald-50 to-sky-50 dark:from-emerald-950/20', iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
+                        iconColor: 'text-emerald-600', sub: 'Awaiting settlement', subColor: 'text-emerald-600',
                     },
                 ].map((k) => (
                     <Card key={k.label} className={`bg-gradient-to-br ${k.bg} border-0 shadow-md`}>
@@ -194,12 +194,12 @@ export default function FranchiseFinancePage() {
             </div>
 
             {/* Royalty Breakdown Info */}
-            <Card className="border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-sm">
+            <Card className="border-sky-100 dark:border-sky-900/40 bg-sky-50/50 dark:bg-sky-950/20 shadow-sm">
                 <CardContent className="flex items-start gap-3 p-4">
-                    <Info className="w-5 h-5 text-indigo-500 mt-0.5 shrink-0" />
+                    <Info className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
                     <div>
-                        <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">How Royalties Work</p>
-                        <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                        <p className="text-sm font-semibold text-sky-800 dark:text-sky-300">How Royalties Work</p>
+                        <p className="text-xs text-sky-600 dark:text-sky-400 mt-1">
                             A percentage of every fee collected by your franchise is remitted to Techwell HQ as a royalty fee. The remainder is your earnings.
                             Settlements are processed monthly. Contact HQ for disputes or adjustments.
                         </p>
@@ -212,7 +212,7 @@ export default function FranchiseFinancePage() {
                 <CardHeader className="flex flex-row items-center justify-between pb-3">
                     <div>
                         <CardTitle className="text-lg flex items-center gap-2">
-                            <BarChart3 className="w-5 h-5 text-indigo-500" /> Transaction Ledger
+                            <BarChart3 className="w-5 h-5 text-sky-500" /> Transaction Ledger
                         </CardTitle>
                         <CardDescription>All revenue records for your franchise</CardDescription>
                     </div>

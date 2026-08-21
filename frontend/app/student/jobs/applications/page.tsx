@@ -18,21 +18,21 @@ import Link from 'next/link';
 
 const STATUS_PIPELINE = [
     { status: 'APPLIED', label: 'Applied', color: 'bg-blue-500' },
-    { status: 'VIEWED', label: 'Viewed', color: 'bg-indigo-400' },
+    { status: 'VIEWED', label: 'Viewed', color: 'bg-sky-400' },
     { status: 'SCREENED', label: 'Screened', color: 'bg-violet-500' },
-    { status: 'SHORTLISTED', label: 'Shortlisted', color: 'bg-amber-500' },
-    { status: 'INTERVIEW_SCHEDULED', label: 'Interview', color: 'bg-orange-500' },
+    { status: 'SHORTLISTED', label: 'Shortlisted', color: 'bg-emerald-500' },
+    { status: 'INTERVIEW_SCHEDULED', label: 'Interview', color: 'bg-sky-500' },
     { status: 'OFFER_RELEASED', label: 'Offer', color: 'bg-emerald-500' },
     { status: 'JOINED', label: 'Joined', color: 'bg-green-600' },
 ];
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
     APPLIED:            { label: 'Applied',             color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200' },
-    VIEWED:             { label: 'Viewed',              color: 'text-indigo-700',  bg: 'bg-indigo-50 border-indigo-200' },
+    VIEWED:             { label: 'Viewed',              color: 'text-sky-700',  bg: 'bg-sky-50 border-sky-200' },
     SCREENED:           { label: 'Screened',            color: 'text-violet-700',  bg: 'bg-violet-50 border-violet-200' },
-    SHORTLISTED:        { label: 'Shortlisted',         color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200' },
-    INTERVIEW_SCHEDULED:{ label: 'Interview Scheduled', color: 'text-orange-700',  bg: 'bg-orange-50 border-orange-200' },
-    INTERVIEWED:        { label: 'Interviewed',         color: 'text-orange-600',  bg: 'bg-orange-50 border-orange-200' },
+    SHORTLISTED:        { label: 'Shortlisted',         color: 'text-emerald-700',   bg: 'bg-emerald-50 border-emerald-200' },
+    INTERVIEW_SCHEDULED:{ label: 'Interview Scheduled', color: 'text-sky-700',  bg: 'bg-sky-50 border-sky-200' },
+    INTERVIEWED:        { label: 'Interviewed',         color: 'text-sky-600',  bg: 'bg-sky-50 border-sky-200' },
     SELECTED:           { label: 'Selected',            color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
     OFFER_RELEASED:     { label: 'Offer Released',      color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
     OFFER_ACCEPTED:     { label: 'Offer Accepted',      color: 'text-green-700',   bg: 'bg-green-50 border-green-200' },
@@ -41,7 +41,7 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string }> 
     NOT_JOINED:         { label: 'Not Joined',          color: 'text-slate-600',   bg: 'bg-slate-50 border-slate-200' },
     REJECTED:           { label: 'Rejected',            color: 'text-red-700',     bg: 'bg-red-50 border-red-200' },
     WITHDRAWN:          { label: 'Withdrawn',           color: 'text-slate-600',   bg: 'bg-slate-100 border-slate-200' },
-    ON_HOLD:            { label: 'On Hold',             color: 'text-yellow-700',  bg: 'bg-yellow-50 border-yellow-200' },
+    ON_HOLD:            { label: 'On Hold',             color: 'text-sky-700',  bg: 'bg-sky-50 border-sky-200' },
 };
 
 function getPipelineStep(status: string): number {
@@ -229,7 +229,7 @@ export default function MyApplicationsPage() {
                                     >
                                         <div className="p-5">
                                             <div className="flex items-start gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center shrink-0">
+                                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-sky-100 flex items-center justify-center shrink-0">
                                                     {app.job?.employer?.employerProfile?.logo ? (
                                                         <img src={app.job.employer.employerProfile.logo} alt="" className="w-10 h-10 object-contain rounded-lg" />
                                                     ) : (
@@ -284,7 +284,7 @@ export default function MyApplicationsPage() {
 
                                             {/* Alerts */}
                                             {upcomingInterview && (
-                                                <div className="mt-3 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 flex items-center gap-2 text-xs text-orange-700">
+                                                <div className="mt-3 bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 flex items-center gap-2 text-xs text-sky-700">
                                                     <AlertCircle className="w-4 h-4 shrink-0" />
                                                     <span><strong>{upcomingInterview.roundName}</strong> scheduled on {new Date(upcomingInterview.scheduledAt).toLocaleString('en-IN')}</span>
                                                     {upcomingInterview.meetingLink && (
@@ -366,10 +366,10 @@ export default function MyApplicationsPage() {
                                     </h4>
                                     <div className="space-y-3">
                                         {selected.interviews.map((iv, i) => (
-                                            <div key={iv.id} className={`rounded-xl border p-4 ${iv.status === 'SCHEDULED' ? 'border-orange-200 bg-orange-50' : iv.result === 'PASSED' ? 'border-emerald-200 bg-emerald-50' : iv.result === 'FAILED' ? 'border-red-100 bg-red-50' : 'border-slate-100'}`}>
+                                            <div key={iv.id} className={`rounded-xl border p-4 ${iv.status === 'SCHEDULED' ? 'border-sky-200 bg-sky-50' : iv.result === 'PASSED' ? 'border-emerald-200 bg-emerald-50' : iv.result === 'FAILED' ? 'border-red-100 bg-red-50' : 'border-slate-100'}`}>
                                                 <div className="flex items-center justify-between mb-2">
                                                     <span className="font-black text-sm text-slate-800">Round {i + 1}: {iv.roundName}</span>
-                                                    <Badge className={`text-xs ${iv.status === 'SCHEDULED' ? 'bg-orange-100 text-orange-700' : iv.result === 'PASSED' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                                                    <Badge className={`text-xs ${iv.status === 'SCHEDULED' ? 'bg-sky-100 text-sky-700' : iv.result === 'PASSED' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
                                                         {iv.result || iv.status}
                                                     </Badge>
                                                 </div>
@@ -384,7 +384,7 @@ export default function MyApplicationsPage() {
                                                 {iv.score !== undefined && iv.score !== null && (
                                                     <div className="flex items-center gap-1 mt-1">
                                                         {Array.from({ length: 5 }).map((_, si) => (
-                                                            <Star key={si} className={`w-3 h-3 ${si < Math.round(iv.score! / 20) ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
+                                                            <Star key={si} className={`w-3 h-3 ${si < Math.round(iv.score! / 20) ? 'text-emerald-400 fill-emerald-400' : 'text-slate-200'}`} />
                                                         ))}
                                                         <span className="text-xs text-slate-500 ml-1">{iv.score}/100</span>
                                                     </div>

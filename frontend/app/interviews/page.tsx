@@ -86,7 +86,7 @@ export default function InterviewsPage() {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'SCHEDULED': return <Calendar className="h-4 w-4 text-blue-500" />
-            case 'IN_PROGRESS': return <PlayCircle className="h-4 w-4 text-yellow-500" />
+            case 'IN_PROGRESS': return <PlayCircle className="h-4 w-4 text-sky-500" />
             case 'COMPLETED': return <CheckCircle2 className="h-4 w-4 text-green-500" />
             case 'CANCELLED': return <XCircle className="h-4 w-4 text-red-500" />
             default: return <Clock className="h-4 w-4" />
@@ -96,7 +96,7 @@ export default function InterviewsPage() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'SCHEDULED': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-            case 'IN_PROGRESS': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+            case 'IN_PROGRESS': return 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'
             case 'COMPLETED': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
             case 'CANCELLED': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
             default: return 'bg-gray-100 text-gray-700'

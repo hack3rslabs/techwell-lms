@@ -99,14 +99,14 @@ export default function CreateCampusDrive() {
         }
     };
 
-    const inputCls = "w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-slate-700 text-sm bg-white";
+    const inputCls = "w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-slate-700 text-sm bg-white";
     const labelCls = "block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide";
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-5xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-                <Link href="/admin/campus-drives" className="inline-flex items-center text-sm font-medium text-indigo-500 hover:text-indigo-600 mb-4">
+                <Link href="/admin/campus-drives" className="inline-flex items-center text-sm font-medium text-sky-500 hover:text-sky-600 mb-4">
                     <ArrowLeft className="w-4 h-4 mr-1" /> Back to Drives
                 </Link>
                 <h1 className="text-2xl md:text-3xl text-slate-800 font-bold">Launch Campus Drive / Job Mela</h1>
@@ -120,7 +120,7 @@ export default function CreateCampusDrive() {
                         key={tab}
                         type="button"
                         onClick={() => setActiveTab(tab)}
-                        className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all capitalize ${activeTab === tab ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all capitalize ${activeTab === tab ? 'bg-white shadow text-sky-700' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         {tab === 'basic' ? 'Basic Details' : `Participating Companies ${companies.length > 0 ? `(${companies.length})` : ''}`}
                     </button>
@@ -133,17 +133,17 @@ export default function CreateCampusDrive() {
                 {activeTab === 'basic' && (
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-6">
                         {/* Job Mela Toggle */}
-                        <label className="flex items-start gap-4 p-4 bg-indigo-50 rounded-xl border border-indigo-100 cursor-pointer">
+                        <label className="flex items-start gap-4 p-4 bg-sky-50 rounded-xl border border-sky-100 cursor-pointer">
                             <input
                                 type="checkbox"
                                 name="isOffCampus"
                                 checked={formData.isOffCampus}
                                 onChange={handleChange}
-                                className="w-5 h-5 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                className="w-5 h-5 mt-0.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
                             />
                             <div>
-                                <div className="font-semibold text-indigo-900">Make this a Job Mela (Public / Off-Campus)</div>
-                                <div className="text-sm text-indigo-700 mt-0.5">This will generate a public registration link for anyone to apply — not limited to specific institutes.</div>
+                                <div className="font-semibold text-sky-900">Make this a Job Mela (Public / Off-Campus)</div>
+                                <div className="text-sm text-sky-700 mt-0.5">This will generate a public registration link for anyone to apply — not limited to specific institutes.</div>
                             </div>
                         </label>
 
@@ -195,7 +195,7 @@ export default function CreateCampusDrive() {
                         </div>
 
                         <div className="flex justify-end pt-4 border-t border-slate-100">
-                            <button type="button" onClick={() => setActiveTab('companies')} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all">
+                            <button type="button" onClick={() => setActiveTab('companies')} className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all">
                                 Next: Add Companies →
                             </button>
                         </div>
@@ -209,7 +209,7 @@ export default function CreateCampusDrive() {
                         {companies.map(c => (
                             <div key={c.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex items-start justify-between gap-4">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                                         {c.name.charAt(0)}
                                     </div>
                                     <div>
@@ -218,7 +218,7 @@ export default function CreateCampusDrive() {
                                         {c.salary && <div className="text-xs text-green-600 font-medium mt-0.5">{c.salary}</div>}
                                         <div className="flex flex-wrap gap-1 mt-2">
                                             {c.roles.map(r => (
-                                                <span key={r} className="inline-flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full px-2.5 py-0.5">
+                                                <span key={r} className="inline-flex items-center gap-1 text-xs bg-sky-50 text-sky-700 border border-sky-100 rounded-full px-2.5 py-0.5">
                                                     <Briefcase className="w-3 h-3" />{r}
                                                 </span>
                                             ))}
@@ -238,9 +238,9 @@ export default function CreateCampusDrive() {
 
                         {/* Add company form */}
                         {addingCompany ? (
-                            <div className="bg-white rounded-2xl border-2 border-indigo-200 shadow-md p-6 space-y-5">
+                            <div className="bg-white rounded-2xl border-2 border-sky-200 shadow-md p-6 space-y-5">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="font-bold text-slate-800 flex items-center gap-2"><Building2 className="w-4 h-4 text-indigo-500" />Add Participating Company</h3>
+                                    <h3 className="font-bold text-slate-800 flex items-center gap-2"><Building2 className="w-4 h-4 text-sky-500" />Add Participating Company</h3>
                                     <button type="button" onClick={() => setAddingCompany(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg">
                                         <X className="w-4 h-4" />
                                     </button>
@@ -283,7 +283,7 @@ export default function CreateCampusDrive() {
                                                 )}
                                             </div>
                                         ))}
-                                        <button type="button" onClick={addRole} className="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                                        <button type="button" onClick={addRole} className="text-sky-600 hover:text-sky-700 text-sm font-medium flex items-center gap-1">
                                             <Plus className="w-4 h-4" />Add Designation
                                         </button>
                                     </div>
@@ -303,14 +303,14 @@ export default function CreateCampusDrive() {
                                                 )}
                                             </div>
                                         ))}
-                                        <button type="button" onClick={addLocation} className="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                                        <button type="button" onClick={addLocation} className="text-sky-600 hover:text-sky-700 text-sm font-medium flex items-center gap-1">
                                             <Plus className="w-4 h-4" />Add Location
                                         </button>
                                     </div>
                                 </div>
 
                                 <div className="flex gap-3 pt-2 border-t border-slate-100">
-                                    <button type="button" onClick={saveCompany} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition-all">
+                                    <button type="button" onClick={saveCompany} className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition-all">
                                         Save Company
                                     </button>
                                     <button type="button" onClick={() => setAddingCompany(false)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-xl font-semibold text-sm transition-all">
@@ -322,7 +322,7 @@ export default function CreateCampusDrive() {
                             <button
                                 type="button"
                                 onClick={() => setAddingCompany(true)}
-                                className="w-full flex items-center justify-center gap-2 text-indigo-600 border-2 border-dashed border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 rounded-2xl py-5 font-semibold text-sm transition-all"
+                                className="w-full flex items-center justify-center gap-2 text-sky-600 border-2 border-dashed border-sky-200 hover:border-sky-400 hover:bg-sky-50 rounded-2xl py-5 font-semibold text-sm transition-all"
                             >
                                 <Plus className="w-5 h-5" /> Add Participating Company
                             </button>
@@ -332,7 +332,7 @@ export default function CreateCampusDrive() {
                             <button type="button" onClick={() => setActiveTab('basic')} className="text-slate-500 hover:text-slate-700 text-sm font-medium flex items-center gap-1">
                                 ← Back to Basic Details
                             </button>
-                            <button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-70 shadow-lg">
+                            <button type="submit" disabled={submitting} className="bg-sky-600 hover:bg-sky-700 text-white px-8 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-70 shadow-lg">
                                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                                 {submitting ? 'Launching...' : '🚀 Launch Drive'}
                             </button>

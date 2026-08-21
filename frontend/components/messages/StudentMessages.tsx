@@ -130,7 +130,7 @@ export function StudentMessages() {
             case 'URGENT':
                 return 'bg-red-100 text-red-800 hover:bg-red-200'
             case 'HIGH':
-                return 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                return 'bg-sky-100 text-sky-800 hover:bg-sky-200'
             case 'NORMAL':
                 return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
             case 'LOW':

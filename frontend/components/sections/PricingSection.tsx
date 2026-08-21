@@ -152,7 +152,12 @@ export function PricingSection() {
                     </Card>
                 </div>
 
-                <div className="text-center mt-8">
+                <div className="max-w-2xl mx-auto mt-10 p-4 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl text-center text-sm text-amber-900 dark:text-amber-200 shadow-sm">
+                    <p className="font-bold flex items-center justify-center gap-1.5 mb-1"><span className="text-base">⚠️</span> Payment Safety Notice</p>
+                    <p className="opacity-90">Use only the official Techwell payment process. Never transfer money to an unverified individual claiming to represent Techwell. When in doubt, contact <a href="mailto:support@techwell.co.in" className="font-semibold underline hover:text-amber-700 dark:hover:text-white">support@techwell.co.in</a>.</p>
+                </div>
+
+                <div className="text-center mt-6">
                     <Link href="/pricing" className="text-sm text-primary hover:underline">
                         View detailed pricing comparison →
                     </Link>

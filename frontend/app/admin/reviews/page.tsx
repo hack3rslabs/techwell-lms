@@ -135,7 +135,7 @@ export default function ReviewsPage() {
                                             <CardTitle>{course.title}</CardTitle>
                                             <CardDescription>Submitted by {course.instructor?.name || 'Instructor'}</CardDescription>
                                         </div>
-                                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pending Review</Badge>
+                                        <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200">Pending Review</Badge>
                                     </div>
                                 </CardHeader>
                                 <CardContent>
@@ -176,7 +176,7 @@ export default function ReviewsPage() {
                                             <CardTitle>{blog.title}</CardTitle>
                                             <CardDescription>Authored by {blog.author?.name || 'User'}</CardDescription>
                                         </div>
-                                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pending Review</Badge>
+                                        <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200">Pending Review</Badge>
                                     </div>
                                 </CardHeader>
                                 <CardContent>

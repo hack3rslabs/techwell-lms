@@ -70,7 +70,7 @@ export default function Setup2FAPage() {
                     <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
                         <ShieldAlert className="w-8 h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
+                    <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-sky-500 bg-clip-text text-transparent">
                         Secure Your Account
                     </CardTitle>
                     <CardDescription className="text-sm mt-2">

@@ -15,11 +15,11 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 
 const STAGES = [
-    { id: 'NEW', label: 'New Lead', color: 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/20 dark:border-indigo-900/50' },
+    { id: 'NEW', label: 'New Lead', color: 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-950/20 dark:border-sky-900/50' },
     { id: 'CONTACTED', label: 'Contacted', color: 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950/20 dark:border-blue-900/50' },
-    { id: 'FOLLOW_UP_SCHEDULED', label: 'Follow-Up Scheduled', color: 'bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-950/20 dark:border-yellow-900/50' },
-    { id: 'INTERESTED', label: 'Interested', color: 'bg-teal-50 border-teal-200 text-teal-700 dark:bg-teal-950/20 dark:border-teal-900/50' },
-    { id: 'COUNSELLING_DONE', label: 'Counselling Done', color: 'bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-950/20 dark:border-purple-900/50' },
+    { id: 'FOLLOW_UP_SCHEDULED', label: 'Follow-Up Scheduled', color: 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-950/20 dark:border-sky-900/50' },
+    { id: 'INTERESTED', label: 'Interested', color: 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/50' },
+    { id: 'COUNSELLING_DONE', label: 'Counselling Done', color: 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-950/20 dark:border-sky-900/50' },
     { id: 'COURSE_ENROLLED', label: 'Course Enrolled', color: 'bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:border-green-900/50' }
 ]
 
@@ -178,12 +178,12 @@ export default function LeadKanbanPage() {
             {/* Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <div className="flex items-center gap-2 text-indigo-400 mb-1">
+                    <div className="flex items-center gap-2 text-sky-400 mb-1">
                         <Link href="/admin/leads" className="flex items-center gap-1 hover:underline">
                             <ArrowLeft className="h-4 w-4" /> Back to List
                         </Link>
                     </div>
-                    <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-teal-400 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text text-transparent">
                         CRM Lead Pipeline
                     </h1>
                     <p className="text-slate-400 text-sm">
@@ -196,9 +196,9 @@ export default function LeadKanbanPage() {
                         placeholder="Search leads..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        className="w-full md:w-64 bg-slate-900 border-slate-800 text-slate-100 focus:ring-indigo-500 placeholder:text-slate-500"
+                        className="w-full md:w-64 bg-slate-900 border-slate-800 text-slate-100 focus:ring-sky-500 placeholder:text-slate-500"
                     />
-                    <Button variant="outline" size="icon" onClick={fetchLeads} className="border-slate-800 bg-slate-900 text-indigo-400 hover:text-indigo-300">
+                    <Button variant="outline" size="icon" onClick={fetchLeads} className="border-slate-800 bg-slate-900 text-sky-400 hover:text-sky-300">
                         <RefreshCw className="h-4 w-4" />
                     </Button>
                 </div>
@@ -207,7 +207,7 @@ export default function LeadKanbanPage() {
             {/* Stages Columns container */}
             {isLoading ? (
                 <div className="flex h-96 items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                    <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4 overflow-x-auto pb-4">
@@ -219,7 +219,7 @@ export default function LeadKanbanPage() {
                                 <div className="flex items-center justify-between mb-3 border-b border-slate-800/60 pb-2">
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">{stage.label}</span>
-                                        <Badge className="bg-indigo-500/10 text-indigo-300 border-indigo-500/20">{stageLeads.length}</Badge>
+                                        <Badge className="bg-sky-500/10 text-sky-300 border-sky-500/20">{stageLeads.length}</Badge>
                                     </div>
                                 </div>
 
@@ -233,10 +233,10 @@ export default function LeadKanbanPage() {
                                         stageLeads.map(lead => (
                                             <div
                                                 key={lead.id}
-                                                className="group bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all rounded-lg p-3 cursor-pointer shadow-sm relative"
+                                                className="group bg-slate-900 border border-slate-800 hover:border-sky-500/50 transition-all rounded-lg p-3 cursor-pointer shadow-sm relative"
                                                 onClick={() => handleCardClick(lead)}
                                             >
-                                                <div className="font-semibold text-slate-200 text-sm mb-1 group-hover:text-indigo-400 transition-colors">
+                                                <div className="font-semibold text-slate-200 text-sm mb-1 group-hover:text-sky-400 transition-colors">
                                                     {lead.name}
                                                 </div>
                                                 <div className="text-slate-400 text-xs flex items-center gap-1 mb-2">
@@ -244,7 +244,7 @@ export default function LeadKanbanPage() {
                                                 </div>
                                                 
                                                 {lead.courseName && (
-                                                    <Badge className="bg-indigo-950 border-indigo-900 text-indigo-300 text-[10px] px-1.5 py-0">
+                                                    <Badge className="bg-sky-950 border-sky-900 text-sky-300 text-[10px] px-1.5 py-0">
                                                         {lead.courseName}
                                                     </Badge>
                                                 )}
@@ -281,7 +281,7 @@ export default function LeadKanbanPage() {
             <Dialog open={!!selectedLead} onOpenChange={open => !open && setSelectedLead(null)}>
                 <DialogContent className="max-w-xl bg-slate-900 border-slate-800 text-slate-100">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold flex items-center gap-2 text-indigo-400">
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2 text-sky-400">
                             {selectedLead?.name}
                         </DialogTitle>
                         <DialogDescription className="text-slate-400 text-xs">
@@ -292,8 +292,8 @@ export default function LeadKanbanPage() {
                     {selectedLead && (
                         <Tabs defaultValue="activity" className="w-full mt-2">
                             <TabsList className="grid w-full grid-cols-2 bg-slate-950 border border-slate-800">
-                                <TabsTrigger value="activity" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Activity Logs</TabsTrigger>
-                                <TabsTrigger value="reminder" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Reminders</TabsTrigger>
+                                <TabsTrigger value="activity" className="data-[state=active]:bg-sky-600 data-[state=active]:text-white">Activity Logs</TabsTrigger>
+                                <TabsTrigger value="reminder" className="data-[state=active]:bg-sky-600 data-[state=active]:text-white">Reminders</TabsTrigger>
                             </TabsList>
 
                             {/* Tab 1: Log Activity */}
@@ -322,7 +322,7 @@ export default function LeadKanbanPage() {
                                                 required
                                             />
                                         </div>
-                                        <Button type="submit" disabled={isSavingActivity} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+                                        <Button type="submit" disabled={isSavingActivity} className="bg-sky-600 hover:bg-sky-500 text-white">
                                             {isSavingActivity ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Log'}
                                         </Button>
                                     </div>
@@ -340,7 +340,7 @@ export default function LeadKanbanPage() {
                                         activityLogs.map(log => (
                                             <div key={log.id} className="text-xs border-b border-slate-800/60 pb-2 last:border-0 last:pb-0">
                                                 <div className="flex justify-between text-slate-400 mb-1">
-                                                    <span className="font-semibold text-indigo-400">{log.actionType}</span>
+                                                    <span className="font-semibold text-sky-400">{log.actionType}</span>
                                                     <span>{format(new Date(log.createdAt), 'MMM dd, yyyy h:mm a')}</span>
                                                 </div>
                                                 <p className="text-slate-200">{log.notes}</p>
@@ -373,7 +373,7 @@ export default function LeadKanbanPage() {
                                         />
                                     </div>
                                     <div className="md:col-span-3 flex justify-end">
-                                        <Button type="submit" disabled={isSavingReminder} className="bg-teal-600 hover:bg-teal-500 text-white w-full md:w-auto">
+                                        <Button type="submit" disabled={isSavingReminder} className="bg-emerald-600 hover:bg-emerald-500 text-white w-full md:w-auto">
                                             {isSavingReminder ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Schedule'}
                                         </Button>
                                     </div>
@@ -396,7 +396,7 @@ export default function LeadKanbanPage() {
                                                         <Calendar className="h-3 w-3 text-slate-500" /> {format(new Date(rem.remindAt), 'MMM dd, yyyy h:mm a')}
                                                     </span>
                                                 </div>
-                                                <Badge className={rem.isCompleted ? 'bg-green-500/10 text-green-300' : 'bg-yellow-500/10 text-yellow-300'}>
+                                                <Badge className={rem.isCompleted ? 'bg-green-500/10 text-green-300' : 'bg-sky-500/10 text-sky-300'}>
                                                     {rem.isCompleted ? 'Completed' : 'Pending'}
                                                 </Badge>
                                             </div>

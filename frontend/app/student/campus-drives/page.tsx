@@ -57,20 +57,20 @@ export default function StudentCampusDrives() {
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-            <div className="mb-10 relative bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-800 rounded-3xl p-8 md:p-12 text-white shadow-2xl overflow-hidden border border-indigo-500/30">
-                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-                <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+            <div className="mb-10 relative bg-gradient-to-br from-sky-950 via-slate-900 to-sky-800 rounded-3xl p-8 md:p-12 text-white shadow-2xl overflow-hidden border border-sky-500/30">
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-sky-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
+                <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
                 
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
                     <div className="flex-1">
-                        <div className="inline-flex items-center rounded-full border border-indigo-400/50 bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-100 mb-6 backdrop-blur-md">
-                            <span className="flex h-2 w-2 rounded-full bg-teal-400 mr-2 animate-pulse"></span>
+                        <div className="inline-flex items-center rounded-full border border-sky-400/50 bg-sky-500/20 px-3 py-1 text-xs font-semibold text-sky-100 mb-6 backdrop-blur-md">
+                            <span className="flex h-2 w-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
                             Career Opportunities
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight leading-tight text-white drop-shadow-md">
-                            Campus <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-300">Placements & Melas</span>
+                            Campus <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-300">Placements & Melas</span>
                         </h1>
-                        <p className="text-indigo-100/80 text-lg max-w-2xl leading-relaxed">
+                        <p className="text-sky-100/80 text-lg max-w-2xl leading-relaxed">
                             Discover exclusive recruitment drives and Mega Job Melas. Connect with top-tier employers, submit your applications, and launch your career journey with Techwell.
                         </p>
                     </div>
@@ -90,16 +90,16 @@ export default function StudentCampusDrives() {
                             <div key={drive.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                                        <div className="w-14 h-14 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
                                             <Building2 className="w-7 h-7" />
                                         </div>
                                         <div>
                                             <h2 className="text-lg font-bold text-slate-800">{drive.title}</h2>
-                                            <div className="text-sm font-medium text-indigo-600">{drive.employer?.companyName || 'Multiple Companies'}</div>
+                                            <div className="text-sm font-medium text-sky-600">{drive.employer?.companyName || 'Multiple Companies'}</div>
                                         </div>
                                     </div>
                                     {drive.isOffCampus && (
-                                        <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                                        <span className="bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                                             Job Mela
                                         </span>
                                     )}
@@ -138,7 +138,7 @@ export default function StudentCampusDrives() {
                                             <CheckCircle2 className="w-4 h-4 mr-1.5" /> Applied
                                         </button>
                                     ) : (
-                                        <button onClick={() => handleApply(drive.id)} className="btn-sm bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-6 rounded-lg font-medium transition-colors">
+                                        <button onClick={() => handleApply(drive.id)} className="btn-sm bg-sky-600 hover:bg-sky-700 text-white py-2 px-6 rounded-lg font-medium transition-colors">
                                             Apply Now
                                         </button>
                                     )}

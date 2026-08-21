@@ -122,10 +122,10 @@ export default function EmployerCandidatesPage() {
     const getStatusBadge = (status: string) => {
         const map: Record<string, { bg: string; text: string; label: string }> = {
             'APPLIED': { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Applied' },
-            'SCREENED': { bg: 'bg-indigo-50', text: 'text-indigo-700', label: 'Screened' },
-            'SHORTLISTED': { bg: 'bg-purple-50', text: 'text-purple-700', label: 'Shortlisted' },
+            'SCREENED': { bg: 'bg-sky-50', text: 'text-sky-700', label: 'Screened' },
+            'SHORTLISTED': { bg: 'bg-sky-50', text: 'text-sky-700', label: 'Shortlisted' },
             'INTERVIEW_SCHEDULED': { bg: 'bg-violet-50', text: 'text-violet-700', label: 'Interview' },
-            'INTERVIEWED': { bg: 'bg-amber-50', text: 'text-amber-700', label: 'Interviewed' },
+            'INTERVIEWED': { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Interviewed' },
             'HIRED': { bg: 'bg-green-50', text: 'text-green-700', label: 'Hired' },
             'SELECTED': { bg: 'bg-green-50', text: 'text-green-700', label: 'Selected' },
             'REJECTED': { bg: 'bg-red-50', text: 'text-red-700', label: 'Rejected' },
@@ -179,7 +179,7 @@ export default function EmployerCandidatesPage() {
                 </Card>
                 <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
                     <CardContent className="p-5 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+                        <div className="h-12 w-12 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
                             <Star className="h-6 w-6" />
                         </div>
                         <div>
@@ -190,7 +190,7 @@ export default function EmployerCandidatesPage() {
                 </Card>
                 <Card className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
                     <CardContent className="p-5 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                        <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                             <Briefcase className="h-6 w-6" />
                         </div>
                         <div>
@@ -288,7 +288,7 @@ export default function EmployerCandidatesPage() {
                                     </TableCell>
                                     <TableCell className="py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0 border border-blue-200">
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-sky-100 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0 border border-blue-200">
                                                 {candidate.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
@@ -316,7 +316,7 @@ export default function EmployerCandidatesPage() {
                                                         className={cn("h-full rounded-full",
                                                             candidate.atsScore >= 80 ? "bg-green-500" :
                                                                 candidate.atsScore >= 60 ? "bg-blue-500" :
-                                                                    candidate.atsScore >= 40 ? "bg-amber-500" : "bg-red-500"
+                                                                    candidate.atsScore >= 40 ? "bg-emerald-500" : "bg-red-500"
                                                         )}
                                                         style={{ width: `${candidate.atsScore}%` }}
                                                     />
@@ -324,7 +324,7 @@ export default function EmployerCandidatesPage() {
                                                 <span className={cn("text-xs font-bold",
                                                     candidate.atsScore >= 80 ? "text-green-700" :
                                                         candidate.atsScore >= 60 ? "text-blue-700" :
-                                                            candidate.atsScore >= 40 ? "text-amber-700" : "text-red-700"
+                                                            candidate.atsScore >= 40 ? "text-emerald-700" : "text-red-700"
                                                 )}>{candidate.atsScore}</span>
                                             </div>
                                         ) : (

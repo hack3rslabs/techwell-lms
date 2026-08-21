@@ -108,14 +108,14 @@ export default function InstructorDashboard() {
                     icon={BookOpen}
                     label="Active Batches"
                     value={stats?.activeBatches ?? '-'}
-                    color="bg-purple-600"
+                    color="bg-sky-600"
                     loading={loading}
                 />
                 <StatCard
                     icon={FileCheck}
                     label="Pending Evaluations"
                     value={stats?.pendingEvaluations ?? '-'}
-                    color="bg-amber-500"
+                    color="bg-emerald-500"
                     loading={loading}
                 />
                 <StatCard
@@ -190,19 +190,19 @@ export default function InstructorDashboard() {
                 <div className="space-y-8">
                     {/* Pending Evaluations Alert */}
                     {stats && stats.pendingEvaluations > 0 && (
-                        <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                        <Card className="border-none shadow-sm bg-gradient-to-br from-emerald-50 to-sky-50 border-emerald-200">
                             <CardContent className="p-6">
                                 <div className="flex items-start gap-4">
-                                    <div className="p-3 rounded-2xl bg-amber-500 shadow-sm">
+                                    <div className="p-3 rounded-2xl bg-emerald-500 shadow-sm">
                                         <AlertTriangle className="h-6 w-6 text-white" />
                                     </div>
                                     <div className="flex-1">
-                                        <h3 className="font-bold text-amber-900">Pending Evaluations</h3>
-                                        <p className="text-sm text-amber-700 mt-1">
+                                        <h3 className="font-bold text-emerald-900">Pending Evaluations</h3>
+                                        <p className="text-sm text-emerald-700 mt-1">
                                             You have {stats.pendingEvaluations} assignment{stats.pendingEvaluations > 1 ? 's' : ''} waiting for review.
                                         </p>
                                         <Link href="/instructor/assessments">
-                                            <Button size="sm" className="mt-3 bg-amber-600 hover:bg-amber-700">
+                                            <Button size="sm" className="mt-3 bg-emerald-600 hover:bg-emerald-700">
                                                 Review Now
                                             </Button>
                                         </Link>
@@ -230,10 +230,10 @@ export default function InstructorDashboard() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-600">
                                     <span>Student Engagement</span>
-                                    <span className="text-purple-600 tracking-tighter">62%</span>
+                                    <span className="text-sky-600 tracking-tighter">62%</span>
                                 </div>
                                 <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
-                                    <div className="h-full bg-purple-600 w-[62%] rounded-full" />
+                                    <div className="h-full bg-sky-600 w-[62%] rounded-full" />
                                 </div>
                             </div>
                         </CardContent>

@@ -9,8 +9,8 @@ export default function CampusHiringAgreementPage() {
         <div className="min-h-screen py-20">
             <div className="container max-w-4xl">
                 <div className="flex items-center gap-4 mb-12">
-                    <div className="h-14 w-14 rounded-xl bg-pink-500/20 flex items-center justify-center">
-                        <Users className="h-7 w-7 text-pink-500" />
+                    <div className="h-14 w-14 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                        <Users className="h-7 w-7 text-emerald-500" />
                     </div>
                     <div>
                         <h1 className="text-4xl font-bold">Campus Hiring Participation Agreement</h1>
@@ -22,7 +22,7 @@ export default function CampusHiringAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-500 text-sm font-bold">1</span>
+                                <span className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-sm font-bold">1</span>
                                 Participation Rules
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">
@@ -34,7 +34,7 @@ export default function CampusHiringAgreementPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <span className="h-8 w-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-500 text-sm font-bold">2</span>
+                                <span className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-sm font-bold">2</span>
                                 Exclusivity & Non-Circumvention
                             </h2>
                             <p className="text-muted-foreground leading-relaxed">

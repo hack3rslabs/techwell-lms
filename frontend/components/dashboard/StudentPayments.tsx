@@ -42,7 +42,7 @@ export function StudentPayments() {
         switch (status.toUpperCase()) {
             case 'SUCCESS': return <CheckCircle2 className="w-5 h-5 text-green-500" />
             case 'FAILED': return <XCircle className="w-5 h-5 text-red-500" />
-            default: return <AlertCircle className="w-5 h-5 text-yellow-500" />
+            default: return <AlertCircle className="w-5 h-5 text-sky-500" />
         }
     }
 
@@ -50,7 +50,7 @@ export function StudentPayments() {
         switch (status.toUpperCase()) {
             case 'SUCCESS': return <Badge className="bg-green-100 text-green-800 border-none">Success</Badge>
             case 'FAILED': return <Badge className="bg-red-100 text-red-800 border-none">Failed</Badge>
-            default: return <Badge className="bg-yellow-100 text-yellow-800 border-none">Pending</Badge>
+            default: return <Badge className="bg-sky-100 text-sky-800 border-none">Pending</Badge>
         }
     }
 

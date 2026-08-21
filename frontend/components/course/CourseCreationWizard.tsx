@@ -1276,7 +1276,7 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
                                     onClick={() => handleStatusUpdate('IN_REVIEW')}
                                     className="p-4 border rounded-lg text-left hover:border-primary transition-colors"
                                 >
-                                    <div className="font-medium text-orange-600">Submit for Review</div>
+                                    <div className="font-medium text-sky-600">Submit for Review</div>
                                     <p className="text-xs text-muted-foreground mt-1">Send to admin for approval before publishing.</p>
                                 </button>
                                 <button

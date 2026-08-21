@@ -47,26 +47,14 @@ const partners = [
     { name: "Swiggy", domain: "swiggy.com" },
 ]
 
+import { Building2 } from "lucide-react";
+
 function PartnerLogo({ company }: { company: { name: string; domain: string } }) {
-    const [error, setError] = useState(false);
-
-    if (error) {
-        return (
-            <div className="text-xl font-bold text-muted-foreground whitespace-nowrap px-4 select-none">
-                {company.name}
-            </div>
-        );
-    }
-
     return (
-        <_Image
-            src={`https://logo.clearbit.com/${company.domain}?size=120`}
-            alt={company.name}
-            width={120}
-            height={48}
-            className="h-10 md:h-12 w-auto object-contain"
-            onError={() => setError(true)}
-        />
+        <div className="flex items-center gap-2 text-xl font-bold text-muted-foreground whitespace-nowrap px-4 select-none group-hover/section:text-slate-700 dark:group-hover/section:text-slate-300 transition-colors">
+            <Building2 className="w-5 h-5 text-primary" />
+            <span>{company.name}</span>
+        </div>
     );
 }
 

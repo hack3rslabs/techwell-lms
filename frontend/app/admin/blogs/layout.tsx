@@ -43,7 +43,7 @@ export default function BlogsAdminLayout({ children }: { children: React.ReactNo
       <aside className="w-72 flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full overflow-y-auto hidden md:flex">
         <div className="p-6 border-b border-slate-200 dark:border-slate-800">
             <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                <div className="h-8 w-8 rounded-lg bg-sky-600 flex items-center justify-center text-white">
                     <PenTool className="h-4 w-4" />
                 </div>
                 Techwell CMS
@@ -65,13 +65,13 @@ export default function BlogsAdminLayout({ children }: { children: React.ReactNo
                                     href={item.href}
                                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                                         isActive 
-                                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400' 
+                                            ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400' 
                                             : item.highlight 
-                                                ? 'bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-700 dark:text-purple-400 hover:from-purple-500/20 hover:to-pink-500/20'
+                                                ? 'bg-gradient-to-r from-sky-500/10 to-emerald-500/10 text-sky-700 dark:text-sky-400 hover:from-sky-500/20 hover:to-emerald-500/20'
                                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                                     }`}
                                 >
-                                    <Icon className={`h-4 w-4 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
+                                    <Icon className={`h-4 w-4 ${isActive ? 'text-sky-600 dark:text-sky-400' : ''}`} />
                                     {item.label}
                                 </Link>
                             )

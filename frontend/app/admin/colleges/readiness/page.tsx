@@ -112,7 +112,7 @@ export default function CollegeReadinessPage() {
             {/* Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-teal-400 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text text-transparent">
                         College Placement & Readiness Dashboard
                     </h1>
                     <p className="text-slate-400 text-sm">
@@ -135,11 +135,11 @@ export default function CollegeReadinessPage() {
                         </SelectContent>
                     </Select>
 
-                    <Button onClick={handleExport} className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs flex items-center gap-2">
+                    <Button onClick={handleExport} className="bg-sky-600 hover:bg-sky-500 text-white text-xs flex items-center gap-2">
                         <Download className="h-4 w-4" /> Export Report
                     </Button>
                     
-                    <Button variant="outline" size="icon" onClick={fetchData} className="border-slate-800 bg-slate-900 text-indigo-400 hover:text-indigo-300">
+                    <Button variant="outline" size="icon" onClick={fetchData} className="border-slate-800 bg-slate-900 text-sky-400 hover:text-sky-300">
                         <RefreshCw className="h-4 w-4" />
                     </Button>
                 </div>
@@ -150,7 +150,7 @@ export default function CollegeReadinessPage() {
                 <Card className="bg-slate-900 border-slate-800/80">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Enrolled Students</CardTitle>
-                        <Users className="h-4 w-4 text-indigo-400" />
+                        <Users className="h-4 w-4 text-sky-400" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-black text-slate-100">{isLoading ? <Loader2 className="h-4 w-4 animate-spin text-slate-500" /> : totalCount}</div>
@@ -161,7 +161,7 @@ export default function CollegeReadinessPage() {
                 <Card className="bg-slate-900 border-slate-800/80">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Placement Readiness Ratio</CardTitle>
-                        <Percent className="h-4 w-4 text-teal-400" />
+                        <Percent className="h-4 w-4 text-emerald-400" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-black text-slate-100">
@@ -187,7 +187,7 @@ export default function CollegeReadinessPage() {
                 <Card className="bg-slate-900 border-slate-800/80">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Avg AI Mock Score</CardTitle>
-                        <Award className="h-4 w-4 text-amber-400" />
+                        <Award className="h-4 w-4 text-emerald-400" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-black text-slate-100">
@@ -206,7 +206,7 @@ export default function CollegeReadinessPage() {
                 <CardContent>
                     {isLoading ? (
                         <div className="flex h-48 items-center justify-center">
-                            <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                            <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
                         </div>
                     ) : filteredStudents.length === 0 ? (
                         <div className="text-center py-12 text-slate-500 text-sm">
@@ -248,7 +248,7 @@ export default function CollegeReadinessPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-center font-bold text-slate-200">
-                                                <span className={student.averageScore >= 75 ? 'text-teal-400' : student.averageScore >= 60 ? 'text-amber-400' : 'text-red-400'}>
+                                                <span className={student.averageScore >= 75 ? 'text-emerald-400' : student.averageScore >= 60 ? 'text-emerald-400' : 'text-red-400'}>
                                                     {student.averageScore}%
                                                 </span>
                                             </TableCell>
@@ -258,10 +258,10 @@ export default function CollegeReadinessPage() {
                                             <TableCell>
                                                 <Badge className={
                                                     student.status === 'PLACEMENT_READY' 
-                                                        ? 'bg-teal-500/10 text-teal-300 border-teal-500/20' 
+                                                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' 
                                                         : student.status === 'TRAINING_IN_PROGRESS' 
-                                                        ? 'bg-amber-500/10 text-amber-300 border-amber-500/20' 
-                                                        : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20'
+                                                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' 
+                                                        : 'bg-sky-500/10 text-sky-300 border-sky-500/20'
                                                 }>
                                                     {student.status === 'PLACEMENT_READY' 
                                                         ? 'Placement Ready' 

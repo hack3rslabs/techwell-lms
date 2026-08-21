@@ -62,11 +62,11 @@ export default function FranchiseRequestClient() {
       <div className="bg-slate-900 text-white py-20 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay"></div>
         <div className="max-w-5xl mx-auto relative z-10 text-center space-y-6">
-          <Badge className="bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border-none px-4 py-2 uppercase tracking-widest font-bold">
+          <Badge className="bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 border-none px-4 py-2 uppercase tracking-widest font-bold">
             Partner Network
           </Badge>
           <h1 className="text-4xl md:text-6xl font-black">
-            Start Your Own <span className="text-orange-500">Techwell Franchise</span>
+            Start Your Own <span className="text-sky-500">Techwell Franchise</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto">
             Join India's fastest-growing ecosystem for IT Training, Placement Assistance, and Business Consulting. High ROI, zero curriculum headaches.
@@ -76,7 +76,7 @@ export default function FranchiseRequestClient() {
 
       <div className="max-w-5xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-          <div className="w-12 h-12 bg-orange-100 dark:bg-orange-500/20 text-orange-600 mx-auto rounded-full flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-sky-100 dark:bg-sky-500/20 text-sky-600 mx-auto rounded-full flex items-center justify-center mb-4">
             <TrendingUp className="h-6 w-6" />
           </div>
           <h3 className="text-lg font-bold mb-2">High Profit Margins</h3>

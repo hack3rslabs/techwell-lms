@@ -75,7 +75,7 @@ export default function InstitutePlacements() {
                                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">In Process</div>
                                         <div className="text-3xl font-bold text-slate-800">{loading ? '...' : totalInProcess}</div>
                                     </div>
-                                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-500">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-500">
                                         <Clock className="w-5 h-5" />
                                     </div>
                                 </div>
@@ -87,7 +87,7 @@ export default function InstitutePlacements() {
                                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Avg CTC</div>
                                         <div className="text-3xl font-bold text-slate-800">{avgSalary}</div>
                                     </div>
-                                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500">
+                                    <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-500">
                                         <TrendingUp className="w-5 h-5" />
                                     </div>
                                 </div>
@@ -98,7 +98,7 @@ export default function InstitutePlacements() {
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                                 <h2 className="font-semibold text-slate-800">Recent Campus Drives</h2>
-                                <button className="text-sm font-medium text-indigo-500 hover:text-indigo-600">View All</button>
+                                <button className="text-sm font-medium text-sky-500 hover:text-sky-600">View All</button>
                             </div>
                             <div className="p-0">
                                 {loading ? (
@@ -130,7 +130,7 @@ export default function InstitutePlacements() {
                                                             {drive.location || 'Remote'}
                                                         </td>
                                                         <td className="px-5 py-4 text-right">
-                                                            <button className="text-indigo-600 text-sm font-medium hover:text-indigo-800">
+                                                            <button className="text-sky-600 text-sm font-medium hover:text-sky-800">
                                                                 View Pipeline
                                                             </button>
                                                         </td>

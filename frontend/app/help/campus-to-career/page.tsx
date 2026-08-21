@@ -34,21 +34,21 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(campusJsonLd) }}
         <div className="bg-slate-50 dark:bg-[#030712] min-h-screen">
             
             {/* HERO SECTION */}
-            <div className="bg-indigo-950 text-white py-24 px-4 relative overflow-hidden">
+            <div className="bg-sky-950 text-white py-24 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-                <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-indigo-500/30 to-transparent blur-3xl -z-10"></div>
+                <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-sky-500/30 to-transparent blur-3xl -z-10"></div>
                 <div className="max-w-6xl mx-auto relative z-10 text-center space-y-6">
-                    <Badge className="bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 border-none px-4 py-2 uppercase tracking-widest font-bold">
+                    <Badge className="bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 border-none px-4 py-2 uppercase tracking-widest font-bold">
                         Bridging The Gap
                     </Badge>
                     <h1 className="text-4xl md:text-6xl font-black">
-                        Campus to <span className="text-indigo-400">Career</span>
+                        Campus to <span className="text-sky-400">Career</span>
                     </h1>
                     <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto">
                         Empowering educational institutes with Corporate RTraining, AI-driven mock interviews, and guaranteed mass Campus Placement Drives with top-tier MNCs.
                     </p>
                     <div className="pt-8 flex flex-col sm:flex-row justify-center gap-4">
-                        <Button asChild size="lg" className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold h-14 px-8 rounded-xl">
+                        <Button asChild size="lg" className="bg-sky-500 hover:bg-sky-600 text-white font-bold h-14 px-8 rounded-xl">
                             <Link href="/contact?type=campus">Partner your College</Link>
                         </Button>
                         <Button asChild variant="outline" size="lg" className="h-14 px-8 rounded-xl font-bold bg-white/10 border-white/20 hover:bg-white/20 text-white">
@@ -67,7 +67,7 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(campusJsonLd) }}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Block 1 */}
                     <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                        <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+                        <div className="w-14 h-14 bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-2xl flex items-center justify-center mb-6">
                             <GraduationCap className="h-7 w-7" />
                         </div>
                         <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Corporate RTraining</h3>
@@ -77,7 +77,7 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(campusJsonLd) }}
                         <ul className="space-y-3">
                             {['Full Stack Development', 'AI & Machine Learning', 'Data Structures & Algos'].map((item, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
-                                    <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" />
+                                    <CheckCircle2 className="w-5 h-5 text-sky-500 shrink-0" />
                                     <span>{item}</span>
                                 </li>
                             ))}
@@ -125,9 +125,9 @@ dangerouslySetInnerHTML={{ __html: JSON.stringify(campusJsonLd) }}
             </div>
 
             {/* CTA SECTION */}
-            <div className="bg-indigo-50 dark:bg-slate-900 border-t border-b border-indigo-100 dark:border-slate-800 py-16 text-center px-4">
+            <div className="bg-sky-50 dark:bg-slate-900 border-t border-b border-sky-100 dark:border-slate-800 py-16 text-center px-4">
                 <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-6">Ready to Transform Your Institute?</h2>
-                <Button asChild size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-10 h-14 font-bold">
+                <Button asChild size="lg" className="bg-sky-600 hover:bg-sky-700 text-white rounded-full px-10 h-14 font-bold">
                     <Link href="/contact?type=campus">Schedule a Meeting <ArrowRight className="ml-2 w-5 h-5" /></Link>
                 </Button>
             </div>

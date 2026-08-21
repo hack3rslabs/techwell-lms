@@ -45,7 +45,7 @@ export default function PlacementCalendar() {
                     {dayEvents.map(ev => (
                         <div key={ev.id} className={`text-[10px] p-1 mb-1 rounded-sm font-medium truncate
                             ${ev.type === 'drive' ? 'bg-blue-100 text-blue-800 border-l-2 border-blue-500' :
-                              ev.type === 'interview' ? 'bg-purple-100 text-purple-800 border-l-2 border-purple-500' :
+                              ev.type === 'interview' ? 'bg-sky-100 text-sky-800 border-l-2 border-sky-500' :
                               'bg-green-100 text-green-800 border-l-2 border-green-500'}`}>
                             {ev.time} - {ev.title}
                         </div>
@@ -62,7 +62,7 @@ export default function PlacementCalendar() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-6">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground tracking-tight flex items-center gap-2">
-                        <CalendarIcon className="h-8 w-8 text-indigo-600" />
+                        <CalendarIcon className="h-8 w-8 text-sky-600" />
                         Placement Calendar
                     </h1>
                     <p className="text-muted-foreground mt-1 text-sm font-medium">Schedule of all upcoming campus drives and interviews.</p>
@@ -97,7 +97,7 @@ export default function PlacementCalendar() {
             
             <div className="flex gap-4 items-center justify-center text-sm">
                 <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-blue-500"></div> Campus Drive</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-purple-500"></div> Interviews</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-sky-500"></div> Interviews</div>
                 <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-green-500"></div> Pre-Placement Talk</div>
             </div>
         </div>

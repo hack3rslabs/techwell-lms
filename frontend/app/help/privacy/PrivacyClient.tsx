@@ -54,7 +54,7 @@ export default function PrivacyClient() {
                                     </ul>
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-purple-500 mb-2">Interview Data</h3>
+                                    <h3 className="text-lg font-semibold text-sky-500 mb-2">Interview Data</h3>
                                     <ul className="space-y-2 text-muted-foreground">
                                         <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Audio recordings (processed for speech-to-text only)</li>
                                         <li className="flex items-start gap-2"><Check className="h-5 w-5 text-green-500 mt-0.5 shrink-0" /> Video recordings (for camera-on practice sessions)</li>
@@ -164,13 +164,13 @@ export default function PrivacyClient() {
                             </h2>
                             <p className="text-muted-foreground mb-4">For privacy-related inquiries or to exercise your rights:</p>
                             <div className="flex flex-wrap gap-4">
-                                <Link href="mailto:info@techwell.co.in">
+                                <Link href="mailto:support@techwell.co.in">
                                     <Button variant="outline" className="gap-2">
                                         <Mail className="h-4 w-4" />
-                                        info@techwell.co.in
+                                        support@techwell.co.in
                                     </Button>
                                 </Link>
-                                <Link href="mailto:info@techwell.co.in">
+                                <Link href="mailto:support@techwell.co.in">
                                     <Button variant="outline" className="gap-2">
                                         <User className="h-4 w-4" />
                                         Data Protection Officer

@@ -27,14 +27,14 @@ export default function WorkflowSidebar() {
       </div>
 
       <div 
-        className="flex items-center gap-3 p-3 border-2 border-purple-500/20 bg-purple-50 dark:bg-purple-900/20 rounded-lg cursor-grab hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+        className="flex items-center gap-3 p-3 border-2 border-sky-500/20 bg-sky-50 dark:bg-sky-900/20 rounded-lg cursor-grab hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-colors"
         onDragStart={(event) => onDragStart(event, 'AI_REASON', 'New AI Agent')}
         draggable
       >
-        <div className="p-2 bg-purple-500 text-white rounded-md">
+        <div className="p-2 bg-sky-500 text-white rounded-md">
           <BrainCircuit className="w-4 h-4" />
         </div>
-        <span className="font-medium text-sm text-purple-900 dark:text-purple-100">AI Reasoning</span>
+        <span className="font-medium text-sm text-sky-900 dark:text-sky-100">AI Reasoning</span>
       </div>
 
       <div 

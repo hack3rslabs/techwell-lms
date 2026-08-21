@@ -240,7 +240,7 @@ export default function ChatWidget() {
                 <Button
                     id="chat-widget-open-btn"
                     onClick={() => setIsOpen(true)}
-                    className="relative h-14 w-14 rounded-full shadow-2xl bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white transition-all duration-300 hover:scale-110 border border-white/10"
+                    className="relative h-14 w-14 rounded-full shadow-2xl bg-gradient-to-br from-violet-600 to-sky-700 hover:from-violet-500 hover:to-sky-600 text-white transition-all duration-300 hover:scale-110 border border-white/10"
                     aria-label="Open Techwell AI Assistant"
                 >
                     <Bot className="h-7 w-7" />
@@ -269,7 +269,7 @@ export default function ChatWidget() {
             }}
         >
             {/* ── Header ─────────────────────────────────────────────────── */}
-            <div className="shrink-0 bg-gradient-to-r from-violet-700 via-indigo-700 to-purple-800 px-4 py-3 flex items-center justify-between shadow-lg">
+            <div className="shrink-0 bg-gradient-to-r from-violet-700 via-sky-700 to-sky-800 px-4 py-3 flex items-center justify-between shadow-lg">
                 <div className="flex items-center gap-3">
                     {mode === 'ticket' ? (
                         <Button
@@ -285,7 +285,7 @@ export default function ChatWidget() {
                             <div className="h-9 w-9 rounded-full bg-white/15 flex items-center justify-center border border-white/20 shadow-inner">
                                 <Bot className="h-5 w-5 text-white" />
                             </div>
-                            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-emerald-400 rounded-full border-2 border-indigo-800 animate-pulse" />
+                            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-emerald-400 rounded-full border-2 border-sky-800 animate-pulse" />
                         </div>
                     )}
                     <div>
@@ -327,11 +327,11 @@ export default function ChatWidget() {
 
             {/* ── Trust bar (shown once chat is active) ─────────────────── */}
             {mode === 'chat' && hasProvidedDetails && (
-                <div className="shrink-0 border-b border-white/5 px-4 py-1.5 flex items-center gap-3 text-[10px] text-indigo-300"
+                <div className="shrink-0 border-b border-white/5 px-4 py-1.5 flex items-center gap-3 text-[10px] text-sky-300"
                     style={{ background: 'rgba(30,20,60,0.5)' }}>
                     <span className="flex items-center gap-1"><Shield className="h-2.5 w-2.5 text-emerald-400" /> Confidential</span>
                     <span className="text-white/20">|</span>
-                    <span className="flex items-center gap-1"><Zap className="h-2.5 w-2.5 text-amber-400" /> Gemini AI</span>
+                    <span className="flex items-center gap-1"><Zap className="h-2.5 w-2.5 text-emerald-400" /> Gemini AI</span>
                     <span className="text-white/20">|</span>
                     <span>Replies in seconds</span>
                 </div>
@@ -401,7 +401,7 @@ export default function ChatWidget() {
                         </div>
                         <Button
                             type="submit" disabled={isSubmittingTicket}
-                            className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold shadow-lg"
+                            className="w-full bg-gradient-to-r from-violet-600 to-sky-600 hover:from-violet-500 hover:to-sky-500 text-white font-semibold shadow-lg"
                         >
                             {isSubmittingTicket
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2" />Submitting…</>
@@ -418,7 +418,7 @@ export default function ChatWidget() {
                     style={{ background: 'rgba(10,10,20,0.85)' }}>
                     {/* Hero */}
                     <div className="text-center">
-                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center mx-auto mb-3 shadow-xl shadow-violet-900/40">
+                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-600 to-sky-700 flex items-center justify-center mx-auto mb-3 shadow-xl shadow-violet-900/40">
                             <Bot className="h-7 w-7 text-white" />
                         </div>
                         <h3 className="font-bold text-white text-base">How can we help you?</h3>
@@ -513,7 +513,7 @@ export default function ChatWidget() {
                             type="submit"
                             id="chat-lead-start-btn"
                             disabled={isSubmittingLead}
-                            className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-violet-900/30 py-5 text-sm"
+                            className="w-full bg-gradient-to-r from-violet-600 to-sky-600 hover:from-violet-500 hover:to-sky-500 text-white font-semibold shadow-lg shadow-violet-900/30 py-5 text-sm"
                         >
                             {isSubmittingLead ? (
                                 <>
@@ -553,14 +553,14 @@ export default function ChatWidget() {
                         {messages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} gap-2 items-end`}>
                                 {msg.role === 'model' && (
-                                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center shrink-0 shadow-md mb-0.5">
+                                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-violet-600 to-sky-700 flex items-center justify-center shrink-0 shadow-md mb-0.5">
                                         <Bot className="h-3.5 w-3.5 text-white" />
                                     </div>
                                 )}
                                 <div
                                     className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-md whitespace-pre-wrap ${
                                         msg.role === 'user'
-                                            ? 'bg-gradient-to-br from-violet-600 to-indigo-700 text-white rounded-br-sm'
+                                            ? 'bg-gradient-to-br from-violet-600 to-sky-700 text-white rounded-br-sm'
                                             : 'border border-white/10 text-slate-200 rounded-bl-sm'
                                     }`}
                                     style={msg.role === 'model' ? { background: 'rgba(255,255,255,0.07)' } : {}}
@@ -578,7 +578,7 @@ export default function ChatWidget() {
                         {/* Typing indicator */}
                         {isThinking && (
                             <div className="flex justify-start gap-2 items-end">
-                                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center shrink-0 shadow-md">
+                                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-violet-600 to-sky-700 flex items-center justify-center shrink-0 shadow-md">
                                     <Bot className="h-3.5 w-3.5 text-white" />
                                 </div>
                                 <div className="rounded-2xl rounded-bl-sm px-4 py-3 shadow-md flex items-center gap-1.5 border border-white/10"
@@ -626,7 +626,7 @@ export default function ChatWidget() {
                             size="icon"
                             onClick={() => handleSendMessage()}
                             disabled={isThinking || !inputText.trim()}
-                            className="bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white shadow-md disabled:opacity-40 shrink-0"
+                            className="bg-gradient-to-br from-violet-600 to-sky-700 hover:from-violet-500 hover:to-sky-600 text-white shadow-md disabled:opacity-40 shrink-0"
                             aria-label="Send message"
                         >
                             <Send className="h-4 w-4" />

@@ -220,7 +220,7 @@ export default function ForumPage() {
                                             {item.title}
                                         </h4>
                                         {item.isPinned && (
-                                            <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium border border-amber-200">
+                                            <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium border border-emerald-200">
                                                 PINNED
                                             </span>
                                         )}

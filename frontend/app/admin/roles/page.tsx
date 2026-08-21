@@ -240,9 +240,9 @@ export default function AdminUsersPage() {
 
     const getRoleBadgeColor = (role: string) => {
         switch (role) {
-            case 'SUPER_ADMIN': return 'bg-purple-500/10 text-purple-600 border-purple-200'
+            case 'SUPER_ADMIN': return 'bg-sky-500/10 text-sky-600 border-sky-200'
             case 'ADMIN': return 'bg-blue-500/10 text-blue-600 border-blue-200'
-            case 'EMPLOYER': return 'bg-orange-500/10 text-orange-600 border-orange-200'
+            case 'EMPLOYER': return 'bg-sky-500/10 text-sky-600 border-sky-200'
             case 'STUDENT': return 'bg-green-500/10 text-green-600 border-green-200'
             default: return 'bg-gray-500/10 text-gray-600 border-gray-200'
         }
@@ -331,7 +331,7 @@ export default function AdminUsersPage() {
                                 <tr key={user.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors duration-300 group">
                                     <td className="p-5">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 border border-indigo-200/50 dark:border-indigo-700/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300 shadow-sm transition-transform group-hover:scale-105">{user.name[0]}</div>
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-sky-100 to-sky-100 dark:from-sky-900/50 dark:to-sky-900/50 border border-sky-200/50 dark:border-sky-700/50 flex items-center justify-center font-bold text-sky-700 dark:text-sky-300 shadow-sm transition-transform group-hover:scale-105">{user.name[0]}</div>
                                             <div>
                                                 <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center">{user.name} {user.regId && <Badge variant="outline" className="ml-2 text-[9px] px-1.5 h-5 border-slate-200 dark:border-slate-700 text-slate-500 bg-white/50 dark:bg-slate-900/50">{user.regId}</Badge>}</div>
                                                 <div className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">{user.email}</div>
@@ -344,14 +344,14 @@ export default function AdminUsersPage() {
                                         </Badge>
                                     </td>
                                     <td className="p-5">
-                                        {user.isActive ? <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/50 text-[10px] shadow-sm uppercase tracking-wider">ACTIVE</Badge> : <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200/50 dark:border-rose-800/50 text-[10px] shadow-sm uppercase tracking-wider">LOCKED</Badge>}
+                                        {user.isActive ? <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/50 text-[10px] shadow-sm uppercase tracking-wider">ACTIVE</Badge> : <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/50 text-[10px] shadow-sm uppercase tracking-wider">LOCKED</Badge>}
                                     </td>
                                     <td className="p-5 text-right">
                                         <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30 rounded-full transition-colors" onClick={() => openEditUserModal(user)}><Edit2 className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-900/30 rounded-full transition-colors" onClick={() => openEditUserModal(user)}><Edit2 className="h-4 w-4" /></Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-full transition-colors" onClick={() => router.push(`/admin/users/${user.id}`)}><Eye className="h-4 w-4" /></Button>
                                             {!isSuperAdminRole(user.systemRole?.name || user.role) && (
-                                                <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-full transition-colors ${user.isActive ? 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30' : 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'}`} onClick={() => toggleUserStatus(user.id, user.isActive)}>
+                                                <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-full transition-colors ${user.isActive ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30' : 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'}`} onClick={() => toggleUserStatus(user.id, user.isActive)}>
                                                     {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                                                 </Button>
                                             )}
@@ -393,10 +393,10 @@ export default function AdminUsersPage() {
                                 <td className="p-5 text-right">
                                     <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                                         {!isSuperAdminRole(role.name) && (
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30 rounded-full transition-colors" onClick={() => openEditRoleModal(role)}><Edit2 className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-900/30 rounded-full transition-colors" onClick={() => openEditRoleModal(role)}><Edit2 className="h-4 w-4" /></Button>
                                         )}
                                         {!role.isSystem && (
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/30 rounded-full transition-colors" onClick={() => { setRoleToDelete(role); setIsDeleteRoleOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-emerald-500 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/30 rounded-full transition-colors" onClick={() => { setRoleToDelete(role); setIsDeleteRoleOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
                                         )}
                                     </div>
                                 </td>
@@ -415,7 +415,7 @@ export default function AdminUsersPage() {
         <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Users & Roles</h1>
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#0d1b3e] to-[#1469E2]">Users & Roles</h1>
                     <p className="text-muted-foreground text-sm">Manage platform accounts and access hierarchies.</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -471,7 +471,7 @@ export default function AdminUsersPage() {
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {Array.from(new Set(permissions.map(p => p.module || 'General'))).map(moduleName => (
                                         <React.Fragment key={moduleName}>
-                                            <tr className="bg-indigo-50/50 dark:bg-indigo-900/10"><td colSpan={6} className="p-2 px-3 font-black text-[10px] tracking-wider uppercase text-indigo-600 dark:text-indigo-400">{moduleName}</td></tr>
+                                            <tr className="bg-sky-50/50 dark:bg-sky-900/10"><td colSpan={6} className="p-2 px-3 font-black text-[10px] tracking-wider uppercase text-sky-600 dark:text-sky-400">{moduleName}</td></tr>
                                             {permissions.filter(p => (p.module || 'General') === moduleName).map(perm => {
                                                 const p = newRoleData.permissions.find(pr => pr.featureId === perm.id) || { canRead: false, canCreate: false, canUpdate: false, canDelete: false, isDisabled: false };
                                                 return (
@@ -480,7 +480,7 @@ export default function AdminUsersPage() {
                                                         <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary" checked={p.canCreate} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canCreate', !!v)} /></td>
                                                         <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary" checked={p.canUpdate} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canUpdate', !!v)} /></td>
                                                         <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary" checked={p.canDelete} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'canDelete', !!v)} /></td>
-                                                        <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-rose-500" checked={p.isDisabled} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'isDisabled', !!v)} /></td>
+                                                        <td className="p-3 text-center"><Checkbox className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-emerald-500" checked={p.isDisabled} onCheckedChange={(v) => handlePermissionLevelChange(perm.id, 'isDisabled', !!v)} /></td>
                                                     </tr>
                                                 )
                                             })}

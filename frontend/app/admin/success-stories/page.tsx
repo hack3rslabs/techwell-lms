@@ -175,7 +175,7 @@ export default function SuccessStoriesPage() {
                 {[
                     { label: "Total", count: stories.length, color: "text-blue-400", bg: "bg-blue-500/10", icon: Star },
                     { label: "Active", count: stories.filter(s => s.isActive).length, color: "text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle },
-                    { label: "Inactive", count: stories.filter(s => !s.isActive).length, color: "text-amber-400", bg: "bg-amber-500/10", icon: XCircle },
+                    { label: "Inactive", count: stories.filter(s => !s.isActive).length, color: "text-emerald-400", bg: "bg-emerald-500/10", icon: XCircle },
                 ].map(({ label, count, color, bg, icon: Icon }) => (
                     <Card key={label} className="glass-card border-white/10">
                         <CardContent className="pt-6 flex items-center gap-3">
@@ -243,7 +243,7 @@ export default function SuccessStoriesPage() {
                                 <div className="flex gap-2 mt-3 pt-3 border-t border-white/10">
                                     <Button
                                         variant="ghost" size="sm"
-                                        className={`h-8 text-xs flex-1 ${story.isActive ? 'text-amber-400 hover:bg-amber-500/10' : 'text-emerald-400 hover:bg-emerald-500/10'}`}
+                                        className={`h-8 text-xs flex-1 ${story.isActive ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-emerald-400 hover:bg-emerald-500/10'}`}
                                         onClick={() => handleToggle(story)}
                                     >
                                         {story.isActive ? <XCircle className="h-3.5 w-3.5 mr-1" /> : <CheckCircle className="h-3.5 w-3.5 mr-1" />}

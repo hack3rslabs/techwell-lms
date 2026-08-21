@@ -83,7 +83,7 @@ function WorkflowCanvas({ initialNodes, initialEdges, onSave }: any) {
         <div className="absolute top-4 right-4 z-10 flex gap-2">
           <button 
             onClick={handleSave}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-indigo-700 transition-colors text-sm font-medium"
+            className="bg-sky-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-sky-700 transition-colors text-sm font-medium"
           >
             Save Workflow
           </button>

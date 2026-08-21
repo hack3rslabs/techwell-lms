@@ -120,10 +120,10 @@ export default function LeadIntegrationsPage() {
                 </Card>
 
                 {/* JustDial Integration */}
-                <Card className="border-orange-200 bg-orange-50/20">
+                <Card className="border-sky-200 bg-sky-50/20">
                     <CardHeader>
                         <CardTitle className="flex justify-between">
-                            <span className="flex items-center gap-2"><Phone className="h-5 w-5 text-orange-600" /> Just Dial</span>
+                            <span className="flex items-center gap-2"><Phone className="h-5 w-5 text-sky-600" /> Just Dial</span>
                             {integrations.find(i => i.platform === 'JUSTDIAL') ? (
                                 <Badge className="bg-green-500">Connected</Badge>
                             ) : (

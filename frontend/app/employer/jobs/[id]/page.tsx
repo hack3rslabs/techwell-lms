@@ -19,9 +19,9 @@ interface ColumnConfig {
 const COLUMNS: Record<string, ColumnConfig> = {
     APPLIED: { title: "Applied", color: "bg-gray-100" },
     VIEWED: { title: "Viewed", color: "bg-blue-50" }, // Added Viewed
-    SCREENED: { title: "Screened", color: "bg-indigo-50" },
-    SHORTLISTED: { title: "Shortlisted", color: "bg-purple-50" },
-    INTERVIEW_SCHEDULED: { title: "Interview", color: "bg-pink-50" },
+    SCREENED: { title: "Screened", color: "bg-sky-50" },
+    SHORTLISTED: { title: "Shortlisted", color: "bg-sky-50" },
+    INTERVIEW_SCHEDULED: { title: "Interview", color: "bg-emerald-50" },
     SELECTED: { title: "Selected", color: "bg-green-50" },
     APPOINTED: { title: "Hired", color: "bg-emerald-100 border-emerald-200" }, // Renamed Hired in UI
     REJECTED: { title: "Rejected", color: "bg-red-50" }
@@ -182,12 +182,12 @@ export default function ATSPipelinePage() {
                                                                             <Badge variant="default" className="bg-blue-600 text-[10px] h-5 px-1">Techwell</Badge>
                                                                         )}
                                                                         {app.atsScore > 0 && (
-                                                                            <Badge variant="outline" className={`text-[10px] h-5 px-1 ${app.atsScore >= 80 ? 'text-green-600 border-green-200' : 'text-orange-500'}`}>
+                                                                            <Badge variant="outline" className={`text-[10px] h-5 px-1 ${app.atsScore >= 80 ? 'text-green-600 border-green-200' : 'text-sky-500'}`}>
                                                                                 {app.atsScore}% Match
                                                                             </Badge>
                                                                         )}
                                                                         {app.linkedInterview?.evaluation && (
-                                                                            <Badge variant="outline" className="text-[10px] h-5 px-1 bg-indigo-50 text-indigo-700 border-indigo-200">
+                                                                            <Badge variant="outline" className="text-[10px] h-5 px-1 bg-sky-50 text-sky-700 border-sky-200">
                                                                                 AI Score: {app.linkedInterview.evaluation.overallScore}%
                                                                             </Badge>
                                                                         )}

@@ -59,12 +59,12 @@ export default function IndiaTemplate(props: ResumeProps) {
   const displayName = props.fullName || props.name;
 
   return (
-    <div className="p-10 bg-white text-black font-sans leading-tight max-w-4xl mx-auto border-t-8 border-indigo-600">
+    <div className="p-10 bg-white text-black font-sans leading-tight max-w-4xl mx-auto border-t-8 border-sky-600">
       {/* HEADER */}
       <div className="flex justify-between items-start mb-8 pb-4 border-b border-gray-200">
         <div>
           <h1 className="text-3xl font-black text-gray-900 leading-none mb-1">{displayName}</h1>
-          <div className="text-sm font-bold text-indigo-600 tracking-wide uppercase">
+          <div className="text-sm font-bold text-sky-600 tracking-wide uppercase">
             {props.targetRole} {props.domain ? `| ${props.domain}` : ""}
           </div>
         </div>
@@ -74,12 +74,12 @@ export default function IndiaTemplate(props: ResumeProps) {
           {props.location && <div>📍 {props.location}</div>}
           {props.linkedIn && (
             <div>
-              🔗 <a href={props.linkedIn} className="text-indigo-600 font-bold hover:underline">{props.linkedIn.replace(/^https?:\/\/(www\.)?/, '')}</a>
+              🔗 <a href={props.linkedIn} className="text-sky-600 font-bold hover:underline">{props.linkedIn.replace(/^https?:\/\/(www\.)?/, '')}</a>
             </div>
           )}
           {props.github && (
             <div>
-              💻 <a href={props.github} className="text-indigo-600 font-bold hover:underline">{props.github.replace(/^https?:\/\/(www\.)?/, '')}</a>
+              💻 <a href={props.github} className="text-sky-600 font-bold hover:underline">{props.github.replace(/^https?:\/\/(www\.)?/, '')}</a>
             </div>
           )}
         </div>
@@ -88,7 +88,7 @@ export default function IndiaTemplate(props: ResumeProps) {
       {/* SUMMARY */}
       {props.summary && (
         <div className="mb-6">
-          <h2 className="text-xs font-black uppercase text-indigo-600 tracking-wider mb-2 border-b border-indigo-100 pb-1">Professional Summary</h2>
+          <h2 className="text-xs font-black uppercase text-sky-600 tracking-wider mb-2 border-b border-sky-100 pb-1">Professional Summary</h2>
           <p className="text-[12px] text-gray-700 leading-relaxed text-justify">{props.summary}</p>
         </div>
       )}
@@ -96,7 +96,7 @@ export default function IndiaTemplate(props: ResumeProps) {
       {/* SKILLS */}
       {(props.technicalSkills?.length || props.toolsPlatforms?.length || props.softSkills?.length) ? (
         <div className="mb-6">
-          <h2 className="text-xs font-black uppercase text-indigo-600 tracking-wider mb-2 border-b border-indigo-100 pb-1">Skills & Expertise</h2>
+          <h2 className="text-xs font-black uppercase text-sky-600 tracking-wider mb-2 border-b border-sky-100 pb-1">Skills & Expertise</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[11px] text-gray-700">
             {props.technicalSkills && props.technicalSkills.length > 0 && (
               <div>
@@ -123,14 +123,14 @@ export default function IndiaTemplate(props: ResumeProps) {
       {/* EXPERIENCE */}
       {props.experience && props.experience.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xs font-black uppercase text-indigo-600 tracking-wider mb-3 border-b border-indigo-100 pb-1">Work Experience</h2>
+          <h2 className="text-xs font-black uppercase text-sky-600 tracking-wider mb-3 border-b border-sky-100 pb-1">Work Experience</h2>
           {props.experience.map((exp, idx) => (
             <div key={idx} className="mb-4">
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="font-bold text-[12px] text-gray-950">{exp.jobTitle}</h3>
                 <span className="text-[10px] font-black text-gray-400 uppercase">{exp.startDate} – {exp.currentlyWorking ? "Present" : exp.endDate}</span>
               </div>
-              <div className="text-[11px] font-bold text-indigo-600 mb-1.5">{exp.companyName} {exp.location ? `— ${exp.location}` : ""}</div>
+              <div className="text-[11px] font-bold text-sky-600 mb-1.5">{exp.companyName} {exp.location ? `— ${exp.location}` : ""}</div>
               <div className="text-[11px] text-gray-600">
                 <ul className="list-disc ml-4 space-y-1">
                   {exp.description.split('\n').filter(d => d.trim()).map((bullet, bIdx) => (
@@ -149,7 +149,7 @@ export default function IndiaTemplate(props: ResumeProps) {
       {/* EDUCATION */}
       {props.education && props.education.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xs font-black uppercase text-indigo-600 tracking-wider mb-2 border-b border-indigo-100 pb-1">Education</h2>
+          <h2 className="text-xs font-black uppercase text-sky-600 tracking-wider mb-2 border-b border-sky-100 pb-1">Education</h2>
           <div className="space-y-3">
             {props.education.map((edu, idx) => (
               <div key={idx} className="flex justify-between items-start text-[11px]">
@@ -159,7 +159,7 @@ export default function IndiaTemplate(props: ResumeProps) {
                 </div>
                 <div className="text-right">
                   <div className="font-bold">{edu.endYear}</div>
-                  {edu.percentage && <div className="text-indigo-600 font-bold">Marks: {edu.percentage}</div>}
+                  {edu.percentage && <div className="text-sky-600 font-bold">Marks: {edu.percentage}</div>}
                 </div>
               </div>
             ))}

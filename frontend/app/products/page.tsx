@@ -33,12 +33,12 @@ export default function ProductsPage() {
             <div className="max-w-6xl mx-auto space-y-12">
                 {/* Header banner */}
                 <div className="text-center space-y-4 max-w-2xl mx-auto animate-in fade-in duration-700">
-                    <Badge className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 uppercase font-bold py-1 px-3">
+                    <Badge className="bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-200 uppercase font-bold py-1 px-3">
                         <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                         Commercial Software Products
                     </Badge>
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-white">
-                        Enterprise <span className="text-indigo-600 dark:text-indigo-400">SaaS Ecosystems</span>
+                        Enterprise <span className="text-sky-600 dark:text-sky-400">SaaS Ecosystems</span>
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-base leading-relaxed">
                         Scale your business operations with our modern, automated digital management systems.
@@ -58,7 +58,7 @@ export default function ProductsPage() {
                                         <Badge className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40 text-[10px] uppercase font-bold px-2 py-0.5 rounded-md mb-2">
                                             {product.category}
                                         </Badge>
-                                        <CardTitle className="text-xl font-extrabold text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                        <CardTitle className="text-xl font-extrabold text-zinc-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
                                             {product.name}
                                         </CardTitle>
                                     </div>
@@ -99,7 +99,7 @@ export default function ProductsPage() {
                                     )}
                                 </div>
 
-                                <Button asChild size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 px-4 text-xs font-semibold rounded-lg shadow-sm">
+                                <Button asChild size="sm" className="bg-sky-600 hover:bg-sky-700 text-white h-9 px-4 text-xs font-semibold rounded-lg shadow-sm">
                                     <Link href={`/contact?product=${encodeURIComponent(product.name)}`}>
                                         Request Quote
                                         <ChevronRight className="w-4 h-4 ml-1" />
@@ -111,20 +111,20 @@ export default function ProductsPage() {
                 </div>
 
                 {/* SaaS Promotion Quote capture panel */}
-                <div className="bg-gradient-to-br from-indigo-900 to-indigo-950 text-white rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-xl border border-indigo-800/30 animate-in zoom-in duration-500">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -ml-32 -mb-32" />
+                <div className="bg-gradient-to-br from-sky-900 to-sky-950 text-white rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-xl border border-sky-800/30 animate-in zoom-in duration-500">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl -ml-32 -mb-32" />
                     
                     <div className="relative z-10 max-w-2xl space-y-6">
-                        <Badge className="bg-indigo-500/20 text-indigo-200 border-indigo-500/30 uppercase text-[10px] font-bold">
+                        <Badge className="bg-sky-500/20 text-sky-200 border-sky-500/30 uppercase text-[10px] font-bold">
                             Corporate Scaling
                         </Badge>
                         <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">Need a custom software product for your enterprise?</h2>
-                        <p className="text-indigo-200 text-xs md:text-sm leading-relaxed">
+                        <p className="text-sky-200 text-xs md:text-sm leading-relaxed">
                             Connect with our software R&D division. We build bespoke SaaS portals, custom ERP implementations, and automated billing ledgers tailored to your business needs.
                         </p>
                         <div className="pt-2 flex flex-wrap gap-3">
-                            <Button asChild className="bg-white hover:bg-zinc-100 text-indigo-950 font-bold text-xs px-6 h-11 rounded-xl shadow-md">
+                            <Button asChild className="bg-white hover:bg-zinc-100 text-sky-950 font-bold text-xs px-6 h-11 rounded-xl shadow-md">
                                 <Link href="/contact?type=it-solutions">
                                     Consult our Architects
                                 </Link>
