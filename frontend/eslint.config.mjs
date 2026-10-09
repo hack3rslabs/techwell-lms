@@ -1,14 +1,18 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+const eslintConfig = [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
-      // These rules are intentionally disabled for the existing legacy codebase.
-      // Core Next.js, React, and TypeScript correctness rules remain enabled.
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "react-hooks/exhaustive-deps": "off",
@@ -17,18 +21,18 @@ const eslintConfig = defineConfig([
       "@next/next/no-img-element": "off"
     }
   },
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    "fix-unused-vars.js",
-    "cleanup-imports.js",
-    "lint-results.json",
-    "lint-results-reduced.json"
-  ]),
-]);
+  {
+    ignores: [
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+      "fix-unused-vars.js",
+      "cleanup-imports.js",
+      "lint-results.json",
+      "lint-results-reduced.json"
+    ]
+  }
+];
 
 export default eslintConfig;

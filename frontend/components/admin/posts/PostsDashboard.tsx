@@ -195,10 +195,10 @@ export default function PostsDashboard() {
                                             <p className="text-sm font-medium truncate">{post.title}</p>
                                             <span className="text-xs text-muted-foreground ml-2 shrink-0">{post.views?.toLocaleString()} views</span>
                                         </div>
-                                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
-                                                style={{ width: `${Math.round((post.views / maxViews) * 100)}%` }}
+                                        <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-primary rounded-full transition-all duration-500" 
+                                                style={{ width: `${Math.min((post.views / 5000) * 100, 100)}%` }}
                                             />
                                         </div>
                                     </div>

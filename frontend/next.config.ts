@@ -1,14 +1,9 @@
-import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactCompiler: true,
   output: "standalone",
   typescript: {
     ignoreBuildErrors: true,
-  },
-  turbopack: {
-    root: path.resolve(__dirname),
   },
 
   images: {
@@ -79,7 +74,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const apiUrl = process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
     return [
       {
         source: '/api/:path*',

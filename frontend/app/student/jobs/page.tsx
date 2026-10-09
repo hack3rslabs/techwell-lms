@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Briefcase, Clock, Filter, ChevronRight, Building2, IndianRupee, Wifi, CheckCircle2, Loader2, X, BrainCircuit } from 'lucide-react';
+import { Search, MapPin, Briefcase, Clock, Filter, ChevronRight, Building2, IndianRupee, Wifi, CheckCircle2, Loader2, X, BrainCircuit, Share2, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -62,6 +62,7 @@ export default function StudentJobsPage() {
     const [search, setSearch] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [typeFilter, setTypeFilter] = useState('All');
+    const [dateFilter, setDateFilter] = useState('All');
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [atsMatch, setAtsMatch] = useState<any>(null);
     const [loadingAts, setLoadingAts] = useState(false);
@@ -137,16 +138,52 @@ export default function StudentJobsPage() {
         const matchLocation = !locationFilter ||
             j.location.toLowerCase().includes(locationFilter.toLowerCase());
         const matchType = typeFilter === 'All' || j.type === typeFilter;
-        return matchSearch && matchLocation && matchType;
+        
+        // Date Filter Logic
+        let matchDate = true;
+        if (dateFilter !== 'All') {
+            const jobDate = new Date(j.createdAt);
+            const now = new Date();
+            const diffHours = (now.getTime() - jobDate.getTime()) / (1000 * 60 * 60);
+            
+            if (dateFilter === '24H') matchDate = diffHours <= 24;
+            else if (dateFilter === '3D') matchDate = diffHours <= 72;
+            else if (dateFilter === '7D') matchDate = diffHours <= 168;
+        }
+
+        return matchSearch && matchLocation && matchType && matchDate;
     });
+
+    const handleShare = (job: Job) => {
+        if (navigator.share) {
+            navigator.share({
+                title: job.title,
+                text: `Check out this ${job.title} position at ${companyName(job)}!`,
+                url: window.location.href, // Or a specific job URL if it existed
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(`${job.title} at ${companyName(job)} - Apply now!`);
+            toast.success('Job details copied to clipboard!');
+        }
+    };
 
     const companyName = (job: Job) => job.employer?.employerProfile?.companyName || job.employer?.name || 'Company';
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
             {/* Hero Header */}
-            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white px-6 py-12">
-                <div className="max-w-6xl mx-auto">
+            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white px-6 py-12 relative overflow-hidden">
+                {/* Employer Access Button */}
+                <div className="absolute top-4 right-6">
+                    <Link href="/employer-register">
+                        <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10 text-xs rounded-full gap-1.5 h-8">
+                            <PlusCircle className="w-3.5 h-3.5" />
+                            Post a Job
+                        </Button>
+                    </Link>
+                </div>
+                
+                <div className="max-w-6xl mx-auto mt-4">
                     <h1 className="text-4xl font-black tracking-tight mb-2">Job Board</h1>
                     <p className="text-blue-100 text-lg mb-8">Discover opportunities matched to your skills and career goals.</p>
 
@@ -178,6 +215,17 @@ export default function StudentJobsPage() {
                                 {JOB_TYPES.map(t => (
                                     <SelectItem key={t} value={t}>{TYPE_LABELS[t]}</SelectItem>
                                 ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={dateFilter} onValueChange={setDateFilter}>
+                            <SelectTrigger className="bg-white/20 border-white/30 text-white h-12 rounded-xl md:w-44">
+                                <SelectValue placeholder="Date Posted" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All Time</SelectItem>
+                                <SelectItem value="24H">Last 24 Hours</SelectItem>
+                                <SelectItem value="3D">Last 3 Days</SelectItem>
+                                <SelectItem value="7D">Last 7 Days</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -371,6 +419,9 @@ export default function StudentJobsPage() {
                                             )}
                                         </div>
                                     </div>
+                                    <Button variant="ghost" size="icon" className="shrink-0 text-slate-400 hover:text-blue-600 rounded-full" onClick={() => handleShare(selectedJob)}>
+                                        <Share2 className="w-5 h-5" />
+                                    </Button>
                                 </div>
                             </DialogHeader>
 

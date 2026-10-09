@@ -271,6 +271,11 @@ export default function SuccessStoriesPage() {
                         </DialogTitle>
                         <DialogDescription className="text-foreground/70">
                             Upload a success story image to showcase on the homepage.
+                            <br/><br/>
+                            <strong className="text-foreground">Image Guidelines:</strong><br/>
+                            • Recommended Size: 800x600px (4:3 ratio)<br/>
+                            • Subject: Professional photo of placed candidate or offer letter<br/>
+                            • Format: High-quality JPG/PNG under 2MB
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-3">

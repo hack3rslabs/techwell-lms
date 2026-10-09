@@ -6,13 +6,12 @@ import { usePathname } from "next/navigation"
 import { Mail, MapPin, Phone, Instagram, Linkedin, Youtube, ExternalLink, Star, ArrowRight, ChevronRight, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { toast } from "react-hot-toast"
 import api from "@/lib/api"
 
 const platformLinks = [
     { label: 'Browse Courses', href: '/courses' },
-    { label: 'Community Forum', href: '/community' },
     { label: "AI Interview Prep", href: "/interviews" },
     { label: "Resume Builder", href: "/resume-builder" },
     { label: "Jobs & Placements", href: "/jobs" },
@@ -74,6 +73,19 @@ export function Footer() {
         }
     }
 
+    const locations = useMemo(() => {
+        if (settings?.address) {
+            try {
+                const parsed = JSON.parse(settings.address);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            } catch (e) {}
+        }
+        return [
+            { city: 'Vijayawada' },
+            { city: 'Srikakulam' }
+        ]
+    }, [settings?.address])
+
     if (pathname?.startsWith("/admin")) {
         return null
     }
@@ -96,27 +108,23 @@ export function Footer() {
             <div className="container relative z-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                 
                 {/* Newsletter Subscription Banner */}
-                <div className="relative group overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-6 md:p-8 mb-10 shadow-2xl">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                    <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
-                        <div className="flex-1 space-y-2 text-center lg:text-left">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2 border border-indigo-500/30">
-                                <Sparkles className="w-3.5 h-3.5" /> Newsletter
-                            </div>
-                            <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Stay ahead in Tech.</h3>
-                            <p className="text-slate-400 text-sm max-w-lg mx-auto lg:mx-0">Get the latest industry insights, career tips, and exclusive course offers delivered directly to your inbox.</p>
+                <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 md:p-8 mb-10">
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                        <div className="flex-1 text-center lg:text-left">
+                            <h3 className="text-xl md:text-2xl font-bold tracking-tight text-white mb-2">Subscribe to our Newsletter</h3>
+                            <p className="text-slate-400 text-sm max-w-md mx-auto lg:mx-0">Stay ahead with the latest industry insights, career tips, and exclusive offers.</p>
                         </div>
                         <div className="w-full max-w-md shrink-0">
                             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 w-full">
                                 <Input 
                                     type="email" 
-                                    placeholder="Enter your email address" 
+                                    placeholder="Email address" 
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="bg-black/40 border-white/10 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 text-white placeholder:text-slate-500 h-12 rounded-xl transition-all"
+                                    className="bg-black/50 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary text-white placeholder:text-slate-500 h-11 rounded-lg transition-all"
                                     required
                                 />
-                                <Button type="submit" disabled={isSubmitting} className="h-12 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-6 shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all font-semibold">
+                                <Button type="submit" disabled={isSubmitting} className="h-11 bg-primary hover:bg-primary/90 text-white rounded-lg px-6 font-medium">
                                     {isSubmitting ? "Wait..." : "Subscribe"}
                                 </Button>
                             </form>
@@ -175,7 +183,17 @@ export function Footer() {
                                 <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-rose-500/20 group-hover:border-rose-500/50 transition-all shrink-0">
                                     <MapPin className="h-3.5 w-3.5 text-rose-400 group-hover:text-rose-300" />
                                 </div>
-                                <span className="leading-snug pt-1 font-medium">India-based training and enterprise services</span>
+                                <div className="leading-snug pt-1 font-medium space-y-1">
+                                    <p>Our Workspaces:</p>
+                                    <div className="text-slate-400 text-xs">
+                                        {locations.map((loc: any, i: number) => (
+                                            <span key={loc.city || i}>
+                                                {loc.city}
+                                                {i < locations.length - 1 ? ' • ' : ''}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

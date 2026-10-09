@@ -38,11 +38,14 @@ services:
     build: 
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:5000/api
     container_name: techwell_frontend
     restart: always
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://techwell.co.in/api
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+      - API_INTERNAL_URL=http://backend:5000/api
     ports:
       - "3000:3000"
     depends_on:

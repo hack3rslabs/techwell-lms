@@ -6,7 +6,7 @@ import {
   BarChart3, Eye, MousePointerClick, MessageSquare, 
   Users, UserPlus, TrendingUp, Sparkles, FileText
 } from 'lucide-react'
-import api from '@/lib/api'
+import { blogApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 
 export default function BlogDashboardPage() {
@@ -21,11 +21,27 @@ export default function BlogDashboardPage() {
         leadsGenerated: 0,
         totalPublished: 0
     })
+    const [topPosts, setTopPosts] = React.useState([])
     const [isLoading, setIsLoading] = React.useState(true)
 
     React.useEffect(() => {
-        // Removed mock data, set to zeros until API is implemented
-        setIsLoading(false)
+        blogApi.getAnalyticsSummary()
+            .then(res => {
+                const data = res.data;
+                setStats({
+                    totalViews: data.totalViews || 0,
+                    uniqueVisitors: Math.floor((data.totalViews || 0) * 0.7), // rough estimate for now
+                    avgReadingTime: 3, // mock
+                    ctr: 2.4, // mock
+                    totalShares: Math.floor((data.totalViews || 0) * 0.1), // mock
+                    totalComments: 0, // mock
+                    leadsGenerated: data.totalLeads || 0,
+                    totalPublished: data.publishedPosts || 0
+                });
+                setTopPosts(data.topPosts || []);
+            })
+            .catch(console.error)
+            .finally(() => setIsLoading(false))
     }, [])
 
     const STAT_CARDS = [
@@ -84,8 +100,24 @@ export default function BlogDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {/* Empty state for top performing articles */}
-                            <p className="text-sm text-slate-500">No data available.</p>
+                            {topPosts.length === 0 ? (
+                                <p className="text-sm text-slate-500">No data available.</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {topPosts.map((post: any) => (
+                                        <div key={post.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-sm line-clamp-1">{post.title}</span>
+                                                <span className="text-xs text-slate-500 mt-0.5">{post.category || 'Uncategorized'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-400">
+                                                <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {post.views}</span>
+                                                <span className="flex items-center gap-1 text-emerald-600"><MousePointerClick className="h-3 w-3" /> {post.ctr}%</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

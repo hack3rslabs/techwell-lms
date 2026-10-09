@@ -106,7 +106,7 @@ export function AdminTopBar({ isSidebarCollapsed }: AdminTopBarProps) {
                                     src={user?.avatar || ""}
                                     alt={user?.name || "User"}
                                 />
-                                <AvatarFallback className="bg-indigo-100 text-indigo-700 text-sm font-semibold">
+                                <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
                                     {initials}
                                 </AvatarFallback>
                             </Avatar>

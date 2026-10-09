@@ -22,18 +22,7 @@ const MENU_ITEMS = [
     { label: 'Published', href: '/admin/blogs?status=PUBLISHED', icon: Globe },
     { label: 'Scheduled', href: '/admin/blogs?status=SCHEDULED', icon: Clock },
     { label: 'Archived', href: '/admin/blogs?status=ARCHIVED', icon: Archive },
-  ]},
-  { group: 'Organization', items: [
-    { label: 'Categories & Tags', href: '/admin/blogs/taxonomy', icon: Tags },
-    { label: 'Authors', href: '/admin/blogs/authors', icon: Users },
-    { label: 'Media Library', href: '/admin/blogs/media', icon: ImageIcon },
-  ]},
-  { group: 'Growth & AI', items: [
-    { label: 'SEO Manager', href: '/admin/blogs/seo', icon: Search },
-    { label: 'AI Content Studio', href: '/admin/blogs/ai-studio', icon: Sparkles, highlight: true },
-    { label: 'Analytics', href: '/admin/blogs/analytics', icon: BarChart3 },
-    { label: 'Comments', href: '/admin/blogs/comments', icon: MessageSquare },
-  ]},
+  ]}
 ]
 
 export default function BlogsAdminLayout({ children }: { children: React.ReactNode }) {

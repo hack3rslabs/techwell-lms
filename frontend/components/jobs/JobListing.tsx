@@ -58,7 +58,7 @@ export default function JobListing() {
         location: "",
         experience: 0,
         salaryRange: [0, 50], // in LPA
-        freshness: "all" as "all" | "24h" | "7d" | "30d",
+        freshness: "all" as "all" | "24h" | "3d" | "7d" | "30d",
         industry: [] as string[]
     })
     const [showFilters, setShowFilters] = useState(false)
@@ -160,6 +160,7 @@ export default function JobListing() {
         const now = new Date()
         let matchesFreshness = true
         if (filters.freshness === "24h") matchesFreshness = (now.getTime() - jobDate.getTime()) <= 24 * 60 * 60 * 1000
+        else if (filters.freshness === "3d") matchesFreshness = (now.getTime() - jobDate.getTime()) <= 3 * 24 * 60 * 60 * 1000
         else if (filters.freshness === "7d") matchesFreshness = (now.getTime() - jobDate.getTime()) <= 7 * 24 * 60 * 60 * 1000
         else if (filters.freshness === "30d") matchesFreshness = (now.getTime() - jobDate.getTime()) <= 30 * 24 * 60 * 60 * 1000
 
@@ -179,8 +180,16 @@ export default function JobListing() {
         <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-20">
             {/* Header / Global Search */}
             <div className="bg-white dark:bg-slate-900 border-b sticky top-0 z-50 shadow-sm backdrop-blur-md bg-opacity-80">
-                <div className="container py-6">
-                    <div className="flex flex-col md:flex-row gap-4 max-w-6xl mx-auto items-center">
+                <div className="container py-4">
+                    <div className="flex justify-end gap-3 mb-3 max-w-7xl mx-auto">
+                        <EmployerRequestDialog />
+                        {!user || user.role === 'EMPLOYER' ? (
+                            <Link href="/employer/register">
+                                <Button variant="outline" size="sm" className="font-bold h-8 px-4 text-xs border-blue-200 text-blue-700 hover:bg-blue-50">Post Opportunity</Button>
+                            </Link>
+                        ) : null}
+                    </div>
+                    <div className="flex flex-col md:flex-row gap-4 max-w-7xl mx-auto items-center">
                         <div className="relative flex-1 group w-full">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                             <Input
@@ -218,7 +227,7 @@ export default function JobListing() {
                     </div>
 
                     {recentSearches.length > 0 && (
-                        <div className="mt-4 max-w-6xl mx-auto flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+                        <div className="mt-4 max-w-7xl mx-auto flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
                             <span className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 shrink-0">
                                 <History className="w-3 h-3" /> Recent:
                             </span>
@@ -237,12 +246,12 @@ export default function JobListing() {
                 </div>
             </div>
 
-            <div className="container py-10">
+            <div className="container py-10 max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
                     {/* Left Sidebar: Advanced Meta-Filters */}
                     {showFilters && (
-                        <aside className="lg:col-span-3 flex flex-col gap-6 sticky top-32 animate-in slide-in-from-left duration-300">
+                        <aside className="lg:col-span-3 flex flex-col gap-6 sticky top-40 animate-in slide-in-from-left duration-300">
                             <Card className="border-slate-200/60 shadow-xl shadow-slate-200/40 overflow-hidden rounded-2xl">
                                 <div className="bg-slate-50 p-4 border-b flex justify-between items-center">
                                     <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest flex items-center gap-2">
@@ -311,7 +320,31 @@ export default function JobListing() {
                                     
                                     <Separator className="bg-slate-100" />
 
-                                
+                                    <div className="space-y-4">
+                                        <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-tight">Date Posted</h4>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {[
+                                                { id: 'all', label: 'Any Time' },
+                                                { id: '24h', label: 'Past 24 hours' },
+                                                { id: '3d', label: 'Past 3 days' },
+                                                { id: '7d', label: 'Past 7 days' },
+                                                { id: '30d', label: 'Past month' }
+                                            ].map((time) => (
+                                                <div key={time.id} className="flex items-center space-x-3 group cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, freshness: time.id as any }))}>
+                                                    <div className={cn(
+                                                        "w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
+                                                        filters.freshness === time.id ? "border-blue-600 bg-blue-600" : "border-slate-300"
+                                                    )}>
+                                                        {filters.freshness === time.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                    </div>
+                                                    <label className="text-[13px] font-bold text-slate-600 group-hover:text-blue-600 cursor-pointer transition-colors">
+                                                        {time.label}
+                                                    </label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
                                 </CardContent>
                             </Card>
                         </aside>
@@ -322,60 +355,6 @@ export default function JobListing() {
                         "col-span-1 space-y-8 transition-all duration-300",
                         showFilters ? "lg:col-span-9" : "lg:col-span-12"
                     )}>
-                        {resumeData && (
-                            <section className="bg-blue-600/5 border border-blue-100 p-6 rounded-3xl relative overflow-hidden group">
-                                <div className="absolute -right-12 -top-12 w-48 h-48 bg-blue-400/10 rounded-full blur-3xl" />
-                                <div className="flex items-center gap-4 mb-6 relative">
-                                    <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
-                                        <Zap className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-black text-slate-900 text-lg tracking-tight uppercase">AI Propelled Matches</h3>
-                                        <p className="text-[11px] text-blue-600 font-black uppercase tracking-widest">{resumeData.domain} Specializations</p>
-                                    </div>
-                                    <Badge className="ml-auto bg-blue-600 text-[10px] font-black uppercase">Top Recommendation</Badge>
-                                </div>
-                                <div className="grid gap-4">
-                                    {jobs.sort((a,b) => calculateMatchScore(b) - calculateMatchScore(a)).slice(0, 1).map(job => (
-                                        <Link href={`/jobs/${job.id}`} key={job.id} className="block group/rec">
-                                            <Card className="border-blue-200/50 hover:border-blue-400 transition-all shadow-lg hover:shadow-blue-100 bg-white/80 backdrop-blur-sm">
-                                                <CardContent className="p-5 flex items-center justify-between">
-                                                    <div className="flex items-center gap-4">
-                                                        <Avatar className="h-12 w-12 rounded-xl border border-blue-50">
-                                                            <AvatarImage src={job.employer.employerProfile?.logo || undefined} />
-                                                            <AvatarFallback className="bg-blue-50 text-blue-600 font-black"><Building2 className="w-5 h-5" /></AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <h4 className="font-black text-slate-900 text-md group-hover/rec:text-blue-600 transition-colors">{job.title}</h4>
-                                                            <p className="text-xs font-bold text-slate-500">{job.employer.employerProfile?.companyName}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-2xl font-black text-blue-600 tracking-tighter">{calculateMatchScore(job)}%</div>
-                                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Match Score</div>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        <div className="flex justify-between items-end border-b border-slate-100 pb-4">
-                            <div>
-                                <h1 className="text-3xl font-black text-slate-900 tracking-tight">Active Opportunities</h1>
-                                <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mt-1">Found {filteredJobs.length} results logic</p>
-                            </div>
-                            <div className="flex gap-2">
-                                <EmployerRequestDialog />
-                                {!user || user.role === 'EMPLOYER' ? (
-                                    <Link href="/employer/register">
-                                        <Button variant="outline" size="sm" className="font-black h-10 px-6 uppercase tracking-widest text-[10px] border-slate-200">Post Opportunity</Button>
-                                    </Link>
-                                ) : null}
-                            </div>
-                        </div>
 
                         {isLoading ? (
                             Array(5).fill(0).map((_, i) => (
@@ -485,16 +464,7 @@ export default function JobListing() {
                             </div>
                         )}
                     </main>
-
-                    {/* Right Column: AI Intelligence & Insights */}
-                    <aside className="hidden lg:flex lg:col-span-3 flex-col gap-6 sticky top-32">
-                       
-
-                     
-                        
-                    </aside>
                 </div>
-
             </div>
         </div>
     )

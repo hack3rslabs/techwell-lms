@@ -103,7 +103,7 @@ export const userApi = {
     getAdminStats: () => api.get('/admin/stats'),
     getEnrollments: () => api.get('/admin/enrollments'),
     deleteUser: (id: string) => api.delete(`/users/${id}`),
-    updatePermissions: (id: string, data: { role: string; isActive: boolean; permissions: string[] }) => api.put(`/users/${id}/permissions`, data),
+    updatePermissions: (id: string, data: { role: string; roleId?: string; isActive: boolean; permissions: string[] }) => api.put(`/users/${id}/permissions`, data),
     updateStatus: (id: string, isActive: boolean) => api.patch(`/users/${id}/status`, { isActive }),
     getAuditLogs: (params?: { page?: number; limit?: number; action?: string; entityType?: string; search?: string }) => api.get('/admin/audit-logs', { params }),
 };
@@ -378,6 +378,7 @@ export const avatarApi = {
 
 // Blog API
 export const blogApi = {
+    getAnalyticsSummary: () => api.get('/blogs/analytics/summary'),
     getAll: (params?: { page?: number; limit?: number; status?: string; search?: string }) => api.get('/blogs', { params }),
     getBySlug: (slug: string) => api.get(`/blogs/${slug}`),
     create: (data: unknown) => api.post('/blogs', data),
@@ -397,18 +398,18 @@ export const ticketApi = {
 
 // Lead/CRM API
 export const leadApi = {
-    getAll: (params?: unknown) => api.get('/leads', { params }),
-    getCounts: () => api.get('/leads/counts'),
-    create: (data: unknown) => api.post('/leads', data),
-    capture: (data: unknown) => api.post('/leads/capture', data),
-    captureDemo: (data: unknown) => api.post('/leads/demo', data),
-    markSeen: () => api.post('/leads/mark-seen'),
-    update: (id: string, data: unknown) => api.put(`/leads/${id}`, data),
-    delete: (id: string) => api.delete(`/leads/${id}`),
-    convert: (id: string) => api.post(`/leads/${id}/convert`),
-    getAnalytics: (params?: unknown) => api.get('/leads/analytics', { params }),
-    getIntegrations: () => api.get('/leads/integrations'),
-    configureIntegration: (data: unknown) => api.post('/leads/integrations', data),
+    getAll: (params?: unknown) => api.get('/prospects', { params }),
+    getCounts: () => api.get('/prospects/counts'),
+    create: (data: unknown) => api.post('/prospects', data),
+    capture: (data: unknown) => api.post('/prospects/capture', data),
+    captureDemo: (data: unknown) => api.post('/prospects/demo', data),
+    markSeen: () => api.post('/prospects/mark-seen'),
+    update: (id: string, data: unknown) => api.put(`/prospects/${id}`, data),
+    delete: (id: string) => api.delete(`/prospects/${id}`),
+    convert: (id: string) => api.post(`/prospects/${id}/convert`),
+    getAnalytics: (params?: unknown) => api.get('/prospects/analytics', { params }),
+    getIntegrations: () => api.get('/prospects/integrations'),
+    configureIntegration: (data: unknown) => api.post('/prospects/integrations', data),
 };
 
 // Task API
@@ -430,9 +431,9 @@ export const liveClassApi = {
 
 // Analytics API
 export const analyticsApi = {
-    getDashboard: () => api.get('/analytics/dashboard'),
-    getInterviewStats: () => api.get('/analytics/interviews'),
-    getBenchmark: () => api.get('/analytics/benchmark'),
+    getDashboard: () => api.get('/system-metrics/dashboard'),
+    getInterviewStats: () => api.get('/system-metrics/interviews'),
+    getBenchmark: () => api.get('/system-metrics/benchmark'),
 };
 
 // Library API
