@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from 'react'
-import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { courseApi, courseCategoryApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
@@ -13,7 +12,8 @@ import {
     GraduationCap, Search, Loader2, Clock, Users,
     BookOpen, ChevronLeft, ChevronRight, X, Star
 } from 'lucide-react'
-import { getFullImageUrl } from '@/lib/image-utils'
+import { sanitizeHtml } from '@/lib/sanitize'
+import { CourseImage } from '@/components/course/CourseImage'
 
 interface Course {
     id: string
@@ -335,19 +335,12 @@ export default function CourseList() {
                                 {/* Thumbnail */}
                                 <div className="h-44 relative bg-gradient-to-br from-primary/10 via-purple-500/5 to-blue-500/10 flex items-center justify-center overflow-hidden">
                                     <GraduationCap className="h-14 w-14 text-primary/10 absolute z-0" />
-                                    {(course.bannerUrl || course.thumbnail) && (
-                                        <Image
-                                            src={getFullImageUrl(course.bannerUrl || course.thumbnail)}
-                                            alt={course.title}
-                                            fill
-                                            unoptimized
-                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                                            className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-500"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).style.opacity = '0'
-                                            }}
-                                        />
-                                    )}
+                                    <CourseImage
+                                        sources={[course.bannerUrl, course.thumbnail]}
+                                        alt={course.title}
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                        className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-500"
+                                    />
                                     {/* Course Type badge */}
                                     {course.courseType && (
                                         <span className={`absolute top-2 left-2 z-20 text-[10px] font-bold px-2 py-0.5 rounded-full ${getTypeColor(course.courseType)}`}>
@@ -383,8 +376,10 @@ export default function CourseList() {
                                     <CardTitle className="text-base line-clamp-2 group-hover:text-primary transition-colors leading-snug">
                                         {course.title}
                                     </CardTitle>
-                                    <CardDescription className="line-clamp-2 text-sm leading-relaxed mt-1">
-                                        {course.description}
+                                    <CardDescription
+                                        className="line-clamp-2 text-sm leading-relaxed mt-1"
+                                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }}
+                                    >
                                     </CardDescription>
                                 </CardHeader>
 

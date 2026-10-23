@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from 'react'
-import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
 import { courseApi, paymentApi, leadApi, couponApi } from '@/lib/api'
-import { getFullImageUrl } from '@/lib/image-utils'
+import { sanitizeHtml } from '@/lib/sanitize'
+import { CourseImage } from '@/components/course/CourseImage'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -490,22 +490,13 @@ export default function CourseDetailClient() {
             {/* Course Banner */}
             <div className="relative w-full aspect-[12/4] mb-10 rounded-3xl overflow-hidden shadow-2xl shadow-primary/10 group bg-muted flex items-center justify-center">
                 <GraduationCap className="h-24 w-24 text-primary/10 absolute z-0" />
-                {course.bannerUrl && (
-                    <Image
-                        src={getFullImageUrl(course.bannerUrl)}
-                        alt={`${course.title} Banner`}
-                        onClick={openInterestForm}
-                        fill
-                        unoptimized
-                        className="object-cover transition-all duration-700 group-hover:scale-[1.03] z-10 cursor-pointer rounded-xl"
-                        priority
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            console.error(`[BANNER ERROR] Failed to load: ${target.src}`);
-                            target.style.opacity = '0';
-                        }}
-                    />
-                )}
+                <CourseImage
+                    sources={[course.bannerUrl, course.thumbnail]}
+                    alt={`${course.title} Banner`}
+                    onClick={openInterestForm}
+                    priority
+                    className="object-cover transition-all duration-700 group-hover:scale-[1.03] z-10 cursor-pointer rounded-xl"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 z-20 pointer-events-none" />
             </div>
 
@@ -580,7 +571,10 @@ export default function CourseDetailClient() {
                                 </Dialog>
                             )}
                         </div>
-                        <p className="text-lg text-muted-foreground mb-6">{course.description}</p>
+                        <div
+                            className="text-lg text-muted-foreground mb-6"
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }}
+                        />
 
                         <div className="flex items-center gap-6 text-sm text-muted-foreground">
 

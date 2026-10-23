@@ -384,9 +384,13 @@ export function CourseCreationWizard({ redirectPath, initialCourseId }: CourseCr
         try {
             await courseApi.updateCurriculum(courseId, { modules })
             setStep(3)
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Failed to save curriculum:', error)
-            alert('Failed to save curriculum')
+            const message = (error as { response?: { data?: { error?: string } }; message?: string })
+                .response?.data?.error
+                || (error as { message?: string }).message
+                || 'Failed to save curriculum'
+            alert(message)
         } finally {
             setIsLoading(false)
         }

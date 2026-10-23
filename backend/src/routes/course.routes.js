@@ -118,8 +118,6 @@ const createCourseSchema = z.object({
     price: z.number().min(0).default(0),
     discountPrice: z.number().min(0).default(0),
     courseCode: z.string().optional(),
-    mandatoryCourseIds: z.array(z.string()).optional().default([]),
-    suggestedCourseIds: z.array(z.string()).optional().default([]),
     jobRoles: z.array(z.string()).optional(),
     bannerUrl: z.string().optional(),
     // Course Types
@@ -757,6 +755,8 @@ router.put('/:id/curriculum', authenticate, async (req, res, next) => {
         if (!course) return res.status(404).json({ error: 'Course not found' });
 
         const canUpdate = ['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) ||
+            req.user.rolePermissions?.COURSES?.canCreate ||
+            req.user.rolePermissions?.COURSES?.canUpdate ||
             req.user.permissions?.includes('MANAGE_COURSES') ||
             req.user.permissions?.includes('ALL') ||
             course.instructorId === req.user.id;
@@ -808,13 +808,13 @@ router.put('/:id/curriculum', authenticate, async (req, res, next) => {
 
                 // Upsert Lessons
                 if (mod.lessons && mod.lessons.length > 0) {
-                    for (const l of mod.lessons) {
+                    for (const [lessonIndex, l] of mod.lessons.entries()) {
                         const lessonData = {
                             title: l.title,
                             content: l.content, // Rich text or PDF url
                             videoUrl: l.videoUrl,
                             duration: l.duration,
-                            order: l.order,
+                            order: Number.isInteger(l.order) ? l.order : lessonIndex,
                             type: l.type || 'VIDEO',
                             isPublished: l.isPublished !== undefined ? l.isPublished : true,
                             isPreview: l.isPreview || false,
