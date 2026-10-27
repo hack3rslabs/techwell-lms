@@ -838,36 +838,35 @@ export default function CourseDetailClient() {
                                 </div>
                             )}
 
-                            <div className="mb-3 space-y-1">
+                            {/* <div className="mb-3 space-y-1"> */}
                                 <div className="text-sm text-muted-foreground flex items-center justify-between">
-                                    <span>{purchaseType === 'BUNDLE' ? 'Bundle Price' : 'Course Price'}</span>
-                                    <span className="font-bold">₹{basePrice}</span>
+                                    <span className="font-bold text-blue-500"> Take the next step toward your future — enroll now and unlock new opportunities to learn, grow, and succeed!</span>
                                 </div>
-                                {selectedCourses.length > 0 && (
+                                {/* {selectedCourses.length > 0 && (
                                     <div className="text-sm text-muted-foreground flex items-center justify-between">
                                         <span>Additional Course Total</span>
                                         <span className="font-bold">₹{selectedCoursesTotal}</span>
                                     </div>
-                                )}
-                                <div className="text-3xl font-bold">
-                                    {paymentTotal === 0 ? 'Free' : `Rs. ${paymentTotal}`}
-                                </div>
-                                {appliedCoupon && (
+                                )} */}
+                                {/* <div className="text-3xl font-bold">
+                                    {paymentTotal === 0 ? 'Ffvyt' : `Rs. ${paymentTotal}`}
+                                </div> */}
+                                {/* {appliedCoupon && (
                                     <div className="text-sm text-muted-foreground">
                                         <span className="line-through">Rs. {amountBeforeCoupon}</span>
                                         <span className="ml-2 text-green-600">
                                             Saved Rs. {amountBeforeCoupon - paymentTotal}
                                         </span>
                                     </div>
-                                )}
-                            </div>
+                                )} */}
+                            {/* </div> */}
 
                             <div className="mb-3 rounded-lg border bg-muted/30 p-2.5">
-                                <div className="mb-2 text-sm font-semibold">Payment Summary</div>
+                                {/* <div className="mb-2 text-sm font-semibold">Payment Summary</div> */}
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between text-sm">
-                                        <span>{course.title}</span>
-                                        <span className="font-semibold">₹{basePrice}</span>
+                                        {/* <span>{course.title}</span>
+                                        <span className="font-semibold">₹{basePrice}</span> */}
                                     </div>
 
                                     {selectedCourses.length > 0 && (
@@ -891,10 +890,10 @@ export default function CourseDetailClient() {
                                         </div>
                                     )}
 
-                                    <div className="border-t pt-2 flex items-center justify-between text-sm font-semibold">
+                                    {/* <div className="border-t pt-2 flex items-center justify-between text-sm font-semibold">
                                         <span>Total Payable</span>
                                         <span>₹{paymentTotal}</span>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
 
@@ -910,12 +909,12 @@ export default function CourseDetailClient() {
                             ) : (
                                 <div className="space-y-3 mb-4">
                                     <div className="rounded-lg border bg-muted/30 p-3">
-                                        <Label htmlFor="coupon" className="mb-2 flex items-center gap-2 text-sm font-medium">
+                                        {/* <Label htmlFor="coupon" className="mb-2 flex items-center gap-2 text-sm font-medium">
                                             <Ticket className="h-4 w-4" />
                                             Coupon
-                                        </Label>
-                                        <div className="flex gap-2">
-                                            <Input
+                                        </Label> */}
+                                        {/* <div className="flex gap-2"> */}
+                                            {/* <Input
                                                 id="coupon"
                                                 value={couponName}
                                                 onChange={(event) => {
@@ -925,16 +924,16 @@ export default function CourseDetailClient() {
                                                 }}
                                                 placeholder="Enter coupon name"
                                                 className="h-10"
-                                            />
-                                            <Button
+                                            /> */}
+                                            {/* <Button
                                                 type="button"
                                                 variant="outline"
                                                 onClick={handleApplyCoupon}
                                                 disabled={isApplyingCoupon || !couponName.trim()}
                                             >
                                                 {isApplyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
-                                            </Button>
-                                        </div>
+                                            </Button> */}
+                                        {/* </div> */}
                                         {couponMessage && (
                                             <p className={`mt-2 text-xs ${appliedCoupon ? 'text-green-600' : 'text-destructive'}`}>
                                                 {couponMessage}
